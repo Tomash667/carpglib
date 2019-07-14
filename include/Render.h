@@ -57,6 +57,7 @@ public:
 	vector<ShaderHandler*>& GetShaders() { return shaders; }
 	int GetShaderVersion() const { return shader_version; }
 	int GetAdapter() const { return used_adapter; }
+	const string& GetShadersDir() const { return shaders_dir; }
 	void SetAlphaBlend(bool use_alphablend);
 	void SetAlphaTest(bool use_alphatest);
 	void SetNoCulling(bool use_nocull);
@@ -84,6 +85,7 @@ private:
 	vector<RenderTarget*> targets;
 	RenderTarget* current_target;
 	SURFACE current_surf;
+	string shaders_dir;
 	int used_adapter, shader_version, refresh_hz, multisampling, multisampling_quality;
 	bool vsync, lost_device, res_freed, r_alphatest, r_nozwrite, r_nocull, r_alphablend;
 };

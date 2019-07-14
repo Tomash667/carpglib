@@ -13,6 +13,7 @@ public:
 	static const Int2 DEFAULT_WINDOW_SIZE;
 
 	Engine();
+	~Engine();
 
 	static Engine& Get() { return *engine; }
 

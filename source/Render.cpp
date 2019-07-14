@@ -12,11 +12,10 @@
 static const D3DFORMAT DISPLAY_FORMAT = D3DFMT_X8R8G8B8;
 static const D3DFORMAT BACKBUFFER_FORMAT = D3DFMT_A8R8G8B8;
 static const D3DFORMAT ZBUFFER_FORMAT = D3DFMT_D24S8;
-extern string g_system_dir;
 
 //=================================================================================================
 Render::Render() : d3d(nullptr), device(nullptr), sprite(nullptr), current_target(nullptr), current_surf(nullptr), vsync(true), lost_device(false),
-res_freed(false)
+res_freed(false), shaders_dir("../shaders")
 {
 }
 
@@ -583,7 +582,7 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 
 	ID3DXBuffer* errors = nullptr;
 	ID3DXEffectCompiler* compiler = nullptr;
-	cstring filename = Format("%s/shaders/%s", g_system_dir.c_str(), params.name);
+	cstring filename = Format("%s%s", shaders_dir.c_str(), params.name);
 	cstring cache_path = Format("cache/%s", params.cache_name);
 	HRESULT hr;
 

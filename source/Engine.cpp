@@ -22,6 +22,14 @@ Engine::Engine() : app(nullptr), engine_shutdown(false), timer(false), hwnd(null
 active(false), activation_point(-1, -1), phy_world(nullptr)
 {
 	engine = this;
+	if(!Logger::global)
+		Logger::global = new Logger;
+}
+
+//=================================================================================================
+Engine::~Engine()
+{
+	delete Logger::global;
 }
 
 //=================================================================================================
@@ -201,7 +209,7 @@ void Engine::DoTick(bool update_game)
 
 	// update game
 	if(update_game)
-		app->OnTick(dt);
+		app->OnUpdate(dt);
 	if(engine_shutdown)
 	{
 		if(active && locked_cursor)
@@ -474,7 +482,7 @@ void Engine::SetTitle(cstring title)
 // Show/hide cursor
 void Engine::ShowCursor(bool _show)
 {
-	if (IsCursorVisible() != _show)
+	if(IsCursorVisible() != _show)
 	{
 		::ShowCursor(_show);
 		cursor_visible = _show;
@@ -601,7 +609,7 @@ void Engine::UpdateActivity(bool is_active)
 	active = is_active;
 	if(active)
 	{
-		if (locked_cursor)
+		if(locked_cursor)
 		{
 			ShowCursor(false);
 			PlaceCursor();

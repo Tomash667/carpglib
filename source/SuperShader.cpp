@@ -5,8 +5,6 @@
 #include "Render.h"
 #include "DirectX.h"
 
-extern string g_system_dir;
-
 //=================================================================================================
 SuperShader::SuperShader(Render* render) : render(render), pool(nullptr)
 {
@@ -24,7 +22,7 @@ SuperShader::~SuperShader()
 //=================================================================================================
 void SuperShader::OnInit()
 {
-	FileReader f(Format("%s/shaders/super.fx", g_system_dir.c_str()));
+	FileReader f(Format("%ssuper.fx", render->GetShadersDir().c_str()));
 	FileTime file_time = f.GetTime();
 	if(file_time != edit_time)
 	{
