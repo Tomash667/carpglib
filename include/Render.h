@@ -68,6 +68,7 @@ public:
 	void SetShaderVersion(int shader_version) { this->shader_version = shader_version; }
 	void SetTarget(RenderTarget* target);
 	void SetTextureAddressMode(TextureAddressMode mode);
+	void SetShadersDir(cstring dir) { shaders_dir = dir; }
 
 private:
 	void GatherParams(D3DPRESENT_PARAMETERS& d3dpp);

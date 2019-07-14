@@ -22,7 +22,7 @@ SuperShader::~SuperShader()
 //=================================================================================================
 void SuperShader::OnInit()
 {
-	FileReader f(Format("%ssuper.fx", render->GetShadersDir().c_str()));
+	FileReader f(Format("%s/super.fx", render->GetShadersDir().c_str()));
 	FileTime file_time = f.GetTime();
 	if(file_time != edit_time)
 	{

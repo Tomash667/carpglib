@@ -20,7 +20,7 @@ public:
 	bool ChangeMode(bool fullscreen);
 	bool ChangeMode(const Int2& size, bool fullscreen, int hz = 0);
 	void DoPseudotick(bool msg_only = false);
-	void EngineShutdown();
+	void Shutdown();
 	void FatalError(cstring err);
 	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);
 	bool Start(App* app, StartupOptions& options);
@@ -30,7 +30,7 @@ public:
 	bool IsActive() const { return active; }
 	bool IsCursorLocked() const { return locked_cursor; }
 	bool IsCursorVisible() const { return cursor_visible; }
-	bool IsEngineShutdown() const { return engine_shutdown; }
+	bool IsShutdown() const { return shutdown; }
 	bool IsFullscreen() const { return fullscreen; }
 
 	float GetFps() const { return fps; }
@@ -69,8 +69,9 @@ private:
 	std::unique_ptr<SoundManager> sound_mgr;
 	HWND hwnd;
 	Timer timer;
+	string title;
 	Int2 wnd_size, real_size, unlock_point, activation_point;
 	float frame_time, fps;
 	uint frames;
-	bool engine_shutdown, cursor_visible, replace_cursor, locked_cursor, lock_on_focus, active, fullscreen;
+	bool initialized, shutdown, cursor_visible, replace_cursor, locked_cursor, lock_on_focus, active, fullscreen;
 };

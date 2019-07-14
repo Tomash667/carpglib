@@ -18,12 +18,14 @@ const Int2 Engine::DEFAULT_WINDOW_SIZE = Int2(1024, 768);
 Engine* Engine::engine;
 
 //=================================================================================================
-Engine::Engine() : app(nullptr), engine_shutdown(false), timer(false), hwnd(nullptr), cursor_visible(true), replace_cursor(false), locked_cursor(true),
-active(false), activation_point(-1, -1), phy_world(nullptr)
+Engine::Engine() : app(nullptr), initialized(false), shutdown(false), timer(false), hwnd(nullptr), cursor_visible(true), replace_cursor(false),
+locked_cursor(true), active(false), activation_point(-1, -1), phy_world(nullptr)
 {
 	engine = this;
 	if(!Logger::global)
 		Logger::global = new Logger;
+	render.reset(new Render);
+	sound_mgr.reset(new SoundManager);
 }
 
 //=================================================================================================
@@ -210,7 +212,7 @@ void Engine::DoTick(bool update_game)
 	// update game
 	if(update_game)
 		app->OnUpdate(dt);
-	if(engine_shutdown)
+	if(shutdown)
 	{
 		if(active && locked_cursor)
 		{
@@ -243,11 +245,11 @@ bool Engine::IsWindowActive()
 
 //=================================================================================================
 // Start closing engine
-void Engine::EngineShutdown()
+void Engine::Shutdown()
 {
-	if(!engine_shutdown)
+	if(!shutdown)
 	{
-		engine_shutdown = true;
+		shutdown = true;
 		Info("Engine: Started closing engine...");
 	}
 }
@@ -258,7 +260,7 @@ void Engine::FatalError(cstring err)
 {
 	assert(err);
 	ShowError(err, Logger::L_FATAL);
-	EngineShutdown();
+	Shutdown();
 }
 
 //=================================================================================================
@@ -270,7 +272,7 @@ long Engine::HandleEvent(HWND in_hwnd, uint msg, uint wParam, long lParam)
 	// window closed/destroyed
 	case WM_CLOSE:
 	case WM_DESTROY:
-		engine_shutdown = true;
+		shutdown = true;
 		return 0;
 
 	// handle keyboard
@@ -475,7 +477,9 @@ void Engine::PlaceCursor()
 void Engine::SetTitle(cstring title)
 {
 	assert(title);
-	SetWindowTextA(hwnd, title);
+	this->title = title;
+	if(initialized)
+		SetWindowTextA(hwnd, title);
 }
 
 //=================================================================================================
@@ -553,12 +557,11 @@ bool Engine::Start(App* app, StartupOptions& options)
 void Engine::Init(StartupOptions& options)
 {
 	InitWindow(options);
-	render.reset(new Render);
 	render->Init(options);
-	sound_mgr.reset(new SoundManager);
 	sound_mgr->Init(options);
 	phy_world = CustomCollisionWorld::Init();
 	ResourceManager::Get().Init(render->GetDevice(), sound_mgr.get());
+	initialized = true;
 }
 
 //=================================================================================================
@@ -647,7 +650,7 @@ void Engine::WindowLoop()
 		else
 			DoTick(true);
 
-		if(engine_shutdown)
+		if(shutdown)
 			break;
 	}
 }

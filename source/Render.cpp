@@ -582,7 +582,7 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 
 	ID3DXBuffer* errors = nullptr;
 	ID3DXEffectCompiler* compiler = nullptr;
-	cstring filename = Format("%s%s", shaders_dir.c_str(), params.name);
+	cstring filename = Format("%s/%s", shaders_dir.c_str(), params.name);
 	cstring cache_path = Format("cache/%s", params.cache_name);
 	HRESULT hr;
 
