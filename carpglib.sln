@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.757
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "carpglib", "carpglib.vcxproj", "{56C508B6-848B-436A-BB6A-1CA2F91FA054}"
+	ProjectSection(ProjectDependencies) = postProject
+		{58D08522-C69F-904C-A7ED-733DA229F1BA} = {58D08522-C69F-904C-A7ED-733DA229F1BA}
+		{76424983-1BE0-4E8D-9023-8AA316172A00} = {76424983-1BE0-4E8D-9023-8AA316172A00}
+		{54AE91C7-48D4-9C49-A5B1-0CED554CADFA} = {54AE91C7-48D4-9C49-A5B1-0CED554CADFA}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{5F643C21-F3B5-48F3-9D3C-F21CF87011A7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "external\Bullet\build\vs2015\LinearMath.vcxproj", "{58D08522-C69F-904C-A7ED-733DA229F1BA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "external\Bullet\build\vs2015\BulletCollision.vcxproj", "{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{58D08522-C69F-904C-A7ED-733DA229F1BA} = {58D08522-C69F-904C-A7ED-733DA229F1BA}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "external\zlib\contrib\vstudio\vc11\zlibstat.vcxproj", "{76424983-1BE0-4E8D-9023-8AA316172A00}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{56C508B6-848B-436A-BB6A-1CA2F91FA054}.Debug|x86.ActiveCfg = Debug|Win32
+		{56C508B6-848B-436A-BB6A-1CA2F91FA054}.Debug|x86.Build.0 = Debug|Win32
+		{56C508B6-848B-436A-BB6A-1CA2F91FA054}.Release|x86.ActiveCfg = Release|Win32
+		{56C508B6-848B-436A-BB6A-1CA2F91FA054}.Release|x86.Build.0 = Release|Win32
+		{58D08522-C69F-904C-A7ED-733DA229F1BA}.Debug|x86.ActiveCfg = Debug|Win32
+		{58D08522-C69F-904C-A7ED-733DA229F1BA}.Debug|x86.Build.0 = Debug|Win32
+		{58D08522-C69F-904C-A7ED-733DA229F1BA}.Release|x86.ActiveCfg = Release|Win32
+		{58D08522-C69F-904C-A7ED-733DA229F1BA}.Release|x86.Build.0 = Release|Win32
+		{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}.Debug|x86.ActiveCfg = Debug|Win32
+		{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}.Debug|x86.Build.0 = Debug|Win32
+		{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}.Release|x86.ActiveCfg = Release|Win32
+		{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}.Release|x86.Build.0 = Release|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Debug|x86.ActiveCfg = Debug|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Debug|x86.Build.0 = Debug|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Release|x86.ActiveCfg = Release|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{58D08522-C69F-904C-A7ED-733DA229F1BA} = {5F643C21-F3B5-48F3-9D3C-F21CF87011A7}
+		{54AE91C7-48D4-9C49-A5B1-0CED554CADFA} = {5F643C21-F3B5-48F3-9D3C-F21CF87011A7}
+		{76424983-1BE0-4E8D-9023-8AA316172A00} = {5F643C21-F3B5-48F3-9D3C-F21CF87011A7}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {80FE8C56-374A-4EB8-AD64-BE03BEA4372F}
+	EndGlobalSection
+EndGlobal
