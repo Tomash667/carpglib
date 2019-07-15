@@ -455,6 +455,9 @@
       <Filter>systems</Filter>
     </ClCompile>
     <ClCompile Include="source\EnginePch.cpp" />
+    <ClCompile Include="source\Resource.cpp">
+      <Filter>resources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

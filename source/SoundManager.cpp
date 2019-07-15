@@ -54,11 +54,13 @@ void SoundManager::Init(StartupOptions& options)
 
 	// log drivers
 	Info("Engine: Sound drivers (%d):", count);
+	string str;
+	str.resize(256);
 	for(int i = 0; i < count; ++i)
 	{
-		result = system->getDriverInfo(i, BUF, 256, nullptr, nullptr, nullptr, nullptr);
+		result = system->getDriverInfo(i, const_cast<char*>(str.c_str()), 256, nullptr, nullptr, nullptr, nullptr);
 		if(result == FMOD_OK)
-			Info("Engine: Driver %d - %s", i, BUF);
+			Info("Engine: Driver %d - %s", i, str.c_str());
 		else
 			Error("Engine: Failed to get driver %d info (%d).", i, result);
 	}
@@ -150,7 +152,7 @@ void SoundManager::Update(float dt)
 int SoundManager::LoadSound(Sound* sound)
 {
 	assert(sound);
-	
+
 	if(!system)
 		return 0;
 
@@ -165,7 +167,7 @@ int SoundManager::LoadSound(Sound* sound)
 		result = system->createStream(sound->path.c_str(), flags, nullptr, &sound->sound);
 	else
 	{
-		BufferHandle&& buf = ResourceManager::Get().GetBuffer(sound);
+		BufferHandle&& buf = sound->GetBuffer();
 		FMOD_CREATESOUNDEXINFO info = { 0 };
 		info.cbsize = sizeof(info);
 		info.length = buf->Size();

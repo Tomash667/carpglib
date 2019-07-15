@@ -4,7 +4,6 @@
 #include "Texture.h"
 #include "Sound.h"
 #include "Timer.h"
-#include "File.h"
 
 //-----------------------------------------------------------------------------
 struct ResourceComparer
@@ -343,8 +342,6 @@ public:
 	bool AddPak(cstring path, cstring key = nullptr);
 	ResourceType ExtToResourceType(cstring ext);
 	ResourceType FilenameToResourceType(cstring filename);
-	Buffer* GetBuffer(Resource* res);
-	cstring GetPath(Resource* res);
 	void AddTaskCategory(Cstring name);
 	void AddTask(void* ptr, TaskCallback callback);
 	void NextTask(cstring next_category = nullptr);

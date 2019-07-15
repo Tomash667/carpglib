@@ -2,6 +2,7 @@
 #include "EngineCore.h"
 #include "Mesh.h"
 #include "ResourceManager.h"
+#include "File.h"
 #include "DirectX.h"
 
 //---------------------------

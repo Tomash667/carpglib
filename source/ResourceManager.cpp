@@ -106,7 +106,7 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 			Resource* res = AddResource(file_info.filename, path);
 			if(res)
 			{
-				res->pak_index = Resource::INVALID_PAK;
+				res->pak = nullptr;
 				res->path = path;
 				res->filename = res->path.c_str() + dirlen;
 			}
@@ -155,7 +155,6 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		return false;
 	}
 
-	int pak_index = paks.size();
 	uint pak_size = f.GetSize();
 	int total_size = pak_size - sizeof(Pak::Header);
 
@@ -221,8 +220,8 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		Resource* res = AddResource(file.filename, path);
 		if(res)
 		{
-			res->pak_index = pak_index;
-			res->pak_file_index = i;
+			res->pak = pak;
+			res->pak_index = i;
 			res->filename = file.filename;
 		}
 	}
@@ -258,8 +257,8 @@ Resource* ResourceManager::AddResource(cstring filename, cstring path)
 	{
 		// already exists
 		Resource* existing = *result.first;
-		if(existing->pak_index != Resource::INVALID_PAK || existing->path != path)
-			Warn("ResourceManager: Resource '%s' already exists (%s; %s).", filename, GetPath(existing), path);
+		if(existing->pak || existing->path != path)
+			Warn("ResourceManager: Resource '%s' already exists (%s; %s).", filename, existing->GetPath(), path);
 		delete res;
 		return nullptr;
 	}
@@ -355,37 +354,6 @@ ResourceType ResourceManager::FilenameToResourceType(cstring filename)
 		return ResourceType::Unknown;
 	else
 		return ExtToResourceType(pos + 1);
-}
-
-//=================================================================================================
-Buffer* ResourceManager::GetBuffer(Resource* res)
-{
-	assert(res);
-
-	if(res->pak_index == Resource::INVALID_PAK)
-		return FileReader::ReadToBuffer(res->path);
-	else
-	{
-		Pak& pak = *paks[res->pak_index];
-		Pak::File& file = pak.files[res->pak_file_index];
-		Buffer* buf = pak.file.ReadToBuffer(file.offset, file.compressed_size);
-		if(pak.encrypted)
-			io::Crypt((char*)buf->Data(), buf->Size(), pak.key.c_str(), pak.key.length());
-		if(file.compressed_size != file.size)
-			buf = buf->Decompress(file.size);
-		return buf;
-	}
-}
-
-//=================================================================================================
-cstring ResourceManager::GetPath(Resource* res)
-{
-	assert(res);
-
-	if(res->pak_index == Resource::INVALID_PAK)
-		return res->path.c_str();
-	else
-		return Format("%s/%s", paks[res->pak_index]->path.c_str(), res->filename);
 }
 
 //=================================================================================================
@@ -616,13 +584,13 @@ void ResourceManager::LoadMesh(Mesh* mesh)
 		}
 		else
 		{
-			MemoryReader f(GetBuffer(mesh));
+			MemoryReader f(mesh->GetBuffer());
 			mesh->Load(f, device);
 		}
 	}
 	catch(cstring err)
 	{
-		throw Format("ResourceManager: Failed to load mesh '%s'. %s", GetPath(mesh), err);
+		throw Format("ResourceManager: Failed to load mesh '%s'. %s", mesh->GetPath(), err);
 	}
 }
 
@@ -638,13 +606,13 @@ void ResourceManager::LoadMeshMetadata(Mesh* mesh)
 		}
 		else
 		{
-			MemoryReader f(GetBuffer(mesh));
+			MemoryReader f(mesh->GetBuffer());
 			mesh->LoadMetadata(f);
 		}
 	}
 	catch(cstring err)
 	{
-		throw Format("ResourceManager: Failed to load mesh metadata '%s'. %s", GetPath(mesh), err);
+		throw Format("ResourceManager: Failed to load mesh metadata '%s'. %s", mesh->GetPath(), err);
 	}
 }
 
@@ -660,13 +628,13 @@ void ResourceManager::LoadVertexData(VertexData* vd)
 		}
 		else
 		{
-			MemoryReader f(GetBuffer(vd));
+			MemoryReader f(vd->GetBuffer());
 			Mesh::LoadVertexData(vd, f);
 		}
 	}
 	catch(cstring err)
 	{
-		throw Format("ResourceManager: Failed to load mesh vertex data '%s'. %s", GetPath(vd), err);
+		throw Format("ResourceManager: Failed to load mesh vertex data '%s'. %s", vd->GetPath(), err);
 	}
 }
 
@@ -693,12 +661,12 @@ void ResourceManager::LoadTexture(Texture* tex)
 	}
 	else
 	{
-		BufferHandle&& buf = GetBuffer(tex);
+		BufferHandle&& buf = tex->GetBuffer();
 		hr = D3DXCreateTextureFromFileInMemory(device, buf->Data(), buf->Size(), &tex->tex);
 	}
 
 	if(FAILED(hr))
-		throw Format("Failed to load texture '%s' (%u).", GetPath(tex), hr);
+		throw Format("Failed to load texture '%s' (%u).", tex->GetPath(), hr);
 }
 
 //=================================================================================================

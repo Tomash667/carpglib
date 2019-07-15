@@ -2,6 +2,7 @@
 #include "EngineCore.h"
 #include "ResourceManager.h"
 #include "ParticleSystem.h"
+#include "File.h"
 
 vector<ParticleEmitter*> ParticleEmitter::refid_table;
 vector<TrailParticleEmitter*> TrailParticleEmitter::refid_table;

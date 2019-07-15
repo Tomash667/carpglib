@@ -9,6 +9,7 @@
 #include "PickFileDialog.h"
 #include "ResourceManager.h"
 #include "TextBox.h"
+#include "File.h"
 
 using namespace gui;
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "File.h"
+
 //-----------------------------------------------------------------------------
 // Check tools/pak/pak.txt for specification
 class Pak

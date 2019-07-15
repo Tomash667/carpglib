@@ -25,14 +25,12 @@ struct Resource
 	cstring filename;
 	ResourceState state;
 	ResourceType type;
-	int pak_index;
-	uint pak_file_index;
+	Pak* pak;
+	uint pak_index;
 
-	static const int INVALID_PAK = -1;
-
-	virtual ~Resource()
-	{
-	}
-	bool IsFile() const { return pak_index == INVALID_PAK; }
+	virtual ~Resource() {}
+	bool IsFile() const { return !pak; }
 	bool IsLoaded() const { return state == ResourceState::Loaded; }
+	cstring GetPath() const;
+	Buffer* GetBuffer();
 };
