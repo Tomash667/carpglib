@@ -40,6 +40,7 @@ public:
 		initialized(false), layout(GUI.GetLayout()), is_new(is_new), disabled(false), flags(0) {}
 	virtual ~Control() {}
 
+	static Input* input;
 	static TEX tDialog;
 	Int2 pos, global_pos, size;
 	Control* parent;

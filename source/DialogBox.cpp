@@ -1,7 +1,7 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "DialogBox.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 //-----------------------------------------------------------------------------
 TEX DialogBox::tBackground;
@@ -43,13 +43,13 @@ void DialogBox::Update(float dt)
 		it->Update(dt);
 	}
 
-	if(Key.Focus() && focus && result == -1)
+	if(input->Focus() && focus && result == -1)
 	{
 		if(bts[0].state != Button::DISABLED)
 		{
-			if(Key.PressedRelease(VK_ESCAPE))
+			if(input->PressedRelease(Key::Escape))
 				result = (type == DIALOG_OK ? BUTTON_OK : BUTTON_NO);
-			else if(Key.PressedRelease(VK_RETURN) || Key.PressedRelease(VK_SPACE))
+			else if(input->PressedRelease(Key::Enter) || input->PressedRelease(Key::Spacebar))
 				result = (type == DIALOG_OK ? BUTTON_OK : BUTTON_YES);
 		}
 	}

@@ -32,9 +32,11 @@ constexpr size_t countof(T(&)[N]) { return N; }
 #ifdef _DEBUG
 #	define DEBUG_DO(x) (x)
 #	define C(x) assert(x)
+#	define DEBUG_BOOL true
 #else
 #	define DEBUG_DO(x)
 #	define C(x) x
+#	define DEBUG_BOOL false
 #endif
 #define __STR2__(x) #x
 #define __STR1__(x) __STR2__(x)
@@ -44,6 +46,7 @@ constexpr size_t countof(T(&)[N]) { return N; }
 #else
 #	define FIXME
 #endif
+constexpr bool IsDebug() { return DEBUG_BOOL; }
 
 //-----------------------------------------------------------------------------
 // Core variable types

@@ -1,7 +1,7 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "GetTextDialog.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 //-----------------------------------------------------------------------------
 GetTextDialog* GetTextDialog::self;
@@ -12,7 +12,7 @@ GetTextDialog::GetTextDialog(const DialogInfo& info) : DialogBox(info), singleli
 }
 
 //=================================================================================================
-void GetTextDialog::Draw(ControlDrawData* cdd/* =nullptr */)
+void GetTextDialog::Draw(ControlDrawData*)
 {
 	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
 	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
@@ -31,7 +31,7 @@ void GetTextDialog::Update(float dt)
 {
 	textBox.mouse_focus = focus;
 
-	if(Key.Focus() && focus)
+	if(input->Focus() && focus)
 	{
 		for(int i = 0; i < 2; ++i)
 		{
@@ -51,13 +51,13 @@ void GetTextDialog::Update(float dt)
 
 		if(result == -1)
 		{
-			if(Key.PressedRelease(VK_ESCAPE))
+			if(input->PressedRelease(Key::Escape))
 				result = BUTTON_CANCEL;
-			else if(Key.PressedRelease(VK_RETURN))
+			else if(input->PressedRelease(Key::Enter))
 			{
-				if(!textBox.IsMultiline() || Key.Down(VK_SHIFT))
+				if(!textBox.IsMultiline() || input->Down(Key::Shift))
 				{
-					Key.SetState(VK_RETURN, IS_UP);
+					input->SetState(Key::Enter, IS_UP);
 					result = BUTTON_OK;
 				}
 			}
@@ -67,7 +67,7 @@ void GetTextDialog::Update(float dt)
 		{
 		got_result:
 			if(result == BUTTON_OK)
-				*input = textBox.GetText();
+				*input_str = textBox.GetText();
 			GUI.CloseDialog(this);
 			if(event)
 				event(result);
@@ -155,7 +155,7 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	textBox.size = Int2(params.width - 50, 15 + lines * 20);
 	textBox.SetMultiline(params.multiline);
 	textBox.limit = params.limit;
-	textBox.SetText(params.input->c_str());
+	textBox.SetText(params.input_str->c_str());
 
 	// ustaw przyciski
 	bt1.pos = Int2(size.x - 100 - 16, size.y - 40 - 16);
@@ -177,7 +177,7 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	order = parent ? static_cast<DialogBox*>(parent)->order : ORDER_NORMAL;
 	event = params.event;
 	text = params.text;
-	input = params.input;
+	input_str = params.input_str;
 
 	// ustaw pozycjê
 	pos = global_pos = (GUI.wnd_size - size) / 2;

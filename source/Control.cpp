@@ -3,6 +3,7 @@
 #include "Control.h"
 #include "Overlay.h"
 
+Input* Control::input;
 TEX Control::tDialog;
 
 void Control::Dock(Control* c)

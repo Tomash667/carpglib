@@ -1,7 +1,7 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "GetNumberDialog.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 //-----------------------------------------------------------------------------
 GetNumberDialog* GetNumberDialog::self;
@@ -36,7 +36,7 @@ void GetNumberDialog::Update(float dt)
 {
 	textBox.mouse_focus = focus;
 
-	if(Key.Focus() && focus)
+	if(input->Focus() && focus)
 	{
 		for(int i = 0; i < 2; ++i)
 		{
@@ -56,7 +56,7 @@ void GetNumberDialog::Update(float dt)
 			if(GUI.mouse_wheel != 0.f)
 			{
 				int change = 1;
-				if(Key.Down(VK_SHIFT))
+				if(input->Down(Key::Shift))
 					change = max(1, (max_value - min_value) / 20);
 				if(GUI.mouse_wheel < 0.f)
 					change = -change;
@@ -106,9 +106,9 @@ void GetNumberDialog::Update(float dt)
 
 		if(result == -1)
 		{
-			if(Key.PressedRelease(VK_ESCAPE))
+			if(input->PressedRelease(Key::Escape))
 				result = BUTTON_CANCEL;
-			else if(Key.PressedRelease(VK_RETURN))
+			else if(input->PressedRelease(Key::Enter))
 				result = BUTTON_OK;
 		}
 

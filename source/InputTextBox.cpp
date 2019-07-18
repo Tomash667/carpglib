@@ -2,7 +2,7 @@
 #include "EngineCore.h"
 #include "InputTextBox.h"
 #include "TextBox.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 //=================================================================================================
 InputTextBox::InputTextBox() : added(false), background(nullptr)
@@ -36,7 +36,7 @@ void InputTextBox::Draw(ControlDrawData*)
 
 	// input
 	Rect r2 = { inputbox_pos.x + 4, inputbox_pos.y, inputbox_pos.x + inputbox_size.x - 4, inputbox_pos.y + inputbox_size.y };
-	GUI.DrawText(GUI.default_font, caret_blink >= 0.f ? Format("%s|", input.c_str()) : input, DTF_LEFT | DTF_VCENTER, Color::Black, r2, &r2);
+	GUI.DrawText(GUI.default_font, caret_blink >= 0.f ? Format("%s|", input_str.c_str()) : input_str, DTF_LEFT | DTF_VCENTER, Color::Black, r2, &r2);
 
 	// scrollbar
 	scrollbar.Draw();
@@ -47,17 +47,17 @@ void InputTextBox::Update(float dt)
 {
 	if(mouse_focus)
 	{
-		if(Key.Focus() && IsInside(GUI.cursor_pos))
+		if(input->Focus() && IsInside(GUI.cursor_pos))
 			scrollbar.ApplyMouseWheel();
 
 		bool release_key = false;
 		if(PointInRect(GUI.cursor_pos, inputbox_pos, inputbox_size))
 		{
 			GUI.cursor_mode = CURSOR_TEXT;
-			if(!focus && Key.Focus() && Key.PressedRelease(VK_LBUTTON))
+			if(!focus && input->Focus() && input->PressedRelease(Key::LeftButton))
 				focus = true;
 		}
-		else if(focus && Key.Focus() && Key.Pressed(VK_LBUTTON))
+		else if(focus && input->Focus() && input->Pressed(Key::LeftButton))
 		{
 			focus = false;
 			release_key = true;
@@ -66,33 +66,33 @@ void InputTextBox::Update(float dt)
 		scrollbar.mouse_focus = mouse_focus;
 		scrollbar.Update(dt);
 		if(release_key)
-			Key.Released(VK_LBUTTON);
+			input->Released(Key::LeftButton);
 	}
 	if(focus)
 	{
 		caret_blink += dt * 2;
 		if(caret_blink >= 1.f)
 			caret_blink = -1.f;
-		if(Key.Focus())
+		if(input->Focus())
 		{
-			if(Key.PressedRelease(VK_UP))
+			if(input->PressedRelease(Key::Up))
 			{
 				// poprzednia komenda
 				if(input_counter == -1)
 				{
 					input_counter = last_input_counter - 1;
 					if(input_counter != -1)
-						input = cache[input_counter];
+						input_str = cache[input_counter];
 				}
 				else
 				{
 					--input_counter;
 					if(input_counter == -1)
 						input_counter = last_input_counter - 1;
-					input = cache[input_counter];
+					input_str = cache[input_counter];
 				}
 			}
-			else if(Key.PressedRelease(VK_DOWN))
+			else if(input->PressedRelease(Key::Down))
 			{
 				// nastêpna komenda
 				++input_counter;
@@ -104,31 +104,31 @@ void InputTextBox::Update(float dt)
 						input_counter = 0;
 				}
 				if(input_counter != -1)
-					input = cache[input_counter];
+					input_str = cache[input_counter];
 			}
-			if(Key.PressedRelease(VK_RETURN))
+			if(input->PressedRelease(Key::Enter))
 			{
-				if(!input.empty())
+				if(!input_str.empty())
 				{
 					// dodaj ostatni¹ komendê
-					if(last_input_counter == 0 || cache[last_input_counter - 1] != input)
+					if(last_input_counter == 0 || cache[last_input_counter - 1] != input_str)
 					{
 						if(last_input_counter == max_cache)
 						{
 							for(int i = 0; i < max_cache - 1; ++i)
 								cache[i] = cache[i + 1];
-							cache[max_cache - 1] = input;
+							cache[max_cache - 1] = input_str;
 						}
 						else
 						{
-							cache[last_input_counter] = input;
+							cache[last_input_counter] = input_str;
 							++last_input_counter;
 						}
 					}
 					// wykonaj
-					event(input);
+					event(input_str);
 					// wyczyœæ
-					input.clear();
+					input_str.clear();
 					input_counter = -1;
 				}
 				if(lose_focus)
@@ -137,9 +137,9 @@ void InputTextBox::Update(float dt)
 					Event(GuiEvent_LostFocus);
 				}
 			}
-			else if(esc_clear && Key.PressedRelease(VK_ESCAPE))
+			else if(esc_clear && input->PressedRelease(Key::Escape))
 			{
-				input.clear();
+				input_str.clear();
 				input_counter = -1;
 				if(lose_focus)
 				{
@@ -244,15 +244,15 @@ void InputTextBox::OnChar(char c)
 	if(c == 0x08)
 	{
 		// backspace
-		if(!input.empty())
-			input.resize(input.size() - 1);
+		if(!input_str.empty())
+			input_str.resize(input_str.size() - 1);
 	}
 	else if(c == 0x0D)
 	{
 		// pomiñ znak
 	}
 	else
-		input.push_back(c);
+		input_str.push_back(c);
 }
 
 //=================================================================================================
@@ -274,7 +274,7 @@ void InputTextBox::Init()
 //=================================================================================================
 void InputTextBox::Reset(bool reset_cache)
 {
-	input.clear();
+	input_str.clear();
 	text.clear();
 	lines.clear();
 	input_counter = -1;

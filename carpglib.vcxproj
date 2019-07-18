@@ -60,7 +60,7 @@
     <ClInclude Include="include\GuiRect.h" />
     <ClInclude Include="include\InputTextBox.h" />
     <ClInclude Include="include\Key.h" />
-    <ClInclude Include="include\KeyStates.h" />
+    <ClInclude Include="include\Input.h" />
     <ClInclude Include="include\Label.h" />
     <ClInclude Include="include\Layout.h" />
     <ClInclude Include="include\ListBox.h" />
@@ -145,7 +145,7 @@
     <ClCompile Include="source\GuiContainer.cpp" />
     <ClCompile Include="source\GuiDialog.cpp" />
     <ClCompile Include="source\InputTextBox.cpp" />
-    <ClCompile Include="source\KeyStates.cpp" />
+    <ClCompile Include="source\Input.cpp" />
     <ClCompile Include="source\Label.cpp" />
     <ClCompile Include="source\Layout.cpp" />
     <ClCompile Include="source\ListBox.cpp" />

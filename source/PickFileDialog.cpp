@@ -2,7 +2,7 @@
 #include "EngineCore.h"
 #include "Button.h"
 #include "DrawBox.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "Label.h"
 #include "ListBox.h"
 #include "Overlay.h"
@@ -177,20 +177,20 @@ void PickFileDialog::Event(GuiEvent e)
 
 void PickFileDialog::Update(float dt)
 {
-	if(Key.PressedRelease(VK_ESCAPE))
+	if(input->PressedRelease(Key::Escape))
 		CancelPick();
 	if(list_box->focus)
 	{
-		if(Key.PressedRelease(VK_RETURN))
+		if(input->PressedRelease(Key::Enter))
 			PickItem();
-		else if(Key.PressedRelease(VK_BACK) && !list_box->IsEmpty())
+		else if(input->PressedRelease(Key::Backspace) && !list_box->IsEmpty())
 		{
 			auto item = list_box->GetItemsCast<PickFileDialogItem>()[0];
 			if(item->filename == "..")
 				PickDir(item);
 		}
 	}
-	else if(tb_filename->focus && Key.PressedRelease(VK_RETURN))
+	else if(tb_filename->focus && input->PressedRelease(Key::Enter))
 	{
 		string filename = Trimmed(tb_filename->GetText());
 		if(!filename.empty())

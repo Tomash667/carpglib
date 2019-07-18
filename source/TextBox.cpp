@@ -1,6 +1,6 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "Scrollbar.h"
 #include "TextBox.h"
 
@@ -174,7 +174,7 @@ void TextBox::Update(float dt)
 		if(PointInRect(GUI.cursor_pos, global_pos, is_new ? real_size : size))
 		{
 			GUI.cursor_mode = CURSOR_TEXT;
-			if(is_new && (Key.PressedRelease(VK_LBUTTON) || Key.PressedRelease(VK_RBUTTON)))
+			if(is_new && (input->PressedRelease(Key::LeftButton) || input->PressedRelease(Key::RightButton)))
 			{
 				// set caret position, update selection
 				bool prev_focus = focus;
@@ -183,7 +183,7 @@ void TextBox::Update(float dt)
 				GetCaretPos(GUI.cursor_pos, new_index, new_pos, &char_index);
 				caret_blink = 0.f;
 				TakeFocus(true);
-				if(Key.Down(VK_SHIFT) && prev_focus)
+				if(input->Down(Key::Shift) && prev_focus)
 					CalculateSelection(new_index, new_pos);
 				else
 					select_start_index = NOT_SELECTED;
@@ -194,7 +194,7 @@ void TextBox::Update(float dt)
 				last_y_move = -1;
 
 				// double click select whole word
-				if(Key.DoubleClick(VK_LBUTTON) && !Key.Down(VK_SHIFT) && prev_index == caret_index)
+				if(input->DoubleClick(Key::LeftButton) && !input->Down(Key::Shift) && prev_index == caret_index)
 				{
 					cstring whitespace = " \t\n\r";
 					char c = text[char_index];
@@ -258,7 +258,7 @@ void TextBox::Update(float dt)
 			// update selecting with mouse
 			if(down && !clicked)
 			{
-				if(Key.Up(VK_LBUTTON))
+				if(input->Up(Key::LeftButton))
 					down = false;
 				else
 				{
@@ -319,7 +319,7 @@ void TextBox::Update(float dt)
 				}
 			}
 
-			if(Key.DownRepeat(VK_DELETE))
+			if(input->DownRepeat(Key::Delete))
 			{
 				if(select_start_index != NOT_SELECTED)
 				{
@@ -352,17 +352,17 @@ void TextBox::Update(float dt)
 			}
 
 			// move caret
-			bool shift = Key.Down(VK_SHIFT);
+			bool shift = input->Down(Key::Shift);
 			int move = 0;
-			if(Key.DownRepeat(VK_UP))
+			if(input->DownRepeat(Key::Up))
 				move -= 10;
-			if(Key.DownRepeat(VK_DOWN))
+			if(input->DownRepeat(Key::Down))
 				move += 10;
 			if(move == 0)
 			{
-				if(Key.DownRepeat(VK_LEFT))
+				if(input->DownRepeat(Key::Left))
 					move -= 1;
-				if(Key.DownRepeat(VK_RIGHT))
+				if(input->DownRepeat(Key::Right))
 					move += 1;
 			}
 
@@ -491,7 +491,7 @@ void TextBox::Update(float dt)
 			}
 
 			// select all
-			if(Key.Shortcut(KEY_CONTROL, 'A'))
+			if(input->Shortcut(KEY_CONTROL, Key::A))
 			{
 				caret_index = Int2(0, 0);
 				caret_pos = Int2(0, 0);
@@ -504,7 +504,7 @@ void TextBox::Update(float dt)
 			}
 
 			// copy
-			if(select_start_index != NOT_SELECTED && Key.Shortcut(KEY_CONTROL, 'C'))
+			if(select_start_index != NOT_SELECTED && input->Shortcut(KEY_CONTROL, Key::C))
 			{
 				uint start = ToRawIndex(select_start_index);
 				uint end = ToRawIndex(select_end_index);
@@ -512,7 +512,7 @@ void TextBox::Update(float dt)
 			}
 
 			// paste
-			if(!readonly && Key.Shortcut(KEY_CONTROL, 'V'))
+			if(!readonly && input->Shortcut(KEY_CONTROL, Key::V))
 			{
 				cstring clipboard = GUI.GetClipboard();
 				if(clipboard)
@@ -538,7 +538,7 @@ void TextBox::Update(float dt)
 			}
 
 			// cut
-			if(!readonly && select_start_index != NOT_SELECTED && Key.Shortcut(KEY_CONTROL, 'X'))
+			if(!readonly && select_start_index != NOT_SELECTED && input->Shortcut(KEY_CONTROL, Key::X))
 			{
 				uint start = ToRawIndex(select_start_index);
 				uint end = ToRawIndex(select_end_index);
@@ -616,7 +616,7 @@ void TextBox::Event(GuiEvent e)
 //=================================================================================================
 void TextBox::OnChar(char c)
 {
-	if(c == VK_BACK)
+	if(c == (char)Key::Backspace)
 	{
 		// backspace
 		if(!is_new)
@@ -664,7 +664,7 @@ void TextBox::OnChar(char c)
 			}
 		}
 	}
-	else if(c == VK_RETURN && !multiline)
+	else if(c == (char)Key::Enter && !multiline)
 	{
 		// enter - skip
 	}

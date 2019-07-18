@@ -1,7 +1,7 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "FlowContainer.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 //-----------------------------------------------------------------------------
 ObjectPool<FlowItem> FlowItem::Pool;
@@ -59,7 +59,7 @@ void FlowContainer::Update(float dt)
 		{
 			ok = true;
 
-			if(Key.Focus())
+			if(input->Focus())
 				scroll.ApplyMouseWheel();
 
 			Int2 off(0, (int)scroll.offset);
@@ -82,7 +82,7 @@ void FlowContainer::Update(float dt)
 						if(allow_select && fi->state != Button::DISABLED)
 						{
 							GUI.cursor_mode = CURSOR_HAND;
-							if(on_select && Key.Pressed(VK_LBUTTON))
+							if(on_select && input->Pressed(Key::LeftButton))
 							{
 								selected = fi;
 								on_select();
@@ -101,14 +101,14 @@ void FlowContainer::Update(float dt)
 						GUI.cursor_mode = CURSOR_HAND;
 						if(fi->state == Button::DOWN)
 						{
-							if(Key.Up(VK_LBUTTON))
+							if(input->Up(Key::LeftButton))
 							{
 								fi->state = Button::HOVER;
 								on_button(fi->group, fi->id);
 								return;
 							}
 						}
-						else if(Key.Pressed(VK_LBUTTON))
+						else if(input->Pressed(Key::LeftButton))
 							fi->state = Button::DOWN;
 						else
 							fi->state = Button::HOVER;

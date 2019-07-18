@@ -1,7 +1,7 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "GuiElement.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "MenuBar.h"
 #include "MenuStrip.h"
 #include "Overlay.h"
@@ -182,13 +182,13 @@ void MenuStrip::UpdateMouse()
 	{
 		if(area.IsInside(GUI.cursor_pos))
 		{
-			if(item.enabled && (GUI.MouseMoved() || Key.Pressed(VK_LBUTTON)))
+			if(item.enabled && (GUI.MouseMoved() || input->Pressed(Key::LeftButton)))
 			{
 				if(selected)
 					selected->hover = false;
 				selected = &item;
 				selected->hover = true;
-				if(Key.PressedRelease(VK_LBUTTON))
+				if(input->PressedRelease(Key::LeftButton))
 				{
 					if(handler)
 						handler(item.action);
@@ -207,21 +207,21 @@ void MenuStrip::UpdateKeyboard()
 	if(!focus)
 		return;
 
-	if(Key.PressedRelease(VK_DOWN))
+	if(input->PressedRelease(Key::Down))
 		ChangeIndex(+1);
-	else if(Key.PressedRelease(VK_UP))
+	else if(input->PressedRelease(Key::Up))
 		ChangeIndex(-1);
-	else if(Key.PressedRelease(VK_LEFT))
+	else if(input->PressedRelease(Key::Left))
 	{
 		if(parent_menu_bar)
 			parent_menu_bar->ChangeMenu(-1);
 	}
-	else if(Key.PressedRelease(VK_RIGHT))
+	else if(input->PressedRelease(Key::Right))
 	{
 		if(parent_menu_bar)
 			parent_menu_bar->ChangeMenu(+1);
 	}
-	else if(Key.PressedRelease(VK_RETURN))
+	else if(input->PressedRelease(Key::Enter))
 	{
 		if(selected)
 		{
@@ -230,7 +230,7 @@ void MenuStrip::UpdateKeyboard()
 			GUI.GetOverlay()->CloseMenu(this);
 		}
 	}
-	else if(Key.PressedRelease(VK_ESCAPE))
+	else if(input->PressedRelease(Key::Escape))
 		GUI.GetOverlay()->CloseMenu(this);
 }
 

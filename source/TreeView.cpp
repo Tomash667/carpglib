@@ -1,6 +1,6 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "MenuStrip.h"
 #include "TextBox.h"
 #include "TreeView.h"
@@ -517,9 +517,9 @@ void TreeView::Update(float dt)
 			EndEdit(true, false);
 		else
 		{
-			if(Key.PressedRelease(VK_RETURN))
+			if(input->PressedRelease(Key::Enter))
 				EndEdit(true, true);
-			else if(Key.PressedRelease(VK_ESCAPE))
+			else if(input->PressedRelease(Key::Escape))
 				EndEdit(false, true);
 		}
 	}
@@ -529,13 +529,13 @@ void TreeView::Update(float dt)
 	if(hscrollbar.visible)
 	{
 		UpdateControl(&hscrollbar, dt);
-		if(old_mouse_focus && Key.Down(VK_SHIFT))
+		if(old_mouse_focus && input->Down(Key::Shift))
 			hscrollbar.ApplyMouseWheel();
 	}
 	if(vscrollbar.visible)
 	{
 		UpdateControl(&vscrollbar, dt);
-		if(old_mouse_focus && !Key.Down(VK_SHIFT))
+		if(old_mouse_focus && !input->Down(Key::Shift))
 			vscrollbar.ApplyMouseWheel();
 	}
 
@@ -567,10 +567,10 @@ void TreeView::Update(float dt)
 
 		if(drag == DRAG_DOWN && drag_node != above && above)
 			drag = DRAG_MOVED;
-		if(Key.Up(VK_LBUTTON))
+		if(input->Up(Key::LeftButton))
 		{
 			if(above == drag_node)
-				SelectNode(drag_node, Key.Down(VK_SHIFT), false, Key.Down(VK_CONTROL));
+				SelectNode(drag_node, input->Down(Key::Shift), false, input->Down(Key::Control));
 			else if(CanDragAndDrop())
 			{
 				auto old_selected = selected_nodes;
@@ -588,36 +588,36 @@ void TreeView::Update(float dt)
 			}
 			drag = DRAG_NO;
 		}
-		else if(Key.PressedRelease(VK_ESCAPE))
+		else if(input->PressedRelease(Key::Escape))
 			drag = DRAG_NO;
 	}
 
 	// keyboard shortcuts
 	if(focus && current && drag == DRAG_NO)
 	{
-		if(Key.DownRepeat(VK_UP))
-			MoveCurrent(-1, Key.Down(VK_SHIFT));
-		else if(Key.DownRepeat(VK_DOWN))
-			MoveCurrent(+1, Key.Down(VK_SHIFT));
-		else if(Key.PressedRelease(VK_LEFT))
+		if(input->DownRepeat(Key::Up))
+			MoveCurrent(-1, input->Down(Key::Shift));
+		else if(input->DownRepeat(Key::Down))
+			MoveCurrent(+1, input->Down(Key::Shift));
+		else if(input->PressedRelease(Key::Left))
 		{
 			if(current->IsDir())
 				current->SetCollapsed(true);
 		}
-		else if(Key.PressedRelease(VK_RIGHT))
+		else if(input->PressedRelease(Key::Right))
 		{
 			if(current->IsDir())
 				current->SetCollapsed(false);
 		}
-		else if(Key.Shortcut(KEY_CONTROL, 'R'))
+		else if(input->Shortcut(KEY_CONTROL, Key::R))
 			handler(A_SHORTCUT, S_RENAME);
-		else if(Key.PressedRelease(VK_DELETE))
+		else if(input->PressedRelease(Key::Delete))
 			handler(A_SHORTCUT, S_REMOVE);
-		else if(Key.Shortcut(KEY_CONTROL, 'A'))
+		else if(input->Shortcut(KEY_CONTROL, Key::A))
 			handler(A_SHORTCUT, S_ADD);
-		else if(Key.Shortcut(KEY_CONTROL | KEY_SHIFT, 'A'))
+		else if(input->Shortcut(KEY_CONTROL | KEY_SHIFT, Key::A))
 			handler(A_SHORTCUT, S_ADD_DIR);
-		else if(Key.Shortcut(KEY_CONTROL, 'D'))
+		else if(input->Shortcut(KEY_CONTROL, Key::D))
 			handler(A_SHORTCUT, S_DUPLICATE);
 	}
 }
@@ -680,10 +680,10 @@ bool TreeView::Update(TreeNode* node)
 		{
 			above = node;
 
-			bool add = Key.Down(VK_SHIFT);
-			bool ctrl = Key.Down(VK_CONTROL);
+			bool add = input->Down(Key::Shift);
+			bool ctrl = input->Down(Key::Control);
 
-			if(menu && Key.Pressed(VK_RBUTTON))
+			if(menu && input->Pressed(Key::RightButton))
 			{
 				if(SelectNode(node, add, true, ctrl) && handler(A_BEFORE_MENU_SHOW, (int)node))
 				{
@@ -697,7 +697,7 @@ bool TreeView::Update(TreeNode* node)
 				global_pos.x + node->pos.x + 16 + offsetx, global_pos.y + offsety + item_height))
 			{
 				hover = node;
-				if(Key.Pressed(VK_LBUTTON))
+				if(input->Pressed(Key::LeftButton))
 				{
 					node->SetCollapsed(!node->IsCollapsed());
 					SelectNode(node, add, false, ctrl);
@@ -706,7 +706,7 @@ bool TreeView::Update(TreeNode* node)
 				return true;
 			}
 
-			if(Key.Pressed(VK_LBUTTON))
+			if(input->Pressed(Key::LeftButton))
 			{
 				if(!node->selected)
 					SelectNode(node, add, false, ctrl);

@@ -2,7 +2,7 @@
 #include "EngineCore.h"
 #include "TabControl.h"
 #include "Panel.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 using namespace gui;
 
@@ -143,7 +143,7 @@ void TabControl::Update(float dt)
 			if(rectf.IsInside(GUI.cursor_pos))
 			{
 				arrow_hover = -1;
-				if(Key.Pressed(VK_LBUTTON))
+				if(input->Pressed(Key::LeftButton))
 				{
 					--tab_offset;
 					CalculateTabOffsetMax();
@@ -159,7 +159,7 @@ void TabControl::Update(float dt)
 			if(rectf.IsInside(GUI.cursor_pos))
 			{
 				arrow_hover = 1;
-				if(Key.Pressed(VK_LBUTTON))
+				if(input->Pressed(Key::LeftButton))
 				{
 					++tab_offset;
 					CalculateTabOffsetMax();
@@ -180,15 +180,15 @@ void TabControl::Update(float dt)
 				if(tab->close_rect.IsInside(GUI.cursor_pos))
 				{
 					tab->close_hover = true;
-					if(Key.Pressed(VK_LBUTTON))
+					if(input->Pressed(Key::LeftButton))
 						tab->Close();
 				}
-				else if(Key.Pressed(VK_LBUTTON) && tab != selected)
+				else if(input->Pressed(Key::LeftButton) && tab != selected)
 				{
 					if(SelectInternal(tab))
 						hover = nullptr;
 				}
-				else if(Key.Pressed(VK_MBUTTON))
+				else if(input->Pressed(Key::MiddleButton))
 					tab->Close();
 				break;
 			}

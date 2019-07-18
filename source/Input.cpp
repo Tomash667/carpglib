@@ -1,18 +1,20 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
-#include "KeyStates.h"
+#include "Input.h"
 
-KeyStates Key;
+Input::Input() : mouse_wheel(0), mouse_dif(0, 0), key_callback(nullptr)
+{
+}
 
-KeyStates::KeyStates() : mouse_wheel(0), mouse_dif(0, 0), key_callback(nullptr)
+Input::~Input()
 {
 }
 
 // change keys state from pressed->down and released->up
-void KeyStates::Update()
+void Input::Update()
 {
-	byte printscreen = keystate[VK_SNAPSHOT];
-	for(uint i = 0; i < 256; ++i)
+	byte printscreen = GetState(Key::PrintScreen);
+	for(uint i = 0; i < MAX_KEY; ++i)
 	{
 		if(keystate[i] & 1)
 			--keystate[i];
@@ -21,27 +23,27 @@ void KeyStates::Update()
 	for(uint i = 0; i < 5; ++i)
 		doubleclk[i] = false;
 	if(printscreen == IS_PRESSED)
-		keystate[VK_SNAPSHOT] = IS_RELEASED;
-	for(byte k : to_release)
-		keystate[k] = IS_RELEASED;
+		SetState(Key::PrintScreen, IS_RELEASED);
+	for(Key k : to_release)
+		SetState(k, IS_RELEASED);
 	to_release.clear();
 }
 
-void KeyStates::UpdateShortcuts()
+void Input::UpdateShortcuts()
 {
 	shortcut_state = 0;
-	if(Down(VK_SHIFT))
+	if(Down(Key::Shift))
 		shortcut_state |= KEY_SHIFT;
-	if(Down(VK_CONTROL))
+	if(Down(Key::Control))
 		shortcut_state |= KEY_CONTROL;
-	if(Down(VK_MENU))
+	if(Down(Key::Alt))
 		shortcut_state |= KEY_ALT;
 }
 
 // release all pressed/down keys
-void KeyStates::ReleaseKeys()
+void Input::ReleaseKeys()
 {
-	for(uint i = 0; i < 255; ++i)
+	for(uint i = 0; i < MAX_KEY; ++i)
 	{
 		if(keystate[i] & 0x2)
 			keystate[i] = IS_RELEASED;
@@ -52,7 +54,7 @@ void KeyStates::ReleaseKeys()
 }
 
 // handle key down/up
-void KeyStates::Process(byte key, bool down)
+void Input::Process(Key key, bool down)
 {
 	if(key_callback)
 	{
@@ -61,14 +63,14 @@ void KeyStates::Process(byte key, bool down)
 		return;
 	}
 
-	auto& k = keystate[key];
-	if(key != VK_SNAPSHOT)
+	byte& k = keystate[(int)key];
+	if(key != Key::PrintScreen)
 	{
 		if(down)
 		{
 			if(k <= IS_RELEASED)
 				k = IS_PRESSED;
-			keyrepeat[key] = true;
+			keyrepeat[(int)key] = true;
 		}
 		else
 		{
@@ -82,10 +84,10 @@ void KeyStates::Process(byte key, bool down)
 		k = IS_PRESSED;
 }
 
-void KeyStates::ProcessDoubleClick(byte key)
+void Input::ProcessDoubleClick(Key key)
 {
-	assert(key >= VK_LBUTTON && key <= VK_XBUTTON2);
+	assert(key >= Key::LeftButton && key <= Key::X2Button);
 	Process(key, true);
 	if(!key_callback)
-		doubleclk[key] = true;
+		doubleclk[(int)key] = true;
 }

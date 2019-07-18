@@ -1,6 +1,6 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "ListBox.h"
 #include "MenuList.h"
 #include "MenuStrip.h"
@@ -95,7 +95,7 @@ void ListBox::Update(float dt)
 	{
 		if(is_new)
 		{
-			if(mouse_focus && Key.PressedRelease(VK_LBUTTON))
+			if(mouse_focus && input->PressedRelease(Key::LeftButton))
 			{
 				if(menu_strip->IsOpen())
 					TakeFocus(true);
@@ -115,7 +115,7 @@ void ListBox::Update(float dt)
 				if(!menu->focus)
 					menu->visible = false;
 			}
-			else if(mouse_focus && Key.Focus() && PointInRect(GUI.cursor_pos, global_pos, size) && Key.PressedRelease(VK_LBUTTON))
+			else if(mouse_focus && input->Focus() && PointInRect(GUI.cursor_pos, global_pos, size) && input->PressedRelease(Key::LeftButton))
 			{
 				menu->global_pos = global_pos + Int2(0, size.y);
 				if(menu->global_pos.y + menu->size.y >= GUI.wnd_size.y)
@@ -132,11 +132,11 @@ void ListBox::Update(float dt)
 			if(focus)
 			{
 				int dir = 0;
-				if(Key.DownRepeat(VK_UP))
+				if(input->DownRepeat(Key::Up))
 					dir = -1;
-				else if(Key.DownRepeat(VK_DOWN))
+				else if(input->DownRepeat(Key::Down))
 					dir = 1;
-				else if(Key.PressedRelease(VK_SPACE) && selected == -1 && !items.empty())
+				else if(input->PressedRelease(Key::Escape) && selected == -1 && !items.empty())
 					ChangeIndexEvent(0, false, true);
 
 				if(dir != 0)
@@ -155,11 +155,11 @@ void ListBox::Update(float dt)
 			}
 		}
 
-		if(mouse_focus && Key.Focus() && PointInRect(GUI.cursor_pos, global_pos, real_size))
+		if(mouse_focus && input->Focus() && PointInRect(GUI.cursor_pos, global_pos, real_size))
 		{
 			int bt = 0;
 
-			if(event_handler2 && Key.DoubleClick(VK_LBUTTON))
+			if(event_handler2 && input->DoubleClick(Key::LeftButton))
 			{
 				int new_index = PosToIndex(GUI.cursor_pos.y);
 				if(new_index != -1 && new_index == selected)
@@ -171,9 +171,9 @@ void ListBox::Update(float dt)
 
 			if(bt != -1)
 			{
-				if(Key.PressedRelease(VK_LBUTTON))
+				if(input->PressedRelease(Key::LeftButton))
 					bt = 1;
-				else if(Key.PressedRelease(VK_RBUTTON))
+				else if(input->PressedRelease(Key::RightButton))
 					bt = 2;
 			}
 

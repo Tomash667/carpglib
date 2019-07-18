@@ -20,37 +20,42 @@ enum ShortcutKey
 };
 
 //-----------------------------------------------------------------------------
-typedef delegate<void(int)> KeyDownCallback;
-
-//-----------------------------------------------------------------------------
 // stan klawiatury
-struct KeyStates
+class Input
 {
-	KeyStates();
+public:
+	typedef bool (Input::*Func)(Key);
+	typedef bool (Input::*FuncC)(Key) const;
+	typedef delegate<void(Key)> Callback;
+	static const uint MAX_KEY = (uint)Key::Max;
+
+	Input();
+	~Input();
 
 	// proste sprawdzanie czy klawisz zosta³ wciœniêty, wyciœniêty, jest wciœniêty, jest wyciœniêty
-	bool Pressed(byte key) const { return keystate[key] == IS_PRESSED; }
-	bool Released(byte key) const { return keystate[key] == IS_RELEASED; }
-	bool Down(byte key) const { return keystate[key] >= IS_DOWN; }
-	bool Up(byte key) const { return keystate[key] <= IS_RELEASED; }
+	InputState GetState(Key key) const { return (InputState)keystate[(int)key]; }
+	bool Pressed(Key key) const { return GetState(key) == IS_PRESSED; }
+	bool Released(Key key) const { return GetState(key) == IS_RELEASED; }
+	bool Down(Key key) const { return GetState(key) >= IS_DOWN; }
+	bool Up(Key key) const { return GetState(key) <= IS_RELEASED; }
 
 	// jednorazowe sprawdzanie czy klawisz jest wciœniêty, jeœli by³ to go ustawia na wyciœniêtego
-	bool PressedRelease(byte key)
+	bool PressedRelease(Key key)
 	{
 		if(Pressed(key))
 		{
-			keystate[key] = IS_DOWN;
+			SetState(key, IS_DOWN);
 			return true;
 		}
 		else
 			return false;
 	}
 
-	bool PressedUp(byte key)
+	bool PressedUp(Key key)
 	{
 		if(Pressed(key))
 		{
-			keystate[key] = IS_UP;
+			SetState(key, IS_UP);
 			return true;
 		}
 		else
@@ -58,46 +63,46 @@ struct KeyStates
 	}
 
 	// sprawdza czy jeden z dwóch klawiszy zosta³ wciœniêty
-	byte Pressed2(byte k1, byte k2) const { return ReturnState2(k1, k2, IS_PRESSED); }
+	Key Pressed2(Key k1, Key k2) const { return ReturnState2(k1, k2, IS_PRESSED); }
 	// jw ale ustawia na wyciœniêty
-	byte Pressed2Release(byte k1, byte k2)
+	Key Pressed2Release(Key k1, Key k2)
 	{
-		if(keystate[k1] == IS_PRESSED)
+		if(GetState(k1) == IS_PRESSED)
 		{
-			keystate[k1] = IS_DOWN;
+			SetState(k1, IS_DOWN);
 			return k1;
 		}
-		else if(keystate[k2] == IS_PRESSED)
+		else if(GetState(k2) == IS_PRESSED)
 		{
-			keystate[k2] = IS_DOWN;
+			SetState(k2, IS_DOWN);
 			return k2;
 		}
 		else
-			return VK_NONE;
+			return Key::None;
 	}
 
 	// sprawdza czy zosta³a wprowadzona kombinacja klawiszy (np alt+f4)
-	bool DownPressed(byte k1, byte k2) const { return ((Down(k1) && Pressed(k2)) || (Down(k2) && Pressed(k1))); }
+	bool DownPressed(Key k1, Key k2) const { return ((Down(k1) && Pressed(k2)) || (Down(k2) && Pressed(k1))); }
 
 	// zwraca który z podanych klawiszy ma taki stan
-	byte ReturnState2(byte k1, byte k2, InputState state) const
+	Key ReturnState2(Key k1, Key k2, InputState state) const
 	{
-		if(keystate[k1] == state)
+		if(GetState(k1) == state)
 			return k1;
-		else if(keystate[k2] == state)
+		else if(GetState(k2) == state)
 			return k2;
 		else
-			return VK_NONE;
+			return Key::None;
 	}
 
 	// ustawia stan klawisza
-	void SetState(byte key, InputState istate) { keystate[key] = (byte)istate; }
+	void SetState(Key key, InputState istate) { keystate[(int)key] = (byte)istate; }
 
 	void Update();
 	void UpdateShortcuts();
 	void ReleaseKeys();
-	void Process(byte key, bool down);
-	void ProcessDoubleClick(byte key);
+	void Process(Key key, bool down);
+	void ProcessDoubleClick(Key key);
 
 	byte* GetKeystateData()
 	{
@@ -109,7 +114,7 @@ struct KeyStates
 
 	// shortcut, checks if other modifiers are not down
 	// for example: Ctrl+A, shift and alt must not be pressed
-	bool Shortcut(int modifier, byte key, bool up = true)
+	bool Shortcut(int modifier, Key key, bool up = true)
 	{
 		if(shortcut_state == modifier && Pressed(key))
 		{
@@ -121,47 +126,42 @@ struct KeyStates
 			return false;
 	}
 
-	bool DownUp(byte key)
+	bool DownUp(Key key)
 	{
 		if(Down(key))
 		{
-			keystate[key] = IS_UP;
+			SetState(key, IS_UP);
 			return true;
 		}
 		else
 			return false;
 	}
 
-	bool DownRepeat(byte key)
+	bool DownRepeat(Key key)
 	{
-		return Down(key) && keyrepeat[key];
+		return Down(key) && keyrepeat[(int)key];
 	}
 
-	bool DoubleClick(byte key)
+	bool DoubleClick(Key key)
 	{
-		assert(key >= VK_LBUTTON && key <= VK_XBUTTON2);
-		return doubleclk[key];
+		assert(key >= Key::LeftButton && key <= Key::X2Button);
+		return doubleclk[(int)key];
 	}
 
 	float GetMouseWheel() const { return mouse_wheel; }
 	const Int2& GetMouseDif() const { return mouse_dif; }
 	void UpdateMouseWheel(float mouse_wheel) { this->mouse_wheel = mouse_wheel; }
 	void UpdateMouseDif(const Int2& mouse_dif) { this->mouse_dif = mouse_dif; }
-
-	KeyDownCallback key_callback;
+	void SetCallback(Callback clbk) { key_callback = clbk; }
 
 private:
-	vector<byte> to_release;
-	byte keystate[256];
-	bool keyrepeat[256];
+	Callback key_callback;
+	vector<Key> to_release;
+	byte keystate[MAX_KEY];
+	bool keyrepeat[MAX_KEY];
 	bool doubleclk[5];
 	Int2 mouse_dif;
 	float mouse_wheel;
 	int shortcut_state;
 	bool focus;
 };
-extern KeyStates Key;
-
-//-----------------------------------------------------------------------------
-typedef bool (KeyStates::*KeyF)(byte);
-typedef bool (KeyStates::*KeyFC)(byte) const;

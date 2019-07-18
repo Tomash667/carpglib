@@ -2,7 +2,7 @@
 #include "EngineCore.h"
 #include "DialogBox.h"
 #include "GuiDialog.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "MenuStrip.h"
 #include "Overlay.h"
 
@@ -135,9 +135,9 @@ void Overlay::CheckFocus(Control* ctrl, bool pressed)
 
 	ctrl->mouse_focus = false;
 
-	if(Key.PressedRelease(VK_LBUTTON)
-		|| Key.PressedRelease(VK_RBUTTON)
-		|| Key.PressedRelease(VK_MBUTTON)
+	if(input->PressedRelease(Key::LeftButton)
+		|| input->PressedRelease(Key::RightButton)
+		|| input->PressedRelease(Key::MiddleButton)
 		|| pressed)
 	{
 		assert(!clicked);

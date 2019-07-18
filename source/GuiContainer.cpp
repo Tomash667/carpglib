@@ -2,7 +2,7 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "GuiContainer.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 //=================================================================================================
 GuiContainer::GuiContainer() : focus(false), focus_ctrl(nullptr), give_focus(nullptr)
@@ -38,7 +38,7 @@ void GuiContainer::Update(float dt)
 			}
 			if(IS_SET(it->second, F_CLICK_TO_FOCUS))
 			{
-				if(it->first->IsInside(GUI.cursor_pos) && (Key.Pressed(VK_LBUTTON) || Key.Pressed(VK_RBUTTON)))
+				if(it->first->IsInside(GUI.cursor_pos) && (Control::input->Pressed(Key::LeftButton) || Control::input->Pressed(Key::RightButton)))
 				{
 					if(!it->first->focus)
 					{
@@ -54,7 +54,7 @@ void GuiContainer::Update(float dt)
 	}
 
 	// prze≥πczanie
-	if(focus && Key.Focus() && Key.PressedRelease(VK_TAB))
+	if(focus && Control::input->Focus() && Control::input->PressedRelease(Key::Tab))
 	{
 		// znajdü aktualny element
 		Iter begin = items.begin(), end = items.end(), start;
@@ -66,7 +66,7 @@ void GuiContainer::Update(float dt)
 		if(start == end)
 			return;
 		Iter new_item = end;
-		if(Key.Down(VK_SHIFT))
+		if(Control::input->Down(Key::Shift))
 		{
 			// znajdü poprzedni
 			// od start do begin

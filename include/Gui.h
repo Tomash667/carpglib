@@ -150,7 +150,7 @@ class IGUI : public ShaderHandler
 public:
 	IGUI();
 	~IGUI();
-	void Init(IDirect3DDevice9* device, ID3DXSprite* sprite);
+	void Init(IDirect3DDevice9* device, ID3DXSprite* sprite, Input* input);
 	void OnInit() override;
 	void OnReset() override;
 	void OnReload() override;

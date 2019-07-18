@@ -25,7 +25,7 @@ public:
 	void Add(StringOrCstring str);
 	void CheckLines();
 
-	string text, input;
+	string text, input_str;
 	vector<TextLine> lines;
 	vector<string> cache;
 	int max_lines, max_cache, input_counter, last_input_counter;

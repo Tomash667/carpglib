@@ -1,7 +1,7 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "PickItemDialog.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 //-----------------------------------------------------------------------------
 PickItemDialog* PickItemDialog::self;
@@ -128,7 +128,7 @@ void PickItemDialog::Update(float dt)
 
 	if(result == -1)
 	{
-		if(Key.PressedRelease(VK_ESCAPE))
+		if(input->PressedRelease(Key::Escape))
 		{
 			result = BUTTON_CANCEL;
 			GUI.CloseDialog(this);

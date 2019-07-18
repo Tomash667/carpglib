@@ -17,6 +17,7 @@ class CustomCollisionWorld;
 class DebugDrawer;
 class Engine;
 class GrassShader;
+class Input;
 class Pak;
 class Render;
 class RenderTarget;

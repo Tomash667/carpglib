@@ -2,7 +2,7 @@
 #include "EngineCore.h"
 #include "MenuBar.h"
 #include "MenuStrip.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 using namespace gui;
 
@@ -69,9 +69,9 @@ void MenuBar::Update(float dt)
 	{
 		if(item->rect.IsInside(GUI.cursor_pos))
 		{
-			if(down || Key.Pressed(VK_LBUTTON))
+			if(down || input->Pressed(Key::LeftButton))
 			{
-				if((item != selected || item->mode != Item::Down) && (Key.Pressed(VK_LBUTTON) || GUI.MouseMoved()))
+				if((item != selected || item->mode != Item::Down) && (input->Pressed(Key::LeftButton) || GUI.MouseMoved()))
 				{
 					EnsureMenu(item);
 					item->menu->ShowMenu(Int2(item->rect.LeftBottom()));

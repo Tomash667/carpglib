@@ -177,9 +177,6 @@
     <ClInclude Include="include\ResourceManager.h">
       <Filter>systems</Filter>
     </ClInclude>
-    <ClInclude Include="include\KeyStates.h">
-      <Filter>systems</Filter>
-    </ClInclude>
     <ClInclude Include="include\Control.h">
       <Filter>gui controls</Filter>
     </ClInclude>
@@ -253,6 +250,9 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="include\EnginePch.h" />
+    <ClInclude Include="include\Input.h">
+      <Filter>systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Engine.cpp" />
@@ -412,9 +412,6 @@
     <ClCompile Include="source\ResourceManager.cpp">
       <Filter>systems</Filter>
     </ClCompile>
-    <ClCompile Include="source\KeyStates.cpp">
-      <Filter>systems</Filter>
-    </ClCompile>
     <ClCompile Include="source\GuiContainer.cpp">
       <Filter>gui controls</Filter>
     </ClCompile>
@@ -457,6 +454,9 @@
     <ClCompile Include="source\EnginePch.cpp" />
     <ClCompile Include="source\Resource.cpp">
       <Filter>resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Input.cpp">
+      <Filter>systems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

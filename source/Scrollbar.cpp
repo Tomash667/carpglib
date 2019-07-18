@@ -1,7 +1,7 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "Scrollbar.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 //-----------------------------------------------------------------------------
 TEX Scrollbar::tex;
@@ -51,7 +51,7 @@ void Scrollbar::Draw(ControlDrawData* cdd)
 //=================================================================================================
 void Scrollbar::Update(float dt)
 {
-	if(!Key.Focus())
+	if(!input->Focus())
 		return;
 
 	change = 0;
@@ -60,7 +60,7 @@ void Scrollbar::Update(float dt)
 
 	if(clicked)
 	{
-		if(Key.Up(VK_LBUTTON))
+		if(input->Up(Key::LeftButton))
 			clicked = false;
 		else
 		{
@@ -100,20 +100,20 @@ void Scrollbar::Update(float dt)
 			}
 		}
 	}
-	else if(mouse_focus && Key.Pressed(VK_LBUTTON))
+	else if(mouse_focus && input->Pressed(Key::LeftButton))
 	{
 		if(cpos.x >= 0 && cpos.y >= 0 && cpos.x < size.x && cpos.y < size.y)
 		{
 			int pos_o = hscrollbar ? int(float(cpos.x)*total / size.x) : int(float(cpos.y)*total / size.y);
 			if(hscrollbar ? (pos_o >= offset && pos_o < offset + part) : (pos_o + 2 >= offset && pos_o + 2 < offset + part))
 			{
-				Key.SetState(VK_LBUTTON, IS_DOWN);
+				input->SetState(Key::LeftButton, IS_DOWN);
 				clicked = true;
 				click_pt = cpos;
 			}
 			else
 			{
-				Key.SetState(VK_LBUTTON, IS_UP);
+				input->SetState(Key::LeftButton, IS_UP);
 				if(pos_o < offset)
 				{
 					if(!manual_change)
@@ -156,7 +156,7 @@ bool Scrollbar::ApplyMouseWheel()
 	if(GUI.mouse_wheel != 0.f)
 	{
 		LostFocus();
-		float mod = (!is_new ? (Key.Down(VK_SHIFT) ? 1.f : 0.2f) : 0.2f);
+		float mod = (!is_new ? (input->Down(Key::Shift) ? 1.f : 0.2f) : 0.2f);
 		float prev_offset = offset;
 		offset -= part*GUI.mouse_wheel*mod;
 		if(offset < 0.f)

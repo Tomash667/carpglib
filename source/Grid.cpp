@@ -1,7 +1,7 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "Grid.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 //=================================================================================================
 Grid::Grid() : items(0), height(20), selected(-1), selection_type(COLOR), selection_color(Color::White), single_line(false), select_event(nullptr)
@@ -201,7 +201,7 @@ void Grid::Draw(ControlDrawData*)
 //=================================================================================================
 void Grid::Update(float dt)
 {
-	if(Key.Focus() && focus)
+	if(input->Focus() && focus)
 	{
 		if(GUI.cursor_pos.x >= global_pos.x && GUI.cursor_pos.x < global_pos.x + total_width
 			&& GUI.cursor_pos.y >= global_pos.y + height && GUI.cursor_pos.y < global_pos.y + size.y)
@@ -212,7 +212,7 @@ void Grid::Update(float dt)
 				if(selection_type != NONE)
 				{
 					GUI.cursor_mode = CURSOR_HAND;
-					if(Key.PressedRelease(VK_LBUTTON))
+					if(input->PressedRelease(Key::LeftButton))
 						selected = n;
 				}
 				if(select_event)
@@ -234,9 +234,9 @@ void Grid::Update(float dt)
 					if(col > 0)
 					{
 						GUI.cursor_mode = CURSOR_HAND;
-						if(Key.PressedRelease(VK_LBUTTON))
+						if(input->PressedRelease(Key::LeftButton))
 							select_event(n, col, 0);
-						else if(Key.PressedRelease(VK_RBUTTON))
+						else if(input->PressedRelease(Key::RightButton))
 							select_event(n, col, 1);
 					}
 				}

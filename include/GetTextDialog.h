@@ -7,7 +7,7 @@
 //-----------------------------------------------------------------------------
 struct GetTextDialogParams
 {
-	GetTextDialogParams(cstring text, string& input) : text(text), input(&input), parent(nullptr), event(nullptr), limit(0), lines(1), width(300),
+	GetTextDialogParams(cstring text, string& input_str) : text(text), input_str(&input_str), parent(nullptr), event(nullptr), limit(0), lines(1), width(300),
 		custom_names(nullptr), multiline(false)
 	{
 	}
@@ -15,7 +15,7 @@ struct GetTextDialogParams
 	Control* parent;
 	DialogEvent event;
 	cstring text;
-	string* input;
+	string* input_str;
 	int limit, lines, width;
 	cstring* custom_names;
 	bool multiline;
@@ -44,7 +44,7 @@ public:
 private:
 	void Create(const GetTextDialogParams& params);
 
-	string* input;
+	string* input_str;
 	TextBox textBox;
 	bool singleline;
 };

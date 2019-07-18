@@ -1,7 +1,7 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "Button.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 //-----------------------------------------------------------------------------
 TEX Button::tex[4];
@@ -63,13 +63,13 @@ void Button::Update(float dt)
 	if(state == DISABLED || disabled)
 		return;
 
-	if(Key.Focus() && mouse_focus && IsInside(GUI.cursor_pos))
+	if(input->Focus() && mouse_focus && IsInside(GUI.cursor_pos))
 	{
 		GUI.cursor_mode = CURSOR_HAND;
 		if(state == DOWN)
 		{
 			bool apply = false;
-			if(Key.Up(VK_LBUTTON))
+			if(input->Up(Key::LeftButton))
 			{
 				state = HOVER;
 				apply = true;
@@ -84,7 +84,7 @@ void Button::Update(float dt)
 					parent->Event((GuiEvent)id);
 			}
 		}
-		else if(Key.Pressed(VK_LBUTTON))
+		else if(input->Pressed(Key::LeftButton))
 			state = DOWN;
 		else
 			state = HOVER;

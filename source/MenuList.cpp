@@ -1,7 +1,7 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "MenuList.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 //=================================================================================================
 MenuList::MenuList(bool is_new) : Control(is_new), event_handler(nullptr), w(0), selected(-1), items_owner(true)
@@ -45,15 +45,15 @@ void MenuList::Update(float dt)
 		if(selected >= (int)items.size())
 			selected = -1;
 	}
-	if(Key.Focus())
+	if(input->Focus())
 	{
-		if(Key.PressedRelease(VK_LBUTTON))
+		if(input->PressedRelease(Key::LeftButton))
 		{
 			if(selected != -1 && event_handler)
 				event_handler(selected);
 			LostFocus();
 		}
-		else if(Key.PressedRelease(VK_RBUTTON) || Key.PressedRelease(VK_ESCAPE))
+		else if(input->PressedRelease(Key::RightButton) || input->PressedRelease(Key::Escape))
 			LostFocus();
 	}
 }

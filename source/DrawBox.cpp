@@ -1,7 +1,7 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "DrawBox.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 using namespace gui;
 
@@ -54,7 +54,7 @@ void DrawBox::Update(float dt)
 			}
 		}
 
-		if(!clicked && Key.Down(VK_LBUTTON))
+		if(!clicked && input->Down(Key::LeftButton))
 		{
 			clicked = true;
 			click_point = GUI.cursor_pos;
@@ -63,7 +63,7 @@ void DrawBox::Update(float dt)
 
 	if(clicked)
 	{
-		if(Key.Up(VK_LBUTTON))
+		if(input->Up(Key::LeftButton))
 			clicked = false;
 		else
 		{

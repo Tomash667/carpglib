@@ -2,7 +2,7 @@
 #include "EngineCore.h"
 #include "CheckBox.h"
 #include "Button.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 //-----------------------------------------------------------------------------
 TEX CheckBox::tTick;
@@ -30,12 +30,12 @@ void CheckBox::Update(float dt)
 	if(state == DISABLED)
 		return;
 
-	if(Key.Focus() && mouse_focus && PointInRect(GUI.cursor_pos, global_pos, bt_size))
+	if(input->Focus() && mouse_focus && PointInRect(GUI.cursor_pos, global_pos, bt_size))
 	{
 		GUI.cursor_mode = CURSOR_HAND;
 		if(state == PRESSED)
 		{
-			if(Key.Up(VK_LBUTTON))
+			if(input->Up(Key::LeftButton))
 			{
 				state = FLASH;
 				if(radiobox)
@@ -53,7 +53,7 @@ void CheckBox::Update(float dt)
 				}
 			}
 		}
-		else if(Key.Pressed(VK_LBUTTON))
+		else if(input->Pressed(Key::LeftButton))
 			state = PRESSED;
 		else
 			state = FLASH;

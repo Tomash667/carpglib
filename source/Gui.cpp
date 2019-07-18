@@ -7,6 +7,7 @@
 #include "Engine.h"
 #include "Profiler.h"
 #include "Render.h"
+#include "Input.h"
 #include "DirectX.h"
 
 using namespace gui;
@@ -44,10 +45,11 @@ IGUI::~IGUI()
 }
 
 //=================================================================================================
-void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
+void IGUI::Init(IDirect3DDevice9* device, ID3DXSprite* sprite, Input* input)
 {
-	device = _device;
-	sprite = _sprite;
+	this->device = device;
+	this->sprite = sprite;
+	Control::input = input;
 	tFontTarget = nullptr;
 	wnd_size = Engine::Get().GetWindowSize();
 	cursor_pos = wnd_size / 2;
@@ -1365,11 +1367,11 @@ void IGUI::Update(float dt, float mouse_speed)
 
 	// update cursor
 	cursor_mode = CURSOR_NORMAL;
-	mouse_wheel = Key.GetMouseWheel();
+	mouse_wheel = Control::input->GetMouseWheel();
 	prev_cursor_pos = cursor_pos;
 	if(NeedCursor() && mouse_speed > 0)
 	{
-		cursor_pos += Key.GetMouseDif() * mouse_speed;
+		cursor_pos += Control::input->GetMouseDif() * mouse_speed;
 		if(cursor_pos.x < 0)
 			cursor_pos.x = 0;
 		if(cursor_pos.y < 0)
