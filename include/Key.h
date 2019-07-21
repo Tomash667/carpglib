@@ -1,6 +1,6 @@
 #pragma once
 
-enum class Key
+enum class Key : byte
 {
 	None = 0x00,
 	LeftButton = 0x01,
