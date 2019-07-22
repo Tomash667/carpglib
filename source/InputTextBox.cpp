@@ -16,27 +16,27 @@ void InputTextBox::Draw(ControlDrawData*)
 	if(background)
 	{
 		Rect r0 = { global_pos.x, global_pos.y, global_pos.x + textbox_size.x, global_pos.y + textbox_size.y };
-		GUI.DrawSpriteRect(*background, r0, background_color);
+		gui->DrawSpriteRect(*background, r0, background_color);
 
 		r0.Top() = inputbox_pos.y;
 		r0.Bottom() = r0.Top() + inputbox_size.y;
-		GUI.DrawSpriteRect(*background, r0, background_color);
+		gui->DrawSpriteRect(*background, r0, background_color);
 	}
 
 	// box na tekst
-	GUI.DrawItem(TextBox::tBox, global_pos, textbox_size, Color::White, 8, 32);
+	gui->DrawItem(TextBox::tBox, global_pos, textbox_size, Color::White, 8, 32);
 
 	// box na input
-	GUI.DrawItem(TextBox::tBox, inputbox_pos, inputbox_size, Color::White, 8, 32);
+	gui->DrawItem(TextBox::tBox, inputbox_pos, inputbox_size, Color::White, 8, 32);
 
 	// tekst
 	Rect rc = { global_pos.x + 4, global_pos.y + 4, global_pos.x + textbox_size.x - 4, global_pos.y + textbox_size.y - 4 };
 	Rect r = { rc.Left(), rc.Top() - int(scrollbar.offset), rc.Right(), rc.Bottom() - int(scrollbar.offset) - 20 };
-	GUI.DrawText(GUI.default_font, text, 0, Color::Black, r, &rc, nullptr, nullptr, &lines);
+	gui->DrawText(gui->default_font, text, 0, Color::Black, r, &rc, nullptr, nullptr, &lines);
 
 	// input
 	Rect r2 = { inputbox_pos.x + 4, inputbox_pos.y, inputbox_pos.x + inputbox_size.x - 4, inputbox_pos.y + inputbox_size.y };
-	GUI.DrawText(GUI.default_font, caret_blink >= 0.f ? Format("%s|", input_str.c_str()) : input_str, DTF_LEFT | DTF_VCENTER, Color::Black, r2, &r2);
+	gui->DrawText(gui->default_font, caret_blink >= 0.f ? Format("%s|", input_str.c_str()) : input_str, DTF_LEFT | DTF_VCENTER, Color::Black, r2, &r2);
 
 	// scrollbar
 	scrollbar.Draw();
@@ -47,13 +47,13 @@ void InputTextBox::Update(float dt)
 {
 	if(mouse_focus)
 	{
-		if(input->Focus() && IsInside(GUI.cursor_pos))
+		if(input->Focus() && IsInside(gui->cursor_pos))
 			scrollbar.ApplyMouseWheel();
 
 		bool release_key = false;
-		if(PointInRect(GUI.cursor_pos, inputbox_pos, inputbox_size))
+		if(PointInRect(gui->cursor_pos, inputbox_pos, inputbox_size))
 		{
-			GUI.cursor_mode = CURSOR_TEXT;
+			gui->cursor_mode = CURSOR_TEXT;
 			if(!focus && input->Focus() && input->PressedRelease(Key::LeftButton))
 				focus = true;
 		}
@@ -158,7 +158,7 @@ void InputTextBox::Update(float dt)
 		{
 			caret_blink = 0.f;
 			added = true;
-			GUI.AddOnCharHandler(this);
+			gui->AddOnCharHandler(this);
 		}
 	}
 	else
@@ -167,7 +167,7 @@ void InputTextBox::Update(float dt)
 		{
 			caret_blink = -1.f;
 			added = false;
-			GUI.RemoveOnCharHandler(this);
+			gui->RemoveOnCharHandler(this);
 		}
 	}
 }
@@ -182,7 +182,7 @@ void InputTextBox::Event(GuiEvent e)
 		{
 			caret_blink = -1.f;
 			added = false;
-			GUI.RemoveOnCharHandler(this);
+			gui->RemoveOnCharHandler(this);
 		}
 	}
 	else if(e == GuiEvent_Moved)
@@ -212,12 +212,12 @@ void InputTextBox::Event(GuiEvent e)
 
 		// podziel tekst na linijki
 		lines.clear();
-		while(GUI.default_font->SplitLine(OutBegin, OutEnd, OutWidth, InOutIndex, Text, TextEnd, 0, Width))
+		while(gui->default_font->SplitLine(OutBegin, OutEnd, OutWidth, InOutIndex, Text, TextEnd, 0, Width))
 			lines.push_back(TextLine(OutBegin, OutEnd, OutWidth));
 
 		CheckLines();
 
-		scrollbar.total = lines.size()*GUI.default_font->height;
+		scrollbar.total = lines.size()*gui->default_font->height;
 		if(skip_to_end)
 		{
 			scrollbar.offset = float(scrollbar.total - scrollbar.part);
@@ -233,7 +233,7 @@ void InputTextBox::Event(GuiEvent e)
 		{
 			caret_blink = 0.f;
 			added = true;
-			GUI.AddOnCharHandler(this);
+			gui->AddOnCharHandler(this);
 		}
 	}
 }
@@ -301,13 +301,13 @@ void InputTextBox::Add(StringOrCstring str)
 	bool skip_to_end = (int(scrollbar.offset) >= (scrollbar.total - scrollbar.part));
 
 	// podziel tekst na linijki
-	while(GUI.default_font->SplitLine(OutBegin, OutEnd, OutWidth, InOutIndex, Text, TextEnd, 0, Width))
+	while(gui->default_font->SplitLine(OutBegin, OutEnd, OutWidth, InOutIndex, Text, TextEnd, 0, Width))
 		lines.push_back(TextLine(OutBegin, OutEnd, OutWidth));
 
 	// usuñ nadmiarowe linijki z pocz¹tku
 	CheckLines();
 
-	scrollbar.total = lines.size()*GUI.default_font->height;
+	scrollbar.total = lines.size()*gui->default_font->height;
 	if(skip_to_end)
 	{
 		scrollbar.offset = float(scrollbar.total - scrollbar.part);

@@ -28,7 +28,7 @@ public:
 
 	virtual void Setup(const Int2& text_size) {}
 
-	void CloseDialog() { GUI.CloseDialog(this); }
+	void CloseDialog() { gui->CloseDialog(this); }
 
 	static TEX tBackground;
 	string name, text;

@@ -2,27 +2,24 @@
 
 #include "Control.h"
 
-namespace gui
+class DrawBox : public Control
 {
-	class DrawBox : public Control
-	{
-	public:
-		DrawBox();
+public:
+	DrawBox();
 
-		void Draw(ControlDrawData* cdd = nullptr) override;
-		void Update(float dt) override;
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
 
-		TEX GetTexture() const { return tex; }
+	TEX GetTexture() const { return tex; }
 
-		bool IsTexture() const { return tex != nullptr; }
+	bool IsTexture() const { return tex != nullptr; }
 
-		void SetTexture(TEX tex);
+	void SetTexture(TEX tex);
 
-	private:
-		TEX tex;
-		Int2 tex_size, click_point;
-		float scale, default_scale;
-		Vec2 move;
-		bool clicked;
-	};
-}
+private:
+	TEX tex;
+	Int2 tex_size, click_point;
+	float scale, default_scale;
+	Vec2 move;
+	bool clicked;
+};

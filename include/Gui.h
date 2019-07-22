@@ -116,17 +116,8 @@ struct TextLine
 };
 
 //-----------------------------------------------------------------------------
-// helper functions
-namespace gui
-{
-	class Overlay;
-
-	Int2 GetSize(TEX img);
-}
-
-//-----------------------------------------------------------------------------
 // GUI
-class IGUI : public ShaderHandler
+class Gui : public ShaderHandler
 {
 	struct Notification
 	{
@@ -148,8 +139,8 @@ class IGUI : public ShaderHandler
 	vector<Notification*> pending_notifications;
 
 public:
-	IGUI();
-	~IGUI();
+	Gui();
+	~Gui();
 	void Init(IDirect3DDevice9* device, ID3DXSprite* sprite, Input* input);
 	void OnInit() override;
 	void OnReset() override;
@@ -215,11 +206,11 @@ public:
 		DrawArea(color, rect.LeftTop(), rect.Size(), clip_rect);
 	}
 	// 2.0
-	void SetLayout(gui::Layout* _layout) { assert(_layout); layout = _layout; }
-	gui::Layout* GetLayout() const { return layout; }
-	void DrawArea(const Box2d& rect, const gui::AreaLayout& area_layout, const Box2d* clip_rect = nullptr);
-	void SetOverlay(gui::Overlay* _overlay) { overlay = _overlay; }
-	gui::Overlay* GetOverlay() const { return overlay; }
+	void SetLayout(Layout* layout) { assert(layout); this->layout = layout; }
+	Layout* GetLayout() const { return layout; }
+	void DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect = nullptr);
+	void SetOverlay(Overlay* overlay) { this->overlay = overlay; }
+	Overlay* GetOverlay() const { return overlay; }
 	bool MouseMoved() const { return cursor_pos != prev_cursor_pos; }
 	void SetClipboard(cstring text);
 	cstring GetClipboard();
@@ -258,7 +249,6 @@ public:
 	static TEX tBox, tBox2, tPix, tDown;
 	Control* focused_ctrl;
 	float mouse_wheel;
-	vector<DialogBox*> created_dialogs;
 
 private:
 	void CreateVertexBuffer();
@@ -282,6 +272,7 @@ private:
 	TEX tSet, tCurrent, tCurrent2, tPixel;
 	int max_tex_size;
 	vector<Font*> fonts;
+	vector<DialogBox*> created_dialogs;
 	ID3DXEffect* effect;
 	D3DXHANDLE techGui, techGui2, techGuiGrayscale;
 	D3DXHANDLE hGuiSize, hGuiTex;
@@ -294,10 +285,7 @@ private:
 	vector<OnCharHandler*> on_char;
 	bool vb2_locked, grayscale;
 	float outline_alpha;
-	gui::Layout* layout;
-	gui::Overlay* overlay;
+	Layout* layout;
+	Overlay* overlay;
 	IDirect3DVertexDeclaration9* vertex_decl;
 };
-
-//-----------------------------------------------------------------------------
-extern IGUI GUI;

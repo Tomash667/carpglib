@@ -15,7 +15,7 @@ Scrollbar::Scrollbar(bool hscrollbar, bool is_new) : Control(is_new), clicked(fa
 //=================================================================================================
 void Scrollbar::Draw(ControlDrawData* cdd)
 {
-	GUI.DrawItem(tex, global_pos, size, Color::White, 4, 32);
+	gui->DrawItem(tex, global_pos, size, Color::White, 4, 32);
 
 	int s_pos, s_size;
 	if(hscrollbar)
@@ -30,7 +30,7 @@ void Scrollbar::Draw(ControlDrawData* cdd)
 			s_pos = int(float(offset) / total*size.x);
 			s_size = int(float(part) / total*size.x);
 		}
-		GUI.DrawItem(tex2, Int2(global_pos.x + s_pos, global_pos.y), Int2(s_size, size.y), Color::White, 4, 32);
+		gui->DrawItem(tex2, Int2(global_pos.x + s_pos, global_pos.y), Int2(s_size, size.y), Color::White, 4, 32);
 	}
 	else
 	{
@@ -44,7 +44,7 @@ void Scrollbar::Draw(ControlDrawData* cdd)
 			s_pos = int(float(offset) / total*size.y);
 			s_size = int(float(part) / total*size.y);
 		}
-		GUI.DrawItem(tex2, Int2(global_pos.x, global_pos.y + s_pos), Int2(size.x, s_size), Color::White, 4, 32);
+		gui->DrawItem(tex2, Int2(global_pos.x, global_pos.y + s_pos), Int2(size.x, s_size), Color::White, 4, 32);
 	}
 }
 
@@ -56,7 +56,7 @@ void Scrollbar::Update(float dt)
 
 	change = 0;
 
-	Int2 cpos = GUI.cursor_pos - global_pos;
+	Int2 cpos = gui->cursor_pos - global_pos;
 
 	if(clicked)
 	{
@@ -153,12 +153,12 @@ void Scrollbar::LostFocus()
 //=================================================================================================
 bool Scrollbar::ApplyMouseWheel()
 {
-	if(GUI.mouse_wheel != 0.f)
+	if(gui->mouse_wheel != 0.f)
 	{
 		LostFocus();
 		float mod = (!is_new ? (input->Down(Key::Shift) ? 1.f : 0.2f) : 0.2f);
 		float prev_offset = offset;
-		offset -= part*GUI.mouse_wheel*mod;
+		offset -= part*gui->mouse_wheel*mod;
 		if(offset < 0.f)
 			offset = 0.f;
 		else if(offset + part > total)

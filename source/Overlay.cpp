@@ -6,8 +6,6 @@
 #include "MenuStrip.h"
 #include "Overlay.h"
 
-using namespace gui;
-
 Overlay::Overlay() : Container(true), focused(nullptr), to_add(nullptr)
 {
 }
@@ -25,7 +23,7 @@ void Overlay::Draw(ControlDrawData*)
 
 	for(auto dialog : dialogs)
 	{
-		GUI.DrawSpriteFull(DialogBox::tBackground, Color::Alpha(128));
+		gui->DrawSpriteFull(DialogBox::tBackground, Color::Alpha(128));
 		dialog->Draw();
 	}
 
@@ -39,7 +37,7 @@ void Overlay::Update(float dt)
 	clicked = nullptr;
 
 	// close menu if old dialog window is open
-	if(GUI.HaveDialog())
+	if(gui->HaveDialog())
 	{
 		mouse_focus = false;
 		CloseMenus();
@@ -87,12 +85,12 @@ void Overlay::Update(float dt)
 		{
 			focused->focus = false;
 			if(focused->IsOnCharHandler())
-				GUI.RemoveOnCharHandler(dynamic_cast<OnCharHandler*>(focused));
+				gui->RemoveOnCharHandler(dynamic_cast<OnCharHandler*>(focused));
 		}
 		to_add->focus = true;
 		focused = to_add;
 		if(to_add->IsOnCharHandler())
-			GUI.AddOnCharHandler(dynamic_cast<OnCharHandler*>(to_add));
+			gui->AddOnCharHandler(dynamic_cast<OnCharHandler*>(to_add));
 		to_add = nullptr;
 	}
 }
@@ -103,7 +101,7 @@ void Overlay::ShowDialog(GuiDialog* dialog)
 	CloseMenus();
 	dialogs.push_back(dialog);
 	dialog->Initialize();
-	dialog->SetPosition((GUI.wnd_size - dialog->GetSize()) / 2);
+	dialog->SetPosition((gui->wnd_size - dialog->GetSize()) / 2);
 }
 
 void Overlay::CloseDialog(GuiDialog* dialog)
@@ -156,13 +154,13 @@ void Overlay::SetFocus(Control* ctrl)
 		focused->focus = false;
 		focused->Event(GuiEvent_LostFocus);
 		if(focused->IsOnCharHandler())
-			GUI.RemoveOnCharHandler(dynamic_cast<OnCharHandler*>(focused));
+			gui->RemoveOnCharHandler(dynamic_cast<OnCharHandler*>(focused));
 	}
 	ctrl->focus = true;
 	ctrl->Event(GuiEvent_GainFocus);
 	focused = ctrl;
 	if(ctrl->IsOnCharHandler())
-		GUI.AddOnCharHandler(dynamic_cast<OnCharHandler*>(ctrl));
+		gui->AddOnCharHandler(dynamic_cast<OnCharHandler*>(ctrl));
 }
 
 bool Overlay::IsOpen(MenuStrip* menu)

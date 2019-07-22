@@ -3,8 +3,6 @@
 #include "DrawBox.h"
 #include "Input.h"
 
-using namespace gui;
-
 DrawBox::DrawBox() : Control(true), tex(nullptr), clicked(false), default_scale(1.f)
 {
 }
@@ -12,7 +10,7 @@ DrawBox::DrawBox() : Control(true), tex(nullptr), clicked(false), default_scale(
 void DrawBox::Draw(ControlDrawData*)
 {
 	Rect r = Rect::Create(global_pos, size);
-	GUI.DrawArea(Color(150, 150, 150), r);
+	gui->DrawArea(Color(150, 150, 150), r);
 
 	if(tex)
 	{
@@ -21,7 +19,7 @@ void DrawBox::Draw(ControlDrawData*)
 		Vec2 max_pos = scaled_tex_size - Vec2(size);
 		Vec2 p = Vec2(max_pos.x * -move.x / 100, max_pos.y * -move.y / 100) + Vec2(global_pos);
 		m = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &p);
-		GUI.DrawSprite2(tex, m, nullptr, &r);
+		gui->DrawSprite2(tex, m, nullptr, &r);
 	}
 }
 
@@ -29,7 +27,7 @@ void DrawBox::Update(float dt)
 {
 	if(mouse_focus)
 	{
-		float change = GUI.mouse_wheel;
+		float change = gui->mouse_wheel;
 		if(change > 0)
 		{
 			while(change > 0)
@@ -57,7 +55,7 @@ void DrawBox::Update(float dt)
 		if(!clicked && input->Down(Key::LeftButton))
 		{
 			clicked = true;
-			click_point = GUI.cursor_pos;
+			click_point = gui->cursor_pos;
 		}
 	}
 
@@ -67,8 +65,8 @@ void DrawBox::Update(float dt)
 			clicked = false;
 		else
 		{
-			Int2 dif = click_point - GUI.cursor_pos;
-			GUI.cursor_pos = click_point;
+			Int2 dif = click_point - gui->cursor_pos;
+			gui->cursor_pos = click_point;
 			move -= Vec2(dif) / 2;
 			move.x = Clamp(move.x, 0.f, 100.f);
 			move.y = Clamp(move.y, 0.f, 100.f);
@@ -81,7 +79,7 @@ void DrawBox::SetTexture(TEX t)
 	assert(t);
 	tex = t;
 
-	tex_size = gui::GetSize(t);
+	tex_size = GetSize(t);
 	Vec2 sizef = Vec2(size);
 	Vec2 scale2 = Vec2(sizef.x / tex_size.x, sizef.y / tex_size.y);
 	scale = min(scale2.x, scale2.y);

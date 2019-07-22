@@ -21,11 +21,6 @@ inline bool PointInRect(const Int2& pt, const Int2& rpos, const Int2& rsize)
 	return pt.x >= rpos.x && pt.y >= rpos.y && pt.x < rpos.x + rsize.x && pt.y < rpos.y + rsize.y;
 }
 
-namespace gui
-{
-	class Layout;
-}
-
 //-----------------------------------------------------------------------------
 class Control
 {
@@ -37,9 +32,10 @@ public:
 	};
 
 	Control(bool is_new = false) : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false),
-		initialized(false), layout(GUI.GetLayout()), is_new(is_new), disabled(false), flags(0) {}
+		initialized(false), layout(gui->GetLayout()), is_new(is_new), disabled(false), flags(0) {}
 	virtual ~Control() {}
 
+	static Gui* gui;
 	static Input* input;
 	static TEX tDialog;
 	Int2 pos, global_pos, size;
@@ -47,7 +43,7 @@ public:
 	bool visible, focus,
 		mouse_focus, // in Update it is set to true if Control can gain mouse focus, setting it to false mean that Control have taken focus
 		focusable;
-	gui::Layout* layout;
+	Layout* layout;
 
 protected:
 	bool initialized, is_new, disabled;
@@ -67,7 +63,7 @@ public:
 
 	Int2 GetCursorPos() const
 	{
-		return GUI.cursor_pos - pos;
+		return gui->cursor_pos - pos;
 	}
 
 	bool IsInside(const Int2& pt) const
@@ -75,12 +71,12 @@ public:
 		return pt.x >= global_pos.x && pt.y >= global_pos.y && pt.x < global_pos.x + size.x && pt.y < global_pos.y + size.y;
 	}
 
-	static Int2 Center(const Int2& in_size) { return Int2((GUI.wnd_size.x - in_size.x) / 2, (GUI.wnd_size.y - in_size.y) / 2); }
-	static Int2 Center(int w, int h) { return Int2((GUI.wnd_size.x - w) / 2, (GUI.wnd_size.y - h) / 2); }
+	static Int2 Center(const Int2& in_size) { return Int2((gui->wnd_size.x - in_size.x) / 2, (gui->wnd_size.y - in_size.y) / 2); }
+	static Int2 Center(int w, int h) { return Int2((gui->wnd_size.x - w) / 2, (gui->wnd_size.y - h) / 2); }
 
 	void SimpleDialog(cstring text)
 	{
-		GUI.SimpleDialog(text, this);
+		gui->SimpleDialog(text, this);
 	}
 
 	void GainFocus()
@@ -122,6 +118,7 @@ public:
 	void Disable() { SetDisabled(true); }
 	void Enable() { SetDisabled(false); }
 	const Int2& GetSize() const { return size; }
+	static Int2 GetSize(TEX img);
 	void Initialize();
 	void SetSize(const Int2& size);
 	void SetPosition(const Int2& pos);

@@ -38,7 +38,7 @@ void GuiContainer::Update(float dt)
 			}
 			if(IS_SET(it->second, F_CLICK_TO_FOCUS))
 			{
-				if(it->first->IsInside(GUI.cursor_pos) && (Control::input->Pressed(Key::LeftButton) || Control::input->Pressed(Key::RightButton)))
+				if(it->first->IsInside(gui->cursor_pos) && (input->Pressed(Key::LeftButton) || input->Pressed(Key::RightButton)))
 				{
 					if(!it->first->focus)
 					{
@@ -54,7 +54,7 @@ void GuiContainer::Update(float dt)
 	}
 
 	// prze≥πczanie
-	if(focus && Control::input->Focus() && Control::input->PressedRelease(Key::Tab))
+	if(focus && input->Focus() && input->PressedRelease(Key::Tab))
 	{
 		// znajdü aktualny element
 		Iter begin = items.begin(), end = items.end(), start;
@@ -66,7 +66,7 @@ void GuiContainer::Update(float dt)
 		if(start == end)
 			return;
 		Iter new_item = end;
-		if(Control::input->Down(Key::Shift))
+		if(input->Down(Key::Shift))
 		{
 			// znajdü poprzedni
 			// od start do begin

@@ -10,31 +10,17 @@
 #include "Input.h"
 #include "DirectX.h"
 
-using namespace gui;
-
-
 //-----------------------------------------------------------------------------
-Int2 gui::GetSize(TEX img)
-{
-	D3DSURFACE_DESC desc;
-	img->GetLevelDesc(0, &desc);
-	return Int2(desc.Width, desc.Height);
-}
-
-
-//-----------------------------------------------------------------------------
-IGUI GUI;
-TEX IGUI::tBox, IGUI::tBox2, IGUI::tPix, IGUI::tDown;
-
+TEX Gui::tBox, Gui::tBox2, Gui::tPix, Gui::tDown;
 
 //=================================================================================================
-IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
+Gui::Gui() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
 active_notifications(), tPixel(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), vertex_decl(nullptr), effect(nullptr)
 {
 }
 
 //=================================================================================================
-IGUI::~IGUI()
+Gui::~Gui()
 {
 	DeleteElements(created_dialogs);
 	for(int i = 0; i < MAX_ACTIVE_NOTIFICATIONS; ++i)
@@ -45,10 +31,11 @@ IGUI::~IGUI()
 }
 
 //=================================================================================================
-void IGUI::Init(IDirect3DDevice9* device, ID3DXSprite* sprite, Input* input)
+void Gui::Init(IDirect3DDevice9* device, ID3DXSprite* sprite, Input* input)
 {
 	this->device = device;
 	this->sprite = sprite;
+	Control::gui = this;
 	Control::input = input;
 	tFontTarget = nullptr;
 	wnd_size = Engine::Get().GetWindowSize();
@@ -87,7 +74,7 @@ void IGUI::Init(IDirect3DDevice9* device, ID3DXSprite* sprite, Input* input)
 }
 
 //=================================================================================================
-void IGUI::OnInit()
+void Gui::OnInit()
 {
 	effect = Engine::Get().GetRender()->CompileShader("gui.fx");
 	techGui = effect->GetTechniqueByName("gui");
@@ -99,7 +86,7 @@ void IGUI::OnInit()
 }
 
 //=================================================================================================
-void IGUI::OnReset()
+void Gui::OnReset()
 {
 	if(effect)
 		effect->OnLostDevice();
@@ -109,7 +96,7 @@ void IGUI::OnReset()
 }
 
 //=================================================================================================
-void IGUI::OnReload()
+void Gui::OnReload()
 {
 	if(effect)
 		effect->OnResetDevice();
@@ -117,20 +104,20 @@ void IGUI::OnReload()
 }
 
 //=================================================================================================
-void IGUI::OnRelease()
+void Gui::OnRelease()
 {
 	SafeRelease(effect);
 }
 
 //=================================================================================================
-void IGUI::InitLayout()
+void Gui::InitLayout()
 {
 	if(!layout)
-		layout = new Layout;
+		layout = new Layout(this);
 }
 
 //=================================================================================================
-void IGUI::SetText(cstring ok, cstring yes, cstring no, cstring cancel)
+void Gui::SetText(cstring ok, cstring yes, cstring no, cstring cancel)
 {
 	txOk = ok;
 	txYes = yes;
@@ -139,7 +126,7 @@ void IGUI::SetText(cstring ok, cstring yes, cstring no, cstring cancel)
 }
 
 //=================================================================================================
-bool IGUI::AddFont(cstring filename)
+bool Gui::AddFont(cstring filename)
 {
 	cstring path = Format("data/fonts/%s", filename);
 	int result = AddFontResourceExA(path, FR_PRIVATE, nullptr);
@@ -156,7 +143,7 @@ bool IGUI::AddFont(cstring filename)
 }
 
 //=================================================================================================
-Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int outline)
+Font* Gui::CreateFont(cstring name, int size, int weight, int tex_size, int outline)
 {
 	assert(name && size > 0 && IsPow2(tex_size) && outline >= 0);
 
@@ -297,7 +284,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 }
 
 //=================================================================================================
-bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline)
+bool Gui::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline)
 {
 	while(true)
 	{
@@ -311,7 +298,7 @@ bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int 
 
 //=================================================================================================
 // 0-ok, 1-failed, 2-retry
-int IGUI::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline)
+int Gui::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline)
 {
 	// stwórz render target
 	if(!tFontTarget || tex_size > max_tex_size)
@@ -434,7 +421,7 @@ int IGUI::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, in
 
 //=================================================================================================
 // Draw text - rewritten from TFQ
-bool IGUI::DrawText(Font* font, StringOrCstring str, uint flags, Color color, const Rect& rect, const Rect* clipping, vector<Hitbox>* hitboxes,
+bool Gui::DrawText(Font* font, StringOrCstring str, uint flags, Color color, const Rect& rect, const Rect* clipping, vector<Hitbox>* hitboxes,
 	int* hitbox_counter, const vector<TextLine>* lines)
 {
 	assert(font);
@@ -469,13 +456,13 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, uint flags, Color color, co
 
 	Lock(outline);
 
-	typedef void (IGUI::*DrawLineF)(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color,
+	typedef void (Gui::*DrawLineF)(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color,
 		Vec4& color, int x, int y, const Rect* clipping, HitboxContext* hc, bool parse_special, const Vec2& scale);
 	DrawLineF call;
 	if(outline)
-		call = &IGUI::DrawLineOutline;
+		call = &Gui::DrawLineOutline;
 	else
-		call = &IGUI::DrawLine;
+		call = &Gui::DrawLine;
 
 #define CALL (this->*call)
 
@@ -623,7 +610,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, uint flags, Color color, co
 }
 
 //=================================================================================================
-void IGUI::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& default_color, Vec4& current_color,
+void Gui::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& default_color, Vec4& current_color,
 	int x, int y, const Rect* clipping, HitboxContext* hc, bool parse_special, const Vec2& scale)
 {
 	for(uint i = line_begin; i < line_end; ++i)
@@ -910,7 +897,7 @@ void IGUI::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, co
 }
 
 //=================================================================================================
-void IGUI::DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& default_color, Vec4& current_color,
+void Gui::DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& default_color, Vec4& current_color,
 	int x, int y, const Rect* clipping, HitboxContext* hc, bool parse_special, const Vec2& scale)
 {
 	// scale is TODO here
@@ -1098,7 +1085,7 @@ void IGUI::DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_
 }
 
 //=================================================================================================
-void IGUI::Lock(bool outline)
+void Gui::Lock(bool outline)
 {
 	V(vb->Lock(0, 0, (void**)&v, D3DLOCK_DISCARD));
 	in_buffer = 0;
@@ -1114,7 +1101,7 @@ void IGUI::Lock(bool outline)
 }
 
 //=================================================================================================
-void IGUI::Flush(bool lock)
+void Gui::Flush(bool lock)
 {
 	if(vb2_locked)
 	{
@@ -1162,7 +1149,7 @@ void IGUI::Flush(bool lock)
 }
 
 //=================================================================================================
-void IGUI::Draw(bool draw_layers, bool draw_dialogs)
+void Gui::Draw(bool draw_layers, bool draw_dialogs)
 {
 	PROFILER_BLOCK("DrawGui");
 
@@ -1213,13 +1200,13 @@ void IGUI::Draw(bool draw_layers, bool draw_dialogs)
 }
 
 //=================================================================================================
-void IGUI::Add(Control* ctrl)
+void Gui::Add(Control* ctrl)
 {
 	layer->Add(ctrl);
 }
 
 //=================================================================================================
-void IGUI::DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, Color color, int corner, int size, const Box2d* clip_rect)
+void Gui::DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, Color color, int corner, int size, const Box2d* clip_rect)
 {
 	assert(t);
 
@@ -1359,7 +1346,7 @@ void IGUI::DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, Color co
 }
 
 //=================================================================================================
-void IGUI::Update(float dt, float mouse_speed)
+void Gui::Update(float dt, float mouse_speed)
 {
 	PROFILER_BLOCK("UpdateGui");
 
@@ -1416,7 +1403,7 @@ void IGUI::Update(float dt, float mouse_speed)
 }
 
 //=================================================================================================
-void IGUI::DrawSprite(TEX t, const Int2& pos, Color color, const Rect* clipping)
+void Gui::DrawSprite(TEX t, const Int2& pos, Color color, const Rect* clipping)
 {
 	assert(t);
 
@@ -1517,7 +1504,7 @@ void IGUI::DrawSprite(TEX t, const Int2& pos, Color color, const Rect* clipping)
 }
 
 //=================================================================================================
-void IGUI::OnClean()
+void Gui::OnClean()
 {
 	OnReset();
 
@@ -1535,7 +1522,7 @@ void IGUI::OnClean()
 }
 
 //=================================================================================================
-void IGUI::CreateVertexBuffer()
+void Gui::CreateVertexBuffer()
 {
 	if(device)
 	{
@@ -1554,7 +1541,7 @@ Przycinanie tekstu do wybranego regionu, zwraca:
 4 - tekst poza regionem z lewej
 5 - wymaga czêœciowego clippingu, czêœciowo w regionie
 */
-int IGUI::Clip(int x, int y, int w, int h, const Rect* clipping)
+int Gui::Clip(int x, int y, int w, int h, const Rect* clipping)
 {
 	if(x >= clipping->Left() && y >= clipping->Top() && x + w < clipping->Right() && y + h < clipping->Bottom())
 	{
@@ -1589,7 +1576,7 @@ int IGUI::Clip(int x, int y, int w, int h, const Rect* clipping)
 }
 
 //=================================================================================================
-void IGUI::SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc)
+void Gui::SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc)
 {
 	for(uint i = line_begin; i < line_end; ++i)
 	{
@@ -1641,7 +1628,7 @@ void IGUI::SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext*
 }
 
 //=================================================================================================
-DialogBox* IGUI::ShowDialog(const DialogInfo& info)
+DialogBox* Gui::ShowDialog(const DialogInfo& info)
 {
 	assert(!(info.have_tick && info.img)); // not allowed together
 
@@ -1756,7 +1743,7 @@ DialogBox* IGUI::ShowDialog(const DialogInfo& info)
 }
 
 //=================================================================================================
-void IGUI::ShowDialog(DialogBox* d)
+void Gui::ShowDialog(DialogBox* d)
 {
 	d->visible = true;
 	d->Event(GuiEvent_Show);
@@ -1814,7 +1801,7 @@ void IGUI::ShowDialog(DialogBox* d)
 }
 
 //=================================================================================================
-bool IGUI::CloseDialog(DialogBox* d)
+bool Gui::CloseDialog(DialogBox* d)
 {
 	assert(d);
 
@@ -1834,7 +1821,7 @@ bool IGUI::CloseDialog(DialogBox* d)
 }
 
 //=================================================================================================
-void IGUI::CloseDialogInternal(DialogBox* d)
+void Gui::CloseDialogInternal(DialogBox* d)
 {
 	assert(d);
 
@@ -1858,10 +1845,16 @@ void IGUI::CloseDialogInternal(DialogBox* d)
 			to_remove.clear();
 		}
 	}
+
+	if(d->need_delete)
+	{
+		RemoveElement(created_dialogs, d);
+		delete d;
+	}
 }
 
 //=================================================================================================
-bool IGUI::HaveTopDialog(cstring name) const
+bool Gui::HaveTopDialog(cstring name) const
 {
 	assert(name);
 
@@ -1873,13 +1866,13 @@ bool IGUI::HaveTopDialog(cstring name) const
 }
 
 //=================================================================================================
-bool IGUI::HaveDialog() const
+bool Gui::HaveDialog() const
 {
 	return !dialog_layer->Empty();
 }
 
 //=================================================================================================
-void IGUI::DrawSpriteFull(TEX t, const Color color)
+void Gui::DrawSpriteFull(TEX t, const Color color)
 {
 	assert(t);
 
@@ -1923,8 +1916,11 @@ void IGUI::DrawSpriteFull(TEX t, const Color color)
 }
 
 //=================================================================================================
-void IGUI::OnChar(char c)
+void Gui::OnChar(char c)
 {
+	if((c != (char)Key::Backspace && c != (char)Key::Enter && byte(c) < 0x20) || c == '`')
+		return;
+
 	for(vector<OnCharHandler*>::iterator it = on_char.begin(), end = on_char.end(); it != end; ++it)
 	{
 		Control* ctrl = dynamic_cast<Control*>(*it);
@@ -1934,7 +1930,7 @@ void IGUI::OnChar(char c)
 }
 
 //=================================================================================================
-void IGUI::SimpleDialog(cstring text, Control* parent, cstring name)
+void Gui::SimpleDialog(cstring text, Control* parent, cstring name)
 {
 	DialogInfo di;
 	di.event = nullptr;
@@ -1956,7 +1952,7 @@ void IGUI::SimpleDialog(cstring text, Control* parent, cstring name)
 }
 
 //=================================================================================================
-void IGUI::DrawSpriteRect(TEX t, const Rect& rect, Color color)
+void Gui::DrawSpriteRect(TEX t, const Rect& rect, Color color)
 {
 	assert(t);
 
@@ -2000,7 +1996,7 @@ void IGUI::DrawSpriteRect(TEX t, const Rect& rect, Color color)
 }
 
 //=================================================================================================
-bool IGUI::HaveDialog(cstring name)
+bool Gui::HaveDialog(cstring name)
 {
 	assert(name);
 	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
@@ -2013,7 +2009,7 @@ bool IGUI::HaveDialog(cstring name)
 }
 
 //=================================================================================================
-bool IGUI::HaveDialog(DialogBox* dialog)
+bool Gui::HaveDialog(DialogBox* dialog)
 {
 	assert(dialog);
 	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
@@ -2026,13 +2022,13 @@ bool IGUI::HaveDialog(DialogBox* dialog)
 }
 
 //=================================================================================================
-bool IGUI::AnythingVisible() const
+bool Gui::AnythingVisible() const
 {
 	return !dialog_layer->Empty() || layer->AnythingVisible();
 }
 
 //=================================================================================================
-void IGUI::OnResize()
+void Gui::OnResize()
 {
 	auto& engine = Engine::Get();
 	wnd_size = engine.GetWindowSize();
@@ -2043,7 +2039,7 @@ void IGUI::OnResize()
 }
 
 //=================================================================================================
-void IGUI::DrawSpriteRectPart(TEX t, const Rect& rect, const Rect& part, Color color)
+void Gui::DrawSpriteRectPart(TEX t, const Rect& rect, const Rect& part, Color color)
 {
 	assert(t);
 
@@ -2090,7 +2086,7 @@ void IGUI::DrawSpriteRectPart(TEX t, const Rect& rect, const Rect& part, Color c
 }
 
 //=================================================================================================
-void IGUI::DrawSpriteTransform(TEX t, const Matrix& mat, Color color)
+void Gui::DrawSpriteTransform(TEX t, const Matrix& mat, Color color)
 {
 	assert(t);
 
@@ -2147,7 +2143,7 @@ void IGUI::DrawSpriteTransform(TEX t, const Matrix& mat, Color color)
 }
 
 //=================================================================================================
-void IGUI::DrawLine(const Vec2* lines, uint count, Color color, bool strip)
+void Gui::DrawLine(const Vec2* lines, uint count, Color color, bool strip)
 {
 	assert(lines && count);
 
@@ -2190,7 +2186,7 @@ void IGUI::DrawLine(const Vec2* lines, uint count, Color color, bool strip)
 }
 
 //=================================================================================================
-void IGUI::LineBegin()
+void Gui::LineBegin()
 {
 	effect->EndPass();
 	effect->End();
@@ -2201,7 +2197,7 @@ void IGUI::LineBegin()
 }
 
 //=================================================================================================
-void IGUI::LineEnd()
+void Gui::LineEnd()
 {
 	effect->EndPass();
 	effect->End();
@@ -2212,7 +2208,7 @@ void IGUI::LineEnd()
 }
 
 //=================================================================================================
-bool IGUI::NeedCursor()
+bool Gui::NeedCursor()
 {
 	if(!dialog_layer->Empty())
 		return true;
@@ -2221,7 +2217,7 @@ bool IGUI::NeedCursor()
 }
 
 //=================================================================================================
-bool IGUI::DrawText3D(Font* font, StringOrCstring text, uint flags, Color color, const Vec3& pos, Rect* text_rect)
+bool Gui::DrawText3D(Font* font, StringOrCstring text, uint flags, Color color, const Vec3& pos, Rect* text_rect)
 {
 	assert(font);
 
@@ -2240,7 +2236,7 @@ bool IGUI::DrawText3D(Font* font, StringOrCstring text, uint flags, Color color,
 }
 
 //=================================================================================================
-bool IGUI::To2dPoint(const Vec3& pos, Int2& pt)
+bool Gui::To2dPoint(const Vec3& pos, Int2& pt)
 {
 	Vec4 v4;
 	Vec3::Transform(pos, mViewProj, v4);
@@ -2269,7 +2265,7 @@ bool IGUI::To2dPoint(const Vec3& pos, Int2& pt)
 }
 
 //=================================================================================================
-bool IGUI::Intersect(vector<Hitbox>& hitboxes, const Int2& pt, int* index, int* index2)
+bool Gui::Intersect(vector<Hitbox>& hitboxes, const Int2& pt, int* index, int* index2)
 {
 	for(vector<Hitbox>::iterator it = hitboxes.begin(), end = hitboxes.end(); it != end; ++it)
 	{
@@ -2287,7 +2283,7 @@ bool IGUI::Intersect(vector<Hitbox>& hitboxes, const Int2& pt, int* index, int* 
 }
 
 //=================================================================================================
-void IGUI::DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, Color color)
+void Gui::DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, Color color)
 {
 	assert(t);
 
@@ -2346,16 +2342,18 @@ void IGUI::DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, C
 }
 
 //=================================================================================================
-void IGUI::CloseDialogs()
+void Gui::CloseDialogs()
 {
 	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
 	for(DialogBox* dialog : dialogs)
 	{
-		if(OR2_EQ(dialog->type, DIALOG_OK, DIALOG_YESNO))
-			delete dialog;
-		else
+		if(!OR2_EQ(dialog->type, DIALOG_OK, DIALOG_YESNO))
 			dialog->Event(GuiEvent_Close);
-		DEBUG_DO(RemoveElementTry(created_dialogs, dialog));
+		if(dialog->need_delete)
+		{
+			DEBUG_DO(RemoveElementTry(created_dialogs, dialog));
+			delete dialog;
+		}
 	}
 	dialogs.clear();
 	dialog_layer->inside_loop = false;
@@ -2364,7 +2362,7 @@ void IGUI::CloseDialogs()
 }
 
 //=================================================================================================
-bool IGUI::HavePauseDialog() const
+bool Gui::HavePauseDialog() const
 {
 	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
 	for(vector<DialogBox*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
@@ -2376,7 +2374,7 @@ bool IGUI::HavePauseDialog() const
 }
 
 //=================================================================================================
-DialogBox* IGUI::GetDialog(cstring name)
+DialogBox* Gui::GetDialog(cstring name)
 {
 	assert(name);
 	if(dialog_layer->Empty())
@@ -2391,7 +2389,7 @@ DialogBox* IGUI::GetDialog(cstring name)
 }
 
 //=================================================================================================
-void IGUI::DrawSprite2(TEX t, const Matrix& mat, const Rect* part, const Rect* clipping, Color color)
+void Gui::DrawSprite2(TEX t, const Matrix& mat, const Rect* part, const Rect* clipping, Color color)
 {
 	assert(t);
 
@@ -2424,7 +2422,7 @@ void IGUI::DrawSprite2(TEX t, const Matrix& mat, const Rect* part, const Rect* c
 
 //=================================================================================================
 // Rotation is generaly ignored and shouldn't be used here
-Rect IGUI::GetSpriteRect(TEX t, const Matrix& mat, const Rect* part, const Rect* clipping)
+Rect Gui::GetSpriteRect(TEX t, const Matrix& mat, const Rect* part, const Rect* clipping)
 {
 	assert(t);
 
@@ -2449,7 +2447,7 @@ Rect IGUI::GetSpriteRect(TEX t, const Matrix& mat, const Rect* part, const Rect*
 }
 
 //=================================================================================================
-void IGUI::AddNotification(cstring text, TEX icon, float timer)
+void Gui::AddNotification(cstring text, TEX icon, float timer)
 {
 	assert(text && timer > 0);
 
@@ -2463,7 +2461,7 @@ void IGUI::AddNotification(cstring text, TEX icon, float timer)
 }
 
 //=================================================================================================
-void IGUI::UpdateNotifications(float dt)
+void Gui::UpdateNotifications(float dt)
 {
 	// count free notifications
 	int free_items = 0;
@@ -2527,7 +2525,7 @@ void IGUI::UpdateNotifications(float dt)
 }
 
 //=================================================================================================
-void IGUI::DrawNotifications()
+void Gui::DrawNotifications()
 {
 	static const Int2 notification_size(350, 80);
 
@@ -2553,7 +2551,7 @@ void IGUI::DrawNotifications()
 }
 
 //=================================================================================================
-void IGUI::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* clip_rect)
+void Gui::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* clip_rect)
 {
 	GuiRect gui_rect;
 	gui_rect.Set(pos, size);
@@ -2569,7 +2567,7 @@ void IGUI::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d*
 }
 
 //=================================================================================================
-void IGUI::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect)
+void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect)
 {
 	if(area_layout.mode == AreaLayout::None)
 		return;
@@ -2641,7 +2639,7 @@ void IGUI::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2
 }
 
 //=================================================================================================
-void IGUI::AddRect(const Vec2& left_top, const Vec2& right_bottom, const Vec4& color)
+void Gui::AddRect(const Vec2& left_top, const Vec2& right_bottom, const Vec4& color)
 {
 	v->pos = Vec3(left_top.x, left_top.y, 0);
 	v->tex = Vec2(0, 0);
@@ -2675,7 +2673,7 @@ void IGUI::AddRect(const Vec2& left_top, const Vec2& right_bottom, const Vec4& c
 }
 
 //=================================================================================================
-void IGUI::SetClipboard(cstring text)
+void Gui::SetClipboard(cstring text)
 {
 	assert(text);
 
@@ -2693,7 +2691,7 @@ void IGUI::SetClipboard(cstring text)
 }
 
 //=================================================================================================
-cstring IGUI::GetClipboard()
+cstring Gui::GetClipboard()
 {
 	cstring result = nullptr;
 
@@ -2713,7 +2711,7 @@ cstring IGUI::GetClipboard()
 }
 
 //=================================================================================================
-void IGUI::UseGrayscale(bool grayscale)
+void Gui::UseGrayscale(bool grayscale)
 {
 	assert(grayscale != this->grayscale);
 	this->grayscale = grayscale;
@@ -2727,7 +2725,7 @@ void IGUI::UseGrayscale(bool grayscale)
 }
 
 //=================================================================================================
-bool IGUI::DrawText2(DrawTextOptions& options)
+bool Gui::DrawText2(DrawTextOptions& options)
 {
 	uint line_begin, line_end, line_index = 0;
 	int line_width, width = options.rect.SizeX();
@@ -2756,13 +2754,13 @@ bool IGUI::DrawText2(DrawTextOptions& options)
 
 	Lock(outline);
 
-	typedef void (IGUI::*DrawLineF)(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color,
+	typedef void (Gui::*DrawLineF)(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color,
 		Vec4& color, int x, int y, const Rect* clipping, HitboxContext* hc, bool parse_special, const Vec2& scale);
 	DrawLineF call;
 	if(outline)
-		call = &IGUI::DrawLineOutline;
+		call = &Gui::DrawLineOutline;
 	else
-		call = &IGUI::DrawLine;
+		call = &Gui::DrawLine;
 
 #define CALL (this->*call)
 

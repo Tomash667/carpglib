@@ -2,8 +2,6 @@
 #include "EngineCore.h"
 #include "Label.h"
 
-using namespace gui;
-
 Label::Label(cstring text, bool auto_size) : text(text), custom_layout(nullptr), own_custom_layout(false), auto_size(auto_size)
 {
 	if(auto_size)
@@ -20,7 +18,7 @@ void Label::Draw(ControlDrawData*)
 {
 	auto& l = GetLayout();
 	Rect rect = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
-	GUI.DrawText(l.font, text, l.align, l.color, rect);
+	gui->DrawText(l.font, text, l.align, l.color, rect);
 }
 
 void Label::SetAlign(uint align)

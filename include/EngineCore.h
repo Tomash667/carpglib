@@ -17,6 +17,7 @@ class CustomCollisionWorld;
 class DebugDrawer;
 class Engine;
 class GrassShader;
+class Gui;
 class Input;
 class Pak;
 class Render;
@@ -42,8 +43,18 @@ typedef VertexData* VertexDataPtr;
 class Button;
 class CheckBox;
 class DialogBox;
+class DrawBox;
+class GuiDialog;
+class GuiElement;
+class Label;
+class MenuBar;
+class MenuList;
+class MenuStrip;
+class Overlay;
+class Panel;
 class PickItemDialog;
 class TextBox;
+class TreeView;
 
 // Windows types
 struct HWND__;

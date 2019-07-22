@@ -20,7 +20,7 @@ void Button::Draw(ControlDrawData*)
 
 	if(!custom)
 	{
-		GUI.DrawItem(tex[real_state], global_pos, size, Color::White, 16);
+		gui->DrawItem(tex[real_state], global_pos, size, Color::White, 16);
 
 		Rect r = {
 			global_pos.x + 4,
@@ -47,14 +47,14 @@ void Button::Draw(ControlDrawData*)
 			Control::ResizeImage(img, required_size, img_size, scale);
 			mat = Matrix::Transform2D(&Vec2(float(img_size.x) / 2, float(img_size.y) / 2), 0.f, &scale, nullptr, 0.f,
 				&Vec2((float)r.Left(), float(r.Top() + (required_size.y - img_size.y) / 2)));
-			GUI.DrawSprite2(img, mat, nullptr, &r, Color::White);
+			gui->DrawSprite2(img, mat, nullptr, &r, Color::White);
 			r.Left() += img_size.x;
 		}
 
-		GUI.DrawText(GUI.default_font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r, &r);
+		gui->DrawText(gui->default_font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r, &r);
 	}
 	else
-		GUI.DrawItem(custom->tex[real_state], global_pos, size, Color::White, 16);
+		gui->DrawItem(custom->tex[real_state], global_pos, size, Color::White, 16);
 }
 
 //=================================================================================================
@@ -63,9 +63,9 @@ void Button::Update(float dt)
 	if(state == DISABLED || disabled)
 		return;
 
-	if(input->Focus() && mouse_focus && IsInside(GUI.cursor_pos))
+	if(input->Focus() && mouse_focus && IsInside(gui->cursor_pos))
 	{
-		GUI.cursor_mode = CURSOR_HAND;
+		gui->cursor_mode = CURSOR_HAND;
 		if(state == DOWN)
 		{
 			bool apply = false;

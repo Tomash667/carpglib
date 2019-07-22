@@ -6,8 +6,6 @@
 #include "MenuStrip.h"
 #include "Overlay.h"
 
-using namespace gui;
-
 MenuStrip::MenuStrip(vector<SimpleMenuCtor>& _items, int min_width) : selected(nullptr)
 {
 	items.resize(_items.size());
@@ -70,7 +68,7 @@ MenuStrip::~MenuStrip()
 void MenuStrip::Draw(ControlDrawData*)
 {
 	Box2d area = Box2d::Create(global_pos, size);
-	GUI.DrawArea(area, layout->menustrip.background);
+	gui->DrawArea(area, layout->menustrip.background);
 
 	Vec2 item_size((float)size.x - (layout->menustrip.padding.x) * 2,
 		(float)layout->menustrip.font->height + layout->menustrip.item_padding.y * 2);
@@ -82,7 +80,7 @@ void MenuStrip::Draw(ControlDrawData*)
 	for(Item& item : items)
 	{
 		if(item.hover)
-			GUI.DrawArea(area, layout->menustrip.button_hover);
+			gui->DrawArea(area, layout->menustrip.button_hover);
 
 		Color color;
 		if(!item.enabled)
@@ -92,7 +90,7 @@ void MenuStrip::Draw(ControlDrawData*)
 		else
 			color = layout->menustrip.font_color;
 		r = Rect(area, layout->menustrip.item_padding);
-		GUI.DrawText(layout->menustrip.font, item.text, DTF_LEFT, color, r);
+		gui->DrawText(layout->menustrip.font, item.text, DTF_LEFT, color, r);
 
 		area += Vec2(0, offset);
 	}
@@ -159,9 +157,9 @@ void MenuStrip::UpdateMouse()
 	}
 
 	Box2d area = Box2d::Create(global_pos, size);
-	if(!area.IsInside(GUI.cursor_pos))
+	if(!area.IsInside(gui->cursor_pos))
 	{
-		if(GUI.MouseMoved())
+		if(gui->MouseMoved())
 		{
 			if(selected)
 			{
@@ -180,9 +178,9 @@ void MenuStrip::UpdateMouse()
 
 	for(Item& item : items)
 	{
-		if(area.IsInside(GUI.cursor_pos))
+		if(area.IsInside(gui->cursor_pos))
 		{
-			if(item.enabled && (GUI.MouseMoved() || input->Pressed(Key::LeftButton)))
+			if(item.enabled && (gui->MouseMoved() || input->Pressed(Key::LeftButton)))
 			{
 				if(selected)
 					selected->hover = false;
@@ -192,7 +190,7 @@ void MenuStrip::UpdateMouse()
 				{
 					if(handler)
 						handler(item.action);
-					GUI.GetOverlay()->CloseMenu(this);
+					gui->GetOverlay()->CloseMenu(this);
 				}
 			}
 			break;
@@ -227,11 +225,11 @@ void MenuStrip::UpdateKeyboard()
 		{
 			if(handler)
 				handler(selected->action);
-			GUI.GetOverlay()->CloseMenu(this);
+			gui->GetOverlay()->CloseMenu(this);
 		}
 	}
 	else if(input->PressedRelease(Key::Escape))
-		GUI.GetOverlay()->CloseMenu(this);
+		gui->GetOverlay()->CloseMenu(this);
 }
 
 void MenuStrip::ShowAt(const Int2& _pos)
@@ -246,7 +244,7 @@ void MenuStrip::ShowAt(const Int2& _pos)
 
 void MenuStrip::ShowMenu(const Int2& _pos)
 {
-	GUI.GetOverlay()->ShowMenu(this, _pos);
+	gui->GetOverlay()->ShowMenu(this, _pos);
 }
 
 void MenuStrip::SetSelectedIndex(int index)
@@ -304,5 +302,5 @@ void MenuStrip::ChangeIndex(int dif)
 
 bool MenuStrip::IsOpen()
 {
-	return GUI.GetOverlay()->IsOpen(this);
+	return gui->GetOverlay()->IsOpen(this);
 }

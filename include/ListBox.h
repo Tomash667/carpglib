@@ -5,13 +5,6 @@
 #include "GuiElement.h"
 
 //-----------------------------------------------------------------------------
-class MenuList;
-namespace gui
-{
-	class MenuStrip;
-}
-
-//-----------------------------------------------------------------------------
 class ListBox : public Control, public OnCharHandler
 {
 public:
@@ -77,7 +70,7 @@ public:
 	void SetCollapsed(bool new_collapsed) { assert(!initialized); collapsed = new_collapsed; }
 
 	MenuList* menu;
-	gui::MenuStrip* menu_strip;
+	MenuStrip* menu_strip;
 	DialogEvent event_handler;
 	Handler event_handler2;
 

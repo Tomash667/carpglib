@@ -18,15 +18,15 @@ void Grid::Draw(ControlDrawData*)
 	for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it)
 	{
 		// box nag³ówka
-		GUI.DrawItem(GUI.tBox, Int2(x, y), Int2(it->width, height), Color::Black, 8, 32);
+		gui->DrawItem(gui->tBox, Int2(x, y), Int2(it->width, height), Color::Black, 8, 32);
 		// box zawartoœci
-		GUI.DrawItem(GUI.tBox, Int2(x, y + height), Int2(it->width, size.y - height), Color::Black, 8, 32);
+		gui->DrawItem(gui->tBox, Int2(x, y + height), Int2(it->width, size.y - height), Color::Black, 8, 32);
 		// tekst nag³ówka
 		if(!it->title.empty())
 		{
 			r.Left() = x;
 			r.Right() = x + it->width;
-			GUI.DrawText(GUI.default_font, it->title, DTF_CENTER | DTF_VCENTER, Color::Black, r, &r);
+			gui->DrawText(gui->default_font, it->title, DTF_CENTER | DTF_VCENTER, Color::Black, r, &r);
 		}
 		x += it->width;
 	}
@@ -71,7 +71,7 @@ void Grid::Draw(ControlDrawData*)
 			else if(clip_state == 2)
 				r2.Bottom() = global_pos.y + size.y;
 			if(r2.Top() < r2.Bottom())
-				GUI.DrawSpriteRect(GUI.tPix, r2, selection_color);
+				gui->DrawSpriteRect(gui->tPix, r2, selection_color);
 		}
 
 		for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it, ++n)
@@ -102,7 +102,7 @@ void Grid::Draw(ControlDrawData*)
 				r = Rect(x, y, x + it->width, y + height);
 
 				if(clip_state == 0)
-					GUI.DrawText(GUI.default_font, text, text_flags, color, r, &r);
+					gui->DrawText(gui->default_font, text, text_flags, color, r, &r);
 				else
 				{
 					clip_r.Left() = r.Left();
@@ -117,7 +117,7 @@ void Grid::Draw(ControlDrawData*)
 						clip_r.Top() = r.Top();
 						clip_r.Bottom() = global_pos.y + size.y;
 					}
-					GUI.DrawText(GUI.default_font, text, text_flags, color, r, &clip_r);
+					gui->DrawText(gui->default_font, text, text_flags, color, r, &clip_r);
 				}
 			}
 			else if(it->type == IMG)
@@ -128,11 +128,11 @@ void Grid::Draw(ControlDrawData*)
 				{
 					clipping = &clip_r;
 					clip_r.Left() = 0;
-					clip_r.Right() = GUI.wnd_size.x;
+					clip_r.Right() = gui->wnd_size.x;
 					if(clip_state == 1)
 					{
 						clip_r.Top() = global_pos.y + height;
-						clip_r.Bottom() = GUI.wnd_size.y;
+						clip_r.Bottom() = gui->wnd_size.y;
 					}
 					else
 					{
@@ -141,7 +141,7 @@ void Grid::Draw(ControlDrawData*)
 					}
 				}
 
-				GUI.DrawSprite(cell.img, Int2(x + (it->width - 16) / 2, y + (height - 16) / 2), Color::White, clipping);
+				gui->DrawSprite(cell.img, Int2(x + (it->width - 16) / 2, y + (height - 16) / 2), Color::White, clipping);
 			}
 			else //if(it->type == IMGSET)
 			{
@@ -169,11 +169,11 @@ void Grid::Draw(ControlDrawData*)
 					{
 						clipping = &clip_r;
 						clip_r.Left() = 0;
-						clip_r.Right() = GUI.wnd_size.x;
+						clip_r.Right() = gui->wnd_size.x;
 						if(clip_state == 1)
 						{
 							clip_r.Top() = global_pos.y + height;
-							clip_r.Bottom() = GUI.wnd_size.y;
+							clip_r.Bottom() = gui->wnd_size.y;
 						}
 						else
 						{
@@ -185,7 +185,7 @@ void Grid::Draw(ControlDrawData*)
 					int x2 = x + startx;
 					for(uint j = 0; j < imgset.size(); ++j)
 					{
-						GUI.DrawSprite(imgset[j], Int2(x2, y2), Color::White, clipping);
+						gui->DrawSprite(imgset[j], Int2(x2, y2), Color::White, clipping);
 						x2 += dist;
 					}
 				}
@@ -203,21 +203,21 @@ void Grid::Update(float dt)
 {
 	if(input->Focus() && focus)
 	{
-		if(GUI.cursor_pos.x >= global_pos.x && GUI.cursor_pos.x < global_pos.x + total_width
-			&& GUI.cursor_pos.y >= global_pos.y + height && GUI.cursor_pos.y < global_pos.y + size.y)
+		if(gui->cursor_pos.x >= global_pos.x && gui->cursor_pos.x < global_pos.x + total_width
+			&& gui->cursor_pos.y >= global_pos.y + height && gui->cursor_pos.y < global_pos.y + size.y)
 		{
-			int n = (GUI.cursor_pos.y - (global_pos.y + height) + int(scroll.offset)) / height;
+			int n = (gui->cursor_pos.y - (global_pos.y + height) + int(scroll.offset)) / height;
 			if(n >= 0 && n < items)
 			{
 				if(selection_type != NONE)
 				{
-					GUI.cursor_mode = CURSOR_HAND;
+					gui->cursor_mode = CURSOR_HAND;
 					if(input->PressedRelease(Key::LeftButton))
 						selected = n;
 				}
 				if(select_event)
 				{
-					int y = GUI.cursor_pos.x - global_pos.x, ysum = 0;
+					int y = gui->cursor_pos.x - global_pos.x, ysum = 0;
 					int col = -1;
 
 					for(int i = 0; i < (int)columns.size(); ++i)
@@ -233,7 +233,7 @@ void Grid::Update(float dt)
 					// celowo nie zaznacza 1 kolumny!
 					if(col > 0)
 					{
-						GUI.cursor_mode = CURSOR_HAND;
+						gui->cursor_mode = CURSOR_HAND;
 						if(input->PressedRelease(Key::LeftButton))
 							select_event(n, col, 0);
 						else if(input->PressedRelease(Key::RightButton))
@@ -243,7 +243,7 @@ void Grid::Update(float dt)
 			}
 		}
 
-		if(IsInside(GUI.cursor_pos))
+		if(IsInside(gui->cursor_pos))
 			scroll.ApplyMouseWheel();
 		scroll.mouse_focus = mouse_focus;
 		scroll.Update(dt);

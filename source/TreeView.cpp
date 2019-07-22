@@ -15,8 +15,6 @@ z shift zaznacza obszar od 1 klika do X, 1 miejsce sie nie zmienia
 z shift i ctrl nie usuwa nigdy zaznaczenia (mo¿na dodaæ obszary)
 */
 
-using namespace gui;
-
 static bool SortTreeNodesPred(const TreeNode* node1, const TreeNode* node2)
 {
 	if(node1->IsDir() == node2->IsDir())
@@ -354,7 +352,7 @@ void TreeView::CalculatePos(TreeNode* node, Int2& offset, int& max_width)
 void TreeView::Draw(ControlDrawData*)
 {
 	Box2d box = Box2d::Create(global_pos, size);
-	GUI.DrawArea(box, layout->tree_view.background);
+	gui->DrawArea(box, layout->tree_view.background);
 
 	if(hscrollbar.visible)
 		hscrollbar.Draw();
@@ -371,7 +369,7 @@ void TreeView::Draw(ControlDrawData*)
 	}
 
 	if(drag == DRAG_MOVED)
-		GUI.DrawSprite(layout->tree_view.drag_n_drop, GUI.cursor_pos + Int2(16, 16));
+		gui->DrawSprite(layout->tree_view.drag_n_drop, gui->cursor_pos + Int2(16, 16));
 }
 
 void TreeView::Draw(TreeNode* node)
@@ -384,7 +382,7 @@ void TreeView::Draw(TreeNode* node)
 	{
 		// selection
 		if(node->selected || (drag == DRAG_MOVED && node == above && CanDragAndDrop()))
-			GUI.DrawArea(Box2d::Create(global_pos + Int2(1, 1 + offsety), Int2(area_size.x, item_height)), layout->tree_view.selected, &clip_rect);
+			gui->DrawArea(Box2d::Create(global_pos + Int2(1, 1 + offsety), Int2(area_size.x, item_height)), layout->tree_view.selected, &clip_rect);
 
 		if(node->IsDir())
 		{
@@ -404,7 +402,7 @@ void TreeView::Draw(TreeNode* node)
 				else
 					area = &layout->tree_view.button_down;
 			}
-			GUI.DrawArea(Box2d::Create(global_pos + Int2(node->pos.x + offsetx, offsety), area->size), *area, &clip_rect);
+			gui->DrawArea(Box2d::Create(global_pos + Int2(node->pos.x + offsetx, offsety), area->size), *area, &clip_rect);
 			offsetx += area->size.x;
 		}
 
@@ -417,7 +415,7 @@ void TreeView::Draw(TreeNode* node)
 				global_pos.x + size.x,
 				global_pos.y + item_height + offsety
 			};
-			GUI.DrawText(layout->tree_view.font, node->text, DTF_LEFT | DTF_VCENTER | DTF_SINGLELINE, layout->tree_view.font_color, r, &Rect(clip_rect));
+			gui->DrawText(layout->tree_view.font, node->text, DTF_LEFT | DTF_VCENTER | DTF_SINGLELINE, layout->tree_view.font_color, r, &Rect(clip_rect));
 		}
 	}
 
@@ -552,7 +550,7 @@ void TreeView::Update(float dt)
 		{
 			const float DRAG_SCROLL_SPEED_MIN = 50.f;
 			const float DRAG_SCROLL_SPEED_MAX = 400.f;
-			int posy = GUI.cursor_pos.y - global_pos.y;
+			int posy = gui->cursor_pos.y - global_pos.y;
 			if(posy >= 0 && posy <= item_height * 2)
 			{
 				float speed = Lerp(DRAG_SCROLL_SPEED_MIN, DRAG_SCROLL_SPEED_MAX, ((float)(item_height * 2) - posy) / (item_height * 2));
@@ -676,7 +674,7 @@ bool TreeView::Update(TreeNode* node)
 
 	if(offsety + item_height >= 0)
 	{
-		if(GUI.cursor_pos.y >= global_pos.y + offsety && GUI.cursor_pos.y <= global_pos.y + offsety + item_height)
+		if(gui->cursor_pos.y >= global_pos.y + offsety && gui->cursor_pos.y <= global_pos.y + offsety + item_height)
 		{
 			above = node;
 
@@ -693,7 +691,7 @@ bool TreeView::Update(TreeNode* node)
 			}
 
 			int offsetx = -(int)hscrollbar.offset;
-			if(node->IsDir() && PointInRect(GUI.cursor_pos, global_pos.x + node->pos.x + offsetx, global_pos.y + offsety,
+			if(node->IsDir() && PointInRect(gui->cursor_pos, global_pos.x + node->pos.x + offsetx, global_pos.y + offsety,
 				global_pos.x + node->pos.x + 16 + offsetx, global_pos.y + offsety + item_height))
 			{
 				hover = node;
@@ -1109,7 +1107,7 @@ void TreeView::SetTextboxLocation()
 	}
 	text_box->SetPosition(pos);
 
-	int width = GUI.default_font->CalculateSize(text_box->GetText()).x + 10;
+	int width = gui->default_font->CalculateSize(text_box->GetText()).x + 10;
 	if(startpos + width > area_size.x)
 		width = area_size.x - startpos;
 	Int2 new_size = Int2(width, item_height + 4);

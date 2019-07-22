@@ -3,8 +3,6 @@
 #include "SplitPanel.h"
 #include "Panel.h"
 
-using namespace gui;
-
 SplitPanel::SplitPanel() : min_size1(0), min_size2(0), panel1(nullptr), panel2(nullptr), allow_move(true), horizontal(true), splitter_size(3)
 {
 }
@@ -18,11 +16,11 @@ SplitPanel::~SplitPanel()
 void SplitPanel::Draw(ControlDrawData*)
 {
 	if(use_custom_color)
-		GUI.DrawArea(custom_color, global_pos, size);
+		gui->DrawArea(custom_color, global_pos, size);
 	else
-		GUI.DrawArea(Box2d::Create(global_pos, size), layout->panel.background);
+		gui->DrawArea(Box2d::Create(global_pos, size), layout->panel.background);
 
-	GUI.DrawArea(Box2d(split_global), horizontal ? layout->split_panel.horizontal : layout->split_panel.vertical);
+	gui->DrawArea(Box2d(split_global), horizontal ? layout->split_panel.horizontal : layout->split_panel.vertical);
 
 	panel1->Draw();
 	panel2->Draw();

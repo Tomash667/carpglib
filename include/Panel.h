@@ -2,16 +2,13 @@
 
 #include "Container.h"
 
-namespace gui
+class Panel : public Container
 {
-	class Panel : public Container
-	{
-	public:
-		Panel() : Container(true), use_custom_color(false) {}
+public:
+	Panel() : Container(true), use_custom_color(false) {}
 
-		void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw(ControlDrawData* cdd = nullptr) override;
 
-		Color custom_color;
-		bool use_custom_color;
-	};
-}
+	Color custom_color;
+	bool use_custom_color;
+};

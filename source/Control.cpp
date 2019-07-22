@@ -2,7 +2,9 @@
 #include "EngineCore.h"
 #include "Control.h"
 #include "Overlay.h"
+#include "DirectX.h"
 
+Gui* Control::gui;
 Input* Control::input;
 TEX Control::tDialog;
 
@@ -74,17 +76,17 @@ void Control::SetDocked(bool new_docked)
 
 void Control::TakeFocus(bool pressed)
 {
-	GUI.GetOverlay()->CheckFocus(this, pressed);
+	gui->GetOverlay()->CheckFocus(this, pressed);
 }
 
 void Control::SetFocus()
 {
-	GUI.GetOverlay()->SetFocus(this);
+	gui->GetOverlay()->SetFocus(this);
 }
 
 void Control::UpdateControl(Control* ctrl, float dt)
 {
-	if(mouse_focus && ctrl->IsInside(GUI.cursor_pos))
+	if(mouse_focus && ctrl->IsInside(gui->cursor_pos))
 	{
 		ctrl->mouse_focus = true;
 		ctrl->Update(dt);
@@ -102,7 +104,7 @@ void Control::UpdateControl(Control* ctrl, float dt)
 
 void Control::ResizeImage(TEX t, Int2& new_size, Int2& img_size, Vec2& scale)
 {
-	img_size = gui::GetSize(t);
+	img_size = GetSize(t);
 	if(new_size == Int2(0, 0))
 	{
 		new_size = img_size;
@@ -112,4 +114,11 @@ void Control::ResizeImage(TEX t, Int2& new_size, Int2& img_size, Vec2& scale)
 		scale = Vec2(1, 1);
 	else
 		scale = Vec2(float(new_size.x) / img_size.x, float(new_size.y) / img_size.y);
+}
+
+Int2 Control::GetSize(TEX img)
+{
+	D3DSURFACE_DESC desc;
+	img->GetLevelDesc(0, &desc);
+	return Int2(desc.Width, desc.Height);
 }

@@ -4,8 +4,6 @@
 #include "MenuStrip.h"
 #include "Input.h"
 
-using namespace gui;
-
 MenuBar::MenuBar() : selected(nullptr), handler(nullptr)
 {
 }
@@ -18,7 +16,7 @@ MenuBar::~MenuBar()
 void MenuBar::Draw(ControlDrawData*)
 {
 	// backgroud
-	GUI.DrawArea(rect, layout->menubar.background);
+	gui->DrawArea(rect, layout->menubar.background);
 
 	// items
 	Rect rect;
@@ -44,10 +42,10 @@ void MenuBar::Draw(ControlDrawData*)
 		}
 
 		// item background
-		GUI.DrawArea(item->rect, *area_layout);
+		gui->DrawArea(item->rect, *area_layout);
 
 		// item text
-		GUI.DrawText(layout->menubar.font, item->text, DTF_CENTER | DTF_VCENTER, font_color, Rect(item->rect));
+		gui->DrawText(layout->menubar.font, item->text, DTF_CENTER | DTF_VCENTER, font_color, Rect(item->rect));
 	}
 }
 
@@ -62,16 +60,16 @@ void MenuBar::Update(float dt)
 			down = true;
 	}
 
-	if(!mouse_focus || !rect.IsInside(GUI.cursor_pos))
+	if(!mouse_focus || !rect.IsInside(gui->cursor_pos))
 		return;
 
 	for(Item* item : items)
 	{
-		if(item->rect.IsInside(GUI.cursor_pos))
+		if(item->rect.IsInside(gui->cursor_pos))
 		{
 			if(down || input->Pressed(Key::LeftButton))
 			{
-				if((item != selected || item->mode != Item::Down) && (input->Pressed(Key::LeftButton) || GUI.MouseMoved()))
+				if((item != selected || item->mode != Item::Down) && (input->Pressed(Key::LeftButton) || gui->MouseMoved()))
 				{
 					EnsureMenu(item);
 					item->menu->ShowMenu(Int2(item->rect.LeftBottom()));

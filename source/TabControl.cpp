@@ -4,8 +4,6 @@
 #include "Panel.h"
 #include "Input.h"
 
-using namespace gui;
-
 static ObjectPool<TabControl::Tab> tab_pool;
 
 TabControl::TabControl(bool own_panels) : selected(nullptr), hover(nullptr), own_panels(own_panels), tab_offset(0), tab_offset_max(0), arrow_hover(0)
@@ -39,9 +37,9 @@ void TabControl::Dock(Control* c)
 void TabControl::Draw(ControlDrawData*)
 {
 	Box2d body_rect = Box2d::Create(global_pos, size);
-	GUI.DrawArea(body_rect, layout->tabctrl.background);
+	gui->DrawArea(body_rect, layout->tabctrl.background);
 
-	GUI.DrawArea(line, layout->tabctrl.line);
+	gui->DrawArea(line, layout->tabctrl.line);
 
 	Box2d rectf;
 	if(tab_offset > 0)
@@ -49,7 +47,7 @@ void TabControl::Draw(ControlDrawData*)
 		rectf.v1.x = (float)global_pos.x;
 		rectf.v1.y = (float)global_pos.y + (height - layout->tabctrl.button_prev.size.y) / 2;
 		rectf.v2 = rectf.v1 + Vec2(layout->tabctrl.button_prev.size);
-		GUI.DrawArea(rectf, arrow_hover == -1 ? layout->tabctrl.button_prev_hover : layout->tabctrl.button_prev);
+		gui->DrawArea(rectf, arrow_hover == -1 ? layout->tabctrl.button_prev_hover : layout->tabctrl.button_prev);
 	}
 
 	if(tab_offset_max != tabs.size())
@@ -57,7 +55,7 @@ void TabControl::Draw(ControlDrawData*)
 		rectf.v1.x = (float)global_pos.x + size.x - layout->tabctrl.button_next.size.x;
 		rectf.v1.y = (float)global_pos.y + (height - layout->tabctrl.button_next.size.y) / 2;
 		rectf.v2 = rectf.v1 + Vec2(layout->tabctrl.button_next.size);
-		GUI.DrawArea(rectf, arrow_hover == 1 ? layout->tabctrl.button_next_hover : layout->tabctrl.button_next);
+		gui->DrawArea(rectf, arrow_hover == 1 ? layout->tabctrl.button_next_hover : layout->tabctrl.button_next);
 	}
 
 	Rect rect;
@@ -88,13 +86,13 @@ void TabControl::Draw(ControlDrawData*)
 		else
 			close = &layout->tabctrl.close;
 
-		GUI.DrawArea(tab->rect, *button);
+		gui->DrawArea(tab->rect, *button);
 		rect = Rect(tab->rect, layout->tabctrl.padding);
-		GUI.DrawText(layout->tabctrl.font, tab->text, DTF_LEFT | DTF_VCENTER, color, rect);
-		GUI.DrawArea(tab->close_rect, *close);
+		gui->DrawText(layout->tabctrl.font, tab->text, DTF_LEFT | DTF_VCENTER, color, rect);
+		gui->DrawArea(tab->close_rect, *close);
 
 		if(tab->have_changes)
-			GUI.DrawArea(Color::Red, Int2(tab->rect.LeftTop()), Int2(2, (int)tab->rect.SizeY()));
+			gui->DrawArea(Color::Red, Int2(tab->rect.LeftTop()), Int2(2, (int)tab->rect.SizeY()));
 	}
 
 	if(selected)
@@ -132,7 +130,7 @@ void TabControl::Update(float dt)
 	if(selected)
 		selected->close_hover = false;
 
-	if(mouse_focus && IsInside(GUI.cursor_pos))
+	if(mouse_focus && IsInside(gui->cursor_pos))
 	{
 		Box2d rectf;
 		if(tab_offset > 0)
@@ -140,7 +138,7 @@ void TabControl::Update(float dt)
 			rectf.v1.x = (float)global_pos.x;
 			rectf.v1.y = (float)global_pos.y + (height - layout->tabctrl.button_prev.size.y) / 2;
 			rectf.v2 = rectf.v1 + Vec2(layout->tabctrl.button_prev.size);
-			if(rectf.IsInside(GUI.cursor_pos))
+			if(rectf.IsInside(gui->cursor_pos))
 			{
 				arrow_hover = -1;
 				if(input->Pressed(Key::LeftButton))
@@ -156,7 +154,7 @@ void TabControl::Update(float dt)
 			rectf.v1.x = (float)global_pos.x + size.x - layout->tabctrl.button_next.size.x;
 			rectf.v1.y = (float)global_pos.y + (height - layout->tabctrl.button_next.size.y) / 2;
 			rectf.v2 = rectf.v1 + Vec2(layout->tabctrl.button_next.size);
-			if(rectf.IsInside(GUI.cursor_pos))
+			if(rectf.IsInside(gui->cursor_pos))
 			{
 				arrow_hover = 1;
 				if(input->Pressed(Key::LeftButton))
@@ -170,14 +168,14 @@ void TabControl::Update(float dt)
 		for(int i = tab_offset; i < tab_offset_max; ++i)
 		{
 			Tab* tab = tabs[i];
-			if(tab->rect.IsInside(GUI.cursor_pos))
+			if(tab->rect.IsInside(gui->cursor_pos))
 			{
 				if(tab != selected)
 				{
 					hover = tab;
 					hover->mode = Tab::Hover;
 				}
-				if(tab->close_rect.IsInside(GUI.cursor_pos))
+				if(tab->close_rect.IsInside(gui->cursor_pos))
 				{
 					tab->close_hover = true;
 					if(input->Pressed(Key::LeftButton))

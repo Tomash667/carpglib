@@ -105,9 +105,6 @@
     <ClInclude Include="include\TextBox.h">
       <Filter>gui controls</Filter>
     </ClInclude>
-    <ClInclude Include="include\ToolStrip.h">
-      <Filter>gui controls</Filter>
-    </ClInclude>
     <ClInclude Include="include\TooltipController.h">
       <Filter>gui controls</Filter>
     </ClInclude>

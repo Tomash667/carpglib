@@ -36,6 +36,7 @@ public:
 	float GetWindowAspect() const { return float(wnd_size.x) / wnd_size.y; }
 	HWND GetWindowHandle() const { return hwnd; }
 	const Int2& GetWindowSize() const { return wnd_size; }
+	Gui* GetGui() { return gui.get(); }
 	Input* GetInput() { return input.get(); }
 	Render* GetRender() { return render.get(); }
 	SoundManager* GetSoundManager() { return sound_mgr.get(); }
@@ -65,6 +66,7 @@ private:
 	static Engine* engine;
 	App* app;
 	CustomCollisionWorld* phy_world;
+	std::unique_ptr<Gui> gui;
 	std::unique_ptr<Input> input;
 	std::unique_ptr<Render> render;
 	std::unique_ptr<SoundManager> sound_mgr;

@@ -59,7 +59,7 @@ PickItemDialog* PickItemDialog::Show(PickItemDialogParams& params)
 
 	self->Create(params);
 
-	GUI.ShowDialog(self);
+	gui->ShowDialog(self);
 
 	return self;
 }
@@ -87,7 +87,7 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 	else if(flow_sizey > params.size_max.y)
 		flow_sizey = params.size_max.y;
 	size.y = flow_sizey;
-	pos = global_pos = (GUI.wnd_size - size) / 2;
+	pos = global_pos = (gui->wnd_size - size) / 2;
 	flow.UpdateSize(pos + Int2(16, 64), Int2(size.x - 32, size.y - 80), true);
 	btClose.pos = Int2(size.x - 48, 16);
 	btClose.global_pos = global_pos + btClose.pos;
@@ -97,13 +97,13 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 //=================================================================================================
 void PickItemDialog::Draw(ControlDrawData*)
 {
-	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
-	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
+	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	btClose.Draw();
 
 	Rect r = { global_pos.x + 16, global_pos.y + 16, global_pos.x + size.x - 56, global_pos.y + size.y };
-	GUI.DrawText(GUI.default_font, text, DTF_CENTER, Color::Black, r);
+	gui->DrawText(gui->default_font, text, DTF_CENTER, Color::Black, r);
 
 	flow.Draw();
 	if(get_tooltip)
@@ -131,7 +131,7 @@ void PickItemDialog::Update(float dt)
 		if(input->PressedRelease(Key::Escape))
 		{
 			result = BUTTON_CANCEL;
-			GUI.CloseDialog(this);
+			gui->CloseDialog(this);
 			if(event)
 				event(result);
 		}
@@ -144,14 +144,14 @@ void PickItemDialog::Event(GuiEvent e)
 	if(e == GuiEvent_WindowResize)
 	{
 		// recenter
-		pos = global_pos = (GUI.wnd_size - size) / 2;
+		pos = global_pos = (gui->wnd_size - size) / 2;
 		flow.UpdatePos(pos);
 		btClose.global_pos = global_pos + btClose.pos;
 	}
 	else if(e == Cancel)
 	{
 		result = BUTTON_CANCEL;
-		GUI.CloseDialog(this);
+		gui->CloseDialog(this);
 		if(event)
 			event(result);
 	}
@@ -165,7 +165,7 @@ void PickItemDialog::OnSelect()
 		// single selection, return result
 		result = BUTTON_OK;
 		selected.push_back(flow.selected);
-		GUI.CloseDialog(this);
+		gui->CloseDialog(this);
 		if(event)
 			event(result);
 	}
@@ -188,7 +188,7 @@ void PickItemDialog::OnSelect()
 			{
 				// selected requested count of items, return result
 				result = BUTTON_OK;
-				GUI.CloseDialog(this);
+				gui->CloseDialog(this);
 				if(event)
 					event(result);
 			}

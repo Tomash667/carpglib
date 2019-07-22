@@ -15,13 +15,13 @@ CheckBox::CheckBox(StringOrCstring text, bool checked) : text(text.c_str()), che
 //=================================================================================================
 void CheckBox::Draw(ControlDrawData* cdd/* =nullptr */)
 {
-	GUI.DrawItem(Button::tex[state], global_pos, bt_size, Color::White, 12);
+	gui->DrawItem(Button::tex[state], global_pos, bt_size, Color::White, 12);
 
 	if(checked)
-		GUI.DrawSprite(tTick, global_pos);
+		gui->DrawSprite(tTick, global_pos);
 
 	Rect r = { global_pos.x + bt_size.x + 4, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
-	GUI.DrawText(GUI.default_font, text, DTF_VCENTER, Color::Black, r);
+	gui->DrawText(gui->default_font, text, DTF_VCENTER, Color::Black, r);
 }
 
 //=================================================================================================
@@ -30,9 +30,9 @@ void CheckBox::Update(float dt)
 	if(state == DISABLED)
 		return;
 
-	if(input->Focus() && mouse_focus && PointInRect(GUI.cursor_pos, global_pos, bt_size))
+	if(input->Focus() && mouse_focus && PointInRect(gui->cursor_pos, global_pos, bt_size))
 	{
-		GUI.cursor_mode = CURSOR_HAND;
+		gui->cursor_mode = CURSOR_HAND;
 		if(state == PRESSED)
 		{
 			if(input->Up(Key::LeftButton))

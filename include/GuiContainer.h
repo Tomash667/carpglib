@@ -4,7 +4,7 @@
 #include "Control.h"
 
 //-----------------------------------------------------------------------------
-class GuiContainer
+class GuiContainer : public Control
 {
 public:
 	enum Flags

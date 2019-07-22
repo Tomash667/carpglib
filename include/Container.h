@@ -8,7 +8,7 @@
 // new_mode - delete childs, different auto focus
 class Container : public Control
 {
-	friend class IGUI;
+	friend class Gui;
 public:
 	Container(bool new_mode = false) : Control(new_mode), auto_focus(false), focus_top(false), dont_focus(false), new_mode(new_mode)
 	{

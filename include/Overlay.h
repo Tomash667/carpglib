@@ -4,39 +4,32 @@
 
 #include "Container.h"
 
-namespace gui
+class Overlay : public Container
 {
-	class GuiDialog;
-	class MenuBar;
-	class MenuStrip;
+public:
+	Overlay();
+	~Overlay();
 
-	class Overlay : public Container
-	{
-	public:
-		Overlay();
-		~Overlay();
+	bool NeedCursor() const override { return true; }
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
 
-		bool NeedCursor() const override { return true; }
-		void Draw(ControlDrawData* cdd = nullptr) override;
-		void Update(float dt) override;
+	void CloseDialog(GuiDialog* dialog);
+	void ShowDialog(GuiDialog* dialog);
+	void ShowMenu(MenuStrip* menu, const Int2& pos);
+	void CloseMenu(MenuStrip* menu);
+	void CheckFocus(Control* ctrl, bool pressed = false);
+	void SetFocus(Control* ctrl);
+	bool IsOpen(MenuStrip* menu);
 
-		void CloseDialog(GuiDialog* dialog);
-		void ShowDialog(GuiDialog* dialog);
-		void ShowMenu(MenuStrip* menu, const Int2& pos);
-		void CloseMenu(MenuStrip* menu);
-		void CheckFocus(Control* ctrl, bool pressed = false);
-		void SetFocus(Control* ctrl);
-		bool IsOpen(MenuStrip* menu);
+private:
+	void CloseMenus();
 
-	private:
-		void CloseMenus();
-
-		Control* focused;
-		Control* mouse_focused;
-		Control* clicked;
-		MenuStrip* to_add;
-		vector<MenuStrip*> menus, menus_to_close;
-		vector<GuiDialog*> dialogs, dialogs_to_close;
-		bool mouse_click;
-	};
-}
+	Control* focused;
+	Control* mouse_focused;
+	Control* clicked;
+	MenuStrip* to_add;
+	vector<MenuStrip*> menus, menus_to_close;
+	vector<GuiDialog*> dialogs, dialogs_to_close;
+	bool mouse_click;
+};

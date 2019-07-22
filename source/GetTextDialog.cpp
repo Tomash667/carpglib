@@ -14,14 +14,14 @@ GetTextDialog::GetTextDialog(const DialogInfo& info) : DialogBox(info), singleli
 //=================================================================================================
 void GetTextDialog::Draw(ControlDrawData*)
 {
-	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
-	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
+	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	for(int i = 0; i < 2; ++i)
 		bts[i].Draw();
 
 	Rect r = { global_pos.x + 16,global_pos.y + 16,global_pos.x + size.x,global_pos.y + size.y };
-	GUI.DrawText(GUI.default_font, text, DTF_CENTER, Color::Black, r);
+	gui->DrawText(gui->default_font, text, DTF_CENTER, Color::Black, r);
 
 	textBox.Draw();
 }
@@ -68,7 +68,7 @@ void GetTextDialog::Update(float dt)
 		got_result:
 			if(result == BUTTON_OK)
 				*input_str = textBox.GetText();
-			GUI.CloseDialog(this);
+			gui->CloseDialog(this);
 			if(event)
 				event(result);
 		}
@@ -90,7 +90,7 @@ void GetTextDialog::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_WindowResize)
 	{
-		self->pos = self->global_pos = (GUI.wnd_size - self->size) / 2;
+		self->pos = self->global_pos = (gui->wnd_size - self->size) / 2;
 		self->bts[0].global_pos = self->bts[0].pos + self->global_pos;
 		self->bts[1].global_pos = self->bts[1].pos + self->global_pos;
 		self->textBox.global_pos = self->textBox.pos + self->global_pos;
@@ -136,7 +136,7 @@ GetTextDialog* GetTextDialog::Show(const GetTextDialogParams& params)
 
 	self->Create(params);
 
-	GUI.ShowDialog(self);
+	gui->ShowDialog(self);
 
 	return self;
 }
@@ -162,13 +162,13 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	bt2.pos = Int2(16, size.y - 40 - 16);
 	if(params.custom_names)
 	{
-		bt1.text = (params.custom_names[0] ? params.custom_names[0] : GUI.txCancel);
-		bt2.text = (params.custom_names[1] ? params.custom_names[1] : GUI.txOk);
+		bt1.text = (params.custom_names[0] ? params.custom_names[0] : gui->txCancel);
+		bt2.text = (params.custom_names[1] ? params.custom_names[1] : gui->txOk);
 	}
 	else
 	{
-		bt1.text = GUI.txCancel;
-		bt2.text = GUI.txOk;
+		bt1.text = gui->txCancel;
+		bt2.text = gui->txOk;
 	}
 
 	// ustaw parametry
@@ -180,7 +180,7 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	input_str = params.input_str;
 
 	// ustaw pozycjê
-	pos = global_pos = (GUI.wnd_size - size) / 2;
+	pos = global_pos = (gui->wnd_size - size) / 2;
 	bt1.global_pos = bt1.pos + global_pos;
 	bt2.global_pos = bt2.pos + global_pos;
 	textBox.global_pos = textBox.pos + global_pos;

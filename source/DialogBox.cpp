@@ -18,9 +18,9 @@ need_delete(false), result(-1)
 //=================================================================================================
 void DialogBox::Draw(ControlDrawData*)
 {
-	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
-	pos = (GUI.wnd_size - size) / 2;
-	GUI.DrawItem(tDialog, pos, size, Color::Alpha(222), 16);
+	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
+	pos = (gui->wnd_size - size) / 2;
+	gui->DrawItem(tDialog, pos, size, Color::Alpha(222), 16);
 
 	for(uint i = 0; i < bts.size(); ++i)
 	{
@@ -29,7 +29,7 @@ void DialogBox::Draw(ControlDrawData*)
 	}
 
 	Rect r = { pos.x + 12, pos.y + 12, pos.x + size.x - 12, pos.y + size.y - 12 };
-	GUI.DrawText(GUI.default_font, text, DTF_CENTER, Color::Black, r);
+	gui->DrawText(gui->default_font, text, DTF_CENTER, Color::Black, r);
 }
 
 //=================================================================================================
@@ -56,11 +56,9 @@ void DialogBox::Update(float dt)
 
 	if(result != -1)
 	{
-		RemoveElement(GUI.created_dialogs, this);
 		if(event)
 			event(result);
-		if(GUI.CloseDialog(this))
-			delete this;
+		gui->CloseDialog(this);
 	}
 }
 
@@ -113,15 +111,15 @@ void DialogWithCheckbox::Event(GuiEvent e)
 DialogWithImage::DialogWithImage(const DialogInfo& info) : DialogBox(info), img(info.img)
 {
 	assert(img);
-	img_size = gui::GetSize(img);
+	img_size = GetSize(img);
 }
 
 //=================================================================================================
 void DialogWithImage::Draw(ControlDrawData*)
 {
-	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
-	pos = (GUI.wnd_size - size) / 2;
-	GUI.DrawItem(tDialog, pos, size, Color::Alpha(222), 16);
+	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
+	pos = (gui->wnd_size - size) / 2;
+	gui->DrawItem(tDialog, pos, size, Color::Alpha(222), 16);
 
 	for(uint i = 0; i < bts.size(); ++i)
 	{
@@ -130,9 +128,9 @@ void DialogWithImage::Draw(ControlDrawData*)
 	}
 
 	Rect r = text_rect + pos;
-	GUI.DrawText(GUI.default_font, text, DTF_CENTER, Color::Black, r);
+	gui->DrawText(gui->default_font, text, DTF_CENTER, Color::Black, r);
 
-	GUI.DrawSprite(img, img_pos + pos);
+	gui->DrawSprite(img, img_pos + pos);
 }
 
 //=================================================================================================

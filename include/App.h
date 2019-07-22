@@ -6,7 +6,6 @@ class App
 public:
 	virtual ~App() {}
 	virtual bool OnInit() { return true; }
-	virtual void OnChar(char c) {}
 	virtual void OnCleanup() {}
 	virtual void OnDraw() {}
 	virtual void OnReload() {}

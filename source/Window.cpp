@@ -2,11 +2,8 @@
 #include "EngineCore.h"
 #include "Window.h"
 #include "MenuBar.h"
-#include "ToolStrip.h"
 
-using namespace gui;
-
-Window::Window(bool fullscreen, bool borderless) : menu(nullptr), toolstrip(nullptr), fullscreen(fullscreen), borderless(borderless)
+Window::Window(bool fullscreen, bool borderless) : menu(nullptr), fullscreen(fullscreen), borderless(borderless)
 {
 	size = Int2(300, 200);
 }
@@ -17,15 +14,15 @@ Window::~Window()
 
 void Window::Draw(ControlDrawData*)
 {
-	GUI.DrawArea(body_rect, layout->window.background);
+	gui->DrawArea(body_rect, layout->window.background);
 
 	if(!borderless)
 	{
-		GUI.DrawArea(header_rect, layout->window.header);
+		gui->DrawArea(header_rect, layout->window.header);
 		if(!text.empty())
 		{
 			Rect r(header_rect, layout->window.padding);
-			GUI.DrawText(layout->window.font, text, DTF_LEFT | DTF_VCENTER, layout->window.font_color, r, &r);
+			gui->DrawText(layout->window.font, text, DTF_LEFT | DTF_VCENTER, layout->window.font_color, r, &r);
 		}
 	}
 
@@ -45,16 +42,14 @@ void Window::Event(GuiEvent e)
 	case GuiEvent_Initialize:
 		{
 			if(fullscreen)
-				size = GUI.wnd_size;
+				size = gui->wnd_size;
 			if(menu)
 				menu->Initialize();
-			if(toolstrip)
-				toolstrip->Initialize();
 			CalculateArea();
 			Int2 offset = Int2(area.v1);
 			for(Control* c : ctrls)
 			{
-				if(c == menu || c == toolstrip)
+				if(c == menu)
 					continue;
 				if(c->IsDocked())
 				{
@@ -69,16 +64,14 @@ void Window::Event(GuiEvent e)
 	case GuiEvent_WindowResize:
 		{
 			if(fullscreen)
-				size = GUI.wnd_size;
+				size = gui->wnd_size;
 			CalculateArea();
 			if(menu)
 				menu->Event(GuiEvent_Resize);
-			if(toolstrip)
-				toolstrip->Event(GuiEvent_Resize);
 			Int2 offset = Int2(area.v1);
 			for(Control* c : ctrls)
 			{
-				if(c == menu || c == toolstrip)
+				if(c == menu)
 					continue;
 				if(c->IsDocked())
 				{
@@ -129,13 +122,6 @@ void Window::SetMenu(MenuBar* _menu)
 	Add(menu);
 }
 
-void Window::SetToolStrip(ToolStrip* _toolstrip)
-{
-	assert(_toolstrip && !toolstrip && !initialized);
-	toolstrip = _toolstrip;
-	Add(toolstrip);
-}
-
 void Window::CalculateArea()
 {
 	body_rect = Box2d(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + size.y));
@@ -145,7 +131,5 @@ void Window::CalculateArea()
 		area.v1.y += layout->window.header_height;
 	if(menu)
 		area.v1.y += menu->size.y;
-	if(toolstrip)
-		area.v1.y += toolstrip->size.y;
 	area.v2 = Vec2(size);
 }

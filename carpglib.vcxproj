@@ -100,7 +100,6 @@
     <ClInclude Include="include\Texture.h" />
     <ClInclude Include="include\Timer.h" />
     <ClInclude Include="include\Tokenizer.h" />
-    <ClInclude Include="include\ToolStrip.h" />
     <ClInclude Include="include\TooltipController.h" />
     <ClInclude Include="include\TreeView.h" />
     <ClInclude Include="include\VertexData.h" />

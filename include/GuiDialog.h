@@ -2,11 +2,8 @@
 
 #include "Window.h"
 
-namespace gui
+class GuiDialog : public Window
 {
-	class GuiDialog : public Window
-	{
-	public:
-		void Close();
-	};
-}
+public:
+	void Close();
+};
