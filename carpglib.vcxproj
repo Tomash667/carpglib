@@ -90,7 +90,6 @@
     <ClInclude Include="include\Sound.h" />
     <ClInclude Include="include\SoundManager.h" />
     <ClInclude Include="include\SplitPanel.h" />
-    <ClInclude Include="include\StartupOptions.h" />
     <ClInclude Include="include\SuperShader.h" />
     <ClInclude Include="include\TabControl.h" />
     <ClInclude Include="include\Terrain.h" />

@@ -2,7 +2,6 @@
 #include "EngineCore.h"
 #include "Render.h"
 #include "RenderTarget.h"
-#include "StartupOptions.h"
 #include "Engine.h"
 #include "ShaderHandler.h"
 #include "File.h"
@@ -14,20 +13,32 @@ static const D3DFORMAT BACKBUFFER_FORMAT = D3DFMT_A8R8G8B8;
 static const D3DFORMAT ZBUFFER_FORMAT = D3DFMT_D24S8;
 
 //=================================================================================================
-Render::Render() : d3d(nullptr), device(nullptr), sprite(nullptr), current_target(nullptr), current_surf(nullptr), vsync(true), lost_device(false),
-res_freed(false), shaders_dir("../shaders")
+Render::Render() : initialized(false), d3d(nullptr), device(nullptr), sprite(nullptr), current_target(nullptr), current_surf(nullptr), vsync(true),
+lost_device(false), res_freed(false), shaders_dir("../shaders"), refresh_hz(0), shader_version(-1), used_adapter(0), multisampling(0), multisampling_quality(0)
 {
+	for(int i = 0; i < VDI_MAX; ++i)
+		vertex_decl[i] = nullptr;
 }
 
 //=================================================================================================
 Render::~Render()
 {
+	for(ShaderHandler* shader : shaders)
+	{
+		if(!shader->IsManual())
+		{
+			shader->OnRelease();
+			delete shader;
+		}
+	}
 	for(RenderTarget* target : targets)
 	{
 		SafeRelease(target->tex);
 		SafeRelease(target->surf);
 		delete target;
 	}
+	for(int i = 0; i < VDI_MAX; ++i)
+		SafeRelease(vertex_decl[i]);
 	if(device)
 	{
 		device->SetStreamSource(0, nullptr, 0, 0);
@@ -39,18 +50,8 @@ Render::~Render()
 }
 
 //=================================================================================================
-void Render::Init(StartupOptions& options)
+void Render::Init()
 {
-	HRESULT hr;
-
-	// copy settings
-	vsync = options.vsync;
-	used_adapter = options.used_adapter;
-	shader_version = options.shader_version;
-	multisampling = options.multisampling;
-	multisampling_quality = options.multisampling_quality;
-	refresh_hz = options.refresh_hz;
-
 	// create direct3d object
 	d3d = Direct3DCreate9(D3D_SDK_VERSION);
 	if(!d3d)
@@ -61,6 +62,7 @@ void Render::Init(StartupOptions& options)
 	Info("Render: Adapters count: %u", adapters);
 
 	// get adapters info
+	HRESULT hr;
 	D3DADAPTER_IDENTIFIER9 adapter;
 	for(uint i = 0; i < adapters; ++i)
 	{
@@ -77,7 +79,6 @@ void Render::Init(StartupOptions& options)
 	{
 		Warn("Render: Invalid adapter %d, defaulting to 0.", used_adapter);
 		used_adapter = 0;
-		options.used_adapter = 0;
 	}
 
 	// check shaders version
@@ -98,10 +99,7 @@ void Render::Init(StartupOptions& options)
 
 		int version = min(D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion));
 		if(shader_version == -1 || shader_version > version || shader_version < 2)
-		{
 			shader_version = version;
-			options.shader_version = version;
-		}
 
 		Info("Using shader version %d.", shader_version);
 	}
@@ -121,7 +119,7 @@ void Render::Init(StartupOptions& options)
 		throw Format("Render: Unsupported render target D3DFMT_A8R8G8B8 with display %s and depth buffer %s! (%d)",
 		STRING(DISPLAY_FORMAT), STRING(BACKBUFFER_FORMAT), hr);
 
-// check multisampling
+	// check multisampling
 	DWORD levels, levels2;
 	if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(used_adapter, D3DDEVTYPE_HAL, D3DFMT_A8R8G8B8, fullscreen ? FALSE : TRUE,
 		(D3DMULTISAMPLE_TYPE)multisampling, &levels))
@@ -133,7 +131,6 @@ void Render::Init(StartupOptions& options)
 		{
 			Warn("Render: Unavailable multisampling quality, changed to 0.");
 			multisampling_quality = 0;
-			options.multisampling_quality = 0;
 		}
 	}
 	else
@@ -142,8 +139,6 @@ void Render::Init(StartupOptions& options)
 			"Multisampling was turned off.", multisampling);
 		multisampling = 0;
 		multisampling_quality = 0;
-		options.multisampling = 0;
-		options.multisampling_quality = 0;
 	}
 
 	LogMultisampling();
@@ -188,7 +183,9 @@ void Render::Init(StartupOptions& options)
 		throw Format("Render: Failed to create direct3dx sprite (%d).", hr);
 
 	SetDefaultRenderState();
+	CreateVertexDeclarations();
 
+	initialized = true;
 	Info("Render: Directx device created.");
 }
 
@@ -344,6 +341,78 @@ void Render::SetDefaultRenderState()
 	r_alphablend = false;
 	r_nocull = false;
 	r_nozwrite = false;
+}
+
+//=================================================================================================
+void Render::CreateVertexDeclarations()
+{
+	const D3DVERTEXELEMENT9 Default[] = {
+		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
+		{0, 12,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_NORMAL,		0},
+		{0, 24, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0},
+		D3DDECL_END()
+	};
+	V(device->CreateVertexDeclaration(Default, &vertex_decl[VDI_DEFAULT]));
+
+	const D3DVERTEXELEMENT9 Animated[] = {
+		{0,	0,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
+		{0,	12,	D3DDECLTYPE_FLOAT1,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_BLENDWEIGHT,	0},
+		{0,	16,	D3DDECLTYPE_UBYTE4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_BLENDINDICES,	0},
+		{0,	20,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_NORMAL,		0},
+		{0,	32,	D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0},
+		D3DDECL_END()
+	};
+	V(device->CreateVertexDeclaration(Animated, &vertex_decl[VDI_ANIMATED]));
+
+	const D3DVERTEXELEMENT9 Tangents[] = {
+		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
+		{0, 12,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_NORMAL,		0},
+		{0, 24, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0},
+		{0,	32,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TANGENT,		0},
+		{0,	44,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_BINORMAL,		0},
+		D3DDECL_END()
+	};
+	V(device->CreateVertexDeclaration(Tangents, &vertex_decl[VDI_TANGENT]));
+
+	const D3DVERTEXELEMENT9 AnimatedTangents[] = {
+		{0,	0,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
+		{0,	12,	D3DDECLTYPE_FLOAT1,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_BLENDWEIGHT,	0},
+		{0,	16,	D3DDECLTYPE_UBYTE4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_BLENDINDICES,	0},
+		{0,	20,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_NORMAL,		0},
+		{0,	32,	D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0},
+		{0,	40,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TANGENT,		0},
+		{0,	52,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_BINORMAL,		0},
+		D3DDECL_END()
+	};
+	V(device->CreateVertexDeclaration(AnimatedTangents, &vertex_decl[VDI_ANIMATED_TANGENT]));
+
+	const D3DVERTEXELEMENT9 Tex[] = {
+		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
+		{0, 12, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0},
+		D3DDECL_END()
+	};
+	V(device->CreateVertexDeclaration(Tex, &vertex_decl[VDI_TEX]));
+
+	const D3DVERTEXELEMENT9 Color[] = {
+		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
+		{0, 12, D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_COLOR,			0},
+		D3DDECL_END()
+	};
+	V(device->CreateVertexDeclaration(Color, &vertex_decl[VDI_COLOR]));
+
+	const D3DVERTEXELEMENT9 Particle[] = {
+		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
+		{0, 12, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0},
+		{0, 20, D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_COLOR,			0},
+		D3DDECL_END()
+	};
+	V(device->CreateVertexDeclaration(Particle, &vertex_decl[VDI_PARTICLE]));
+
+	const D3DVERTEXELEMENT9 Pos[] = {
+		{0,	0,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
+		D3DDECL_END()
+	};
+	V(device->CreateVertexDeclaration(Pos, &vertex_decl[VDI_POS]));
 }
 
 //=================================================================================================
@@ -820,7 +889,8 @@ void Render::SetVsync(bool new_vsync)
 		return;
 
 	vsync = new_vsync;
-	Reset(true);
+	if(initialized)
+		Reset(true);
 }
 
 //=================================================================================================
@@ -828,6 +898,13 @@ int Render::SetMultisampling(int type, int level)
 {
 	if(type == multisampling && (level == -1 || level == multisampling_quality))
 		return 1;
+
+	if(!initialized)
+	{
+		multisampling = type;
+		multisampling_quality = level;
+		return 2;
+	}
 
 	bool fullscreen = Engine::Get().IsFullscreen();
 	DWORD levels, levels2;

@@ -1,13 +1,12 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "SoundManager.h"
-#include "StartupOptions.h"
 #include "ResourceManager.h"
 #include "WindowsIncludes.h"
 #include <fmod.hpp>
 
 //=================================================================================================
-SoundManager::SoundManager() : system(nullptr), current_music(nullptr), music_ended(false)
+SoundManager::SoundManager() : system(nullptr), current_music(nullptr), music_ended(false), nosound(false), nomusic(false), sound_volume(50), music_volume(50)
 {
 }
 
@@ -19,12 +18,8 @@ SoundManager::~SoundManager()
 }
 
 //=================================================================================================
-void SoundManager::Init(StartupOptions& options)
+void SoundManager::Init()
 {
-	nosound = options.nosound;
-	nomusic = options.nomusic;
-	sound_volume = options.sound_volume;
-	music_volume = options.music_volume;
 	disabled_sound = nosound && nomusic;
 	play_sound = !nosound && sound_volume > 0;
 
@@ -103,6 +98,14 @@ void SoundManager::Init(StartupOptions& options)
 	group_music->setVolume(float(nomusic ? 0 : music_volume) / 100);
 
 	Info("Engine: FMOD sound system created.");
+}
+
+//=================================================================================================
+void SoundManager::Disable(bool nosound, bool nomusic)
+{
+	assert(!initialized);
+	this->nosound = nosound;
+	this->nomusic = nomusic;
 }
 
 //=================================================================================================

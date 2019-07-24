@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "VertexDeclaration.h"
+
+//-----------------------------------------------------------------------------
 enum TextureAddressMode
 {
 	TEX_ADR_WRAP = 1,
@@ -34,7 +37,7 @@ class Render
 public:
 	Render();
 	~Render();
-	void Init(StartupOptions& options);
+	void Init();
 	bool Reset(bool force);
 	void WaitReset();
 	void Draw(bool call_present = true);
@@ -58,6 +61,7 @@ public:
 	int GetShaderVersion() const { return shader_version; }
 	int GetAdapter() const { return used_adapter; }
 	const string& GetShadersDir() const { return shaders_dir; }
+	IDirect3DVertexDeclaration9* GetVertexDeclaration(VertexDeclarationId id) { return vertex_decl[id]; }
 	void SetAlphaBlend(bool use_alphablend);
 	void SetAlphaTest(bool use_alphatest);
 	void SetNoCulling(bool use_nocull);
@@ -69,12 +73,14 @@ public:
 	void SetTarget(RenderTarget* target);
 	void SetTextureAddressMode(TextureAddressMode mode);
 	void SetShadersDir(cstring dir) { shaders_dir = dir; }
+	void SetAdapter(int adapter) { assert(!initialized); used_adapter = adapter; }
 
 private:
 	void GatherParams(D3DPRESENT_PARAMETERS& d3dpp);
 	void LogMultisampling();
 	void LogAndSelectResolution();
 	void SetDefaultRenderState();
+	void CreateVertexDeclarations();
 	void CreateRenderTargetTexture(RenderTarget* target);
 	void BeforeReset();
 	void AfterReset();
@@ -84,9 +90,10 @@ private:
 	ID3DXSprite* sprite;
 	vector<ShaderHandler*> shaders;
 	vector<RenderTarget*> targets;
+	IDirect3DVertexDeclaration9* vertex_decl[VDI_MAX];
 	RenderTarget* current_target;
 	SURFACE current_surf;
 	string shaders_dir;
 	int used_adapter, shader_version, refresh_hz, multisampling, multisampling_quality;
-	bool vsync, lost_device, res_freed, r_alphatest, r_nozwrite, r_nocull, r_alphablend;
+	bool initialized, vsync, lost_device, res_freed, r_alphatest, r_nozwrite, r_nocull, r_alphablend;
 };

@@ -78,6 +78,7 @@ public:
 	void Add(cstring name, int value) { Add(name, Format("%d", value)); }
 	void Add(cstring name, uint value) { Add(name, Format("%u", value)); }
 	void Add(cstring name, float value) { Add(name, Format("%g", value)); }
+	void Add(cstring name, const Int2& value) { Add(name, Format("{%d %d}", value.x, value.y)); }
 	void AddVar(ConfigVar& var) { config_vars.push_back(var); }
 	Result Load(cstring filename);
 	Result Save(cstring filename);
@@ -92,7 +93,7 @@ public:
 	Bool3 GetBool3(cstring name, Bool3 def = None);
 	const string& GetString(cstring name);
 	const string& GetString(cstring name, const string& def);
-	int GetInt(cstring name, int def = -1);
+	int GetInt(cstring name, int def = 0);
 	uint GetUint(cstring name, uint def = 0);
 	__int64 GetInt64(cstring name, int def = 0);
 	float GetFloat(cstring name, float def = 0.f);

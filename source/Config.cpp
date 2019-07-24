@@ -158,6 +158,20 @@ Int2 Config::GetInt2(cstring name, Int2 def)
 	Entry* e = GetEntry(name);
 	if(!e)
 		return def;
+
+	// old syntax compatibility "800x600"
+	if(e->value[0] != '{')
+	{
+		Int2 result;
+		if(sscanf_s(e->value.c_str(), "%dx%d", &result.x, &result.y) != 2)
+		{
+			Warn("Invalid Int2 '%s' value '%s'.", name, e->value.c_str());
+			return def;
+		}
+		return result;
+	}
+
+	// new syntax {800 600}
 	t.SetFlags(Tokenizer::F_JOIN_MINUS);
 	t.FromString(e->value);
 	try
@@ -170,6 +184,7 @@ Int2 Config::GetInt2(cstring name, Int2 def)
 	}
 	catch(const Tokenizer::Exception&)
 	{
+		Warn("Invalid Int2 '%s' value '%s'.", name, e->value.c_str());
 		return def;
 	}
 }
@@ -284,7 +299,7 @@ Config::Result Config::Save(cstring filename)
 	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 	{
 		cstring s;
-		if(it->value.find_first_of(" \t,./;'[]-=<>?:\"{}!@#$%^&*()_+") != string::npos)
+		if(it->value[0] != '{' && it->value.find_first_of(" \t,./;'[]-=<>?:\"{}!@#$%^&*()_+") != string::npos)
 			s = Format("%s = \"%s\"\n", it->name.c_str(), Escape(it->value));
 		else
 			s = Format("%s = %s\n", it->name.c_str(), it->value.c_str());

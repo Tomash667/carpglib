@@ -3526,16 +3526,16 @@ inline Matrix Matrix::Lerp(const Matrix& M1, const Matrix& M2, float t)
 	return result;
 }
 
-inline Matrix Matrix::Rotation(float yaw, float pitch, float roll)
+inline Matrix Matrix::Rotation(float x, float y, float z)
 {
 	Matrix R;
-	XMStoreFloat4x4(&R, XMMatrixRotationRollPitchYaw(pitch, yaw, roll));
+	XMStoreFloat4x4(&R, XMMatrixRotationRollPitchYaw(x, y, z));
 	return R;
 }
 
 inline Matrix Matrix::Rotation(const Vec3& v)
 {
-	return Rotation(v.y, v.x, v.z);
+	return Rotation(v.x, v.y, v.z);
 }
 
 inline Matrix Matrix::Rotation(const Quat& rotation)
@@ -3608,6 +3608,24 @@ inline Matrix Matrix::Transform(const Matrix& M, const Quat& rotation)
 	Matrix result;
 	XMStoreFloat4x4(&result, XMMatrixMultiply(M0, M1));
 	return result;
+}
+
+inline Matrix Matrix::Transform(const Vec3& pos, const Vec3& rot, const Vec3& scale)
+{
+	XMMATRIX m1 = XMMatrixScaling(scale.x, scale.y, scale.z);
+	XMMATRIX m2 = XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z);
+	XMMATRIX m3 = XMMatrixMultiply(m1, m2);
+	m1 = XMMatrixTranslation(pos.x, pos.y, pos.z);
+	m2 = XMMatrixMultiply(m3, m1);
+
+	Matrix result;
+	XMStoreFloat4x4(&result, m2);
+	return result;
+}
+
+inline Matrix Matrix::Transform(const Vec3& pos, const Vec3& rot, float scale)
+{
+	return Transform(pos, rot, Vec3(scale, scale, scale));
 }
 
 inline Matrix Matrix::Transform2D(const Vec2* scaling_center, float scaling_rotation, const Vec2* scaling, const Vec2* rotation_center, float rotation, const Vec2* translation)

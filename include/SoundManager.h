@@ -6,7 +6,8 @@ class SoundManager
 public:
 	SoundManager();
 	~SoundManager();
-	void Init(StartupOptions& options);
+	void Init();
+	void Disable(bool nosound, bool nomusic);
 	void Update(float dt);
 	int LoadSound(Sound* sound);
 	void PlayMusic(Sound* music);
@@ -36,5 +37,5 @@ private:
 	vector<FMOD::Channel*> fallbacks;
 	vector<Buffer*> sound_bufs;
 	int sound_volume, music_volume; // 0-100
-	bool music_ended, disabled_sound, play_sound, nosound, nomusic;
+	bool initialized, music_ended, disabled_sound, play_sound, nosound, nomusic;
 };

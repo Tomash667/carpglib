@@ -1234,7 +1234,7 @@ struct Matrix : XMFLOAT4X4
 	static Matrix CreateWorld(const Vec3& position, const Vec3& forward, const Vec3& up);
 	static void Lerp(const Matrix& M1, const Matrix& M2, float t, Matrix& result);
 	static Matrix Lerp(const Matrix& M1, const Matrix& M2, float t);
-	static Matrix Rotation(float yaw, float pitch, float roll);
+	static Matrix Rotation(float x, float y, float z);
 	static Matrix Rotation(const Vec3& v);
 	static Matrix Rotation(const Quat& quat);
 	static Matrix RotationX(float radians);
@@ -1245,6 +1245,8 @@ struct Matrix : XMFLOAT4X4
 	static Matrix Scale(float scale);
 	static void Transform(const Matrix& M, const Quat& rotation, Matrix& result);
 	static Matrix Transform(const Matrix& M, const Quat& rotation);
+	static Matrix Transform(const Vec3& pos, const Vec3& rot, const Vec3& scale);
+	static Matrix Transform(const Vec3& pos, const Vec3& rot, float scale);
 	static Matrix Transform2D(const Vec2* scaling_center, float scaling_rotation, const Vec2* scaling, const Vec2* rotation_center, float rotation, const Vec2* translation);
 	static Matrix Translation(const Vec3& position);
 	static Matrix Translation(float x, float y, float z);

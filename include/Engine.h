@@ -22,9 +22,10 @@ public:
 	void Shutdown();
 	void FatalError(cstring err);
 	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);
-	bool Start(App* app, StartupOptions& options);
+	bool Start(App* app);
 	void UnlockCursor(bool lock_on_focus = true);
 	void LockCursor();
+	void HideWindow(bool hide);
 
 	bool IsActive() const { return active; }
 	bool IsCursorLocked() const { return locked_cursor; }
@@ -44,18 +45,19 @@ public:
 
 	void SetTitle(cstring title);
 	void SetUnlockPoint(const Int2& pt) { unlock_point = pt; }
+	void SetWindowInitialPos(const Int2& pos, const Int2& size) { force_pos = pos; force_size = size; }
 
 	CameraBase* cam_base;
 
 private:
-	void Init(StartupOptions& options);
+	void Init();
 	void AdjustWindowSize();
 	void ChangeMode();
 	void Cleanup();
 	void DoTick(bool update_game);
 	long HandleEvent(HWND hwnd, uint msg, uint wParam, long lParam);
 	bool MsgToKey(uint msg, uint wParam, byte& key, int& result);
-	void InitWindow(StartupOptions& options);
+	void InitWindow();
 	void PlaceCursor();
 	void ShowCursor(bool show);
 	void UpdateActivity(bool is_active);
@@ -73,8 +75,8 @@ private:
 	HWND hwnd;
 	Timer timer;
 	string title;
-	Int2 wnd_size, real_size, unlock_point, activation_point;
+	Int2 wnd_size, real_size, unlock_point, activation_point, force_pos, force_size;
 	float frame_time, fps;
 	uint frames;
-	bool initialized, shutdown, cursor_visible, replace_cursor, locked_cursor, lock_on_focus, active, fullscreen;
+	bool initialized, shutdown, cursor_visible, replace_cursor, locked_cursor, lock_on_focus, active, fullscreen, hidden_window;
 };

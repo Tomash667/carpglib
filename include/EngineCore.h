@@ -8,7 +8,6 @@ struct CameraBase;
 struct Font;
 struct MeshInstance;
 struct ParticleEmitter;
-struct StartupOptions;
 struct TaskData;
 struct Terrain;
 struct TrailParticleEmitter;

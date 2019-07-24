@@ -146,6 +146,7 @@ public:
 	void OnReset() override;
 	void OnReload() override;
 	void OnRelease() override;
+	bool IsManual() override { return true; }
 	void InitLayout();
 	void SetText(cstring ok, cstring yes, cstring no, cstring cancel);
 	void Draw(bool draw_layers, bool draw_dialogs);

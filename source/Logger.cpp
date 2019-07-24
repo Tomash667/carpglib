@@ -21,6 +21,16 @@ void Logger::Log(Level level, cstring msg)
 	Log(level, msg, tm);
 }
 
+void Logger::SetInstance(Logger* logger)
+{
+	assert(logger);
+	if(logger == global)
+		return;
+	if(global)
+		delete global;
+	global = logger;
+}
+
 //-----------------------------------------------------------------------------
 ConsoleLogger::~ConsoleLogger()
 {
@@ -57,6 +67,12 @@ void TextLogger::Flush()
 }
 
 //-----------------------------------------------------------------------------
+MultiLogger::MultiLogger(std::initializer_list<Logger*> const& loggers)
+{
+	for(Logger* logger : loggers)
+		this->loggers.push_back(logger);
+}
+
 MultiLogger::~MultiLogger()
 {
 	DeleteElements(loggers);

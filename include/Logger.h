@@ -55,9 +55,11 @@ public:
 		Log(L_FATAL, Format(msg, args...));
 	}
 
-	static Logger* global;
+	static Logger* GetInstance() { return global; }
+	static void SetInstance(Logger* logger);
 
 protected:
+	static Logger* global;
 	static const cstring level_names[4];
 };
 
@@ -99,6 +101,8 @@ class MultiLogger : public Logger
 public:
 	vector<Logger*> loggers;
 
+	MultiLogger() {}
+	MultiLogger(std::initializer_list<Logger*> const& loggers);
 	~MultiLogger();
 	void Flush() override;
 
@@ -134,22 +138,22 @@ protected:
 // Helper global functions
 inline void Info(cstring msg)
 {
-	Logger::global->Log(Logger::L_INFO, msg);
+	Logger::GetInstance()->Log(Logger::L_INFO, msg);
 }
 template<typename... Args>
 inline void Info(cstring msg, const Args&... args)
 {
-	Logger::global->Log(Logger::L_INFO, Format(msg, args...));
+	Logger::GetInstance()->Log(Logger::L_INFO, Format(msg, args...));
 }
 
 inline void Warn(cstring msg)
 {
-	Logger::global->Log(Logger::L_WARN, msg);
+	Logger::GetInstance()->Log(Logger::L_WARN, msg);
 }
 template<typename... Args>
 inline void Warn(cstring msg, const Args&... args)
 {
-	Logger::global->Log(Logger::L_WARN, Format(msg, args...));
+	Logger::GetInstance()->Log(Logger::L_WARN, Format(msg, args...));
 }
 
 void WarnOnce(int id, cstring msg);
@@ -161,20 +165,20 @@ inline void WarnOnce(int id, cstring msg, const Args&... args)
 
 inline void Error(cstring msg)
 {
-	Logger::global->Log(Logger::L_ERROR, msg);
+	Logger::GetInstance()->Log(Logger::L_ERROR, msg);
 }
 template<typename... Args>
 inline void Error(cstring msg, const Args&... args)
 {
-	Logger::global->Log(Logger::L_ERROR, Format(msg, args...));
+	Logger::GetInstance()->Log(Logger::L_ERROR, Format(msg, args...));
 }
 
 inline void Fatal(cstring msg)
 {
-	Logger::global->Log(Logger::L_FATAL, msg);
+	Logger::GetInstance()->Log(Logger::L_FATAL, msg);
 }
 template<typename... Args>
 inline void Fatal(cstring msg, const Args&... args)
 {
-	Logger::global->Log(Logger::L_FATAL, Format(msg, args...));
+	Logger::GetInstance()->Log(Logger::L_FATAL, Format(msg, args...));
 }
