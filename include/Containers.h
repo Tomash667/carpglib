@@ -927,7 +927,7 @@ inline void LoopAndRemove(vector<T>& items, Action action)
 template<typename T, typename Action>
 inline void LoopAndRemove(rvector<T>& items, Action action)
 {
-	items.erase(std::remove_if(items.begin(), items.end(), action), items.end());
+	items.ptrs.erase(std::remove_if(items.ptrs.begin(), items.ptrs.end(), [&](T* ptr) { return action(*ptr); }), items.ptrs.end());
 }
 template<typename Key, typename Value, typename Action>
 inline void LoopAndRemove(std::map<Key, Value>& items, Action action)
