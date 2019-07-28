@@ -3,6 +3,6 @@ EXTERNAL VERSION LIST
 Bullet - 2.88 (<https://github.com/bulletphysics/bullet3/releases>)
 DirectX - Microsoft DirectX SDK (June 2010)
 DirectXMath - 3.13 (<https://github.com/Microsoft/DirectXMath/releases>)
-FMod - 1.10.12 (Low level API <https://www.fmod.com/resources/documentation-api?page=content/generated/common/revision.html>)
+FMod - 1.10.14 (Low level API <https://www.fmod.com/resources/documentation-api?page=content/generated/common/revision.html>)
 Visual Leak Detector - 2.5.1 (<https://github.com/KindDragon/vld/releases>)
-zlib - 1.2.11 (<https://github.com/madler/zlib>)
+zlib - 1.2.11 (<https://github.com/madler/zlib/releases>)
