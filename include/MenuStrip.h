@@ -1,14 +1,33 @@
 #pragma once
 
-#include "Control.h"
+//-----------------------------------------------------------------------------
+#include "Layout.h"
 
+//-----------------------------------------------------------------------------
 struct SimpleMenuCtor
 {
 	cstring text;
 	int id;
 };
 
-class MenuStrip : public Control, public OnCharHandler
+//-----------------------------------------------------------------------------
+namespace layout
+{
+	struct MenuStrip : public Control
+	{
+		AreaLayout background;
+		AreaLayout button_hover;
+		Font* font;
+		Int2 padding;
+		Int2 item_padding;
+		Color font_color;
+		Color font_color_hover;
+		Color font_color_disabled;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class MenuStrip : public Control, public LayoutControl<layout::MenuStrip>, public OnCharHandler
 {
 public:
 	struct Item

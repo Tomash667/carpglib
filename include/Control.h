@@ -33,18 +33,16 @@ public:
 	};
 
 	Control(bool is_new = false) : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false),
-		initialized(false), layout(gui->GetLayout()), is_new(is_new), disabled(false), flags(0) {}
+		initialized(false), is_new(is_new), disabled(false), flags(0) {}
 	virtual ~Control() {}
 
 	static Gui* gui;
 	static Input* input;
-	static Texture* tDialog;
 	Int2 pos, global_pos, size;
 	Control* parent;
 	bool visible, focus,
 		mouse_focus, // in Update it is set to true if Control can gain mouse focus, setting it to false mean that Control have taken focus
 		focusable;
-	Layout* layout;
 
 protected:
 	bool initialized, is_new, disabled;

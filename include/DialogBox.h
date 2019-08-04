@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "Button.h"
 #include "Checkbox.h"
+#include "Layout.h"
 
 //-----------------------------------------------------------------------------
 enum DialogButtonId
@@ -17,7 +18,18 @@ enum DialogButtonId
 };
 
 //-----------------------------------------------------------------------------
-class DialogBox : public Control
+namespace layout
+{
+	struct DialogBox : public Control
+	{
+		AreaLayout background;
+		AreaLayout box;
+		Font* font;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class DialogBox : public Control, public LayoutControl<layout::DialogBox>
 {
 public:
 	explicit DialogBox(const DialogInfo& info);
@@ -30,7 +42,6 @@ public:
 
 	void CloseDialog() { gui->CloseDialog(this); }
 
-	static Texture* tBackground;
 	string name, text;
 	GUI_DialogType type;
 	DialogEvent event;
@@ -38,6 +49,9 @@ public:
 	vector<Button> bts;
 	int result;
 	bool pause, need_delete;
+
+protected:
+	void DrawPanel(bool background = true);
 };
 
 //-----------------------------------------------------------------------------

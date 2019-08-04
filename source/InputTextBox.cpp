@@ -1,11 +1,10 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "InputTextBox.h"
-#include "TextBox.h"
 #include "Input.h"
 
 //=================================================================================================
-InputTextBox::InputTextBox() : added(false), background(nullptr)
+InputTextBox::InputTextBox() : added(false), background_color(Color::None)
 {
 }
 
@@ -13,30 +12,30 @@ InputTextBox::InputTextBox() : added(false), background(nullptr)
 void InputTextBox::Draw(ControlDrawData*)
 {
 	// t³o
-	if(background)
+	if(background_color != Color::None)
 	{
 		Rect r0 = { global_pos.x, global_pos.y, global_pos.x + textbox_size.x, global_pos.y + textbox_size.y };
-		gui->DrawSpriteRect(background, r0, background_color);
+		gui->DrawArea(background_color, r0);
 
 		r0.Top() = inputbox_pos.y;
 		r0.Bottom() = r0.Top() + inputbox_size.y;
-		gui->DrawSpriteRect(background, r0, background_color);
+		gui->DrawArea(background_color, r0);
 	}
 
 	// box na tekst
-	gui->DrawItem(TextBox::tBox, global_pos, textbox_size, Color::White, 8, 32);
+	gui->DrawArea(Box2d::Create(global_pos, textbox_size), layout->box);
 
 	// box na input
-	gui->DrawItem(TextBox::tBox, inputbox_pos, inputbox_size, Color::White, 8, 32);
+	gui->DrawArea(Box2d::Create(inputbox_pos, inputbox_size), layout->box);
 
 	// tekst
 	Rect rc = { global_pos.x + 4, global_pos.y + 4, global_pos.x + textbox_size.x - 4, global_pos.y + textbox_size.y - 4 };
 	Rect r = { rc.Left(), rc.Top() - int(scrollbar.offset), rc.Right(), rc.Bottom() - int(scrollbar.offset) - 20 };
-	gui->DrawText(gui->default_font, text, 0, Color::Black, r, &rc, nullptr, nullptr, &lines);
+	gui->DrawText(layout->font, text, 0, Color::Black, r, &rc, nullptr, nullptr, &lines);
 
 	// input
 	Rect r2 = { inputbox_pos.x + 4, inputbox_pos.y, inputbox_pos.x + inputbox_size.x - 4, inputbox_pos.y + inputbox_size.y };
-	gui->DrawText(gui->default_font, caret_blink >= 0.f ? Format("%s|", input_str.c_str()) : input_str, DTF_LEFT | DTF_VCENTER, Color::Black, r2, &r2);
+	gui->DrawText(layout->font, caret_blink >= 0.f ? Format("%s|", input_str.c_str()) : input_str, DTF_LEFT | DTF_VCENTER, Color::Black, r2, &r2);
 
 	// scrollbar
 	scrollbar.Draw();
@@ -212,12 +211,12 @@ void InputTextBox::Event(GuiEvent e)
 
 		// podziel tekst na linijki
 		lines.clear();
-		while(gui->default_font->SplitLine(OutBegin, OutEnd, OutWidth, InOutIndex, Text, TextEnd, 0, Width))
+		while(layout->font->SplitLine(OutBegin, OutEnd, OutWidth, InOutIndex, Text, TextEnd, 0, Width))
 			lines.push_back(TextLine(OutBegin, OutEnd, OutWidth));
 
 		CheckLines();
 
-		scrollbar.total = lines.size()*gui->default_font->height;
+		scrollbar.total = lines.size()*layout->font->height;
 		if(skip_to_end)
 		{
 			scrollbar.offset = float(scrollbar.total - scrollbar.part);
@@ -286,12 +285,12 @@ void InputTextBox::Reset(bool reset_cache)
 }
 
 //=================================================================================================
-void InputTextBox::Add(StringOrCstring str)
+void InputTextBox::Add(Cstring str)
 {
 	if(!text.empty())
 		text += '\n';
 	size_t InOutIndex = text.length();
-	str.AddTo(text);
+	text += str.s;
 
 	size_t OutBegin, OutEnd;
 	int OutWidth, Width = textbox_size.x - 8;
@@ -301,13 +300,13 @@ void InputTextBox::Add(StringOrCstring str)
 	bool skip_to_end = (int(scrollbar.offset) >= (scrollbar.total - scrollbar.part));
 
 	// podziel tekst na linijki
-	while(gui->default_font->SplitLine(OutBegin, OutEnd, OutWidth, InOutIndex, Text, TextEnd, 0, Width))
+	while(layout->font->SplitLine(OutBegin, OutEnd, OutWidth, InOutIndex, Text, TextEnd, 0, Width))
 		lines.push_back(TextLine(OutBegin, OutEnd, OutWidth));
 
 	// usuñ nadmiarowe linijki z pocz¹tku
 	CheckLines();
 
-	scrollbar.total = lines.size()*gui->default_font->height;
+	scrollbar.total = lines.size()*layout->font->height;
 	if(skip_to_end)
 	{
 		scrollbar.offset = float(scrollbar.total - scrollbar.part);

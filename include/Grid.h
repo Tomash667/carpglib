@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Control.h"
+#include "Layout.h"
 #include "Scrollbar.h"
 
 //-----------------------------------------------------------------------------
@@ -25,7 +25,17 @@ typedef delegate<void(int, int, Cell&)> GridEvent;
 typedef delegate<void(int, int, int)> SelectGridEvent;
 
 //-----------------------------------------------------------------------------
-class Grid : public Control
+namespace layout
+{
+	struct Grid : public Control
+	{
+		AreaLayout box;
+		Font* font;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class Grid : public Control, public LayoutControl<layout::Grid>
 {
 public:
 	enum Type

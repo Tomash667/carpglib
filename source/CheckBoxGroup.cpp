@@ -5,7 +5,7 @@
 
 CheckBoxGroup::CheckBoxGroup() : scrollbar(false, true)
 {
-	row_height = max(layout->check_box_group.font->height, layout->check_box_group.box.size.y) + 2;
+	row_height = max(layout->font->height, layout->box.size.y) + 2;
 }
 
 CheckBoxGroup::~CheckBoxGroup()
@@ -16,13 +16,13 @@ CheckBoxGroup::~CheckBoxGroup()
 void CheckBoxGroup::Draw(ControlDrawData*)
 {
 	Box2d rect = Box2d::Create(global_pos, size);
-	gui->DrawArea(rect, layout->check_box_group.background);
+	gui->DrawArea(rect, layout->background);
 
-	int box_height = layout->check_box_group.box.size.y;
+	int box_height = layout->box.size.y;
 	int box_x = global_pos.x + 2;
 	int box_y = global_pos.y + (row_height - box_height) / 2;
-	int text_x = box_x + layout->check_box_group.box.size.x + 2;
-	int text_y = global_pos.y + (row_height - layout->check_box_group.font->height) / 2;
+	int text_x = box_x + layout->box.size.x + 2;
+	int text_y = global_pos.y + (row_height - layout->font->height) / 2;
 
 	Box2d r;
 	Rect re;
@@ -30,11 +30,11 @@ void CheckBoxGroup::Draw(ControlDrawData*)
 	for(auto item : items)
 	{
 		r.v1 = Vec2((float)box_x, (float)box_y + offset);
-		r.v2 = r.v1 + Vec2(layout->check_box_group.box.size);
-		gui->DrawArea(r, item->checked ? layout->check_box_group.checked : layout->check_box_group.box);
+		r.v2 = r.v1 + Vec2(layout->box.size);
+		gui->DrawArea(r, item->checked ? layout->checked : layout->box);
 
 		re = Rect(text_x, text_y, global_pos.x + size.x - 2, text_y + offset + 50);
-		gui->DrawText(layout->check_box_group.font, item->name, DTF_LEFT | DTF_SINGLELINE, layout->check_box_group.font_color, re);
+		gui->DrawText(layout->font, item->name, DTF_LEFT | DTF_SINGLELINE, layout->font_color, re);
 
 		offset += row_height;
 	}
@@ -45,7 +45,7 @@ void CheckBoxGroup::Update(float dt)
 	if(!mouse_focus)
 		return;
 
-	const Int2& box_size = layout->check_box_group.box.size;
+	const Int2& box_size = layout->box.size;
 	int box_x = global_pos.x + 2;
 	int box_y = global_pos.y + (row_height - box_size.y) / 2;
 

@@ -2,7 +2,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Control.h"
+#include "Layout.h"
 
 //-----------------------------------------------------------------------------
 class TooltipController;
@@ -11,7 +11,19 @@ class TooltipController;
 typedef delegate<void(TooltipController*, int, int)> TooltipGetText;
 
 //-----------------------------------------------------------------------------
-class TooltipController : public Control
+namespace layout
+{
+	struct TooltipController : public Control
+	{
+		AreaLayout box;
+		Font* font;
+		Font* font_big;
+		Font* font_small;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class TooltipController : public Control, public LayoutControl<layout::TooltipController>
 {
 public:
 	void Draw(ControlDrawData* cdd = nullptr) override;

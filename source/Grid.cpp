@@ -18,15 +18,15 @@ void Grid::Draw(ControlDrawData*)
 	for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it)
 	{
 		// box nag³ówka
-		gui->DrawItem(gui->tBox, Int2(x, y), Int2(it->width, height), Color::Black, 8, 32);
+		gui->DrawArea(Box2d::Create(Int2(x, y), Int2(it->width, height)), layout->box);
 		// box zawartoœci
-		gui->DrawItem(gui->tBox, Int2(x, y + height), Int2(it->width, size.y - height), Color::Black, 8, 32);
+		gui->DrawArea(Box2d::Create(Int2(x, y + height), Int2(it->width, size.y - height)), layout->box);
 		// tekst nag³ówka
 		if(!it->title.empty())
 		{
 			r.Left() = x;
 			r.Right() = x + it->width;
-			gui->DrawText(gui->default_font, it->title, DTF_CENTER | DTF_VCENTER, Color::Black, r, &r);
+			gui->DrawText(layout->font, it->title, DTF_CENTER | DTF_VCENTER, Color::Black, r, &r);
 		}
 		x += it->width;
 	}
@@ -71,7 +71,7 @@ void Grid::Draw(ControlDrawData*)
 			else if(clip_state == 2)
 				r2.Bottom() = global_pos.y + size.y;
 			if(r2.Top() < r2.Bottom())
-				gui->DrawSpriteRect(gui->tPix, r2, selection_color);
+				gui->DrawArea(selection_color, r2);
 		}
 
 		for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it, ++n)
@@ -102,7 +102,7 @@ void Grid::Draw(ControlDrawData*)
 				r = Rect(x, y, x + it->width, y + height);
 
 				if(clip_state == 0)
-					gui->DrawText(gui->default_font, text, text_flags, color, r, &r);
+					gui->DrawText(layout->font, text, text_flags, color, r, &r);
 				else
 				{
 					clip_r.Left() = r.Left();
@@ -117,7 +117,7 @@ void Grid::Draw(ControlDrawData*)
 						clip_r.Top() = r.Top();
 						clip_r.Bottom() = global_pos.y + size.y;
 					}
-					gui->DrawText(gui->default_font, text, text_flags, color, r, &clip_r);
+					gui->DrawText(layout->font, text, text_flags, color, r, &clip_r);
 				}
 			}
 			else if(it->type == IMG)
@@ -211,7 +211,7 @@ void Grid::Update(float dt)
 			{
 				if(selection_type != NONE)
 				{
-					gui->cursor_mode = CURSOR_HAND;
+					gui->cursor_mode = CURSOR_HOVER;
 					if(input->PressedRelease(Key::LeftButton))
 						selected = n;
 				}
@@ -233,7 +233,7 @@ void Grid::Update(float dt)
 					// celowo nie zaznacza 1 kolumny!
 					if(col > 0)
 					{
-						gui->cursor_mode = CURSOR_HAND;
+						gui->cursor_mode = CURSOR_HOVER;
 						if(input->PressedRelease(Key::LeftButton))
 							select_event(n, col, 0);
 						else if(input->PressedRelease(Key::RightButton))

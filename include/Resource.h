@@ -16,7 +16,8 @@ enum class ResourceType
 	Mesh,
 	VertexData,
 	Sound,
-	Music
+	Music,
+	Font
 };
 
 //-----------------------------------------------------------------------------

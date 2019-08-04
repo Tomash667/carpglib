@@ -1108,6 +1108,37 @@ void Tokenizer::Parse(Vec2& v)
 }
 
 //=================================================================================================
+void Tokenizer::Parse(Color& c)
+{
+	if(IsSymbol('{'))
+	{
+		Next();
+		c.r = MustGetInt();
+		Next();
+		c.g = MustGetInt();
+		Next();
+		c.b = MustGetInt();
+		Next();
+		if(!IsSymbol('}'))
+		{
+			c.a = MustGetInt();
+			Next();
+		}
+		else
+			c.a = 255;
+		AssertSymbol('}');
+		Next();
+	}
+	else if(IsItem("BLACK"))
+	{
+		c = Color::Black;
+		Next();
+	}
+	else
+		Unexpected("color");
+}
+
+//=================================================================================================
 const string& Tokenizer::GetBlock(char open, char close, bool include_symbol)
 {
 	AssertSymbol(open);

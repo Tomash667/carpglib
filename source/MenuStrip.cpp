@@ -43,7 +43,7 @@ MenuStrip::MenuStrip(vector<GuiElement*>& _items, int min_width) : selected(null
 void MenuStrip::CalculateWidth(int min_width)
 {
 	int max_width = 0;
-	Font* font = layout->menustrip.font;
+	Font* font = layout->font;
 
 	for(auto& item : items)
 	{
@@ -52,8 +52,8 @@ void MenuStrip::CalculateWidth(int min_width)
 			max_width = width;
 	}
 
-	size = Int2(max_width + (layout->menustrip.padding.x + layout->menustrip.item_padding.x) * 2,
-		(font->height + (layout->menustrip.item_padding.y) * 2) * items.size() + layout->menustrip.padding.y * 2);
+	size = Int2(max_width + (layout->padding.x + layout->item_padding.x) * 2,
+		(font->height + (layout->item_padding.y) * 2) * items.size() + layout->padding.y * 2);
 
 	if(size.x < min_width)
 		size.x = min_width;
@@ -68,11 +68,11 @@ MenuStrip::~MenuStrip()
 void MenuStrip::Draw(ControlDrawData*)
 {
 	Box2d area = Box2d::Create(global_pos, size);
-	gui->DrawArea(area, layout->menustrip.background);
+	gui->DrawArea(area, layout->background);
 
-	Vec2 item_size((float)size.x - (layout->menustrip.padding.x) * 2,
-		(float)layout->menustrip.font->height + layout->menustrip.item_padding.y * 2);
-	area.v1 = Vec2(global_pos + layout->menustrip.padding);
+	Vec2 item_size((float)size.x - (layout->padding.x) * 2,
+		(float)layout->font->height + layout->item_padding.y * 2);
+	area.v1 = Vec2(global_pos + layout->padding);
 	area.v2 = area.v1 + item_size;
 	float offset = item_size.y;
 	Rect r;
@@ -80,17 +80,17 @@ void MenuStrip::Draw(ControlDrawData*)
 	for(Item& item : items)
 	{
 		if(item.hover)
-			gui->DrawArea(area, layout->menustrip.button_hover);
+			gui->DrawArea(area, layout->button_hover);
 
 		Color color;
 		if(!item.enabled)
-			color = layout->menustrip.font_color_disabled;
+			color = layout->font_color_disabled;
 		else if(item.hover)
-			color = layout->menustrip.font_color_hover;
+			color = layout->font_color_hover;
 		else
-			color = layout->menustrip.font_color;
-		r = Rect(area, layout->menustrip.item_padding);
-		gui->DrawText(layout->menustrip.font, item.text, DTF_LEFT, color, r);
+			color = layout->font_color;
+		r = Rect(area, layout->item_padding);
+		gui->DrawText(layout->font, item.text, DTF_LEFT, color, r);
 
 		area += Vec2(0, offset);
 	}
@@ -170,9 +170,9 @@ void MenuStrip::UpdateMouse()
 		return;
 	}
 
-	Vec2 item_size((float)size.x - (layout->menustrip.padding.x) * 2,
-		(float)layout->menustrip.font->height + layout->menustrip.item_padding.y * 2);
-	area.v1 = Vec2(global_pos + layout->menustrip.padding);
+	Vec2 item_size((float)size.x - (layout->padding.x) * 2,
+		(float)layout->font->height + layout->item_padding.y * 2);
+	area.v1 = Vec2(global_pos + layout->padding);
 	area.v2 = area.v1 + item_size;
 	float offset = item_size.y;
 

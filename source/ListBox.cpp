@@ -26,17 +26,17 @@ void ListBox::Draw(ControlDrawData*)
 	if(collapsed)
 	{
 		// box
-		gui->DrawItem(gui->tBox, global_pos, size, Color::White, 8, 32);
+		gui->DrawArea(Box2d::Create(global_pos, size), layout->box);
 
 		// element
 		if(selected != -1)
 		{
 			Rect rc = { global_pos.x + 2, global_pos.y + 2, global_pos.x + size.x - 12, global_pos.y + size.y - 2 };
-			gui->DrawText(gui->default_font, items[selected]->ToString(), DTF_SINGLELINE, Color::Black, rc, &rc);
+			gui->DrawText(layout->font, items[selected]->ToString(), DTF_SINGLELINE, Color::Black, rc, &rc);
 		}
 
 		// obrazek
-		gui->DrawSprite(gui->tDown, Int2(global_pos.x + size.x - 10, global_pos.y + (size.y - 10) / 2));
+		gui->DrawSprite(layout->down_arrow, Int2(global_pos.x + size.x - 10, global_pos.y + (size.y - 10) / 2));
 
 		// powinno byæ tu ale wtedy by³a by z³a kolejnoœæ rysowania
 		//if(menu->visible)
@@ -45,7 +45,7 @@ void ListBox::Draw(ControlDrawData*)
 	else
 	{
 		// box
-		gui->DrawItem(gui->tBox, global_pos, real_size, Color::White, 8, 32);
+		gui->DrawArea(Box2d::Create(global_pos, real_size), layout->box);
 
 		// zaznaczenie
 		Rect rc = { global_pos.x, global_pos.y, global_pos.x + real_size.x, global_pos.y + real_size.y };
@@ -55,7 +55,7 @@ void ListBox::Draw(ControlDrawData*)
 			rs.Bottom() = rs.Top() + item_height;
 			Rect out;
 			if(Rect::Intersect(rs, rc, out))
-				gui->DrawSpriteRect(gui->tPix, out, Color(0, 255, 0, 128));
+				gui->DrawArea(Box2d(out), layout->selection);
 		}
 
 		// elementy
@@ -75,7 +75,7 @@ void ListBox::Draw(ControlDrawData*)
 			}
 			else
 				r.Left() = orig_x;
-			if(!gui->DrawText(gui->default_font, e->ToString(), DTF_SINGLELINE, Color::Black, r, &rc))
+			if(!gui->DrawText(layout->font, e->ToString(), DTF_SINGLELINE, Color::Black, r, &rc))
 				break;
 			r.Top() += item_height;
 		}

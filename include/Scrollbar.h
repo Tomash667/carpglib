@@ -1,11 +1,19 @@
-// pasek przewijania
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Control.h"
+#include "Layout.h"
 
 //-----------------------------------------------------------------------------
-class Scrollbar : public Control
+namespace layout
+{
+	struct Scrollbar : public Control
+	{
+		AreaLayout tex, tex2;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class Scrollbar : public Control, public LayoutControl<layout::Scrollbar>
 {
 public:
 	explicit Scrollbar(bool hscrollbar = false, bool is_new = false);
@@ -22,7 +30,6 @@ public:
 	void UpdateOffset(float change);
 	bool IsRequired() const { return total > part; }
 
-	static TexturePtr tex, tex2;
 	int total, part, change;
 	float offset;
 	Int2 click_pt;

@@ -1,8 +1,35 @@
 #pragma once
 
-#include "Control.h"
+//-----------------------------------------------------------------------------
+#include "Layout.h"
 
-class TabControl : public Control
+//-----------------------------------------------------------------------------
+namespace layout
+{
+	struct TabControl : public Control
+	{
+		AreaLayout background;
+		AreaLayout line;
+		AreaLayout button;
+		AreaLayout button_hover;
+		AreaLayout button_down;
+		AreaLayout close;
+		AreaLayout close_hover;
+		AreaLayout button_prev;
+		AreaLayout button_prev_hover;
+		AreaLayout button_next;
+		AreaLayout button_next_hover;
+		Font* font;
+		Int2 padding;
+		Int2 padding_active;
+		Color font_color;
+		Color font_color_hover;
+		Color font_color_down;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class TabControl : public Control, public LayoutControl<layout::TabControl>
 {
 public:
 	struct Tab

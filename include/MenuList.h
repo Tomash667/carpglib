@@ -1,11 +1,22 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Control.h"
+#include "Layout.h"
 #include "GuiElement.h"
 
 //-----------------------------------------------------------------------------
-class MenuList : public Control
+namespace layout
+{
+	struct MenuList : public Control
+	{
+		AreaLayout box;
+		AreaLayout selection;
+		Font* font;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class MenuList : public Control, public LayoutControl<layout::MenuList>
 {
 public:
 	MenuList(bool is_new = false);

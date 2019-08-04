@@ -2,9 +2,21 @@
 // In future there will be multiple overlays (one 2d for window, and multiple 3d for ingame computers)
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "Container.h"
+#include "Layout.h"
 
-class Overlay : public Container
+//-----------------------------------------------------------------------------
+namespace layout
+{
+	struct Overlay : public Control
+	{
+		AreaLayout background;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class Overlay : public Container, public LayoutControl<layout::Overlay>
 {
 public:
 	Overlay();

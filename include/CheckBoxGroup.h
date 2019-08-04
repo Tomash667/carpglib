@@ -1,9 +1,24 @@
 #pragma once
 
-#include "Control.h"
+//-----------------------------------------------------------------------------
+#include "Layout.h"
 #include "Scrollbar.h"
 
-class CheckBoxGroup : public Control
+//-----------------------------------------------------------------------------
+namespace layout
+{
+	struct CheckBoxGroup : public Control
+	{
+		AreaLayout background;
+		AreaLayout box;
+		AreaLayout checked;
+		Font* font;
+		Color font_color;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class CheckBoxGroup : public Control, public LayoutControl<layout::CheckBoxGroup>
 {
 public:
 	CheckBoxGroup();

@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Control.h"
+#include "Layout.h"
 #include "Scrollbar.h"
 #include "Button.h"
 
@@ -52,7 +52,19 @@ struct FlowItem
 typedef delegate<void(int, int)> ButtonEvent;
 
 //-----------------------------------------------------------------------------
-class FlowContainer : public Control
+namespace layout
+{
+	struct FlowContainer : public Control
+	{
+		AreaLayout box;
+		AreaLayout selection;
+		Font* font;
+		Font* font_section;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class FlowContainer : public Control, public LayoutControl<layout::FlowContainer>
 {
 public:
 	FlowContainer();
@@ -72,7 +84,7 @@ public:
 	void SetItems(vector<FlowItem*>& _items);
 	int GetHeight() const { return scroll.total; }
 	void UpdateText(FlowItem* item, cstring text, bool batch = false);
-	void UpdateText(int _group, int _id, cstring _text, bool batch = false) { UpdateText(Find(_group, _id), _text, batch); }
+	void UpdateText(int group, int id, cstring text, bool batch = false) { UpdateText(Find(group, id), text, batch); }
 	void UpdateText();
 
 	vector<FlowItem*> items;

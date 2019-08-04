@@ -1,7 +1,6 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "SplitPanel.h"
-#include "Panel.h"
 
 SplitPanel::SplitPanel() : min_size1(0), min_size2(0), panel1(nullptr), panel2(nullptr), allow_move(true), horizontal(true), splitter_size(3)
 {
@@ -15,12 +14,8 @@ SplitPanel::~SplitPanel()
 
 void SplitPanel::Draw(ControlDrawData*)
 {
-	if(use_custom_color)
-		gui->DrawArea(custom_color, global_pos, size);
-	else
-		gui->DrawArea(Box2d::Create(global_pos, size), layout->panel.background);
-
-	gui->DrawArea(Box2d(split_global), horizontal ? layout->split_panel.horizontal : layout->split_panel.vertical);
+	gui->DrawArea(Box2d::Create(global_pos, size), layout->background);
+	gui->DrawArea(Box2d(split_global), horizontal ? layout->horizontal : layout->vertical);
 
 	panel1->Draw();
 	panel2->Draw();
@@ -39,12 +34,12 @@ void SplitPanel::Event(GuiEvent e)
 			panel2 = new Panel;
 		panel2->parent = this;
 		// tmp
-		panel1->custom_color = Color::Red;
+		/*panel1->custom_color = Color::Red;
 		panel1->use_custom_color = true;
 		panel2->custom_color = Color::Blue;
 		panel2->use_custom_color = true;
 		custom_color = Color::Green;
-		use_custom_color = true;
+		use_custom_color = true;*/
 		Update(e, true, true);
 		panel1->Initialize();
 		panel2->Initialize();
@@ -73,7 +68,7 @@ void SplitPanel::Update(GuiEvent e, bool resize, bool move)
 {
 	if(resize)
 	{
-		const Int2& padding = layout->split_panel.padding;
+		const Int2& padding = layout->padding;
 		Int2 size_left = size;
 		if(horizontal)
 		{

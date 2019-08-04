@@ -1,10 +1,14 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "GuiDialog.h"
+#include "Layout.h"
 
+//-----------------------------------------------------------------------------
 class PickFileDialogItem;
 struct PickFileDialogOptions;
 
+//-----------------------------------------------------------------------------
 enum class PreviewType
 {
 	None,
@@ -12,10 +16,21 @@ enum class PreviewType
 	Image
 };
 
-class PickFileDialog : public GuiDialog
+//-----------------------------------------------------------------------------
+namespace layout
+{
+	struct PickFileDialog : public Control
+	{
+		AreaLayout box;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class PickFileDialog : public GuiDialog, public LayoutControl<layout::PickFileDialog>
 {
 public:
 	typedef delegate<void(PickFileDialog*)> Handler;
+	using LayoutControl<layout::PickFileDialog>::layout;
 
 	static void Show(const PickFileDialogOptions& options);
 	static void Destroy();

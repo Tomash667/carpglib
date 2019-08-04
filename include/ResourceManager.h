@@ -74,7 +74,7 @@ class ResourceManager
 	typedef std::set<Resource*, ResourceComparer> ResourceContainer;
 	typedef ResourceContainer::iterator ResourceIterator;
 
-public:
+	public:
 	ResourceManager();
 	~ResourceManager();
 
@@ -83,6 +83,7 @@ public:
 	void Cleanup();
 	bool AddDir(cstring dir, bool subdir = true);
 	bool AddPak(cstring path, cstring key = nullptr);
+	void AddResource(Resource* res);
 	ResourceType ExtToResourceType(cstring ext);
 	ResourceType FilenameToResourceType(cstring filename);
 	void AddTaskCategory(Cstring name);

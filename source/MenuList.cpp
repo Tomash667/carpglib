@@ -18,12 +18,12 @@ MenuList::~MenuList()
 //=================================================================================================
 void MenuList::Draw(ControlDrawData*)
 {
-	gui->DrawItem(gui->tBox2, global_pos, size, Color::White, 8, 32);
+	gui->DrawArea(Box2d::Create(global_pos, size), layout->box);
 
 	Rect rect = { global_pos.x + 5, global_pos.y + 5, global_pos.x + size.x - 5, global_pos.y + 25 };
 	for(GuiElement* e : items)
 	{
-		gui->DrawText(gui->default_font, e->ToString(), DTF_SINGLELINE, Color::Black, rect, &rect);
+		gui->DrawText(layout->font, e->ToString(), DTF_SINGLELINE, Color::Black, rect, &rect);
 		rect.Top() += 20;
 		rect.Bottom() += 20;
 	}
@@ -31,7 +31,7 @@ void MenuList::Draw(ControlDrawData*)
 	if(selected != -1)
 	{
 		Rect r2 = { global_pos.x + 4, global_pos.y + 4 + selected * 20, global_pos.x + size.x - 4, global_pos.y + 24 + selected * 20 };
-		gui->DrawSpriteRect(gui->tPix, r2, Color(0, 148, 255, 128));
+		gui->DrawArea(Box2d(r2), layout->selection);
 	}
 }
 
@@ -95,7 +95,7 @@ void MenuList::AddItems(vector<GuiElement*>& new_items, bool is_owner)
 void MenuList::PrepareItem(cstring text)
 {
 	assert(text);
-	int w2 = gui->default_font->CalculateSize(text).x;
+	int w2 = layout->font->CalculateSize(text).x;
 	if(w2 > w)
 		w = w2;
 }

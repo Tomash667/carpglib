@@ -6,7 +6,6 @@
 
 Gui* Control::gui;
 Input* Control::input;
-Texture* Control::tDialog;
 
 void Control::Dock(Control* c)
 {

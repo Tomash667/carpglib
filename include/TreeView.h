@@ -1,5 +1,7 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
+#include "Layout.h"
 #include "Scrollbar.h"
 
 /*
@@ -10,6 +12,26 @@ selected - can be more than one if multiselect enabled
 Currently can'y change this settings: drag&drop, multiselect, autosort (YAGNI)
 */
 
+//-----------------------------------------------------------------------------
+namespace layout
+{
+	struct TreeView : public Control
+	{
+		AreaLayout background;
+		AreaLayout selected;
+		AreaLayout button;
+		AreaLayout button_hover;
+		AreaLayout button_down;
+		AreaLayout button_down_hover;
+		Font* font;
+		Color font_color;
+		int level_offset;
+		Texture* text_box_background;
+		Texture* drag_n_drop;
+	};
+}
+
+//-----------------------------------------------------------------------------
 class TreeNode
 {
 	friend TreeView;
@@ -101,7 +123,8 @@ private:
 	bool selected, is_dir, collapsed;
 };
 
-class TreeView : public Control, public TreeNode, public OnCharHandler
+//-----------------------------------------------------------------------------
+class TreeView : public Control, public LayoutControl<layout::TreeView>, public TreeNode, public OnCharHandler
 {
 	friend TreeNode;
 public:

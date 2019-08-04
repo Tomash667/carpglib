@@ -5,6 +5,8 @@
 #define far
 #include <d3dx9.h>
 #undef DrawText
+#undef CreateFont
+#undef GetCharWidth
 
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG

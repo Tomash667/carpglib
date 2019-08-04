@@ -2,69 +2,16 @@
 #include "EngineCore.h"
 #include "Label.h"
 
-Label::Label(cstring text, bool auto_size) : text(text), custom_layout(nullptr), own_custom_layout(false), auto_size(auto_size)
+Label::Label(cstring text, bool auto_size) : text(text), auto_size(auto_size)
 {
 	if(auto_size)
 		CalculateSize();
 }
 
-Label::~Label()
-{
-	if(own_custom_layout)
-		delete custom_layout;
-}
-
 void Label::Draw(ControlDrawData*)
 {
-	auto& l = GetLayout();
 	Rect rect = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
-	gui->DrawText(l.font, text, l.align, l.color, rect);
-}
-
-void Label::SetAlign(uint align)
-{
-	if(align == GetAlign())
-		return;
-	EnsureLayout()->align = align;
-}
-
-void Label::SetColor(Color color)
-{
-	if(color == GetColor())
-		return;
-	EnsureLayout()->color = color;
-}
-
-void Label::SetCustomLayout(LabelLayout* layout)
-{
-	assert(layout);
-
-	if(own_custom_layout)
-	{
-		delete custom_layout;
-		own_custom_layout = false;
-	}
-
-	custom_layout = layout;
-	CalculateSize();
-}
-
-void Label::SetFont(Font* font)
-{
-	assert(font);
-
-	if(font == GetFont())
-		return;
-	EnsureLayout()->font = font;
-	CalculateSize();
-}
-
-void Label::SetPadding(const Int2& padding)
-{
-	if(padding == GetPadding())
-		return;
-	EnsureLayout()->padding = padding;
-	CalculateSize();
+	gui->DrawText(layout->font, text, layout->align, layout->color, rect);
 }
 
 void Label::SetText(Cstring s)
@@ -83,16 +30,5 @@ void Label::CalculateSize()
 {
 	if(!auto_size)
 		return;
-	auto& l = GetLayout();
-	size = l.font->CalculateSize(text) + l.padding * 2;
-}
-
-LabelLayout* Label::EnsureLayout()
-{
-	if(!own_custom_layout)
-	{
-		custom_layout = new LabelLayout(GetLayout());
-		own_custom_layout = true;
-	}
-	return custom_layout;
+	size = layout->font->CalculateSize(text) + layout->padding * 2;
 }

@@ -31,6 +31,7 @@
 #include <thread>
 #include <DirectXMath.h>
 #include <array>
+#include <typeindex>
 
 //-----------------------------------------------------------------------------
 using std::string;

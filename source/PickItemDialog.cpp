@@ -5,7 +5,6 @@
 
 //-----------------------------------------------------------------------------
 PickItemDialog* PickItemDialog::self;
-CustomButton PickItemDialog::custom_x;
 
 //=================================================================================================
 void PickItemDialogParams::AddItem(cstring item_text, int group, int id, bool disabled)
@@ -32,10 +31,12 @@ void PickItemDialogParams::AddSeparator(cstring item_text)
 //=================================================================================================
 PickItemDialog::PickItemDialog(const DialogInfo&  info) : DialogBox(info)
 {
+	DialogBox::layout = layout;
+
 	flow.allow_select = true;
 	flow.on_select = VoidF(this, &PickItemDialog::OnSelect);
 
-	btClose.custom = &custom_x;
+	btClose.custom = &layout->close;
 	btClose.id = Cancel;
 	btClose.size = Int2(32, 32);
 	btClose.parent = this;
@@ -88,7 +89,7 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 		flow_sizey = params.size_max.y;
 	size.y = flow_sizey;
 	pos = global_pos = (gui->wnd_size - size) / 2;
-	flow.UpdateSize(pos + Int2(16, 64), Int2(size.x - 32, size.y - 80), true);
+	flow.UpdateSize(Int2(16, 64), Int2(size.x - 32, size.y - 80), true);
 	btClose.pos = Int2(size.x - 48, 16);
 	btClose.global_pos = global_pos + btClose.pos;
 	selected.clear();
@@ -97,13 +98,12 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 //=================================================================================================
 void PickItemDialog::Draw(ControlDrawData*)
 {
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
-	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	DrawPanel();
 
 	btClose.Draw();
 
 	Rect r = { global_pos.x + 16, global_pos.y + 16, global_pos.x + size.x - 56, global_pos.y + size.y };
-	gui->DrawText(gui->default_font, text, DTF_CENTER, Color::Black, r);
+	gui->DrawText(layout->font, text, DTF_CENTER, Color::Black, r);
 
 	flow.Draw();
 	if(get_tooltip)
@@ -141,7 +141,7 @@ void PickItemDialog::Update(float dt)
 //=================================================================================================
 void PickItemDialog::Event(GuiEvent e)
 {
-	if(e == GuiEvent_WindowResize)
+	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
 		// recenter
 		pos = global_pos = (gui->wnd_size - size) / 2;

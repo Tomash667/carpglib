@@ -1,6 +1,7 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "Gui.h"
+#include "Layout.h"
 #include "Container.h"
 #include "DialogBox.h"
 #include "GuiRect.h"
@@ -8,14 +9,12 @@
 #include "Profiler.h"
 #include "Render.h"
 #include "Input.h"
+#include "ResourceManager.h"
 #include "DirectX.h"
 
-//-----------------------------------------------------------------------------
-TexturePtr Gui::tBox, Gui::tBox2, Gui::tPix, Gui::tDown;
-
 //=================================================================================================
-Gui::Gui() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
-active_notifications(), tPixel(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), vertex_decl(nullptr), effect(nullptr)
+Gui::Gui() : tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr), tPixel(nullptr),
+master_layout(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), vertex_decl(nullptr), effect(nullptr)
 {
 }
 
@@ -23,11 +22,8 @@ active_notifications(), tPixel(nullptr), layout(nullptr), overlay(nullptr), gray
 Gui::~Gui()
 {
 	DeleteElements(created_dialogs);
-	for(int i = 0; i < MAX_ACTIVE_NOTIFICATIONS; ++i)
-		delete active_notifications[i];
-	DeleteElements(pending_notifications);
 	SafeRelease(tPixel);
-	delete layout;
+	delete master_layout;
 }
 
 //=================================================================================================
@@ -110,13 +106,6 @@ void Gui::OnRelease()
 }
 
 //=================================================================================================
-void Gui::InitLayout()
-{
-	if(!layout)
-		layout = new Layout(this);
-}
-
-//=================================================================================================
 void Gui::SetText(cstring ok, cstring yes, cstring no, cstring cancel)
 {
 	txOk = ok;
@@ -146,6 +135,12 @@ bool Gui::AddFont(cstring filename)
 Font* Gui::CreateFont(cstring name, int size, int weight, int tex_size, int outline)
 {
 	assert(name && size > 0 && IsPow2(tex_size) && outline >= 0);
+
+	ResourceManager& res_mgr = ResourceManager::Get();
+	string res_name = Format("%s;%d;%d;%d", name, size, weight, outline);
+	Font* existing_font = res_mgr.TryGet<Font>(res_name);
+	if(existing_font)
+		return existing_font;
 
 	// oblicz rozmiar czcionki
 	HDC hdc = GetDC(nullptr);
@@ -205,11 +200,6 @@ Font* Gui::CreateFont(cstring name, int size, int weight, int tex_size, int outl
 
 	// stwórz czcionkê
 	Font* f = new Font;
-	f->tex = nullptr;
-	f->texOutline = nullptr;
-	for(int i = 0; i < 32; ++i)
-		f->glyph[i].ok = false;
-
 	int extra = outline + 1;
 
 	// ustaw znaki
@@ -231,7 +221,7 @@ Font* Gui::CreateFont(cstring name, int size, int weight, int tex_size, int outl
 					Warn("Font %s (%d) it too large for texture %d.", name, size, tex_size);
 				}
 			}
-			Glyph& g = f->glyph[i];
+			Font::Glyph& g = f->glyph[i];
 			g.ok = true;
 			g.uv.v1 = Vec2(float(offset.x) / tex_size, float(offset.y) / tex_size);
 			g.uv.v2 = g.uv.v1 + Vec2(float(sum) / tex_size, float(height) / tex_size);
@@ -243,7 +233,7 @@ Font* Gui::CreateFont(cstring name, int size, int weight, int tex_size, int outl
 	}
 
 	// tab
-	Glyph& tab = f->glyph['\t'];
+	Font::Glyph& tab = f->glyph['\t'];
 	tab.ok = true;
 	tab.width = 32;
 	tab.uv = f->glyph[' '].uv;
@@ -271,13 +261,20 @@ Font* Gui::CreateFont(cstring name, int size, int weight, int tex_size, int outl
 		if(outline > 0)
 			D3DXSaveTextureToFile(Format("%s-%d-outline.png", name, size), D3DXIFF_PNG, f->texOutline, nullptr);*/
 
-		fonts.push_back(f);
+		f->type = ResourceType::Font;
+		f->state = ResourceState::Loaded;
+		f->path = res_name;
+		f->filename = f->path.c_str();
+		res_mgr.AddResource(f);
+
 		return f;
 	}
 	else
 	{
 		if(f->tex)
 			f->tex->Release();
+		if(f->texOutline)
+			f->texOutline->Release();
 		delete f;
 		return nullptr;
 	}
@@ -333,7 +330,7 @@ int Gui::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int
 		for(int i = 32; i <= 255; ++i)
 		{
 			cbuf[0] = (char)i;
-			const Glyph& g = font->glyph[i];
+			const Font::Glyph& g = font->glyph[i];
 			if(g.ok)
 			{
 				if(offset.x + g.width >= tex_size - 3)
@@ -359,7 +356,7 @@ int Gui::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int
 		for(int i = 32; i <= 255; ++i)
 		{
 			cbuf[0] = (char)i;
-			const Glyph& g = font->glyph[i];
+			const Font::Glyph& g = font->glyph[i];
 			if(g.ok)
 			{
 				if(offset.x + g.width >= tex_size - 3)
@@ -421,15 +418,15 @@ int Gui::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int
 
 //=================================================================================================
 // Draw text - rewritten from TFQ
-bool Gui::DrawText(Font* font, StringOrCstring str, uint flags, Color color, const Rect& rect, const Rect* clipping, vector<Hitbox>* hitboxes,
+bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect& rect, const Rect* clipping, vector<Hitbox>* hitboxes,
 	int* hitbox_counter, const vector<TextLine>* lines)
 {
 	assert(font);
 
 	uint line_begin, line_end, line_index = 0;
 	int line_width, width = rect.SizeX();
-	cstring text = str.c_str();
-	uint text_end = str.length();
+	cstring text = str;
+	uint text_end = strlen(str);
 	Vec4 current_color = Color(color);
 	Vec4 default_color = current_color;
 	outline_alpha = current_color.w;
@@ -762,7 +759,7 @@ void Gui::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, con
 			}
 		}
 
-		Glyph& g = font->glyph[byte(c)];
+		Font::Glyph& g = font->glyph[byte(c)];
 		Int2 glyph_size = Int2(g.width, font->height) * scale;
 
 		int clip_result = (clipping ? Clip(x, y, glyph_size.x, glyph_size.y, clipping) : 0);
@@ -961,7 +958,7 @@ void Gui::DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_e
 			}
 		}
 
-		Glyph& g = font->glyph[byte(c)];
+		Font::Glyph& g = font->glyph[byte(c)];
 
 		int clip_result = (clipping ? Clip(x, y, g.width, font->height, clipping) : 0);
 
@@ -1184,15 +1181,13 @@ void Gui::Draw(bool draw_layers, bool draw_dialogs)
 	if(draw_dialogs)
 		dialog_layer->Draw();
 
-	DrawNotifications();
-
 	// draw cursor
 	if(NeedCursor())
 	{
 		Int2 pos = cursor_pos;
 		if(cursor_mode == CURSOR_TEXT)
 			pos -= Int2(3, 8);
-		DrawSprite(tCursor[cursor_mode], pos);
+		DrawSprite(layout->cursor[cursor_mode], pos);
 	}
 
 	V(effect->EndPass());
@@ -1398,7 +1393,6 @@ void Gui::Update(float dt, float mouse_speed)
 		layer->Update(dt);
 	}
 
-	UpdateNotifications(dt);
 	engine.SetUnlockPoint(wnd_size / 2);
 }
 
@@ -1506,15 +1500,6 @@ void Gui::DrawSprite(Texture* t, const Int2& pos, Color color, const Rect* clipp
 void Gui::OnClean()
 {
 	OnReset();
-
-	for(vector<Font*>::iterator it = fonts.begin(), end = fonts.end(); it != end; ++it)
-	{
-		if((*it)->tex)
-			(*it)->tex->Release();
-		if((*it)->texOutline)
-			(*it)->texOutline->Release();
-		delete *it;
-	}
 
 	delete layer;
 	delete dialog_layer;
@@ -1651,11 +1636,12 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 	created_dialogs.push_back(d);
 
 	// calculate size
+	Font* font = d->layout->font;
 	Int2 text_size;
 	if(!info.auto_wrap)
-		text_size = default_font->CalculateSize(info.text);
+		text_size = font->CalculateSize(info.text);
 	else
-		text_size = default_font->CalculateSizeWrap(info.text, wnd_size, 24 + 32 + extra_limit);
+		text_size = font->CalculateSizeWrap(info.text, wnd_size, 24 + 32 + extra_limit);
 	d->size = text_size + Int2(24 + extra_limit, 24 + max(0, min_size.y - text_size.y));
 
 	// set buttons
@@ -1664,7 +1650,7 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 		Button& bt = Add1(d->bts);
 		bt.text = txOk;
 		bt.id = GuiEvent_Custom + BUTTON_OK;
-		bt.size = default_font->CalculateSize(bt.text) + Int2(24, 24);
+		bt.size = font->CalculateSize(bt.text) + Int2(24, 24);
 		bt.parent = d;
 
 		min_size.x = bt.size.x + 24;
@@ -1687,11 +1673,11 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 		}
 
 		bt1.id = GuiEvent_Custom + BUTTON_YES;
-		bt1.size = default_font->CalculateSize(bt1.text) + Int2(24, 24);
+		bt1.size = font->CalculateSize(bt1.text) + Int2(24, 24);
 		bt1.parent = d;
 
 		bt2.id = GuiEvent_Custom + BUTTON_NO;
-		bt2.size = default_font->CalculateSize(bt2.text) + Int2(24, 24);
+		bt2.size = font->CalculateSize(bt2.text) + Int2(24, 24);
 		bt2.parent = d;
 
 		bt1.size = bt2.size = Int2::Max(bt1.size, bt2.size);
@@ -2214,7 +2200,7 @@ bool Gui::NeedCursor()
 }
 
 //=================================================================================================
-bool Gui::DrawText3D(Font* font, StringOrCstring text, uint flags, Color color, const Vec3& pos, Rect* text_rect)
+bool Gui::DrawText3D(Font* font, Cstring text, uint flags, Color color, const Vec3& pos, Rect* text_rect)
 {
 	assert(font);
 
@@ -2441,110 +2427,6 @@ Rect Gui::GetSpriteRect(Texture* t, const Matrix& mat, const Rect* part, const R
 }
 
 //=================================================================================================
-void Gui::AddNotification(cstring text, Texture* icon, float timer)
-{
-	assert(text && timer > 0);
-
-	Notification* n = new Notification;
-	n->text = text;
-	n->icon = icon;
-	n->state = Notification::Showing;
-	n->t = timer;
-	n->t2 = 0.f;
-	pending_notifications.push_back(n);
-}
-
-//=================================================================================================
-void Gui::UpdateNotifications(float dt)
-{
-	// count free notifications
-	int free_items = 0;
-	for(Notification* n : active_notifications)
-	{
-		if(!n)
-			++free_items;
-	}
-
-	// add pending notification to active
-	if(free_items > 0 && !pending_notifications.empty())
-	{
-		LoopAndRemove(pending_notifications, [&free_items, this](Notification* new_notification)
-		{
-			if(free_items == 0)
-				return false;
-			for(Notification*& n : active_notifications)
-			{
-				if(!n)
-				{
-					n = new_notification;
-					--free_items;
-					return true;
-				}
-			}
-			return false;
-		});
-	}
-
-	// update active notifications
-	for(Notification*& n : active_notifications)
-	{
-		if(!n)
-			continue;
-
-		if(n->state == Notification::Showing)
-		{
-			n->t2 += 3.f * dt;
-			if(n->t2 >= 1.f)
-			{
-				n->state = Notification::Shown;
-				n->t2 = 1.f;
-			}
-		}
-		else if(n->state == Notification::Shown)
-		{
-			n->t -= dt;
-			if(n->t <= 0.f)
-				n->state = Notification::Hiding;
-		}
-		else
-		{
-			n->t2 -= dt;
-			if(n->t2 <= 0.f)
-			{
-				delete n;
-				n = nullptr;
-			}
-		}
-	}
-}
-
-//=================================================================================================
-void Gui::DrawNotifications()
-{
-	static const Int2 notification_size(350, 80);
-
-	for(Notification* n : active_notifications)
-	{
-		if(!n)
-			continue;
-
-		Int2 text_size = default_font->CalculateSize(n->text, notification_size.x - 80);
-		Int2 box_size = Int2::Max(notification_size, text_size + Int2(0, 16));
-
-		const int alpha = int(255 * n->t2);
-		Int2 offset(wnd_size.x - box_size.x - 8, 8);
-
-		DrawItem(Control::tDialog, offset, box_size, Color::Alpha(alpha), 12);
-
-		if(n->icon)
-			DrawSprite(n->icon, offset + Int2(8, 8), Color::Alpha(alpha));
-
-		Rect rect = { offset.x + 8 + 64, offset.y + 8, offset.x + box_size.x - 8, offset.y + box_size.y - 8 };
-		DrawText(default_font, n->text, DTF_CENTER | DTF_VCENTER, Color(0, 0, 0, alpha), rect, &rect);
-	}
-}
-
-//=================================================================================================
 void Gui::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* clip_rect)
 {
 	GuiRect gui_rect;
@@ -2570,15 +2452,10 @@ void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d
 	{
 		DrawItem(area_layout.tex, Int2(rect.LeftTop()), Int2(rect.Size()), area_layout.color, area_layout.size.x, area_layout.size.y, clip_rect);
 	}
-	else if(area_layout.mode == AreaLayout::Mode::Texture && area_layout.pad > 0)
-	{
-		// TODO
-		assert(0);
-	}
 	else
 	{
 		// background
-		if(area_layout.mode == AreaLayout::Mode::TextureAndColor)
+		if(area_layout.mode == AreaLayout::Mode::Image && area_layout.background_color != Color::None)
 		{
 			assert(!clip_rect);
 			tCurrent = tPixel;
@@ -2590,7 +2467,7 @@ void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d
 
 		// image/color
 		GuiRect gui_rect;
-		if(area_layout.mode >= AreaLayout::Mode::Texture)
+		if(area_layout.mode >= AreaLayout::Mode::Image)
 		{
 			tCurrent = area_layout.tex->tex;
 			gui_rect.Set(rect, &area_layout.region);
@@ -2915,4 +2792,13 @@ bool Gui::DrawText2(DrawTextOptions& options)
 		*options.hitbox_counter = hc->counter;
 
 	return !bottom_clip;
+}
+
+//=================================================================================================
+void Gui::SetLayout(Layout* master_layout)
+{
+	assert(master_layout);
+	this->master_layout = master_layout;
+	if(!layout)
+		layout = master_layout->Get<layout::Gui>();
 }

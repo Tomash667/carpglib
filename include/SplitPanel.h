@@ -1,8 +1,22 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "Panel.h"
 
-class SplitPanel : public Panel
+//-----------------------------------------------------------------------------
+namespace layout
+{
+	struct SplitPanel : public Control
+	{
+		AreaLayout background;
+		AreaLayout horizontal;
+		AreaLayout vertical;
+		Int2 padding;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class SplitPanel : public Control, public LayoutControl<layout::SplitPanel>
 {
 public:
 	enum class FixedPanel

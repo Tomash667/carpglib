@@ -224,9 +224,9 @@ void TreeNode::SetText(Cstring s)
 
 void TreeNode::CalculateWidth()
 {
-	width = tree->layout->tree_view.font->CalculateSize(text).x + 2;
+	width = tree->layout->font->CalculateSize(text).x + 2;
 	if(IsDir())
-		width += tree->layout->tree_view.button.size.x;
+		width += tree->layout->button.size.x;
 }
 
 void TreeNode::CalculatePath(bool send_event)
@@ -269,7 +269,6 @@ vscrollbar(false, true)
 	collapsed = false;
 	text_box = new TextBox(true);
 	text_box->visible = false;
-	text_box->SetBackground(layout->tree_view.text_box_background);
 	hscrollbar.visible = false;
 	vscrollbar.visible = false;
 	CalculateWidth();
@@ -352,7 +351,7 @@ void TreeView::CalculatePos(TreeNode* node, Int2& offset, int& max_width)
 void TreeView::Draw(ControlDrawData*)
 {
 	Box2d box = Box2d::Create(global_pos, size);
-	gui->DrawArea(box, layout->tree_view.background);
+	gui->DrawArea(box, layout->background);
 
 	if(hscrollbar.visible)
 		hscrollbar.Draw();
@@ -369,7 +368,7 @@ void TreeView::Draw(ControlDrawData*)
 	}
 
 	if(drag == DRAG_MOVED)
-		gui->DrawSprite(layout->tree_view.drag_n_drop, gui->cursor_pos + Int2(16, 16));
+		gui->DrawSprite(layout->drag_n_drop, gui->cursor_pos + Int2(16, 16));
 }
 
 void TreeView::Draw(TreeNode* node)
@@ -382,7 +381,7 @@ void TreeView::Draw(TreeNode* node)
 	{
 		// selection
 		if(node->selected || (drag == DRAG_MOVED && node == above && CanDragAndDrop()))
-			gui->DrawArea(Box2d::Create(global_pos + Int2(1, 1 + offsety), Int2(area_size.x, item_height)), layout->tree_view.selected, &clip_rect);
+			gui->DrawArea(Box2d::Create(global_pos + Int2(1, 1 + offsety), Int2(area_size.x, item_height)), layout->selected, &clip_rect);
 
 		if(node->IsDir())
 		{
@@ -391,16 +390,16 @@ void TreeView::Draw(TreeNode* node)
 			if(node->collapsed)
 			{
 				if(node == hover)
-					area = &layout->tree_view.button_hover;
+					area = &layout->button_hover;
 				else
-					area = &layout->tree_view.button;
+					area = &layout->button;
 			}
 			else
 			{
 				if(node == hover)
-					area = &layout->tree_view.button_down_hover;
+					area = &layout->button_down_hover;
 				else
-					area = &layout->tree_view.button_down;
+					area = &layout->button_down;
 			}
 			gui->DrawArea(Box2d::Create(global_pos + Int2(node->pos.x + offsetx, offsety), area->size), *area, &clip_rect);
 			offsetx += area->size.x;
@@ -415,7 +414,7 @@ void TreeView::Draw(TreeNode* node)
 				global_pos.x + size.x,
 				global_pos.y + item_height + offsety
 			};
-			gui->DrawText(layout->tree_view.font, node->text, DTF_LEFT | DTF_VCENTER | DTF_SINGLELINE, layout->tree_view.font_color, r, &Rect(clip_rect));
+			gui->DrawText(layout->font, node->text, DTF_LEFT | DTF_VCENTER | DTF_SINGLELINE, layout->font_color, r, &Rect(clip_rect));
 		}
 	}
 
@@ -436,8 +435,8 @@ void TreeView::Event(GuiEvent e)
 	switch(e)
 	{
 	case GuiEvent_Initialize:
-		item_height = layout->tree_view.font->height + 2;
-		level_offset = layout->tree_view.level_offset;
+		item_height = layout->font->height + 2;
+		level_offset = layout->level_offset;
 		vscrollbar.size = Int2(16, size.y);
 		vscrollbar.part = size.y;
 		vscrollbar.pos = Int2(size.x - 16, 0);
@@ -554,12 +553,12 @@ void TreeView::Update(float dt)
 			if(posy >= 0 && posy <= item_height * 2)
 			{
 				float speed = Lerp(DRAG_SCROLL_SPEED_MIN, DRAG_SCROLL_SPEED_MAX, ((float)(item_height * 2) - posy) / (item_height * 2));
-				vscrollbar.UpdateOffset(-speed*dt);
+				vscrollbar.UpdateOffset(-speed * dt);
 			}
 			else if(posy >= size.y - item_height * 2 && posy <= size.y)
 			{
 				float speed = Lerp(DRAG_SCROLL_SPEED_MIN, DRAG_SCROLL_SPEED_MAX, ((float)posy - size.y + item_height * 2) / (item_height * 2));
-				vscrollbar.UpdateOffset(+speed*dt);
+				vscrollbar.UpdateOffset(+speed * dt);
 			}
 		}
 
@@ -1102,12 +1101,12 @@ void TreeView::SetTextboxLocation()
 	pos.y -= (int)vscrollbar.offset + 2;
 	if(edited->IsDir())
 	{
-		pos.x += layout->tree_view.button.size.x;
-		startpos += layout->tree_view.button.size.x;
+		pos.x += layout->button.size.x;
+		startpos += layout->button.size.x;
 	}
 	text_box->SetPosition(pos);
 
-	int width = gui->default_font->CalculateSize(text_box->GetText()).x + 10;
+	int width = layout->font->CalculateSize(text_box->GetText()).x + 10;
 	if(startpos + width > area_size.x)
 		width = area_size.x - startpos;
 	Int2 new_size = Int2(width, item_height + 4);

@@ -200,9 +200,6 @@
     <ClInclude Include="include\Layout.h">
       <Filter>gui controls</Filter>
     </ClInclude>
-    <ClInclude Include="include\AreaLayout.h">
-      <Filter>gui controls</Filter>
-    </ClInclude>
     <ClInclude Include="include\Panel.h">
       <Filter>gui controls</Filter>
     </ClInclude>
@@ -248,6 +245,12 @@
     <ClInclude Include="include\EnginePch.h" />
     <ClInclude Include="include\Input.h">
       <Filter>systems</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Notifications.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\LayoutLoader.h">
+      <Filter>resources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -453,6 +456,12 @@
     </ClCompile>
     <ClCompile Include="source\Input.cpp">
       <Filter>systems</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Notifications.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\LayoutLoader.cpp">
+      <Filter>resources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

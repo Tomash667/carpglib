@@ -85,7 +85,7 @@ void TooltipController::Draw(ControlDrawData*)
 		a2 = int(alpha * 255);
 
 	// box
-	gui->DrawItem(tDialog, pos, size, Color::Alpha(a), 12);
+	gui->DrawArea(Box2d::Create(pos, size), layout->box);
 
 	// image
 	if(img)
@@ -98,7 +98,7 @@ void TooltipController::Draw(ControlDrawData*)
 	{
 		r = r_big_text;
 		r += pos;
-		gui->DrawText(gui->fBig, big_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
+		gui->DrawText(layout->font_big, big_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
 	}
 
 	// text
@@ -106,7 +106,7 @@ void TooltipController::Draw(ControlDrawData*)
 	{
 		r = r_text;
 		r += pos;
-		gui->DrawText(gui->default_font, text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
+		gui->DrawText(layout->font, text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
 	}
 
 	// small text
@@ -114,7 +114,7 @@ void TooltipController::Draw(ControlDrawData*)
 	{
 		r = r_small_text;
 		r += pos;
-		gui->DrawText(gui->fSmall, small_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
+		gui->DrawText(layout->font_small, small_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
 	}
 }
 
@@ -140,7 +140,7 @@ void TooltipController::FormatBox()
 	// big text
 	if(!big_text.empty())
 	{
-		Int2 text_size = gui->fBig->CalculateSize(big_text, 400);
+		Int2 text_size = layout->font_big->CalculateSize(big_text, 400);
 		w = text_size.x;
 		h = text_size.y + 12;
 		r_big_text.Left() = 0;
@@ -157,7 +157,7 @@ void TooltipController::FormatBox()
 			h += 5;
 		else
 			h = 12;
-		text_size = gui->default_font->CalculateSize(text, 400);
+		text_size = layout->font->CalculateSize(text, 400);
 		if(text_size.x > w)
 			w = text_size.x;
 		r_text.Left() = 0;
@@ -181,7 +181,7 @@ void TooltipController::FormatBox()
 	{
 		if(h)
 			h += 5;
-		Int2 text_size = gui->fSmall->CalculateSize(small_text, 400);
+		Int2 text_size = layout->font_small->CalculateSize(small_text, 400);
 		text_size.x += 12;
 		if(text_size.x > w)
 			w = text_size.x;

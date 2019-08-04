@@ -1,8 +1,28 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "MenuStrip.h"
 
-class MenuBar : public Control
+//-----------------------------------------------------------------------------
+namespace layout
+{
+	struct MenuBar : public Control
+	{
+		AreaLayout background;
+		AreaLayout button;
+		AreaLayout button_hover;
+		AreaLayout button_down;
+		Font* font;
+		Int2 padding;
+		Int2 item_padding;
+		Color font_color;
+		Color font_color_hover;
+		Color font_color_down;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class MenuBar : public Control, public LayoutControl<layout::MenuBar>
 {
 	struct Item
 	{

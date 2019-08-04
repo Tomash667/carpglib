@@ -13,6 +13,9 @@ struct Cstring
 	Cstring(const string& str) : s(str.c_str())
 	{
 	}
+	Cstring(const LocalString& str) : s(str.c_str())
+	{
+	}
 
 	operator cstring() const
 	{

@@ -1,11 +1,20 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Control.h"
+#include "Layout.h"
 #include "Button.h"
 
 //-----------------------------------------------------------------------------
-class Slider : public Control
+namespace layout
+{
+	struct Slider : public Control
+	{
+		Font* font;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class Slider : public Control, public LayoutControl<layout::Slider>
 {
 public:
 	Slider();

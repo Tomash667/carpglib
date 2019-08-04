@@ -1,16 +1,26 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Control.h"
+#include "Layout.h"
 #include "Scrollbar.h"
 
 //-----------------------------------------------------------------------------
-typedef delegate<void(const string&)> InputEvent;
+namespace layout
+{
+	struct InputTextBox : public Control
+	{
+		AreaLayout background;
+		AreaLayout box;
+		Font* font;
+	};
+}
 
 //-----------------------------------------------------------------------------
-class InputTextBox : public Control, public OnCharHandler
+class InputTextBox : public Control, public LayoutControl<layout::InputTextBox>, public OnCharHandler
 {
 public:
+	typedef delegate<void(const string&)> InputEvent;
+
 	InputTextBox();
 
 	// from Control
@@ -22,7 +32,7 @@ public:
 
 	void Init();
 	void Reset(bool cache = false);
-	void Add(StringOrCstring str);
+	void Add(Cstring str);
 	void CheckLines();
 
 	string text, input_str;
@@ -32,7 +42,6 @@ public:
 	Scrollbar scrollbar;
 	Int2 textbox_size, inputbox_size, inputbox_pos;
 	InputEvent event;
-	Texture* background;
 	Color background_color;
 	bool added, lose_focus, esc_clear;
 

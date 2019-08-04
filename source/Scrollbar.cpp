@@ -3,9 +3,6 @@
 #include "Scrollbar.h"
 #include "Input.h"
 
-//-----------------------------------------------------------------------------
-TexturePtr Scrollbar::tex, Scrollbar::tex2;
-
 //=================================================================================================
 Scrollbar::Scrollbar(bool hscrollbar, bool is_new) : Control(is_new), clicked(false), hscrollbar(hscrollbar), manual_change(false), offset(0.f)
 {
@@ -14,7 +11,7 @@ Scrollbar::Scrollbar(bool hscrollbar, bool is_new) : Control(is_new), clicked(fa
 //=================================================================================================
 void Scrollbar::Draw(ControlDrawData* cdd)
 {
-	gui->DrawItem(tex, global_pos, size, Color::White, 4, 32);
+	gui->DrawArea(Box2d::Create(global_pos, size), layout->tex);
 
 	int s_pos, s_size;
 	if(hscrollbar)
@@ -29,7 +26,7 @@ void Scrollbar::Draw(ControlDrawData* cdd)
 			s_pos = int(float(offset) / total*size.x);
 			s_size = int(float(part) / total*size.x);
 		}
-		gui->DrawItem(tex2, Int2(global_pos.x + s_pos, global_pos.y), Int2(s_size, size.y), Color::White, 4, 32);
+		gui->DrawArea(Box2d::Create(Int2(global_pos.x + s_pos, global_pos.y), Int2(s_size, size.y)), layout->tex2);
 	}
 	else
 	{
@@ -43,7 +40,7 @@ void Scrollbar::Draw(ControlDrawData* cdd)
 			s_pos = int(float(offset) / total*size.y);
 			s_size = int(float(part) / total*size.y);
 		}
-		gui->DrawItem(tex2, Int2(global_pos.x, global_pos.y + s_pos), Int2(size.x, s_size), Color::White, 4, 32);
+		gui->DrawArea(Box2d::Create(Int2(global_pos.x, global_pos.y + s_pos), Int2(size.x, s_size)), layout->tex2);
 	}
 }
 

@@ -1,6 +1,21 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "Font.h"
+#include "DirectX.h"
+
+//=================================================================================================
+Font::Font() : tex(nullptr), texOutline(nullptr)
+{
+	for(int i = 0; i < 32; ++i)
+		glyph[i].ok = false;
+}
+
+//=================================================================================================
+Font::~Font()
+{
+	SafeRelease(tex);
+	SafeRelease(texOutline);
+}
 
 //=================================================================================================
 /* Taken from TFQ, modified for carpg
@@ -186,10 +201,10 @@ int Font::LineWidth(cstring str, bool parse_special) const
 }
 
 //=================================================================================================
-Int2 Font::CalculateSize(StringOrCstring str, int limit_width) const
+Int2 Font::CalculateSize(Cstring str, int limit_width) const
 {
-	int len = str.length();
-	cstring text = str.c_str();
+	int len = strlen(str);
+	cstring text = str;
 
 	Int2 size(0, 0);
 
@@ -207,7 +222,7 @@ Int2 Font::CalculateSize(StringOrCstring str, int limit_width) const
 }
 
 //=================================================================================================
-Int2 Font::CalculateSizeWrap(StringOrCstring str, const Int2& max_size, int border) const
+Int2 Font::CalculateSizeWrap(Cstring str, const Int2& max_size, int border) const
 {
 	int max_width = max_size.x - border;
 	Int2 size = CalculateSize(str, max_width);
@@ -321,14 +336,14 @@ bool Font::SkipSpecial(uint& in_out_index, cstring text, uint text_end) const
 }
 
 //=================================================================================================
-bool Font::HitTest(StringOrCstring str, int limit_width, int flags, const Int2& pos, uint& index, Int2& index2, Rect& rect, float& uv, const vector<FontLine>* font_lines) const
+bool Font::HitTest(Cstring str, int limit_width, int flags, const Int2& pos, uint& index, Int2& index2, Rect& rect, float& uv, const vector<Line>* font_lines) const
 {
 	if(pos.x < 0 || pos.y < 0)
 		return false;
 
 	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
-	uint text_end = str.length();
-	cstring text = str.c_str();
+	uint text_end = strlen(str);
+	cstring text = str;
 	int width = 0, prev_width = 0;
 	index = 0;
 
@@ -414,13 +429,13 @@ bool Font::HitTest(StringOrCstring str, int limit_width, int flags, const Int2& 
 }
 
 //=================================================================================================
-Int2 Font::IndexToPos(uint expected_index, StringOrCstring str, int limit_width, int flags) const
+Int2 Font::IndexToPos(uint expected_index, Cstring str, int limit_width, int flags) const
 {
-	assert(expected_index <= str.length());
+	assert(expected_index <= strlen(str));
 
 	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
-	uint text_end = str.length();
-	cstring text = str.c_str();
+	uint text_end = strlen(str);
+	cstring text = str;
 	uint index = 0;
 
 	if(IS_SET(flags, DTF_SINGLELINE))
@@ -478,18 +493,18 @@ Int2 Font::IndexToPos(uint expected_index, StringOrCstring str, int limit_width,
 }
 
 //=================================================================================================
-Int2 Font::IndexToPos(const Int2& expected_index, StringOrCstring str, int limit_width, int flags) const
+Int2 Font::IndexToPos(const Int2& expected_index, Cstring str, int limit_width, int flags) const
 {
 	assert(expected_index.x >= 0 && expected_index.y >= 0);
 
 	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
-	uint text_end = str.length();
-	cstring text = str.c_str();
+	uint text_end = strlen(str);
+	cstring text = str;
 	uint index = 0;
 
 	if(IS_SET(flags, DTF_SINGLELINE))
 	{
-		assert(expected_index.x <= (int)str.length());
+		assert(expected_index.x <= (int)text_end);
 		assert(expected_index.y == 0);
 
 		int width = 0;
@@ -546,13 +561,13 @@ Int2 Font::IndexToPos(const Int2& expected_index, StringOrCstring str, int limit
 }
 
 //=================================================================================================
-uint Font::PrecalculateFontLines(vector<FontLine>& font_lines, StringOrCstring str, int limit_width, int flags) const
+uint Font::PrecalculateFontLines(vector<Line>& font_lines, Cstring str, int limit_width, int flags) const
 {
 	font_lines.clear();
 
 	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
-	uint text_end = str.length();
-	cstring text = str.c_str();
+	uint text_end = strlen(str);
+	cstring text = str;
 	uint index = 0;
 
 	if(IS_SET(flags, DTF_SINGLELINE))
@@ -605,19 +620,19 @@ uint Font::GetLineWidth(cstring text, uint line_begin, uint line_end, bool parse
 }
 
 //=================================================================================================
-Int2 Font::IndexToPos(vector<FontLine>& font_lines, const Int2& expected_index, StringOrCstring str, int limit_width, int flags) const
+Int2 Font::IndexToPos(vector<Line>& font_lines, const Int2& expected_index, Cstring str, int limit_width, int flags) const
 {
 	assert(expected_index.x >= 0 && expected_index.y >= 0);
 
 	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
-	uint text_end = str.length();
-	cstring text = str.c_str();
+	uint text_end = strlen(str);
+	cstring text = str;
 	uint index = 0;
 	int width = 0;
 
 	if(IS_SET(flags, DTF_SINGLELINE))
 	{
-		assert(expected_index.x <= (int)str.length());
+		assert(expected_index.x <= (int)text_end);
 		assert(expected_index.y == 0);
 
 		while(index < text_end && index != expected_index.x)
@@ -662,7 +677,7 @@ Int2 Font::IndexToPos(vector<FontLine>& font_lines, const Int2& expected_index, 
 }
 
 //=================================================================================================
-uint Font::ToRawIndex(vector<FontLine>& font_lines, const Int2& index) const
+uint Font::ToRawIndex(vector<Line>& font_lines, const Int2& index) const
 {
 	assert(index.x >= 0 && index.y >= 0 && index.y < (int)font_lines.size());
 	auto& line = font_lines[index.y];
@@ -671,7 +686,7 @@ uint Font::ToRawIndex(vector<FontLine>& font_lines, const Int2& index) const
 }
 
 //=================================================================================================
-Int2 Font::FromRawIndex(vector<FontLine>& font_lines, uint index) const
+Int2 Font::FromRawIndex(vector<Line>& font_lines, uint index) const
 {
 	uint line_index = 0;
 	for(auto& line : font_lines)

@@ -1,16 +1,26 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Control.h"
+#include "Layout.h"
 
 //-----------------------------------------------------------------------------
 struct CustomButton
 {
-	Texture* tex[4];
+	AreaLayout tex[4];
 };
 
 //-----------------------------------------------------------------------------
-class Button : public Control
+namespace layout
+{
+	struct Button : public Control
+	{
+		AreaLayout tex[4];
+		Font* font;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class Button : public Control, LayoutControl<layout::Button>
 {
 public:
 	enum State
@@ -30,7 +40,6 @@ public:
 
 	void SetHandler(DialogEvent new_handler) { handler = new_handler; }
 
-	static Texture* tex[4];
 	string text;
 	State state;
 	int id;

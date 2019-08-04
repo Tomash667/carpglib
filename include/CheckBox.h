@@ -1,26 +1,36 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Control.h"
+#include "Layout.h"
 
 //-----------------------------------------------------------------------------
-class CheckBox : public Control
+namespace layout
+{
+	struct CheckBox : public Control
+	{
+		AreaLayout tex[4];
+		AreaLayout tick;
+		Font* font;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class CheckBox : public Control, LayoutControl<layout::CheckBox>
 {
 public:
 	enum State
 	{
 		NONE,
-		FLASH,
-		PRESSED,
+		HOVER,
+		DOWN,
 		DISABLED
 	};
 
-	CheckBox(StringOrCstring text = "", bool checked = false);
+	CheckBox(Cstring text = "", bool checked = false);
 
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 
-	static Texture* tTick;
 	string text;
 	int id;
 	State state;

@@ -721,6 +721,12 @@ namespace tokenizer
 			AssertKeywordGroup(group);
 			return GetKeywordId(group);
 		}
+		template<typename T>
+		T MustGetKeywordId(int group) const
+		{
+			int k = MustGetKeywordId(group);
+			return static_cast<T>(k);
+		}
 		int MustGetKeywordGroup() const
 		{
 			AssertKeyword();
@@ -789,6 +795,7 @@ namespace tokenizer
 		void Parse(Int2& i);
 		void Parse(Rect& b);
 		void Parse(Vec2& v);
+		void Parse(Color& c);
 		void ParseFlags(int group, int& flags);
 		void ParseFlags(std::initializer_list<FlagGroup> const& flags);
 

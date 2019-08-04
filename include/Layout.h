@@ -1,112 +1,114 @@
 #pragma once
 
-#include "AreaLayout.h"
+//-----------------------------------------------------------------------------
+#include "Control.h"
 
-struct LabelLayout;
+//-----------------------------------------------------------------------------
+struct AreaLayout
+{
+	friend class LayoutLoader;
 
+	enum class Mode
+	{
+		None,
+		Color,
+		BorderColor,
+		Image,
+		Item
+	};
+
+	Mode mode;
+	Color color;
+	union
+	{
+		struct
+		{
+			Color border_color;
+			int width;
+		};
+		struct
+		{
+			Texture* tex;
+			Box2d region;
+			Color background_color;
+		};
+	};
+	Int2 size;
+
+	AreaLayout() : mode(Mode::None) {}
+	explicit AreaLayout(Color color) : mode(Mode::Color), color(color) {}
+	AreaLayout(Color color, Color border_color, int width = 1) : mode(Mode::BorderColor), color(color), border_color(border_color), width(width) {}
+	explicit AreaLayout(Texture* tex, Color color = Color::White) : mode(Mode::Image), tex(tex), color(color), background_color(Color::None), region(0, 0, 1, 1)
+	{
+		SetFromArea(nullptr);
+	}
+	AreaLayout(Texture* tex, const Box2d& region) : mode(Mode::Image), tex(tex), color(Color::White), background_color(Color::White), region(region) {}
+	AreaLayout(Texture* tex, const Rect& area) : mode(Mode::Image), tex(tex), color(Color::White), background_color(Color::None)
+	{
+		SetFromArea(&area);
+	}
+	AreaLayout(Texture* tex, int corner, int size, Color color = Color::White) : mode(Mode::Item), tex(tex), size(corner, size), color(color) {}
+	AreaLayout(const AreaLayout& l) : mode(l.mode), color(l.color), size(l.size)
+	{
+		memcpy(&tex, &l.tex, sizeof(Texture*) + sizeof(Box2d) + sizeof(Color));
+	}
+
+	AreaLayout& operator = (const AreaLayout& l)
+	{
+		mode = l.mode;
+		color = l.color;
+		size = l.size;
+		memcpy(&tex, &l.tex, sizeof(Texture*) + sizeof(Box2d) + sizeof(Color));
+		return *this;
+	}
+
+	Box2d CalculateRegion(const Int2& pos, const Int2& region);
+
+private:
+	void SetFromArea(const Rect* area);
+};
+
+//-----------------------------------------------------------------------------
+namespace layout
+{
+	struct Control
+	{
+	};
+
+	struct Gui : public Control
+	{
+		TexturePtr cursor[CURSOR_MAX];
+	};
+}
+
+//-----------------------------------------------------------------------------
 class Layout
 {
+	friend class LayoutLoader;
 public:
-	struct Panel
-	{
-		AreaLayout background;
-	} panel;
-
-	struct Window
-	{
-		AreaLayout background;
-		AreaLayout header;
-		Font* font;
-		Color font_color;
-		Int2 padding;
-		int header_height;
-	} window;
-
-	struct MenuBar
-	{
-		AreaLayout background;
-		AreaLayout button;
-		AreaLayout button_hover;
-		AreaLayout button_down;
-		Font* font;
-		Int2 padding;
-		Int2 item_padding;
-		Color font_color;
-		Color font_color_hover;
-		Color font_color_down;
-	} menubar;
-
-	struct MenuStrip
-	{
-		AreaLayout background;
-		AreaLayout button_hover;
-		Font* font;
-		Int2 padding;
-		Int2 item_padding;
-		Color font_color;
-		Color font_color_hover;
-		Color font_color_disabled;
-	} menustrip;
-
-	struct TabControl
-	{
-		AreaLayout background;
-		AreaLayout line;
-		AreaLayout button;
-		AreaLayout button_hover;
-		AreaLayout button_down;
-		AreaLayout close;
-		AreaLayout close_hover;
-		AreaLayout button_prev;
-		AreaLayout button_prev_hover;
-		AreaLayout button_next;
-		AreaLayout button_next_hover;
-		Font* font;
-		Int2 padding;
-		Int2 padding_active;
-		Color font_color;
-		Color font_color_hover;
-		Color font_color_down;
-	} tabctrl;
-
-	struct TreeView
-	{
-		AreaLayout background;
-		AreaLayout selected;
-		AreaLayout button;
-		AreaLayout button_hover;
-		AreaLayout button_down;
-		AreaLayout button_down_hover;
-		Font* font;
-		Color font_color;
-		int level_offset;
-		Texture* text_box_background;
-		Texture* drag_n_drop;
-	} tree_view;
-
-	struct SplitPanel
-	{
-		AreaLayout background;
-		AreaLayout horizontal;
-		AreaLayout vertical;
-		Int2 padding;
-	} split_panel;
-
-	LabelLayout* label;
-
-	struct CheckBoxGroup
-	{
-		AreaLayout background;
-		AreaLayout box;
-		AreaLayout checked;
-		Font* font;
-		Color font_color;
-	} check_box_group;
-
 	Layout(Gui* gui);
 	~Layout();
-	void LoadDefault();
+	layout::Control* Get(const type_info& type);
+	template<typename T>
+	T* Get()
+	{
+		return static_cast<T*>(Get(typeid(T)));
+	}
 
 private:
 	Gui* gui;
+	std::unordered_map<std::type_index, layout::Control*> types;
+};
+
+//-----------------------------------------------------------------------------
+template<typename T>
+class LayoutControl
+{
+	friend class Gui;
+
+public:
+	LayoutControl() : layout(Control::gui->GetLayout()->Get<T>()) {}
+
+protected:
+	T* layout;
 };

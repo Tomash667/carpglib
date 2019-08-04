@@ -29,6 +29,9 @@ const Vec4 Vec4::UnitY = { 0.f, 1.f, 0.f, 0.f };
 const Vec4 Vec4::UnitZ = { 0.f, 0.f, 1.f, 0.f };
 const Vec4 Vec4::UnitW = { 0.f, 0.f, 0.f, 1.f };
 
+const Box2d Box2d::Zero = { 0.f, 0.f, 0.f, 0.f };
+const Box2d Box2d::Unit = { 0.f, 0.f, 1.f, 1.f };
+
 const Matrix Matrix::IdentityMatrix = {
 	1.f, 0.f, 0.f, 0.f,
 	0.f, 1.f, 0.f, 0.f,

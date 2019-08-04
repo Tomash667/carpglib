@@ -14,15 +14,15 @@ Window::~Window()
 
 void Window::Draw(ControlDrawData*)
 {
-	gui->DrawArea(body_rect, layout->window.background);
+	gui->DrawArea(body_rect, layout->background);
 
 	if(!borderless)
 	{
-		gui->DrawArea(header_rect, layout->window.header);
+		gui->DrawArea(header_rect, layout->header);
 		if(!text.empty())
 		{
-			Rect r(header_rect, layout->window.padding);
-			gui->DrawText(layout->window.font, text, DTF_LEFT | DTF_VCENTER, layout->window.font_color, r, &r);
+			Rect r(header_rect, layout->padding);
+			gui->DrawText(layout->font, text, DTF_LEFT | DTF_VCENTER, layout->font_color, r, &r);
 		}
 	}
 
@@ -111,7 +111,7 @@ void Window::Event(GuiEvent e)
 
 void Window::SetAreaSize(const Int2& area_size)
 {
-	Int2 new_size = area_size + Int2(0, layout->window.header_height);
+	Int2 new_size = area_size + Int2(0, layout->header_height);
 	SetSize(new_size);
 }
 
@@ -125,10 +125,10 @@ void Window::SetMenu(MenuBar* _menu)
 void Window::CalculateArea()
 {
 	body_rect = Box2d(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + size.y));
-	header_rect = Box2d(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + layout->window.header_height));
+	header_rect = Box2d(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + layout->header_height));
 	area.v1 = Vec2(0, 0);
 	if(!borderless)
-		area.v1.y += layout->window.header_height;
+		area.v1.y += layout->header_height;
 	if(menu)
 		area.v1.y += menu->size.y;
 	area.v2 = Vec2(size);

@@ -6,9 +6,26 @@ Basic window, have two modes:
 
 #pragma once
 
-#include "Panel.h"
+//-----------------------------------------------------------------------------
+#include "Container.h"
+#include "Layout.h"
 
-class Window : public Panel
+//-----------------------------------------------------------------------------
+namespace layout
+{
+	struct Window : public Control
+	{
+		AreaLayout background;
+		AreaLayout header;
+		Font* font;
+		Color font_color;
+		Int2 padding;
+		int header_height;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class Window : public Container, public LayoutControl<layout::Window>
 {
 public:
 	Window(bool fullscreen = false, bool borderless = false);

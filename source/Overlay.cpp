@@ -21,13 +21,13 @@ void Overlay::Draw(ControlDrawData*)
 {
 	Container::Draw();
 
-	for(auto dialog : dialogs)
+	for(GuiDialog* dialog : dialogs)
 	{
-		gui->DrawSpriteFull(DialogBox::tBackground, Color::Alpha(128));
+		gui->DrawArea(Box2d::Create(Int2::Zero, gui->wnd_size), layout->background);
 		dialog->Draw();
 	}
 
-	for(auto menu : menus)
+	for(MenuStrip* menu : menus)
 		menu->Draw();
 }
 
@@ -43,7 +43,7 @@ void Overlay::Update(float dt)
 		CloseMenus();
 	}
 
-	for(auto menu : menus) // kaplica jak coœ usunie
+	for(MenuStrip* menu : menus) // kaplica jak coœ usunie
 		UpdateControl(menu, dt);
 
 	// update dialogs
@@ -51,7 +51,7 @@ void Overlay::Update(float dt)
 		UpdateControl(*it, dt);
 	if(!dialogs.empty())
 		mouse_focus = false;
-	for(auto dialog : dialogs_to_close)
+	for(GuiDialog* dialog : dialogs_to_close)
 		RemoveElement(dialogs, dialog);
 	dialogs_to_close.clear();
 
@@ -167,7 +167,7 @@ bool Overlay::IsOpen(MenuStrip* menu)
 {
 	assert(menu);
 
-	for(auto m : menus)
+	for(MenuStrip* m : menus)
 	{
 		if(m == menu)
 			return true;

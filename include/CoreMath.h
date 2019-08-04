@@ -525,7 +525,6 @@ struct Int2
 
 	// Constants
 	static const Int2 Zero;
-	static const Int2 MaxValue;
 };
 
 //-----------------------------------------------------------------------------

@@ -266,6 +266,19 @@ Resource* ResourceManager::AddResource(cstring filename, cstring path)
 }
 
 //=================================================================================================
+void ResourceManager::AddResource(Resource* res)
+{
+	assert(res);
+
+	pair<ResourceIterator, bool>& result = resources.insert(res);
+	if(!result.second)
+	{
+		Resource* existing = *result.first;
+		Warn("ResourceManager: Resource '%s' already added.", res->filename);
+	}
+}
+
+//=================================================================================================
 Resource* ResourceManager::CreateResource(ResourceType type)
 {
 	switch(type)
@@ -488,7 +501,8 @@ void ResourceManager::UpdateLoadScreen()
 			++loaded;
 			break;
 		case TaskType::Load:
-			LoadResourceInternal(task->data.res);
+			if(task->data.res->state != ResourceState::Loaded)
+				LoadResourceInternal(task->data.res);
 			++loaded;
 			break;
 		default:

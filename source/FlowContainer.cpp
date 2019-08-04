@@ -81,7 +81,7 @@ void FlowContainer::Update(float dt)
 						id = fi->id;
 						if(allow_select && fi->state != Button::DISABLED)
 						{
-							gui->cursor_mode = CURSOR_HAND;
+							gui->cursor_mode = CURSOR_HOVER;
 							if(on_select && input->Pressed(Key::LeftButton))
 							{
 								selected = fi;
@@ -98,7 +98,7 @@ void FlowContainer::Update(float dt)
 					{
 						group = fi->group;
 						id = fi->id;
-						gui->cursor_mode = CURSOR_HAND;
+						gui->cursor_mode = CURSOR_HOVER;
 						if(fi->state == Button::DOWN)
 						{
 							if(input->Up(Key::LeftButton))
@@ -138,7 +138,7 @@ void FlowContainer::Update(float dt)
 //=================================================================================================
 void FlowContainer::Draw(ControlDrawData*)
 {
-	gui->DrawItem(gui->tBox, global_pos, size - Int2(16, 0), Color::White, 8, 32);
+	gui->DrawArea(Box2d::Create(global_pos, size - Int2(16, 0)), layout->box);
 
 	scroll.Draw();
 
@@ -164,10 +164,10 @@ void FlowContainer::Draw(ControlDrawData*)
 				Rect rs = { global_pos.x + 2, rect.Top(), global_pos.x + sizex, rect.Bottom() };
 				Rect out;
 				if(Rect::Intersect(rs, clip, out))
-					gui->DrawSpriteRect(gui->tPix, out, Color(0, 255, 0, 128));
+					gui->DrawArea(Box2d(out), layout->selection);
 			}
 
-			if(!gui->DrawText(fi->type == FlowItem::Section ? gui->fBig : gui->default_font, fi->text, flags,
+			if(!gui->DrawText(fi->type == FlowItem::Section ? layout->font_section : layout->font, fi->text, flags,
 				(fi->state != Button::DISABLED ? Color::Black : Color(64, 64, 64)), rect, &clip))
 				break;
 		}
@@ -178,7 +178,8 @@ void FlowContainer::Draw(ControlDrawData*)
 				global_pos.y + fi->pos.y - offset > global_pos.y + size.y)
 				continue;
 
-			gui->DrawSprite(button_tex[fi->tex_id].tex[fi->state], global_pos + fi->pos - Int2(0, offset), Color::White, &clip);
+			const AreaLayout& area = button_tex[fi->tex_id].tex[fi->state];
+			gui->DrawArea(Box2d::Create(global_pos + fi->pos - Int2(0, offset), area.size), area, &Box2d(clip));
 		}
 	}
 }
@@ -248,18 +249,18 @@ void FlowContainer::Reposition()
 			{
 				if(have_button)
 				{
-					fi->size = gui->default_font->CalculateSize(fi->text, sizex - 2 - button_size.x);
+					fi->size = layout->font->CalculateSize(fi->text, sizex - 2 - button_size.x);
 					fi->pos = Int2(4 + button_size.x, y);
 				}
 				else
 				{
-					fi->size = gui->default_font->CalculateSize(fi->text, sizex);
+					fi->size = layout->font->CalculateSize(fi->text, sizex);
 					fi->pos = Int2(2, y);
 				}
 			}
 			else
 			{
-				fi->size = gui->fBig->CalculateSize(fi->text, sizex);
+				fi->size = layout->font_section->CalculateSize(fi->text, sizex);
 				fi->pos = Int2(2, y);
 			}
 			have_button = false;
@@ -305,7 +306,7 @@ void FlowContainer::UpdateText(FlowItem* item, cstring text, bool batch)
 	item->text = text;
 
 	int sizex = (word_warp ? size.x - 20 : 10000);
-	Int2 new_size = gui->default_font->CalculateSize(text, (item->pos.x == 2 ? sizex : sizex - 2 - button_size.x));
+	Int2 new_size = layout->font->CalculateSize(text, (item->pos.x == 2 ? sizex : sizex - 2 - button_size.x));
 
 	if(new_size.y != item->size.y)
 	{

@@ -16,7 +16,7 @@ MenuBar::~MenuBar()
 void MenuBar::Draw(ControlDrawData*)
 {
 	// backgroud
-	gui->DrawArea(rect, layout->menubar.background);
+	gui->DrawArea(rect, layout->background);
 
 	// items
 	Rect rect;
@@ -28,16 +28,16 @@ void MenuBar::Draw(ControlDrawData*)
 		{
 		case Item::Up:
 		default:
-			area_layout = &layout->menubar.button;
-			font_color = layout->menubar.font_color;
+			area_layout = &layout->button;
+			font_color = layout->font_color;
 			break;
 		case Item::Hover:
-			area_layout = &layout->menubar.button_hover;
-			font_color = layout->menubar.font_color_hover;
+			area_layout = &layout->button_hover;
+			font_color = layout->font_color_hover;
 			break;
 		case Item::Down:
-			area_layout = &layout->menubar.button_down;
-			font_color = layout->menubar.font_color_down;
+			area_layout = &layout->button_down;
+			font_color = layout->font_color_down;
 			break;
 		}
 
@@ -45,7 +45,7 @@ void MenuBar::Draw(ControlDrawData*)
 		gui->DrawArea(item->rect, *area_layout);
 
 		// item text
-		gui->DrawText(layout->menubar.font, item->text, DTF_CENTER | DTF_VCENTER, font_color, Rect(item->rect));
+		gui->DrawText(layout->font, item->text, DTF_CENTER | DTF_VCENTER, font_color, Rect(item->rect));
 	}
 }
 
@@ -116,13 +116,13 @@ void MenuBar::AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const 
 {
 	assert(text);
 
-	float item_height = (float)layout->menubar.font->height + layout->menubar.item_padding.y * 2;
-	float item_width = (float)layout->menubar.font->CalculateSize(text).x + layout->menubar.item_padding.x * 2;
+	float item_height = (float)layout->font->height + layout->item_padding.y * 2;
+	float item_width = (float)layout->font->CalculateSize(text).x + layout->item_padding.x * 2;
 
 	Item* item = new Item;
 	item->text = text;
 	item->rect = Box2d(0, 0, item_width, item_height);
-	item->rect += Vec2(layout->menubar.padding) / 2;
+	item->rect += Vec2(layout->padding) / 2;
 	if(!items.empty())
 		item->rect += Vec2(items.back()->rect.v2.x, 0);
 	item->index = items.size();
@@ -137,7 +137,7 @@ void MenuBar::Update(bool move, bool resize)
 	if(move)
 		global_pos = parent->global_pos;
 	if(resize)
-		size = Int2(parent->size.x, layout->menubar.font->height + layout->menubar.padding.y + layout->menubar.item_padding.y * 2);
+		size = Int2(parent->size.x, layout->font->height + layout->padding.y + layout->item_padding.y * 2);
 	rect = Box2d::Create(global_pos, size);
 	if(move)
 	{

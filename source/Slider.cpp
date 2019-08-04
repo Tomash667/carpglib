@@ -28,7 +28,7 @@ void Slider::Draw(ControlDrawData*)
 		bt[i].Draw();
 
 	Rect r0 = { global_pos.x + 32, global_pos.y - 16, global_pos.x + D, global_pos.y + 48 };
-	gui->DrawText(gui->default_font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r0);
+	gui->DrawText(layout->font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r0);
 }
 
 //=================================================================================================

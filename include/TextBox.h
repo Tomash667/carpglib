@@ -1,13 +1,23 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Control.h"
+#include "Layout.h"
 
 //-----------------------------------------------------------------------------
 class Scrollbar;
 
 //-----------------------------------------------------------------------------
-class TextBox : public Control, public OnCharHandler
+namespace layout
+{
+	struct TextBox : public Control
+	{
+		AreaLayout background;
+		Font* font;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class TextBox : public Control, public LayoutControl<layout::TextBox>, public OnCharHandler
 {
 public:
 	explicit TextBox(bool is_new = false);
@@ -32,8 +42,6 @@ public:
 	void SetText(cstring text);
 	const string& GetText() const { return text; }
 	void SelectAll();
-	void SetBackground(Texture* t) { tBackground = t; }
-	Texture* GetBackground() { return tBackground; }
 	bool IsMultiline() const { return multiline; }
 	bool IsNumeric() const { return numeric; }
 	bool IsReadonly() const { return readonly; }
@@ -41,7 +49,6 @@ public:
 	void SetNumeric(bool new_numeric) { numeric = new_numeric; }
 	void SetReadonly(bool new_readonly) { readonly = new_readonly; }
 
-	static Texture* tBox;
 	int limit, num_min, num_max;
 	cstring label;
 	Scrollbar* scrollbar;
@@ -57,10 +64,9 @@ private:
 	void UpdateFontLines();
 
 	string text;
-	vector<FontLine> font_lines;
+	vector<Font::Line> font_lines;
 	Int2 real_size, text_size, caret_pos, select_start_pos, select_end_pos, caret_index, select_start_index, select_end_index, select_fixed_index;
 	float caret_blink, offset_move;
 	int offset, last_y_move;
-	Texture* tBackground;
 	bool added, down, readonly, multiline, numeric, require_scrollbar;
 };

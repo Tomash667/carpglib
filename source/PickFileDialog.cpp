@@ -96,7 +96,6 @@ PickFileDialog::PickFileDialog()
 	label_preview = new Label("Preview not available", false);
 	label_preview->SetSize(Int2(240 - 6, 480 - 100));
 	label_preview->SetPosition(Int2(404, 34));
-	label_preview->SetAlign(DTF_CENTER | DTF_VCENTER);
 	Add(label_preview);
 
 	tex_dir = ResourceManager::Get().Load<Texture>("dir.png");
@@ -151,7 +150,7 @@ void PickFileDialog::Draw(ControlDrawData*)
 	Window::Draw();
 
 	if(label_preview->visible)
-		gui->DrawItem(TextBox::tBox, label_preview->global_pos, label_preview->size, Color::White, 4, 32);
+		gui->DrawArea(Box2d::Create(label_preview->global_pos, label_preview->size), layout->box);
 }
 
 void PickFileDialog::Event(GuiEvent e)

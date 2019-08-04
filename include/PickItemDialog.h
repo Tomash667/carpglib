@@ -1,6 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Layout.h"
 #include "DialogBox.h"
 #include "TooltipController.h"
 #include "FlowContainer.h"
@@ -25,9 +26,20 @@ struct PickItemDialogParams
 };
 
 //-----------------------------------------------------------------------------
-class PickItemDialog : public DialogBox
+namespace layout
+{
+	struct PickItemDialog : public DialogBox
+	{
+		CustomButton close;
+	};
+}
+
+//-----------------------------------------------------------------------------
+class PickItemDialog : public DialogBox, public LayoutControl<layout::PickItemDialog>
 {
 public:
+	using LayoutControl<layout::PickItemDialog>::layout;
+
 	void GetSelected(int& group, int& id) const
 	{
 		if(!selected.empty())
@@ -49,7 +61,6 @@ public:
 	static PickItemDialog* Show(PickItemDialogParams& params);
 
 	static PickItemDialog* self;
-	static CustomButton custom_x;
 
 private:
 	enum Id

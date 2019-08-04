@@ -3,9 +3,6 @@
 #include "DialogBox.h"
 #include "Input.h"
 
-//-----------------------------------------------------------------------------
-Texture* DialogBox::tBackground;
-
 //=================================================================================================
 DialogBox::DialogBox(const DialogInfo& info) : name(info.name), text(info.text), type(info.type), event(info.event), order(info.order), pause(info.pause),
 need_delete(false), result(-1)
@@ -18,18 +15,21 @@ need_delete(false), result(-1)
 //=================================================================================================
 void DialogBox::Draw(ControlDrawData*)
 {
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
-	pos = (gui->wnd_size - size) / 2;
-	gui->DrawItem(tDialog, pos, size, Color::Alpha(222), 16);
+	DrawPanel();
 
-	for(uint i = 0; i < bts.size(); ++i)
-	{
-		bts[i].global_pos = bts[i].pos + pos;
-		bts[i].Draw();
-	}
+	for(Button& button : bts)
+		button.Draw();
 
 	Rect r = { pos.x + 12, pos.y + 12, pos.x + size.x - 12, pos.y + size.y - 12 };
-	gui->DrawText(gui->default_font, text, DTF_CENTER, Color::Black, r);
+	gui->DrawText(layout->font, text, DTF_CENTER, Color::Black, r);
+}
+
+//=================================================================================================
+void DialogBox::DrawPanel(bool background)
+{
+	if(background)
+		gui->DrawArea(Box2d::Create(Int2::Zero, gui->wnd_size), layout->background);
+	gui->DrawArea(Box2d::Create(pos, size), layout->box);
 }
 
 //=================================================================================================
@@ -37,10 +37,10 @@ void DialogBox::Update(float dt)
 {
 	result = -1;
 
-	for(vector<Button>::iterator it = bts.begin(), end = bts.end(); it != end; ++it)
+	for(Button& button : bts)
 	{
-		it->mouse_focus = focus;
-		it->Update(dt);
+		button.mouse_focus = focus;
+		button.Update(dt);
 	}
 
 	if(input->Focus() && focus && result == -1)
@@ -67,6 +67,12 @@ void DialogBox::Event(GuiEvent e)
 {
 	if(e >= GuiEvent_Custom)
 		result = e - GuiEvent_Custom;
+	else if(e == GuiEvent_Show || e == GuiEvent_Resize)
+	{
+		pos = global_pos = (gui->wnd_size - size) / 2;
+		for(uint i = 0; i < bts.size(); ++i)
+			bts[i].global_pos = bts[i].pos + pos;
+	}
 }
 
 //=================================================================================================
@@ -79,7 +85,6 @@ void DialogWithCheckbox::Draw(ControlDrawData*)
 {
 	DialogBox::Draw();
 
-	checkbox.global_pos = checkbox.pos + pos;
 	checkbox.Draw();
 }
 
@@ -105,6 +110,11 @@ void DialogWithCheckbox::Event(GuiEvent e)
 		else
 			result = e - GuiEvent_Custom;
 	}
+	else if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
+	{
+		DialogBox::Event(e);
+		checkbox.global_pos = checkbox.pos + pos;
+	}
 }
 
 //=================================================================================================
@@ -117,9 +127,7 @@ DialogWithImage::DialogWithImage(const DialogInfo& info) : DialogBox(info), img(
 //=================================================================================================
 void DialogWithImage::Draw(ControlDrawData*)
 {
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
-	pos = (gui->wnd_size - size) / 2;
-	gui->DrawItem(tDialog, pos, size, Color::Alpha(222), 16);
+	DrawPanel();
 
 	for(uint i = 0; i < bts.size(); ++i)
 	{
@@ -128,7 +136,7 @@ void DialogWithImage::Draw(ControlDrawData*)
 	}
 
 	Rect r = text_rect + pos;
-	gui->DrawText(gui->default_font, text, DTF_CENTER, Color::Black, r);
+	gui->DrawText(layout->font, text, DTF_CENTER, Color::Black, r);
 
 	gui->DrawSprite(img, img_pos + pos);
 }
