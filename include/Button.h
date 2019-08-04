@@ -6,7 +6,7 @@
 //-----------------------------------------------------------------------------
 struct CustomButton
 {
-	TEX tex[4];
+	Texture* tex[4];
 };
 
 //-----------------------------------------------------------------------------
@@ -30,11 +30,11 @@ public:
 
 	void SetHandler(DialogEvent new_handler) { handler = new_handler; }
 
-	static TEX tex[4];
+	static Texture* tex[4];
 	string text;
 	State state;
 	int id;
-	TEX img;
+	Texture* img;
 	Int2 force_img_size;
 	CustomButton* custom;
 	bool hold;

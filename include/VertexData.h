@@ -17,6 +17,8 @@ struct Face
 //-----------------------------------------------------------------------------
 struct VertexData : Resource
 {
+	static const ResourceType Type = ResourceType::VertexData;
+
 	vector<Vec3> verts;
 	vector<Face> faces;
 	float radius;

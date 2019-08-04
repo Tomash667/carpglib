@@ -44,6 +44,8 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 {
 	assert(device);
 
+	ResourceManager& res_mgr = ResourceManager::Get();
+
 	LoadHeader(stream);
 	SetVertexSizeDecl();
 
@@ -97,7 +99,7 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		stream.Read(sub.name);
 		const string& tex_name = stream.ReadString1();
 		if(!tex_name.empty())
-			sub.tex = ResourceManager::Get<Texture>().GetLoaded(tex_name);
+			sub.tex = res_mgr.LoadInstant<Texture>(tex_name);
 		else
 			sub.tex = nullptr;
 
@@ -112,7 +114,7 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 			const string& tex_name = stream.ReadString1();
 			if(!tex_name.empty())
 			{
-				sub.tex_normal = ResourceManager::Get<Texture>().GetLoaded(tex_name);
+				sub.tex_normal = res_mgr.LoadInstant<Texture>(tex_name);
 				stream.Read(sub.normal_factor);
 			}
 			else
@@ -125,7 +127,7 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		const string& tex_name_specular = stream.ReadString1();
 		if(!tex_name_specular.empty())
 		{
-			sub.tex_specular = ResourceManager::Get<Texture>().GetLoaded(tex_name_specular);
+			sub.tex_specular = res_mgr.LoadInstant<Texture>(tex_name_specular);
 			stream.Read(sub.specular_factor);
 			stream.Read(sub.specular_color_factor);
 		}

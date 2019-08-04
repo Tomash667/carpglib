@@ -3,6 +3,7 @@
 #include "Resource.h"
 #include "Pak.h"
 
+//=================================================================================================
 cstring Resource::GetPath() const
 {
 	if(!pak)

@@ -4,8 +4,30 @@
 #include "DirectX.h"
 
 //=================================================================================================
+Texture::~Texture()
+{
+	SafeRelease(tex);
+}
+
+//=================================================================================================
+void Texture::ResizeImage(Int2& new_size, Int2& img_size, Vec2& scale)
+{
+	img_size = GetSize();
+	if(new_size == Int2(0, 0))
+	{
+		new_size = img_size;
+		scale = Vec2(1, 1);
+	}
+	else if(new_size == img_size)
+		scale = Vec2(1, 1);
+	else
+		scale = Vec2(float(new_size.x) / img_size.x, float(new_size.y) / img_size.y);
+}
+
+//=================================================================================================
 Int2 Texture::GetSize(TEX tex)
 {
+	assert(tex);
 	D3DSURFACE_DESC desc;
 	V(tex->GetLevelDesc(0, &desc));
 	return Int2(desc.Width, desc.Height);

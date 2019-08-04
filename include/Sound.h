@@ -6,10 +6,23 @@
 //-----------------------------------------------------------------------------
 struct Sound : public Resource
 {
-	SOUND sound;
-	bool is_music;
+	static const ResourceType Type = ResourceType::Sound;
 
-	Sound() : sound(nullptr), is_music(false)
+	SOUND sound;
+
+	Sound() : sound(nullptr)
+	{
+	}
+};
+
+//-----------------------------------------------------------------------------
+struct Music : public Resource
+{
+	static const ResourceType Type = ResourceType::Music;
+
+	SOUND sound;
+
+	Music() : sound(nullptr)
 	{
 	}
 };

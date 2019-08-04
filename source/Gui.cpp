@@ -11,7 +11,7 @@
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
-TEX Gui::tBox, Gui::tBox2, Gui::tPix, Gui::tDown;
+TexturePtr Gui::tBox, Gui::tBox2, Gui::tPix, Gui::tDown;
 
 //=================================================================================================
 Gui::Gui() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
@@ -1206,9 +1206,9 @@ void Gui::Add(Control* ctrl)
 }
 
 //=================================================================================================
-void Gui::DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, Color color, int corner, int size, const Box2d* clip_rect)
+void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Color color, int corner, int size, const Box2d* clip_rect)
 {
-	assert(t);
+	assert(t && t->IsLoaded());
 
 	GuiRect gui_rect;
 	gui_rect.Set(item_pos, item_size);
@@ -1234,7 +1234,7 @@ void Gui::DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, Color col
 		return;
 	}
 
-	tCurrent = t;
+	tCurrent = t->tex;
 	Lock();
 
 	Vec4 col = Color(color);
@@ -1403,18 +1403,17 @@ void Gui::Update(float dt, float mouse_speed)
 }
 
 //=================================================================================================
-void Gui::DrawSprite(TEX t, const Int2& pos, Color color, const Rect* clipping)
+void Gui::DrawSprite(Texture* t, const Int2& pos, Color color, const Rect* clipping)
 {
-	assert(t);
+	assert(t && t->IsLoaded());
 
-	D3DSURFACE_DESC desc;
-	t->GetLevelDesc(0, &desc);
+	Int2 size = t->GetSize();
 
-	int clip_result = (clipping ? Clip(pos.x, pos.y, desc.Width, desc.Height, clipping) : 0);
+	int clip_result = (clipping ? Clip(pos.x, pos.y, size.x, size.y, clipping) : 0);
 	if(clip_result > 0 && clip_result < 5)
 		return;
 
-	tCurrent = t;
+	tCurrent = t->tex;
 	Lock();
 
 	Vec4 col = Color(color);
@@ -1426,27 +1425,27 @@ void Gui::DrawSprite(TEX t, const Int2& pos, Color color, const Rect* clipping)
 		v->tex = Vec2(0, 0);
 		++v;
 
-		v->pos = Vec3(float(pos.x + desc.Width), float(pos.y), 0);
+		v->pos = Vec3(float(pos.x + size.x), float(pos.y), 0);
 		v->color = col;
 		v->tex = Vec2(1, 0);
 		++v;
 
-		v->pos = Vec3(float(pos.x), float(pos.y + desc.Height), 0);
+		v->pos = Vec3(float(pos.x), float(pos.y + size.y), 0);
 		v->color = col;
 		v->tex = Vec2(0, 1);
 		++v;
 
-		v->pos = Vec3(float(pos.x), float(pos.y + desc.Height), 0);
+		v->pos = Vec3(float(pos.x), float(pos.y + size.y), 0);
 		v->color = col;
 		v->tex = Vec2(0, 1);
 		++v;
 
-		v->pos = Vec3(float(pos.x + desc.Width), float(pos.y), 0);
+		v->pos = Vec3(float(pos.x + size.x), float(pos.y), 0);
 		v->color = col;
 		v->tex = Vec2(1, 0);
 		++v;
 
-		v->pos = Vec3(float(pos.x + desc.Width), float(pos.y + desc.Height), 0);
+		v->pos = Vec3(float(pos.x + size.x), float(pos.y + size.y), 0);
 		v->color = col;
 		v->tex = Vec2(1, 1);
 		++v;
@@ -1456,9 +1455,9 @@ void Gui::DrawSprite(TEX t, const Int2& pos, Color color, const Rect* clipping)
 	}
 	else
 	{
-		Box2d orig_pos(float(pos.x), float(pos.y), float(pos.x + desc.Width), float(pos.y + desc.Height));
+		Box2d orig_pos(float(pos.x), float(pos.y), float(pos.x + size.x), float(pos.y + size.y));
 		Box2d clip_pos(float(max(pos.x, clipping->Left())), float(max(pos.y, clipping->Top())),
-			float(min(pos.x + (int)desc.Width, clipping->Right())), float(min(pos.y + (int)desc.Height, clipping->Bottom())));
+			float(min(pos.x + (int)size.x, clipping->Right())), float(min(pos.y + (int)size.y, clipping->Bottom())));
 		Vec2 orig_size = orig_pos.Size();
 		Vec2 clip_size = clip_pos.Size();
 		Vec2 s(clip_size.x / orig_size.x, clip_size.y / orig_size.y);
@@ -1872,11 +1871,11 @@ bool Gui::HaveDialog() const
 }
 
 //=================================================================================================
-void Gui::DrawSpriteFull(TEX t, const Color color)
+void Gui::DrawSpriteFull(Texture* t, const Color color)
 {
-	assert(t);
+	assert(t && t->IsLoaded());
 
-	tCurrent = t;
+	tCurrent = t->tex;
 	Lock();
 
 	Vec4 col = Color(color);
@@ -1952,11 +1951,11 @@ void Gui::SimpleDialog(cstring text, Control* parent, cstring name)
 }
 
 //=================================================================================================
-void Gui::DrawSpriteRect(TEX t, const Rect& rect, Color color)
+void Gui::DrawSpriteRect(Texture* t, const Rect& rect, Color color)
 {
-	assert(t);
+	assert(t && t->IsLoaded());
 
-	tCurrent = t;
+	tCurrent = t->tex;
 	Lock();
 
 	Vec4 col = Color(color);
@@ -2039,17 +2038,16 @@ void Gui::OnResize()
 }
 
 //=================================================================================================
-void Gui::DrawSpriteRectPart(TEX t, const Rect& rect, const Rect& part, Color color)
+void Gui::DrawSpriteRectPart(Texture* t, const Rect& rect, const Rect& part, Color color)
 {
-	assert(t);
+	assert(t && t->IsLoaded());
 
-	tCurrent = t;
+	tCurrent = t->tex;
 	Lock();
 
-	D3DSURFACE_DESC desc;
-	t->GetLevelDesc(0, &desc);
+	Int2 size = t->GetSize();
 	Vec4 col = Color(color);
-	Box2d uv(float(part.Left()) / desc.Width, float(part.Top()) / desc.Height, float(part.Right()) / desc.Width, float(part.Bottom()) / desc.Height);
+	Box2d uv(float(part.Left()) / size.x, float(part.Top()) / size.y, float(part.Right()) / size.x, float(part.Bottom()) / size.y);
 
 	v->pos = Vec3(float(rect.Left()), float(rect.Top()), 0);
 	v->color = col;
@@ -2086,22 +2084,21 @@ void Gui::DrawSpriteRectPart(TEX t, const Rect& rect, const Rect& part, Color co
 }
 
 //=================================================================================================
-void Gui::DrawSpriteTransform(TEX t, const Matrix& mat, Color color)
+void Gui::DrawSpriteTransform(Texture* t, const Matrix& mat, Color color)
 {
-	assert(t);
+	assert(t && t->IsLoaded());
 
-	D3DSURFACE_DESC desc;
-	t->GetLevelDesc(0, &desc);
+	Int2 size = t->GetSize();
 
-	tCurrent = t;
+	tCurrent = t->tex;
 	Lock();
 
 	Vec4 col = Color(color);
 
 	Vec2 leftTop(0, 0),
-		rightTop(float(desc.Width), 0),
-		leftBottom(0, float(desc.Height)),
-		rightBottom(float(desc.Width), float(desc.Height));
+		rightTop(float(size.x), 0),
+		leftBottom(0, float(size.y)),
+		rightBottom(float(size.x), float(size.y));
 
 	leftTop = Vec2::Transform(leftTop, mat);
 	rightTop = Vec2::Transform(rightTop, mat);
@@ -2283,17 +2280,16 @@ bool Gui::Intersect(vector<Hitbox>& hitboxes, const Int2& pt, int* index, int* i
 }
 
 //=================================================================================================
-void Gui::DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, Color color)
+void Gui::DrawSpriteTransformPart(Texture* t, const Matrix& mat, const Rect& part, Color color)
 {
-	assert(t);
+	assert(t && t->IsLoaded());
 
-	D3DSURFACE_DESC desc;
-	t->GetLevelDesc(0, &desc);
+	Int2 size = t->GetSize();
 
-	tCurrent = t;
+	tCurrent = t->tex;
 	Lock();
 
-	Box2d uv(float(part.Left()) / desc.Width, float(part.Top() / desc.Height), float(part.Right()) / desc.Width, float(part.Bottom()) / desc.Height);
+	Box2d uv(float(part.Left()) / size.x, float(part.Top() / size.y), float(part.Right()) / size.x, float(part.Bottom()) / size.y);
 
 	Vec4 col = Color(color);
 
@@ -2389,19 +2385,18 @@ DialogBox* Gui::GetDialog(cstring name)
 }
 
 //=================================================================================================
-void Gui::DrawSprite2(TEX t, const Matrix& mat, const Rect* part, const Rect* clipping, Color color)
+void Gui::DrawSprite2(Texture* t, const Matrix& mat, const Rect* part, const Rect* clipping, Color color)
 {
-	assert(t);
+	assert(t && t->IsLoaded());
 
-	D3DSURFACE_DESC desc;
-	t->GetLevelDesc(0, &desc);
+	Int2 size = t->GetSize();
 	GuiRect rect;
 
 	// set pos & uv
 	if(part)
-		rect.Set(desc.Width, desc.Height, *part);
+		rect.Set(size.x, size.y, *part);
 	else
-		rect.Set(desc.Width, desc.Height);
+		rect.Set(size.x, size.y);
 
 	// transform
 	rect.Transform(mat);
@@ -2410,7 +2405,7 @@ void Gui::DrawSprite2(TEX t, const Matrix& mat, const Rect* part, const Rect* cl
 	if(clipping && !rect.Clip(*clipping))
 		return;
 
-	tCurrent = t;
+	tCurrent = t->tex;
 	Lock();
 
 	// fill vertex buffer
@@ -2422,19 +2417,18 @@ void Gui::DrawSprite2(TEX t, const Matrix& mat, const Rect* part, const Rect* cl
 
 //=================================================================================================
 // Rotation is generaly ignored and shouldn't be used here
-Rect Gui::GetSpriteRect(TEX t, const Matrix& mat, const Rect* part, const Rect* clipping)
+Rect Gui::GetSpriteRect(Texture* t, const Matrix& mat, const Rect* part, const Rect* clipping)
 {
-	assert(t);
+	assert(t && t->IsLoaded());
 
-	D3DSURFACE_DESC desc;
-	t->GetLevelDesc(0, &desc);
+	Int2 size = t->GetSize();
 	GuiRect rect;
 
 	// set pos & uv
 	if(part)
-		rect.Set(desc.Width, desc.Height, *part);
+		rect.Set(size.x, size.y, *part);
 	else
-		rect.Set(desc.Width, desc.Height);
+		rect.Set(size.x, size.y);
 
 	// transform
 	rect.Transform(mat);
@@ -2447,7 +2441,7 @@ Rect Gui::GetSpriteRect(TEX t, const Matrix& mat, const Rect* part, const Rect* 
 }
 
 //=================================================================================================
-void Gui::AddNotification(cstring text, TEX icon, float timer)
+void Gui::AddNotification(cstring text, Texture* icon, float timer)
 {
 	assert(text && timer > 0);
 
@@ -2569,14 +2563,14 @@ void Gui::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* 
 //=================================================================================================
 void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect)
 {
-	if(area_layout.mode == AreaLayout::None)
+	if(area_layout.mode == AreaLayout::Mode::None)
 		return;
 
-	if(area_layout.mode == AreaLayout::Item)
+	if(area_layout.mode == AreaLayout::Mode::Item)
 	{
 		DrawItem(area_layout.tex, Int2(rect.LeftTop()), Int2(rect.Size()), area_layout.color, area_layout.size.x, area_layout.size.y, clip_rect);
 	}
-	else if(area_layout.mode == AreaLayout::Texture && area_layout.pad > 0)
+	else if(area_layout.mode == AreaLayout::Mode::Texture && area_layout.pad > 0)
 	{
 		// TODO
 		assert(0);
@@ -2584,7 +2578,7 @@ void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d
 	else
 	{
 		// background
-		if(area_layout.mode == AreaLayout::TextureAndColor)
+		if(area_layout.mode == AreaLayout::Mode::TextureAndColor)
 		{
 			assert(!clip_rect);
 			tCurrent = tPixel;
@@ -2596,9 +2590,9 @@ void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d
 
 		// image/color
 		GuiRect gui_rect;
-		if(area_layout.mode >= AreaLayout::Texture)
+		if(area_layout.mode >= AreaLayout::Mode::Texture)
 		{
-			tCurrent = area_layout.tex;
+			tCurrent = area_layout.tex->tex;
 			gui_rect.Set(rect, &area_layout.region);
 		}
 		else
@@ -2618,7 +2612,7 @@ void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d
 		in_buffer = 1;
 		Flush();
 
-		if(area_layout.mode != AreaLayout::BorderColor)
+		if(area_layout.mode != AreaLayout::Mode::BorderColor)
 			return;
 
 		// border

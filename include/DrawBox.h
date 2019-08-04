@@ -10,14 +10,14 @@ public:
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 
-	TEX GetTexture() const { return tex; }
+	Texture* GetTexture() const { return tex; }
 
 	bool IsTexture() const { return tex != nullptr; }
 
-	void SetTexture(TEX tex);
+	void SetTexture(Texture* tex);
 
 private:
-	TEX tex;
+	Texture* tex;
 	Int2 tex_size, click_point;
 	float scale, default_scale;
 	Vec2 move;

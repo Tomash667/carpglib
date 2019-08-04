@@ -130,7 +130,7 @@ void TooltipController::FormatBox()
 
 	Int2 img_size;
 	if(img)
-		img_size = GetSize(img);
+		img_size = img->GetSize();
 	else
 	{
 		img_size.x = 0;

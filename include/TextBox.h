@@ -32,8 +32,8 @@ public:
 	void SetText(cstring text);
 	const string& GetText() const { return text; }
 	void SelectAll();
-	void SetBackground(TEX t) { tBackground = t; }
-	TEX GetBackground() { return tBackground; }
+	void SetBackground(Texture* t) { tBackground = t; }
+	Texture* GetBackground() { return tBackground; }
 	bool IsMultiline() const { return multiline; }
 	bool IsNumeric() const { return numeric; }
 	bool IsReadonly() const { return readonly; }
@@ -41,7 +41,7 @@ public:
 	void SetNumeric(bool new_numeric) { numeric = new_numeric; }
 	void SetReadonly(bool new_readonly) { readonly = new_readonly; }
 
-	static TEX tBox;
+	static Texture* tBox;
 	int limit, num_min, num_max;
 	cstring label;
 	Scrollbar* scrollbar;
@@ -61,6 +61,6 @@ private:
 	Int2 real_size, text_size, caret_pos, select_start_pos, select_end_pos, caret_index, select_start_index, select_end_index, select_fixed_index;
 	float caret_blink, offset_move;
 	int offset, last_y_move;
-	TEX tBackground;
+	Texture* tBackground;
 	bool added, down, readonly, multiline, numeric, require_scrollbar;
 };

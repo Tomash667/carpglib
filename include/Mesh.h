@@ -19,6 +19,8 @@ NASTÊPNA WERSJA:
 */
 struct Mesh : public Resource
 {
+	static const ResourceType Type = ResourceType::Mesh;
+
 	enum MESH_FLAGS
 	{
 		F_TANGENTS = 1 << 0,

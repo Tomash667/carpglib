@@ -4,23 +4,23 @@
 class GuiElement
 {
 public:
-	GuiElement(int value = 0, TEX tex = nullptr) : value(value), tex(tex)
+	GuiElement(int value = 0, Texture* tex = nullptr) : value(value), tex(tex)
 	{
 	}
 	virtual ~GuiElement() {}
 	virtual cstring ToString() = 0;
 
 	int value;
-	TEX tex;
+	Texture* tex;
 };
 
 //-----------------------------------------------------------------------------
 class DefaultGuiElement : public GuiElement
 {
 public:
-	DefaultGuiElement(cstring _text, int value = 0, TEX tex = nullptr) : GuiElement(value, tex)
+	DefaultGuiElement(cstring text, int value = 0, Texture* tex = nullptr) : GuiElement(value, tex)
 	{
-		text = _text;
+		this->text = text;
 	}
 
 	cstring ToString() override

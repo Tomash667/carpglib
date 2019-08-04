@@ -4,8 +4,8 @@
 #include "Engine.h"
 #include "Mesh.h"
 #include "SoundManager.h"
-#include "DirectX.h"
 #include "Pak.h"
+#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 ResourceManager ResourceManager::manager;
@@ -49,24 +49,25 @@ void ResourceManager::RegisterExtensions()
 
 	exts["phy"] = ResourceType::VertexData;
 
-	exts["aiff"] = ResourceType::SoundOrMusic;
-	exts["asf"] = ResourceType::SoundOrMusic;
-	exts["asx"] = ResourceType::SoundOrMusic;
-	exts["dls"] = ResourceType::SoundOrMusic;
-	exts["flac"] = ResourceType::SoundOrMusic;
-	exts["it"] = ResourceType::SoundOrMusic;
-	exts["m3u"] = ResourceType::SoundOrMusic;
-	exts["midi"] = ResourceType::SoundOrMusic;
-	exts["mod"] = ResourceType::SoundOrMusic;
-	exts["mp2"] = ResourceType::SoundOrMusic;
-	exts["mp3"] = ResourceType::SoundOrMusic;
-	exts["ogg"] = ResourceType::SoundOrMusic;
-	exts["pls"] = ResourceType::SoundOrMusic;
-	exts["s3m"] = ResourceType::SoundOrMusic;
-	exts["wav"] = ResourceType::SoundOrMusic;
-	exts["wax"] = ResourceType::SoundOrMusic;
-	exts["wma"] = ResourceType::SoundOrMusic;
-	exts["xm"] = ResourceType::SoundOrMusic;
+	exts["aiff"] = ResourceType::Sound;
+	exts["asf"] = ResourceType::Sound;
+	exts["asx"] = ResourceType::Sound;
+	exts["dls"] = ResourceType::Sound;
+	exts["flac"] = ResourceType::Sound;
+	exts["it"] = ResourceType::Sound;
+	exts["m3u"] = ResourceType::Sound;
+	exts["midi"] = ResourceType::Sound;
+	exts["mod"] = ResourceType::Sound;
+	exts["mp2"] = ResourceType::Sound;
+	exts["mp3"] = ResourceType::Sound;
+	exts["pls"] = ResourceType::Sound;
+	exts["s3m"] = ResourceType::Sound;
+	exts["wav"] = ResourceType::Sound;
+	exts["wax"] = ResourceType::Sound;
+	exts["wma"] = ResourceType::Sound;
+	exts["xm"] = ResourceType::Sound;
+
+	exts["ogg"] = ResourceType::Music;
 }
 
 //=================================================================================================
@@ -275,8 +276,10 @@ Resource* ResourceManager::CreateResource(ResourceType type)
 		return new Mesh;
 	case ResourceType::VertexData:
 		return new VertexData;
-	case ResourceType::SoundOrMusic:
+	case ResourceType::Sound:
 		return new Sound;
+	case ResourceType::Music:
+		return new Music;
 	default:
 		assert(0);
 		return nullptr;
@@ -315,8 +318,11 @@ Resource* ResourceManager::GetResource(Cstring filename, ResourceType type)
 		case ResourceType::VertexData:
 			type_name = "vertex data";
 			break;
-		case ResourceType::SoundOrMusic:
-			type_name = "sound or music";
+		case ResourceType::Sound:
+			type_name = "sound";
+			break;
+		case ResourceType::Music:
+			type_name = "music";
 			break;
 		default:
 			assert(0);
@@ -329,7 +335,27 @@ Resource* ResourceManager::GetResource(Cstring filename, ResourceType type)
 }
 
 //=================================================================================================
-void ResourceManager::LoadResource(Resource* res)
+void ResourceManager::Load(Resource* res)
+{
+	assert(res);
+	if(res->state == ResourceState::Loaded)
+		return;
+	if(mode != Mode::LoadScreenPrepare)
+		LoadResourceInternal(res);
+	else if(res->state == ResourceState::NotLoaded)
+	{
+		TaskDetail* td = task_pool.Get();
+		td->data.res = res;
+		td->type = TaskType::Load;
+		tasks.push_back(td);
+		++to_load;
+
+		res->state = ResourceState::Loading;
+	}
+}
+
+//=================================================================================================
+void ResourceManager::LoadInstant(Resource* res)
 {
 	assert(res);
 	if(res->state != ResourceState::Loaded)
@@ -381,53 +407,6 @@ void ResourceManager::AddTask(void* ptr, TaskCallback callback)
 }
 
 //=================================================================================================
-void ResourceManager::AddLoadTask(Resource* res)
-{
-	assert(res && mode == Mode::LoadScreenPrepare);
-
-	if(res->state == ResourceState::NotLoaded)
-	{
-		TaskDetail* td = task_pool.Get();
-		td->data.res = res;
-		td->type = TaskType::Load;
-		tasks.push_back(td);
-		++to_load;
-
-		res->state = ResourceState::Loading;
-	}
-}
-
-//=================================================================================================
-void ResourceManager::AddLoadTask(Resource* res, void* ptr, TaskCallback callback, bool required)
-{
-	assert(res && mode == Mode::LoadScreenPrepare);
-
-	if(required || res->state == ResourceState::NotLoaded)
-	{
-		TaskDetail* td = task_pool.Get();
-		td->data.res = res;
-		td->data.ptr = ptr;
-		td->callback = callback;
-		td->type = TaskType::LoadAndCallback;
-		tasks.push_back(td);
-		++to_load;
-
-		if(res->state == ResourceState::NotLoaded)
-			res->state = ResourceState::Loading;
-	}
-}
-
-//=================================================================================================
-void ResourceManager::NextTask(cstring next_category)
-{
-	if(next_category)
-		category = next_category;
-	++loaded;
-
-	TickLoadScreen();
-}
-
-//=================================================================================================
 void ResourceManager::PrepareLoadScreen(float progress_min, float progress_max)
 {
 	assert(mode == Mode::Instant && InRange(progress_min, 0.f, 1.f) && InRange(progress_max, 0.f, 1.f) && progress_max >= progress_min);
@@ -463,7 +442,7 @@ void ResourceManager::CancelLoadScreen(bool cleanup)
 	{
 		for(TaskDetail* task : tasks)
 		{
-			if((task->type == TaskType::Load || task->type == TaskType::LoadAndCallback) && task->data.res->state == ResourceState::Loading)
+			if(task->type == TaskType::Load && task->data.res->state == ResourceState::Loading)
 				task->data.res->state = ResourceState::NotLoaded;
 		}
 		task_pool.Free(tasks);
@@ -512,12 +491,6 @@ void ResourceManager::UpdateLoadScreen()
 			LoadResourceInternal(task->data.res);
 			++loaded;
 			break;
-		case TaskType::LoadAndCallback:
-			if(task->data.res->state != ResourceState::Loaded)
-				LoadResourceInternal(task->data.res);
-			task->callback(task->data);
-			++loaded;
-			break;
 		default:
 			assert(0);
 			break;
@@ -558,7 +531,8 @@ void ResourceManager::LoadResourceInternal(Resource* res)
 	case ResourceType::VertexData:
 		LoadVertexData(static_cast<VertexData*>(res));
 		break;
-	case ResourceType::SoundOrMusic:
+	case ResourceType::Sound:
+	case ResourceType::Music:
 		LoadSoundOrMusic(static_cast<Sound*>(res));
 		break;
 	case ResourceType::Texture:
@@ -643,7 +617,7 @@ void ResourceManager::LoadSoundOrMusic(Sound* sound)
 {
 	int result = sound_mgr->LoadSound(sound);
 	if(result != 0)
-		throw Format("ResourceManager: Failed to load %s '%s' (%d).", sound->is_music ? "music" : "sound", sound->path.c_str(), result);
+		throw Format("ResourceManager: Failed to load %s '%s' (%d).", sound->type == ResourceType::Music ? "music" : "sound", sound->path.c_str(), result);
 }
 
 //=================================================================================================
@@ -667,20 +641,4 @@ void ResourceManager::LoadTexture(Texture* tex)
 
 	if(FAILED(hr))
 		throw Format("Failed to load texture '%s' (%u).", tex->GetPath(), hr);
-}
-
-//=================================================================================================
-void ResourceManager::ApplyRawTextureCallback(TaskData& data)
-{
-	TEX& tex = *(TEX*)data.ptr;
-	Texture* res = static_cast<Texture*>(data.res);
-	tex = res->tex;
-}
-
-//=================================================================================================
-void ResourceManager::ApplyRawSoundCallback(TaskData& data)
-{
-	SOUND& sound = *(SOUND*)data.ptr;
-	Sound* res = static_cast<Sound*>(data.res);
-	sound = res->sound;
 }

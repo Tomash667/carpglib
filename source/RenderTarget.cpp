@@ -9,7 +9,7 @@ SURFACE RenderTarget::GetSurface()
 	if(!surf)
 	{
 		tmp_surf = true;
-		V(tex->GetSurfaceLevel(0, &surf));
+		V(tex.tex->GetSurfaceLevel(0, &surf));
 	}
 	return surf;
 }
@@ -20,7 +20,7 @@ void RenderTarget::SaveToFile(cstring filename)
 	if(surf)
 		s = surf;
 	else
-		V(tex->GetSurfaceLevel(0, &s));
+		V(tex.tex->GetSurfaceLevel(0, &s));
 
 	V(D3DXSaveSurfaceToFile(filename, D3DXIFF_JPG, s, nullptr, nullptr));
 
@@ -34,7 +34,7 @@ uint RenderTarget::SaveToFile(FileWriter& f)
 	if(surf)
 		s = surf;
 	else
-		V(tex->GetSurfaceLevel(0, &s));
+		V(tex.tex->GetSurfaceLevel(0, &s));
 
 	LPD3DXBUFFER buffer;
 	V(D3DXSaveSurfaceToFileInMemory(&buffer, D3DXIFF_JPG, s, nullptr, nullptr));

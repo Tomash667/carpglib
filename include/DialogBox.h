@@ -30,7 +30,7 @@ public:
 
 	void CloseDialog() { gui->CloseDialog(this); }
 
-	static TEX tBackground;
+	static Texture* tBackground;
 	string name, text;
 	GUI_DialogType type;
 	DialogEvent event;
@@ -65,7 +65,7 @@ public:
 	const Int2& GetImageSize() const { return img_size; }
 
 private:
-	TEX img;
+	Texture* img;
 	Int2 img_size, img_pos;
 	Rect text_rect;
 };

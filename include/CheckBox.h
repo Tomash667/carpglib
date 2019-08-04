@@ -20,7 +20,7 @@ public:
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 
-	static TEX tTick;
+	static Texture* tTick;
 	string text;
 	int id;
 	State state;

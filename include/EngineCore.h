@@ -29,11 +29,13 @@ class TerrainShader;
 
 // Resource types
 struct Mesh;
+struct Music;
 struct Resource;
 struct Sound;
 struct Texture;
 struct VertexData;
 typedef Mesh* MeshPtr;
+typedef Music* MusicPtr;
 typedef Sound* SoundPtr;
 typedef Texture* TexturePtr;
 typedef VertexData* VertexDataPtr;

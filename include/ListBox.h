@@ -28,7 +28,7 @@ public:
 	void OnChar(char c) override;
 
 	void Add(GuiElement* e);
-	void Add(cstring text, int value = 0, TEX tex = nullptr) { Add(new DefaultGuiElement(text, value, tex)); }
+	void Add(cstring text, int value = 0, Texture* tex = nullptr) { Add(new DefaultGuiElement(text, value, tex)); }
 	void Sort();
 	void ScrollTo(int index, bool center = false);
 	GuiElement* Find(int value);

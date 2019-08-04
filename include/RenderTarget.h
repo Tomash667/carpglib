@@ -1,6 +1,10 @@
 #pragma once
 
-class RenderTarget
+//-----------------------------------------------------------------------------
+#include "Texture.h"
+
+//-----------------------------------------------------------------------------
+class RenderTarget : public Texture
 {
 	friend class Render;
 
@@ -10,12 +14,12 @@ public:
 	void SaveToFile(cstring filename);
 	uint SaveToFile(FileWriter& f);
 	void FreeSurface();
-	TEX GetTexture() const { return tex; }
+	Texture* GetTexture() { return &tex; }
 	SURFACE GetSurface();
 	const Int2& GetSize() const { return size; }
 
 private:
-	TEX tex;
+	Texture tex;
 	SURFACE surf;
 	Int2 size;
 	bool tmp_surf;

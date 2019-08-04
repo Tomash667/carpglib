@@ -160,7 +160,7 @@ int SoundManager::LoadSound(Sound* sound)
 		return 0;
 
 	int flags = FMOD_LOWMEM;
-	if(sound->is_music)
+	if(sound->type == ResourceType::Music)
 		flags |= FMOD_2D;
 	else
 		flags |= FMOD_3D | FMOD_LOOP_OFF;
@@ -183,7 +183,7 @@ int SoundManager::LoadSound(Sound* sound)
 }
 
 //=================================================================================================
-void SoundManager::PlayMusic(Sound* music)
+void SoundManager::PlayMusic(Music* music)
 {
 	if(nomusic || (!music && !current_music))
 	{

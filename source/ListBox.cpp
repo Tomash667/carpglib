@@ -68,7 +68,7 @@ void ListBox::Draw(ControlDrawData*)
 			{
 				Int2 required_size = force_img_size, img_size;
 				Vec2 scale;
-				Control::ResizeImage(e->tex, required_size, img_size, scale);
+				e->tex->ResizeImage(required_size, img_size, scale);
 				mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &Vec2((float)orig_x, float(r.Top() + (item_height - required_size.y) / 2)));
 				gui->DrawSprite2(e->tex, mat, nullptr, &rc, Color::White);
 				r.Left() = orig_x + required_size.x;

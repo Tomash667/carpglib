@@ -32,7 +32,7 @@ public:
 	Scrollbar scrollbar;
 	Int2 textbox_size, inputbox_size, inputbox_pos;
 	InputEvent event;
-	TEX* background;
+	Texture* background;
 	Color background_color;
 	bool added, lose_focus, esc_clear;
 

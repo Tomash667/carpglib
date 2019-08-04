@@ -6,7 +6,7 @@
 
 Gui* Control::gui;
 Input* Control::input;
-TEX Control::tDialog;
+Texture* Control::tDialog;
 
 void Control::Dock(Control* c)
 {
@@ -100,25 +100,4 @@ void Control::UpdateControl(Control* ctrl, float dt)
 		ctrl->mouse_focus = false;
 		ctrl->Update(dt);
 	}
-}
-
-void Control::ResizeImage(TEX t, Int2& new_size, Int2& img_size, Vec2& scale)
-{
-	img_size = GetSize(t);
-	if(new_size == Int2(0, 0))
-	{
-		new_size = img_size;
-		scale = Vec2(1, 1);
-	}
-	else if(new_size == img_size)
-		scale = Vec2(1, 1);
-	else
-		scale = Vec2(float(new_size.x) / img_size.x, float(new_size.y) / img_size.y);
-}
-
-Int2 Control::GetSize(TEX img)
-{
-	D3DSURFACE_DESC desc;
-	img->GetLevelDesc(0, &desc);
-	return Int2(desc.Width, desc.Height);
 }

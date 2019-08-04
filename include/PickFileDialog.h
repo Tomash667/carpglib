@@ -64,7 +64,7 @@ private:
 	vector<Filter> filters;
 	Filter* active_filter;
 	Handler handler;
-	TEX tex_dir;
+	Texture* tex_dir;
 	std::map<string, PreviewType> preview_types;
 	bool result, preview;
 };

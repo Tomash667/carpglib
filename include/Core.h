@@ -218,6 +218,35 @@ inline bool operator != (T* ptr, SmartPtr<T>& sptr)
 }
 
 //-----------------------------------------------------------------------------
+// Optional nullable type
+template<typename T>
+struct Optional
+{
+	Optional(const T* ptr)
+	{
+		if(ptr)
+		{
+			has_value = true;
+			value = *ptr;
+		}
+		else
+			has_value = false;
+	}
+
+	operator const T* () const
+	{
+		if(has_value)
+			return &value;
+		else
+			return nullptr;
+	}
+
+private:
+	T value;
+	bool has_value;
+};
+
+//-----------------------------------------------------------------------------
 // RAII for simple pointer
 template<typename T, typename Allocator = internal::StandardAllocator<T>>
 class Ptr

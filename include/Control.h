@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Gui.h"
+#include "Texture.h"
 
 //-----------------------------------------------------------------------------
 struct ControlDrawData
@@ -37,7 +38,7 @@ public:
 
 	static Gui* gui;
 	static Input* input;
-	static TEX tDialog;
+	static Texture* tDialog;
 	Int2 pos, global_pos, size;
 	Control* parent;
 	bool visible, focus,
@@ -118,7 +119,6 @@ public:
 	void Disable() { SetDisabled(true); }
 	void Enable() { SetDisabled(false); }
 	const Int2& GetSize() const { return size; }
-	static Int2 GetSize(TEX img);
 	void Initialize();
 	void SetSize(const Int2& size);
 	void SetPosition(const Int2& pos);
@@ -126,7 +126,6 @@ public:
 	void TakeFocus(bool pressed = false);
 	void SetFocus();
 	void UpdateControl(Control* ctrl, float dt);
-	void ResizeImage(TEX t, Int2& new_size, Int2& img_size, Vec2& scale);
 
 	bool IsOnCharHandler() const { return IS_SET(flags, F_ON_CHAR_HANDLER); }
 	bool IsDocked() const { return IS_SET(flags, F_DOCKED); }

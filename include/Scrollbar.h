@@ -22,7 +22,7 @@ public:
 	void UpdateOffset(float change);
 	bool IsRequired() const { return total > part; }
 
-	static TEX tex, tex2;
+	static TexturePtr tex, tex2;
 	int total, part, change;
 	float offset;
 	Int2 click_pt;

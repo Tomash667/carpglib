@@ -5,7 +5,7 @@
 #include "TextBox.h"
 
 //-----------------------------------------------------------------------------
-TEX TextBox::tBox;
+Texture* TextBox::tBox;
 static const int padding = 4;
 static const Int2 NOT_SELECTED = Int2(-1, -1);
 
@@ -24,7 +24,7 @@ TextBox::~TextBox()
 //=================================================================================================
 void TextBox::Draw(ControlDrawData* cdd)
 {
-	TEX background = tBackground ? tBackground : tBox;
+	Texture* background = tBackground ? tBackground : tBox;
 
 	if(!is_new)
 	{

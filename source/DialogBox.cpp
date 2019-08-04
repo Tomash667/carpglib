@@ -4,7 +4,7 @@
 #include "Input.h"
 
 //-----------------------------------------------------------------------------
-TEX DialogBox::tBackground;
+Texture* DialogBox::tBackground;
 
 //=================================================================================================
 DialogBox::DialogBox(const DialogInfo& info) : name(info.name), text(info.text), type(info.type), event(info.event), order(info.order), pause(info.pause),
@@ -111,7 +111,7 @@ void DialogWithCheckbox::Event(GuiEvent e)
 DialogWithImage::DialogWithImage(const DialogInfo& info) : DialogBox(info), img(info.img)
 {
 	assert(img);
-	img_size = GetSize(img);
+	img_size = img->GetSize();
 }
 
 //=================================================================================================

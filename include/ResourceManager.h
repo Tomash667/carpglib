@@ -6,20 +6,6 @@
 #include "Timer.h"
 
 //-----------------------------------------------------------------------------
-struct ResourceComparer
-{
-	bool operator () (const Resource* r1, const Resource* r2) const
-	{
-		return _stricmp(r1->filename, r2->filename) > 0;
-	}
-};
-
-//-----------------------------------------------------------------------------
-typedef std::set<Resource*, ResourceComparer> ResourceContainer;
-typedef ResourceContainer::iterator ResourceIterator;
-typedef delegate<void(float, cstring)> ProgressCallback;
-
-//-----------------------------------------------------------------------------
 // Task data
 struct TaskData
 {
@@ -30,6 +16,7 @@ struct TaskData
 };
 
 //-----------------------------------------------------------------------------
+typedef delegate<void(float, cstring)> ProgressCallback;
 typedef delegate<void(TaskData&)> TaskCallback;
 
 //-----------------------------------------------------------------------------
@@ -61,290 +48,45 @@ struct PtrOrRef
 //-----------------------------------------------------------------------------
 class ResourceManager
 {
-public:
-	friend class TypeManager;
-
 	enum class Mode
 	{
 		Instant,
 		LoadScreenPrepare,
-		LoadScreenRuning
+		LoadScreenRuning,
+		LoadScreenRuningPrepareNext
 	};
 
 	enum class TaskType
 	{
-		Unknown,
 		Callback,
 		Load,
-		LoadAndCallback,
 		Category
 	};
 
-	//-----------------------------------------------------------------------------
-	// Base type manager
-	template<typename T>
-	class BaseTypeManager
+	struct ResourceComparer
 	{
-	protected:
-		template<typename T>
-		struct Internal
+		bool operator () (const Resource* r1, const Resource* r2) const
 		{
-		};
-
-		template<>
-		struct Internal<Mesh>
-		{
-			static const ResourceType Type = ResourceType::Mesh;
-		};
-
-		template<>
-		struct Internal<VertexData>
-		{
-			static const ResourceType Type = ResourceType::VertexData;
-		};
-
-		template<>
-		struct Internal<Sound>
-		{
-			static const ResourceType Type = ResourceType::SoundOrMusic;
-		};
-
-		template<>
-		struct Internal<Texture>
-		{
-			static const ResourceType Type = ResourceType::Texture;
-		};
-
-	public:
-		static const ResourceType Type = Internal<T>::Type;
-
-		BaseTypeManager(ResourceManager& res_mgr) : res_mgr(res_mgr)
-		{
-		}
-
-		// Try to return resource, if not exists return null
-		T* TryGet(Cstring filename)
-		{
-			return (T*)res_mgr.TryGetResource(filename, Type);
-		}
-
-		// Return resource, if not exists throws
-		T* Get(Cstring filename)
-		{
-			return (T*)res_mgr.GetResource(filename, Type);
-		}
-
-		// Return loaded resource, if not exists or can't load throws
-		T* GetLoaded(Cstring filename)
-		{
-			auto res = res_mgr.GetResource(filename, Type);
-			res_mgr.LoadResource(res);
-			return (T*)res;
-		}
-
-		// Load resource, if failed throws
-		void Load(T* res)
-		{
-			res_mgr.LoadResource(res);
-		}
-
-		// Add task category
-		void AddTaskCategory(Cstring name)
-		{
-			res_mgr.AddTaskCategory(name);
-		}
-
-		// Add load task, if not exists throws, if failed throws later
-		T* AddLoadTask(Cstring filename)
-		{
-			auto res = res_mgr.GetResource(filename, Type);
-			res_mgr.AddLoadTask(res);
-			return (T*)res;
-		}
-
-		// Add load task, if failed throws later
-		void AddLoadTask(T* res)
-		{
-			res_mgr.AddLoadTask(res);
-		}
-
-		// Add load task, if not exists throws, if failed throws later, after loading run callback
-		void AddLoadTask(Cstring filename, void* ptr, TaskCallback callback, bool required = false)
-		{
-			auto res = res_mgr.GetResource(filename, Type);
-			res_mgr.AddLoadTask(res, ptr, callback, required);
-		}
-
-		// Add load task, if failed throws later, after loading run callback
-		void AddLoadTask(T* res, void* ptr, TaskCallback callback, bool required = false)
-		{
-			res_mgr.AddLoadTask(res, ptr, callback, required);
-		}
-
-	protected:
-		ResourceManager& res_mgr;
-	};
-
-	//-----------------------------------------------------------------------------
-	// Generic type manager
-	template<typename T>
-	class TypeManager : public BaseTypeManager<T>
-	{
-	public:
-		TypeManager(ResourceManager& res_mgr) : BaseTypeManager(res_mgr)
-		{
+			return _stricmp(r1->filename, r2->filename) > 0;
 		}
 	};
 
-	//-----------------------------------------------------------------------------
-	// Mesh type manager
-	template<>
-	class TypeManager<Mesh> : public BaseTypeManager<Mesh>
-	{
-	public:
-		TypeManager(ResourceManager& res_mgr) : BaseTypeManager(res_mgr)
-		{
-		}
+	typedef std::set<Resource*, ResourceComparer> ResourceContainer;
+	typedef ResourceContainer::iterator ResourceIterator;
 
-		void LoadMetadata(Mesh* mesh)
-		{
-			res_mgr.LoadMeshMetadata(mesh);
-		}
-	};
-
-	//-----------------------------------------------------------------------------
-	// Texture type manager
-	template<>
-	class TypeManager<Texture> : public BaseTypeManager<Texture>
-	{
-	public:
-		TypeManager(ResourceManager& res_mgr) : BaseTypeManager(res_mgr)
-		{
-		}
-
-		using BaseTypeManager::AddLoadTask;
-
-		TEX GetLoadedRaw(Cstring filename)
-		{
-			auto tex = (Texture*)res_mgr.GetResource(filename, Type);
-			res_mgr.LoadResource(tex);
-			return tex->tex;
-		}
-		void AddLoadTask(Cstring filename, TEX& tex)
-		{
-			auto res = (Texture*)res_mgr.GetResource(filename, Type);
-			res_mgr.AddLoadTask(res, &tex, TaskCallback(&res_mgr, &ResourceManager::ApplyRawTextureCallback), true);
-		}
-		void AddLoadTask(Texture* res, TEX& tex)
-		{
-			res_mgr.AddLoadTask(res, &tex, TaskCallback(&res_mgr, &ResourceManager::ApplyRawTextureCallback), true);
-		}
-	};
-
-	//-----------------------------------------------------------------------------
-	// Sound or music type manager
-	template<>
-	class TypeManager<Sound> : public BaseTypeManager<Sound>
-	{
-	public:
-		TypeManager(ResourceManager& res_mgr) : BaseTypeManager(res_mgr)
-		{
-		}
-
-		using BaseTypeManager::AddLoadTask;
-
-		void AddLoadTask(Cstring filename, SOUND& sound)
-		{
-			Sound* res = (Sound*)res_mgr.GetResource(filename, Type);
-			assert(!res->is_music);
-			res_mgr.AddLoadTask(res, &sound, TaskCallback(&res_mgr, &ResourceManager::ApplyRawSoundCallback), true);
-		}
-
-		Sound* TryGetSound(Cstring filename)
-		{
-			return TryGetInternal(filename, false);
-		}
-
-		Sound* TryGetMusic(Cstring filename)
-		{
-			return TryGetInternal(filename, true);
-		}
-
-		Sound* GetSound(Cstring filename)
-		{
-			return GetInternal(filename, false);
-		}
-
-		Sound* GetMusic(Cstring filename)
-		{
-			return GetInternal(filename, true);
-		}
-
-		Sound* GetLoadedSound(Cstring filename)
-		{
-			return GetLoadedInternal(filename, false);
-		}
-
-		Sound* GetLoadedMusic(Cstring filename)
-		{
-			return GetLoadedInternal(filename, true);
-		}
-
-	private:
-		Sound* TryGetInternal(Cstring filename, bool is_music)
-		{
-			Sound* res = (Sound*)res_mgr.TryGetResource(filename, Type);
-			if(res)
-			{
-				assert(res->state == ResourceState::NotLoaded || res->is_music == is_music);
-				res->is_music = is_music;
-			}
-			return res;
-		}
-
-		Sound* GetInternal(Cstring filename, bool is_music)
-		{
-			Sound* res = (Sound*)res_mgr.GetResource(filename, Type);
-			assert(res->state == ResourceState::NotLoaded || res->is_music == is_music);
-			res->is_music = is_music;
-			return res;
-		}
-
-		Sound* GetLoadedInternal(Cstring filename, bool is_music)
-		{
-			Sound* res = GetInternal(filename, is_music);
-			res_mgr.LoadResource(res);
-			return res;
-		}
-	};
-
-	template<typename T>
-	friend class TypeManager;
-
+public:
 	ResourceManager();
 	~ResourceManager();
 
-	template<typename T>
-	static auto Get()
-	{
-		return ResourceManager::Get().For<T>();
-	}
-
-	static ResourceManager& Get()
-	{
-		return manager;
-	}
-
+	static ResourceManager& Get() { return manager; }
 	void Init(IDirect3DDevice9* device, SoundManager* sound_mgr);
 	void Cleanup();
-
 	bool AddDir(cstring dir, bool subdir = true);
 	bool AddPak(cstring path, cstring key = nullptr);
 	ResourceType ExtToResourceType(cstring ext);
 	ResourceType FilenameToResourceType(cstring filename);
 	void AddTaskCategory(Cstring name);
 	void AddTask(void* ptr, TaskCallback callback);
-	void NextTask(cstring next_category = nullptr);
 	void SetProgressCallback(ProgressCallback clbk) { progress_clbk = clbk; }
 	void PrepareLoadScreen(float progress_min = 0.f, float progress_max = 1.f);
 	void StartLoadScreen(cstring category = nullptr);
@@ -353,12 +95,37 @@ public:
 	int GetLoadTasksCount() const { return to_load; }
 	bool IsLoadScreen() const { return mode != Mode::Instant; }
 
+	// Return resource or null if missing
 	template<typename T>
-	TypeManager<T> For()
+	T* TryGet(Cstring filename)
 	{
-		TypeManager<T> inst(*this);
-		return inst;
+		return static_cast<T*>(TryGetResource(filename, T::Type));
 	}
+	// Return resource or throw if missing
+	template<typename T>
+	T* Get(Cstring filename)
+	{
+		return static_cast<T*>(GetResource(filename, T::Type));
+	}
+	// Return resource (load it now or in background depending on mode) or throw if missing
+	template<typename T>
+	T* Load(Cstring filename)
+	{
+		T* res = Get<T>(filename);
+		Load(res);
+		return res;
+	}
+	void Load(Resource* res);
+	// Return loaded resource or throw if missing
+	template<typename T>
+	T* LoadInstant(Cstring filename)
+	{
+		T* res = Get<T>(filename);
+		LoadInstant(res);
+		return res;
+	}
+	void LoadInstant(Resource* res);
+	void LoadMeshMetadata(Mesh* mesh);
 
 private:
 	struct TaskDetail
@@ -384,17 +151,11 @@ private:
 	Resource* CreateResource(ResourceType type);
 	Resource* TryGetResource(Cstring filename, ResourceType type);
 	Resource* GetResource(Cstring filename, ResourceType type);
-	void AddLoadTask(Resource* res);
-	void AddLoadTask(Resource* res, void* ptr, TaskCallback callback, bool required);
-	void LoadResource(Resource* res);
 	void LoadResourceInternal(Resource* res);
 	void LoadMesh(Mesh* mesh);
-	void LoadMeshMetadata(Mesh* mesh);
 	void LoadVertexData(VertexData* vd);
 	void LoadSoundOrMusic(Sound* sound);
 	void LoadTexture(Texture* tex);
-	void ApplyRawTextureCallback(TaskData& data);
-	void ApplyRawSoundCallback(TaskData& data);
 
 	Mode mode;
 	IDirect3DDevice9* device;

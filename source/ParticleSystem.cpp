@@ -165,7 +165,7 @@ void ParticleEmitter::Save(FileWriter& f)
 //=================================================================================================
 void ParticleEmitter::Load(FileReader& f)
 {
-	tex = ResourceManager::Get<Texture>().GetLoaded(f.ReadString1());
+	tex = ResourceManager::Get().Load<Texture>(f.ReadString1());
 	f >> emision_interval;
 	f >> life;
 	f >> particle_life;

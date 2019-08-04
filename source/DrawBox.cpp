@@ -74,12 +74,12 @@ void DrawBox::Update(float dt)
 	}
 }
 
-void DrawBox::SetTexture(TEX t)
+void DrawBox::SetTexture(Texture* t)
 {
-	assert(t);
+	assert(t && t->IsLoaded());
 	tex = t;
 
-	tex_size = GetSize(t);
+	tex_size = t->GetSize();
 	Vec2 sizef = Vec2(size);
 	Vec2 scale2 = Vec2(sizef.x / tex_size.x, sizef.y / tex_size.y);
 	scale = min(scale2.x, scale2.y);

@@ -15,8 +15,8 @@ struct TextColor
 union Cell
 {
 	cstring text;
-	vector<TEX>* imgset;
-	TEX img;
+	vector<Texture*>* imgset;
+	Texture* img;
 	TextColor* text_color;
 };
 
@@ -68,7 +68,7 @@ public:
 	int items, height, selected, total_width;
 	GridEvent event;
 	Scrollbar scroll;
-	vector<TEX> imgset;
+	vector<Texture*> imgset;
 	SelectionType selection_type;
 	Color selection_color;
 	SelectGridEvent select_event;

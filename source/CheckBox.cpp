@@ -5,7 +5,7 @@
 #include "Input.h"
 
 //-----------------------------------------------------------------------------
-TEX CheckBox::tTick;
+Texture* CheckBox::tTick;
 
 //=================================================================================================
 CheckBox::CheckBox(StringOrCstring text, bool checked) : text(text.c_str()), checked(checked), state(NONE), bt_size(32, 32), radiobox(false), id(-1)
@@ -13,7 +13,7 @@ CheckBox::CheckBox(StringOrCstring text, bool checked) : text(text.c_str()), che
 }
 
 //=================================================================================================
-void CheckBox::Draw(ControlDrawData* cdd/* =nullptr */)
+void CheckBox::Draw(ControlDrawData*)
 {
 	gui->DrawItem(Button::tex[state], global_pos, bt_size, Color::White, 12);
 

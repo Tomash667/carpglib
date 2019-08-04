@@ -47,7 +47,7 @@ public:
 	ID3DXEffect* CompileShader(CompileShaderParams& params);
 	TEX CreateTexture(const Int2& size);
 	RenderTarget* CreateRenderTarget(const Int2& size);
-	TEX CopyToTexture(RenderTarget* target);
+	Texture* CopyToTexture(RenderTarget* target);
 	bool IsLostDevice() const { return lost_device; }
 	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	bool IsVsyncEnabled() const { return vsync; }

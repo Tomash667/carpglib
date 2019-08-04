@@ -22,7 +22,7 @@ public:
 	void UpdateTooltip(float dt, int group, int id);
 
 	string big_text, text, small_text;
-	TEX img;
+	Texture* img;
 	bool anything;
 
 private:

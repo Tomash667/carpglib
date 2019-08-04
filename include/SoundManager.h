@@ -10,7 +10,7 @@ public:
 	void Disable(bool nosound, bool nomusic);
 	void Update(float dt);
 	int LoadSound(Sound* sound);
-	void PlayMusic(Sound* music);
+	void PlayMusic(Music* music);
 	void PlaySound2d(Sound* sound);
 	void PlaySound3d(Sound* sound, const Vec3& pos, float distance);
 	FMOD::Channel* CreateChannel(Sound* sound, const Vec3& pos, float distance);

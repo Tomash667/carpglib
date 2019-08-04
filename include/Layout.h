@@ -80,8 +80,8 @@ public:
 		Font* font;
 		Color font_color;
 		int level_offset;
-		TEX text_box_background;
-		TEX drag_n_drop;
+		Texture* text_box_background;
+		Texture* drag_n_drop;
 	} tree_view;
 
 	struct SplitPanel

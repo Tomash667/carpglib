@@ -16,11 +16,11 @@ void InputTextBox::Draw(ControlDrawData*)
 	if(background)
 	{
 		Rect r0 = { global_pos.x, global_pos.y, global_pos.x + textbox_size.x, global_pos.y + textbox_size.y };
-		gui->DrawSpriteRect(*background, r0, background_color);
+		gui->DrawSpriteRect(background, r0, background_color);
 
 		r0.Top() = inputbox_pos.y;
 		r0.Bottom() = r0.Top() + inputbox_size.y;
-		gui->DrawSpriteRect(*background, r0, background_color);
+		gui->DrawSpriteRect(background, r0, background_color);
 	}
 
 	// box na tekst
