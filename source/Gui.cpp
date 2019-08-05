@@ -12,6 +12,8 @@
 #include "ResourceManager.h"
 #include "DirectX.h"
 
+Gui* app::gui;
+
 //=================================================================================================
 Gui::Gui() : tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr), tPixel(nullptr),
 master_layout(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), vertex_decl(nullptr), effect(nullptr)
@@ -27,14 +29,14 @@ Gui::~Gui()
 }
 
 //=================================================================================================
-void Gui::Init(IDirect3DDevice9* device, ID3DXSprite* sprite, Input* input)
+void Gui::Init()
 {
-	this->device = device;
-	this->sprite = sprite;
+	device = app::render->GetDevice();
+	sprite = app::render->GetSprite();
+	Control::input = app::input;
 	Control::gui = this;
-	Control::input = input;
 	tFontTarget = nullptr;
-	wnd_size = Engine::Get().GetWindowSize();
+	wnd_size = app::engine->GetWindowSize();
 	cursor_pos = wnd_size / 2;
 
 	CreateVertexBuffer();
@@ -66,13 +68,13 @@ void Gui::Init(IDirect3DDevice9* device, ID3DXSprite* sprite, Input* input)
 	};
 	V(device->CreateVertexDeclaration(v, &vertex_decl));
 
-	Engine::Get().GetRender()->RegisterShader(this);
+	app::render->RegisterShader(this);
 }
 
 //=================================================================================================
 void Gui::OnInit()
 {
-	effect = Engine::Get().GetRender()->CompileShader("gui.fx");
+	effect = app::render->CompileShader("gui.fx");
 	techGui = effect->GetTechniqueByName("gui");
 	techGui2 = effect->GetTechniqueByName("gui2");
 	techGuiGrayscale = effect->GetTechniqueByName("gui_grayscale");
@@ -136,9 +138,8 @@ Font* Gui::CreateFont(cstring name, int size, int weight, int tex_size, int outl
 {
 	assert(name && size > 0 && IsPow2(tex_size) && outline >= 0);
 
-	ResourceManager& res_mgr = ResourceManager::Get();
 	string res_name = Format("%s;%d;%d;%d", name, size, weight, outline);
-	Font* existing_font = res_mgr.TryGet<Font>(res_name);
+	Font* existing_font = app::res_mgr->TryGet<Font>(res_name);
 	if(existing_font)
 		return existing_font;
 
@@ -265,7 +266,7 @@ Font* Gui::CreateFont(cstring name, int size, int weight, int tex_size, int outl
 		f->state = ResourceState::Loaded;
 		f->path = res_name;
 		f->filename = f->path.c_str();
-		res_mgr.AddResource(f);
+		app::res_mgr->AddResource(f);
 
 		return f;
 	}
@@ -397,7 +398,7 @@ int Gui::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int
 		V(device->SetRenderTarget(0, backbuffer));
 		backbuffer->Release();
 		surf->Release();
-		Engine::Get().GetRender()->WaitReset();
+		app::render->WaitReset();
 		return 2;
 	}
 	else if(FAILED(hr))
@@ -1150,16 +1151,15 @@ void Gui::Draw(bool draw_layers, bool draw_dialogs)
 {
 	PROFILER_BLOCK("DrawGui");
 
-	wnd_size = Engine::Get().GetWindowSize();
+	wnd_size = app::engine->GetWindowSize();
 
 	if(!draw_layers && !draw_dialogs)
 		return;
 
-	Render* render = Engine::Get().GetRender();
-	render->SetAlphaTest(false);
-	render->SetAlphaBlend(true);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(false);
+	app::render->SetAlphaTest(false);
+	app::render->SetAlphaBlend(true);
+	app::render->SetNoCulling(true);
+	app::render->SetNoZWrite(false);
 
 	V(device->SetVertexDeclaration(vertex_decl));
 
@@ -1345,15 +1345,13 @@ void Gui::Update(float dt, float mouse_speed)
 {
 	PROFILER_BLOCK("UpdateGui");
 
-	Engine& engine = Engine::Get();
-
 	// update cursor
 	cursor_mode = CURSOR_NORMAL;
-	mouse_wheel = Control::input->GetMouseWheel();
+	mouse_wheel = app::input->GetMouseWheel();
 	prev_cursor_pos = cursor_pos;
 	if(NeedCursor() && mouse_speed > 0)
 	{
-		cursor_pos += Control::input->GetMouseDif() * mouse_speed;
+		cursor_pos += app::input->GetMouseDif() * mouse_speed;
 		if(cursor_pos.x < 0)
 			cursor_pos.x = 0;
 		if(cursor_pos.y < 0)
@@ -1362,10 +1360,10 @@ void Gui::Update(float dt, float mouse_speed)
 			cursor_pos.x = wnd_size.x - 1;
 		if(cursor_pos.y >= wnd_size.y)
 			cursor_pos.y = wnd_size.y - 1;
-		engine.SetUnlockPoint(cursor_pos);
+		app::engine->SetUnlockPoint(cursor_pos);
 	}
 	else
-		engine.SetUnlockPoint(wnd_size / 2);
+		app::engine->SetUnlockPoint(wnd_size / 2);
 
 	layer->focus = dialog_layer->Empty();
 
@@ -1393,7 +1391,7 @@ void Gui::Update(float dt, float mouse_speed)
 		layer->Update(dt);
 	}
 
-	engine.SetUnlockPoint(wnd_size / 2);
+	app::engine->SetUnlockPoint(wnd_size / 2);
 }
 
 //=================================================================================================
@@ -2015,10 +2013,9 @@ bool Gui::AnythingVisible() const
 //=================================================================================================
 void Gui::OnResize()
 {
-	auto& engine = Engine::Get();
-	wnd_size = engine.GetWindowSize();
+	wnd_size = app::engine->GetWindowSize();
 	cursor_pos = wnd_size / 2;
-	engine.SetUnlockPoint(cursor_pos);
+	app::engine->SetUnlockPoint(cursor_pos);
 	layer->Event(GuiEvent_WindowResize);
 	dialog_layer->Event(GuiEvent_WindowResize);
 }
@@ -2548,7 +2545,7 @@ void Gui::SetClipboard(cstring text)
 {
 	assert(text);
 
-	if(OpenClipboard(Engine::Get().GetWindowHandle()))
+	if(OpenClipboard(app::engine->GetWindowHandle()))
 	{
 		EmptyClipboard();
 		uint length = strlen(text) + 1;
@@ -2566,7 +2563,7 @@ cstring Gui::GetClipboard()
 {
 	cstring result = nullptr;
 
-	if(OpenClipboard(Engine::Get().GetWindowHandle()))
+	if(OpenClipboard(app::engine->GetWindowHandle()))
 	{
 		if(IsClipboardFormatAvailable(CF_TEXT) != FALSE)
 		{

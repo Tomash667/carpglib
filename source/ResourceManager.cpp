@@ -5,11 +5,10 @@
 #include "Mesh.h"
 #include "SoundManager.h"
 #include "Pak.h"
+#include "Render.h"
 #include "DirectX.h"
 
-//-----------------------------------------------------------------------------
-ResourceManager ResourceManager::manager;
-ObjectPool<ResourceManager::TaskDetail> ResourceManager::task_pool;
+ResourceManager* app::res_mgr;
 
 //=================================================================================================
 ResourceManager::ResourceManager() : mode(Mode::Instant)
@@ -19,14 +18,23 @@ ResourceManager::ResourceManager() : mode(Mode::Instant)
 //=================================================================================================
 ResourceManager::~ResourceManager()
 {
+	for(Resource* res : resources)
+		delete res;
+
+	for(Pak* pak : paks)
+	{
+		pak->filename_buf->Free();
+		delete pak;
+	}
+
+	Buffer::Free(sound_bufs);
+
+	task_pool.Free(tasks);
 }
 
 //=================================================================================================
-void ResourceManager::Init(IDirect3DDevice9* device, SoundManager* sound_mgr)
+void ResourceManager::Init()
 {
-	this->device = device;
-	this->sound_mgr = sound_mgr;
-
 	RegisterExtensions();
 
 	Mesh::MeshInit();
@@ -68,23 +76,6 @@ void ResourceManager::RegisterExtensions()
 	exts["xm"] = ResourceType::Sound;
 
 	exts["ogg"] = ResourceType::Music;
-}
-
-//=================================================================================================
-void ResourceManager::Cleanup()
-{
-	for(Resource* res : resources)
-		delete res;
-
-	for(Pak* pak : paks)
-	{
-		pak->filename_buf->Free();
-		delete pak;
-	}
-
-	Buffer::Free(sound_bufs);
-
-	task_pool.Free(tasks);
 }
 
 //=================================================================================================
@@ -272,10 +263,7 @@ void ResourceManager::AddResource(Resource* res)
 
 	pair<ResourceIterator, bool>& result = resources.insert(res);
 	if(!result.second)
-	{
-		Resource* existing = *result.first;
 		Warn("ResourceManager: Resource '%s' already added.", res->filename);
-	}
 }
 
 //=================================================================================================
@@ -469,13 +457,12 @@ void ResourceManager::CancelLoadScreen(bool cleanup)
 //=================================================================================================
 void ResourceManager::UpdateLoadScreen()
 {
-	Engine& engine = Engine::Get();
 	if(to_load == loaded)
 	{
 		// no tasks to load, draw with full progress
 		progress = progress_max;
 		progress_clbk(progress_max, "");
-		engine.DoPseudotick();
+		app::engine->DoPseudotick();
 		return;
 	}
 
@@ -483,7 +470,7 @@ void ResourceManager::UpdateLoadScreen()
 	if(tasks[0]->type == TaskType::Category)
 		category = tasks[0]->category;
 	progress_clbk(progress, category);
-	engine.DoPseudotick();
+	app::engine->DoPseudotick();
 
 	// do all tasks
 	timer.Reset();
@@ -516,7 +503,7 @@ void ResourceManager::UpdateLoadScreen()
 	// draw last frame
 	progress = progress_max;
 	progress_clbk(progress_max, nullptr);
-	engine.DoPseudotick();
+	app::engine->DoPseudotick();
 }
 
 //=================================================================================================
@@ -528,7 +515,7 @@ void ResourceManager::TickLoadScreen()
 		timer_dt = 0.f;
 		progress = float(loaded) / to_load * (progress_max - progress_min) + progress_min;
 		progress_clbk(progress, category);
-		Engine::Get().DoPseudotick();
+		app::engine->DoPseudotick();
 	}
 }
 
@@ -565,6 +552,7 @@ void ResourceManager::LoadMesh(Mesh* mesh)
 {
 	try
 	{
+		IDirect3DDevice9* device = app::render->GetDevice();
 		if(mesh->IsFile())
 		{
 			FileReader f(mesh->path);
@@ -629,7 +617,7 @@ void ResourceManager::LoadVertexData(VertexData* vd)
 //=================================================================================================
 void ResourceManager::LoadSoundOrMusic(Sound* sound)
 {
-	int result = sound_mgr->LoadSound(sound);
+	int result = app::sound_mgr->LoadSound(sound);
 	if(result != 0)
 		throw Format("ResourceManager: Failed to load %s '%s' (%d).", sound->type == ResourceType::Music ? "music" : "sound", sound->path.c_str(), result);
 }
@@ -637,7 +625,9 @@ void ResourceManager::LoadSoundOrMusic(Sound* sound)
 //=================================================================================================
 void ResourceManager::LoadTexture(Texture* tex)
 {
+	IDirect3DDevice9* device = app::render->GetDevice();
 	HRESULT hr;
+
 	if(tex->IsFile())
 	{
 		hr = D3DXCreateTextureFromFile(device, tex->path.c_str(), &tex->tex);

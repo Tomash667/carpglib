@@ -123,7 +123,7 @@ class Gui : public ShaderHandler
 public:
 	Gui();
 	~Gui();
-	void Init(IDirect3DDevice9* device, ID3DXSprite* sprite, Input* input);
+	void Init();
 	void OnInit() override;
 	void OnReset() override;
 	void OnReload() override;

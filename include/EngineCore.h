@@ -108,3 +108,15 @@ class btCollisionObject;
 class btCollisionShape;
 class btHeightfieldTerrainShape;
 class btTriangleIndexVertexArray;
+
+// Globals
+namespace app
+{
+	extern App* app;
+	extern Engine* engine;
+	extern Gui* gui;
+	extern Input* input;
+	extern Render* render;
+	extern ResourceManager* res_mgr;
+	extern SoundManager* sound_mgr;
+}

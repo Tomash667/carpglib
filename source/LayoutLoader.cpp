@@ -256,7 +256,7 @@ void LayoutLoader::ParseControl(const string& name)
 							if(area.mode != AreaLayout::Mode::Image && area.mode != AreaLayout::Mode::Item)
 								t.Throw("This area layout don't support 'image' entry.");
 							const string& img_name = t.MustGetString();
-							area.tex = ResourceManager::Get().Load<Texture>(img_name);
+							area.tex = app::res_mgr->Load<Texture>(img_name);
 							t.Next();
 						}
 						break;
@@ -324,7 +324,7 @@ void LayoutLoader::ParseControl(const string& name)
 		case Entry::Image:
 			{
 				const string& img_name = t.MustGetString();
-				entry->GetValue<Texture*>(data) = ResourceManager::Get().Load<Texture>(img_name);
+				entry->GetValue<Texture*>(data) = app::res_mgr->Load<Texture>(img_name);
 				t.Next();
 			}
 			break;

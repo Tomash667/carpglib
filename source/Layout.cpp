@@ -33,7 +33,7 @@ Box2d AreaLayout::CalculateRegion(const Int2& pos, const Int2& region)
 void AreaLayout::SetFromArea(const Rect* area)
 {
 	if(!tex->IsLoaded())
-		ResourceManager::Get().LoadInstant(tex);
+		app::res_mgr->LoadInstant(tex);
 
 	Int2 tex_size = tex->GetSize();
 	if(area)

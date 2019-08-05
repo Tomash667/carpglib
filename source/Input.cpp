@@ -2,14 +2,19 @@
 #include "EngineCore.h"
 #include "Input.h"
 
+Input* app::input;
+
+//=================================================================================================
 Input::Input() : mouse_wheel(0), mouse_dif(0, 0), key_callback(nullptr)
 {
 }
 
+//=================================================================================================
 Input::~Input()
 {
 }
 
+//=================================================================================================
 // change keys state from pressed->down and released->up
 void Input::Update()
 {
@@ -29,6 +34,7 @@ void Input::Update()
 	to_release.clear();
 }
 
+//=================================================================================================
 void Input::UpdateShortcuts()
 {
 	shortcut_state = 0;
@@ -40,6 +46,7 @@ void Input::UpdateShortcuts()
 		shortcut_state |= KEY_ALT;
 }
 
+//=================================================================================================
 // release all pressed/down keys
 void Input::ReleaseKeys()
 {
@@ -53,6 +60,7 @@ void Input::ReleaseKeys()
 	to_release.clear();
 }
 
+//=================================================================================================
 // handle key down/up
 void Input::Process(Key key, bool down)
 {
@@ -84,6 +92,7 @@ void Input::Process(Key key, bool down)
 		k = IS_PRESSED;
 }
 
+//=================================================================================================
 void Input::ProcessDoubleClick(Key key)
 {
 	assert(key >= Key::LeftButton && key <= Key::X2Button);

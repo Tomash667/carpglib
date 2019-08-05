@@ -78,9 +78,7 @@ class ResourceManager
 	ResourceManager();
 	~ResourceManager();
 
-	static ResourceManager& Get() { return manager; }
-	void Init(IDirect3DDevice9* device, SoundManager* sound_mgr);
-	void Cleanup();
+	void Init();
 	bool AddDir(cstring dir, bool subdir = true);
 	bool AddPak(cstring path, cstring key = nullptr);
 	void AddResource(Resource* res);
@@ -159,8 +157,6 @@ private:
 	void LoadTexture(Texture* tex);
 
 	Mode mode;
-	IDirect3DDevice9* device;
-	SoundManager* sound_mgr;
 	ResourceContainer resources;
 	Resource res_search;
 	std::map<cstring, ResourceType, CstringComparer> exts;
@@ -172,6 +168,5 @@ private:
 	Timer timer;
 	float timer_dt, progress, progress_min, progress_max;
 	ProgressCallback progress_clbk;
-	static ResourceManager manager;
-	static ObjectPool<TaskDetail> task_pool;
+	ObjectPool<TaskDetail> task_pool;
 };

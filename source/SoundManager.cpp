@@ -5,6 +5,8 @@
 #include "WindowsIncludes.h"
 #include <fmod.hpp>
 
+SoundManager* app::sound_mgr;
+
 //=================================================================================================
 SoundManager::SoundManager() : system(nullptr), current_music(nullptr), music_ended(false), nosound(false), nomusic(false), sound_volume(50), music_volume(50)
 {
