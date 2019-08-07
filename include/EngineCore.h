@@ -120,3 +120,6 @@ namespace app
 	extern ResourceManager* res_mgr;
 	extern SoundManager* sound_mgr;
 }
+
+// Misc functions
+void RegisterCrashHandler(cstring title, cstring version, cstring url, cstring log_file, int minidump_level);

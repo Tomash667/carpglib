@@ -123,6 +123,7 @@
     <ClCompile Include="source\Containers.cpp" />
     <ClCompile Include="source\Control.cpp" />
     <ClCompile Include="source\CoreMath.cpp" />
+    <ClCompile Include="source\CrashHandler.cpp" />
     <ClCompile Include="source\Crc.cpp" />
     <ClCompile Include="source\CriticalSection.cpp" />
     <ClCompile Include="source\DebugDrawer.cpp" />
@@ -252,7 +253,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external\Bullet\src;$(ProjectDir)external\DirectX\Include;$(ProjectDir)external\DirectXMath\Inc;$(ProjectDir)external\FMod\inc;$(ProjectDir)external\Visual Leak Detector\include;$(ProjectDir)external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external\Bullet\src;$(ProjectDir)external\CrashRpt\include;$(ProjectDir)external\DirectX\Include;$(ProjectDir)external\DirectXMath\Inc;$(ProjectDir)external\FMod\inc;$(ProjectDir)external\Visual Leak Detector\include;$(ProjectDir)external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>EnginePch.h</PrecompiledHeaderFile>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -275,7 +276,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external\Bullet\src;$(ProjectDir)external\DirectX\Include;$(ProjectDir)external\DirectXMath\Inc;$(ProjectDir)external\FMod\inc;$(ProjectDir)external\Visual Leak Detector\include;$(ProjectDir)external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external\Bullet\src;$(ProjectDir)external\CrashRpt\include;$(ProjectDir)external\DirectX\Include;$(ProjectDir)external\DirectXMath\Inc;$(ProjectDir)external\FMod\inc;$(ProjectDir)external\Visual Leak Detector\include;$(ProjectDir)external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>EnginePch.h</PrecompiledHeaderFile>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
