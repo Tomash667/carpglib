@@ -15,7 +15,7 @@ public:
 	~Engine();
 
 	bool ChangeMode(bool fullscreen);
-	bool ChangeMode(const Int2& size, bool fullscreen, int hz = 0);
+	bool ChangeMode(Int2 size, bool fullscreen, int hz = 0);
 	void DoPseudotick(bool msg_only = false);
 	void Shutdown();
 	void FatalError(cstring err);

@@ -17,8 +17,9 @@ const Int2 Engine::MIN_WINDOW_SIZE = Int2(800, 600);
 const Int2 Engine::DEFAULT_WINDOW_SIZE = Int2(1024, 768);
 
 //=================================================================================================
-Engine::Engine() : initialized(false), shutdown(false), timer(false), hwnd(nullptr), cursor_visible(true), replace_cursor(false), locked_cursor(true),
-active(false), activation_point(-1, -1), phy_world(nullptr), title("Window"), force_pos(-1, -1), force_size(-1, -1), hidden_window(false)
+Engine::Engine() : app(nullptr), initialized(false), shutdown(false), timer(false), hwnd(nullptr), cursor_visible(true), replace_cursor(false),
+locked_cursor(true), active(false), activation_point(-1, -1), phy_world(nullptr), title("Window"), force_pos(-1, -1), force_size(-1, -1), hidden_window(false),
+wnd_size(DEFAULT_WINDOW_SIZE)
 {
 	if(!Logger::GetInstance())
 		Logger::SetInstance(new Logger);
@@ -101,8 +102,11 @@ bool Engine::ChangeMode(bool new_fullscreen)
 
 //=================================================================================================
 // Change resolution and display mode
-bool Engine::ChangeMode(const Int2& size, bool new_fullscreen, int hz)
+bool Engine::ChangeMode(Int2 size, bool new_fullscreen, int hz)
 {
+	if(size == Int2::Zero)
+		size = wnd_size;
+
 	assert(size.x > 0 && size.y > 0 && hz >= 0);
 
 	if(size == wnd_size && new_fullscreen == fullscreen && hz == app::render->GetRefreshRate())
@@ -511,6 +515,7 @@ void Engine::ShowError(cstring msg, Logger::Level level)
 {
 	assert(msg);
 
+	ShowWindow(hwnd, SW_MINIMIZE);
 	ShowWindow(hwnd, SW_HIDE);
 	ShowCursor(true);
 	Logger* logger = Logger::GetInstance();
