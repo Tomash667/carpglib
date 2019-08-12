@@ -27,16 +27,16 @@ void GuiContainer::Update(float dt)
 	// jeœli nic nie jest aktywne to aktywuj pierwsz¹ kontrolkê
 	for(Iter it = items.begin(), end = items.end(); it != end; ++it)
 	{
-		if(IS_SET(it->second, F_MOUSE_FOCUS))
+		if(IsSet(it->second, F_MOUSE_FOCUS))
 			it->first->mouse_focus = focus;
 		if(focus)
 		{
-			if(!focus_ctrl && IS_SET(it->second, F_FOCUS))
+			if(!focus_ctrl && IsSet(it->second, F_FOCUS))
 			{
 				focus_ctrl = it->first;
 				focus_ctrl->GainFocus();
 			}
-			if(IS_SET(it->second, F_CLICK_TO_FOCUS))
+			if(IsSet(it->second, F_CLICK_TO_FOCUS))
 			{
 				if(it->first->IsInside(gui->cursor_pos) && (input->Pressed(Key::LeftButton) || input->Pressed(Key::RightButton)))
 				{
@@ -74,7 +74,7 @@ void GuiContainer::Update(float dt)
 			{
 				for(Iter it = start - 1; it != begin; --it)
 				{
-					if(IS_SET(it->second, F_FOCUS))
+					if(IsSet(it->second, F_FOCUS))
 					{
 						new_item = it;
 						break;
@@ -86,7 +86,7 @@ void GuiContainer::Update(float dt)
 			{
 				for(Iter it = end - 1; it != start; --it)
 				{
-					if(IS_SET(it->second, F_FOCUS))
+					if(IsSet(it->second, F_FOCUS))
 					{
 						new_item = it;
 						break;
@@ -100,7 +100,7 @@ void GuiContainer::Update(float dt)
 			// od start do end
 			for(Iter it = start + 1; it != end; ++it)
 			{
-				if(IS_SET(it->second, F_FOCUS))
+				if(IsSet(it->second, F_FOCUS))
 				{
 					new_item = it;
 					break;
@@ -111,7 +111,7 @@ void GuiContainer::Update(float dt)
 			{
 				for(Iter it = begin; it != start; ++it)
 				{
-					if(IS_SET(it->second, F_FOCUS))
+					if(IsSet(it->second, F_FOCUS))
 					{
 						new_item = it;
 						break;
@@ -145,7 +145,7 @@ void GuiContainer::GainFocus()
 	{
 		for(Iter it = items.begin(), end = items.end(); it != end; ++it)
 		{
-			if(IS_SET(it->second, F_FOCUS))
+			if(IsSet(it->second, F_FOCUS))
 			{
 				focus_ctrl = it->first;
 				focus_ctrl->GainFocus();

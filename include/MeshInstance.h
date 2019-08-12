@@ -66,15 +66,15 @@ struct MeshInstance
 		float GetBlendT() const;
 		bool IsActive() const
 		{
-			return IS_SET(state, FLAG_GROUP_ACTIVE);
+			return IsSet(state, FLAG_GROUP_ACTIVE);
 		}
 		bool IsBlending() const
 		{
-			return IS_SET(state, FLAG_BLENDING);
+			return IsSet(state, FLAG_BLENDING);
 		}
 		bool IsPlaying() const
 		{
-			return IS_SET(state, FLAG_PLAYING);
+			return IsSet(state, FLAG_PLAYING);
 		}
 		float GetProgress() const
 		{
@@ -88,7 +88,7 @@ struct MeshInstance
 	// kontynuuj odtwarzanie animacji
 	void Play(int group = 0)
 	{
-		SET_BIT(groups[group].state, FLAG_PLAYING);
+		SetBit(groups[group].state, FLAG_PLAYING);
 	}
 	// odtwarzaj animacjê
 	void Play(Mesh::Animation* anim, int flags, int group);
@@ -102,7 +102,7 @@ struct MeshInstance
 	// zatrzymaj animacjê
 	void Stop(int group = 0)
 	{
-		CLEAR_BIT(groups[group].state, FLAG_PLAYING);
+		ClearBit(groups[group].state, FLAG_PLAYING);
 	}
 	// deazktywój grupê
 	void Deactivate(int group = 0, bool in_update = false);

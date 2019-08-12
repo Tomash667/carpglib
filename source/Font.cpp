@@ -38,12 +38,12 @@ bool Font::SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_ou
 	if(in_out_index >= text_end)
 		return false;
 
-	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
+	bool parse_special = IsSet(flags, DTF_PARSE_SPECIAL);
 	out_begin = in_out_index;
 	out_width = 0;
 
 	// Pojedyncza linia - specjalny szybki tryb
-	if(IS_SET(flags, DTF_SINGLELINE))
+	if(IsSet(flags, DTF_SINGLELINE))
 	{
 		while(in_out_index < text_end)
 		{
@@ -341,14 +341,14 @@ bool Font::HitTest(Cstring str, int limit_width, int flags, const Int2& pos, uin
 	if(pos.x < 0 || pos.y < 0)
 		return false;
 
-	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
+	bool parse_special = IsSet(flags, DTF_PARSE_SPECIAL);
 	uint text_end = strlen(str);
 	cstring text = str;
 	int width = 0, prev_width = 0;
 	index = 0;
 
 	// simple single line mode
-	if(IS_SET(flags, DTF_SINGLELINE))
+	if(IsSet(flags, DTF_SINGLELINE))
 	{
 		if(pos.y > height)
 			return false;
@@ -433,12 +433,12 @@ Int2 Font::IndexToPos(uint expected_index, Cstring str, int limit_width, int fla
 {
 	assert(expected_index <= strlen(str));
 
-	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
+	bool parse_special = IsSet(flags, DTF_PARSE_SPECIAL);
 	uint text_end = strlen(str);
 	cstring text = str;
 	uint index = 0;
 
-	if(IS_SET(flags, DTF_SINGLELINE))
+	if(IsSet(flags, DTF_SINGLELINE))
 	{
 		int width = 0;
 
@@ -497,12 +497,12 @@ Int2 Font::IndexToPos(const Int2& expected_index, Cstring str, int limit_width, 
 {
 	assert(expected_index.x >= 0 && expected_index.y >= 0);
 
-	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
+	bool parse_special = IsSet(flags, DTF_PARSE_SPECIAL);
 	uint text_end = strlen(str);
 	cstring text = str;
 	uint index = 0;
 
-	if(IS_SET(flags, DTF_SINGLELINE))
+	if(IsSet(flags, DTF_SINGLELINE))
 	{
 		assert(expected_index.x <= (int)text_end);
 		assert(expected_index.y == 0);
@@ -565,12 +565,12 @@ uint Font::PrecalculateFontLines(vector<Line>& font_lines, Cstring str, int limi
 {
 	font_lines.clear();
 
-	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
+	bool parse_special = IsSet(flags, DTF_PARSE_SPECIAL);
 	uint text_end = strlen(str);
 	cstring text = str;
 	uint index = 0;
 
-	if(IS_SET(flags, DTF_SINGLELINE))
+	if(IsSet(flags, DTF_SINGLELINE))
 	{
 		uint width = GetLineWidth(text, 0, text_end, parse_special);
 		font_lines.push_back({ 0, text_end, text_end, width });
@@ -624,13 +624,13 @@ Int2 Font::IndexToPos(vector<Line>& font_lines, const Int2& expected_index, Cstr
 {
 	assert(expected_index.x >= 0 && expected_index.y >= 0);
 
-	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
+	bool parse_special = IsSet(flags, DTF_PARSE_SPECIAL);
 	uint text_end = strlen(str);
 	cstring text = str;
 	uint index = 0;
 	int width = 0;
 
-	if(IS_SET(flags, DTF_SINGLELINE))
+	if(IsSet(flags, DTF_SINGLELINE))
 	{
 		assert(expected_index.x <= (int)text_end);
 		assert(expected_index.y == 0);

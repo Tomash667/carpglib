@@ -10,14 +10,14 @@
 #define JOIN(a,b) _JOIN(a,b)
 
 //-----------------------------------------------------------------------------
-constexpr int BIT(int a) { return 1 << a; }
-constexpr bool IS_SET(int flags, int bit) { return (flags & bit) != 0; }
-constexpr bool IS_CLEAR(int flags, int bit) { return (flags & bit) == 0; }
-constexpr bool IS_ALL_SET(int flags, int bits) { return (flags & bits) == bits; }
-constexpr void SET_BIT(int& flags, int bit) { flags |= bit; }
-constexpr void CLEAR_BIT(int& flags, int bit) { flags &= ~bit; }
-constexpr void SET_BIT_VALUE(int& flags, int bit, bool value) { if(value) SET_BIT(flags, bit); else CLEAR_BIT(flags, bit); }
-constexpr void COPY_BIT(int& flags, int flags2, int bit) { if((flags2 & bit) != 0) SET_BIT(flags, bit); else CLEAR_BIT(flags, bit); }
+constexpr int Bit(int a) { return 1 << a; }
+constexpr bool IsSet(int flags, int bit) { return (flags & bit) != 0; }
+constexpr bool IsClear(int flags, int bit) { return (flags & bit) == 0; }
+constexpr bool IsAllSet(int flags, int bits) { return (flags & bits) == bits; }
+constexpr void SetBit(int& flags, int bit) { flags |= bit; }
+constexpr void ClearBit(int& flags, int bit) { flags &= ~bit; }
+constexpr void SetBitValue(int& flags, int bit, bool value) { if(value) SetBit(flags, bit); else ClearBit(flags, bit); }
+constexpr void CopyBit(int& flags, int flags2, int bit) { if((flags2 & bit) != 0) SetBit(flags, bit); else ClearBit(flags, bit); }
 constexpr float FLT10(float a) { return float(int(a * 10) / 10); }
 constexpr float FLT100(float a) { return float(int(a * 100) / 100); }
 template<typename T, typename T1, typename T2>

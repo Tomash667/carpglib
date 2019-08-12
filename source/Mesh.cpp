@@ -107,7 +107,7 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		stream.Read(sub.specular_hardness);
 
 		// normalmap
-		if(IS_SET(head.flags, F_TANGENTS))
+		if(IsSet(head.flags, F_TANGENTS))
 		{
 			const string& tex_name = stream.ReadString1();
 			if(!tex_name.empty())
@@ -137,7 +137,7 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 	}
 
 	// animation data
-	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
+	if(IsSet(head.flags, F_ANIMATED) && !IsSet(head.flags, F_STATIC))
 	{
 		// bones
 		size = Bone::MIN_SIZE * head.n_bones;
@@ -220,11 +220,11 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 	LoadPoints(stream);
 
 	// bone groups (version < 21)
-	if(head.version < 21 && IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
+	if(head.version < 21 && IsSet(head.flags, F_ANIMATED) && !IsSet(head.flags, F_STATIC))
 		LoadBoneGroups(stream);
 
 	// splits
-	if(IS_SET(head.flags, F_SPLIT))
+	if(IsSet(head.flags, F_SPLIT))
 	{
 		size = sizeof(Split) * head.n_subs;
 		if(!stream.Ensure(size))
@@ -262,7 +262,7 @@ void Mesh::LoadHeader(StreamReader& stream)
 		throw Format("Too many bones (%u).", head.n_bones);
 	if(head.n_subs == 0)
 		throw "Missing model mesh!";
-	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
+	if(IsSet(head.flags, F_ANIMATED) && !IsSet(head.flags, F_STATIC))
 	{
 		if(head.n_bones == 0)
 			throw "No bones.";
@@ -274,16 +274,16 @@ void Mesh::LoadHeader(StreamReader& stream)
 //=================================================================================================
 void Mesh::SetVertexSizeDecl()
 {
-	if(IS_SET(head.flags, F_PHYSICS))
+	if(IsSet(head.flags, F_PHYSICS))
 	{
 		vertex_decl = VDI_POS;
 		vertex_size = sizeof(VPos);
 	}
 	else
 	{
-		if(IS_SET(head.flags, F_ANIMATED))
+		if(IsSet(head.flags, F_ANIMATED))
 		{
-			if(IS_SET(head.flags, F_TANGENTS))
+			if(IsSet(head.flags, F_TANGENTS))
 			{
 				vertex_decl = VDI_ANIMATED_TANGENT;
 				vertex_size = sizeof(VAnimatedTangent);
@@ -296,7 +296,7 @@ void Mesh::SetVertexSizeDecl()
 		}
 		else
 		{
-			if(IS_SET(head.flags, F_TANGENTS))
+			if(IsSet(head.flags, F_TANGENTS))
 			{
 				vertex_decl = VDI_TANGENT;
 				vertex_size = sizeof(VTangent);

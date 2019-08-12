@@ -119,37 +119,37 @@ ID3DXEffect* SuperShader::CompileShader(uint id)
 	D3DXMACRO macros[10] = { 0 };
 	uint i = 0;
 
-	if(IS_SET(id, 1 << ANIMATED))
+	if(IsSet(id, 1 << ANIMATED))
 	{
 		macros[i].Name = "ANIMATED";
 		macros[i].Definition = "1";
 		++i;
 	}
-	if(IS_SET(id, 1 << HAVE_BINORMALS))
+	if(IsSet(id, 1 << HAVE_BINORMALS))
 	{
 		macros[i].Name = "HAVE_BINORMALS";
 		macros[i].Definition = "1";
 		++i;
 	}
-	if(IS_SET(id, 1 << FOG))
+	if(IsSet(id, 1 << FOG))
 	{
 		macros[i].Name = "FOG";
 		macros[i].Definition = "1";
 		++i;
 	}
-	if(IS_SET(id, 1 << SPECULAR))
+	if(IsSet(id, 1 << SPECULAR))
 	{
 		macros[i].Name = "SPECULAR_MAP";
 		macros[i].Definition = "1";
 		++i;
 	}
-	if(IS_SET(id, 1 << NORMAL))
+	if(IsSet(id, 1 << NORMAL))
 	{
 		macros[i].Name = "NORMAL_MAP";
 		macros[i].Definition = "1";
 		++i;
 	}
-	if(IS_SET(id, 1 << POINT_LIGHT))
+	if(IsSet(id, 1 << POINT_LIGHT))
 	{
 		macros[i].Name = "POINT_LIGHT";
 		macros[i].Definition = "1";
@@ -159,7 +159,7 @@ ID3DXEffect* SuperShader::CompileShader(uint id)
 		macros[i].Definition = (shader_version == 2 ? "2" : "3");
 		++i;
 	}
-	else if(IS_SET(id, 1 << DIR_LIGHT))
+	else if(IsSet(id, 1 << DIR_LIGHT))
 	{
 		macros[i].Name = "DIR_LIGHT";
 		macros[i].Definition = "1";

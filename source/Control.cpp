@@ -56,7 +56,7 @@ void Control::SetDocked(bool new_docked)
 {
 	if(IsDocked() == new_docked)
 		return;
-	SET_BIT_VALUE(flags, F_DOCKED, new_docked);
+	SetBitValue(flags, F_DOCKED, new_docked);
 	if(new_docked)
 	{
 		if(parent)

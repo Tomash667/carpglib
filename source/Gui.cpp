@@ -433,8 +433,8 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 	outline_alpha = current_color.w;
 	const Vec2 scale(1, 1);
 
-	bool outline = (IS_SET(flags, DTF_OUTLINE) && font->texOutline);
-	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
+	bool outline = (IsSet(flags, DTF_OUTLINE) && font->texOutline);
+	bool parse_special = IsSet(flags, DTF_PARSE_SPECIAL);
 	bool bottom_clip = false;
 
 	tCurrent = font->tex;
@@ -464,7 +464,7 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 
 #define CALL (this->*call)
 
-	if(!IS_SET(flags, DTF_VCENTER | DTF_BOTTOM))
+	if(!IsSet(flags, DTF_VCENTER | DTF_BOTTOM))
 	{
 		int y = rect.Top();
 
@@ -475,9 +475,9 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 			{
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
-				if(IS_SET(flags, DTF_CENTER))
+				if(IsSet(flags, DTF_CENTER))
 					x = rect.Left() + (width - line_width) / 2;
-				else if(IS_SET(flags, DTF_RIGHT))
+				else if(IsSet(flags, DTF_RIGHT))
 					x = rect.Right() - line_width;
 				else
 					x = rect.Left();
@@ -511,9 +511,9 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 			{
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
-				if(IS_SET(flags, DTF_CENTER))
+				if(IsSet(flags, DTF_CENTER))
 					x = rect.Left() + (width - it->width) / 2;
-				else if(IS_SET(flags, DTF_RIGHT))
+				else if(IsSet(flags, DTF_RIGHT))
 					x = rect.Right() - it->width;
 				else
 					x = rect.Left();
@@ -559,7 +559,7 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 
 		// pocz¹tkowa pozycja y
 		int y;
-		if(IS_SET(flags, DTF_BOTTOM))
+		if(IsSet(flags, DTF_BOTTOM))
 			y = rect.Bottom() - lines->size()*font->height;
 		else
 			y = rect.Top() + (rect.SizeY() - int(lines->size())*font->height) / 2;
@@ -568,9 +568,9 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 		{
 			// pocz¹tkowa pozycja x w tej linijce
 			int x;
-			if(IS_SET(flags, DTF_CENTER))
+			if(IsSet(flags, DTF_CENTER))
 				x = rect.Left() + (width - it->width) / 2;
-			else if(IS_SET(flags, DTF_RIGHT))
+			else if(IsSet(flags, DTF_RIGHT))
 				x = rect.Right() - it->width;
 			else
 				x = rect.Left();
@@ -2601,8 +2601,8 @@ bool Gui::DrawText2(DrawTextOptions& options)
 	Vec4 default_color = current_color;
 	outline_alpha = current_color.w;
 
-	bool outline = (IS_SET(options.flags, DTF_OUTLINE) && options.font->texOutline);
-	bool parse_special = IS_SET(options.flags, DTF_PARSE_SPECIAL);
+	bool outline = (IsSet(options.flags, DTF_OUTLINE) && options.font->texOutline);
+	bool parse_special = IsSet(options.flags, DTF_PARSE_SPECIAL);
 	bool bottom_clip = false;
 
 	tCurrent = options.font->tex;
@@ -2632,7 +2632,7 @@ bool Gui::DrawText2(DrawTextOptions& options)
 
 #define CALL (this->*call)
 
-	if(!IS_SET(options.flags, DTF_VCENTER | DTF_BOTTOM))
+	if(!IsSet(options.flags, DTF_VCENTER | DTF_BOTTOM))
 	{
 		int y = options.rect.Top();
 
@@ -2643,9 +2643,9 @@ bool Gui::DrawText2(DrawTextOptions& options)
 			{
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
-				if(IS_SET(options.flags, DTF_CENTER))
+				if(IsSet(options.flags, DTF_CENTER))
 					x = options.rect.Left() + (width - line_width) / 2;
-				else if(IS_SET(options.flags, DTF_RIGHT))
+				else if(IsSet(options.flags, DTF_RIGHT))
 					x = options.rect.Right() - line_width;
 				else
 					x = options.rect.Left();
@@ -2685,9 +2685,9 @@ bool Gui::DrawText2(DrawTextOptions& options)
 
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
-				if(IS_SET(options.flags, DTF_CENTER))
+				if(IsSet(options.flags, DTF_CENTER))
 					x = options.rect.Left() + (width - line.width) / 2;
-				else if(IS_SET(options.flags, DTF_RIGHT))
+				else if(IsSet(options.flags, DTF_RIGHT))
 					x = options.rect.Right() - line.width;
 				else
 					x = options.rect.Left();
@@ -2737,7 +2737,7 @@ bool Gui::DrawText2(DrawTextOptions& options)
 
 		// pocz¹tkowa pozycja y
 		int y;
-		if(IS_SET(options.flags, DTF_BOTTOM))
+		if(IsSet(options.flags, DTF_BOTTOM))
 			y = options.rect.Bottom() - options.lines->size()*options.font->height;
 		else
 			y = options.rect.Top() + (options.rect.SizeY() - int(options.lines->size())*options.font->height) / 2;
@@ -2748,9 +2748,9 @@ bool Gui::DrawText2(DrawTextOptions& options)
 
 			// pocz¹tkowa pozycja x w tej linijce
 			int x;
-			if(IS_SET(options.flags, DTF_CENTER))
+			if(IsSet(options.flags, DTF_CENTER))
 				x = options.rect.Left() + (width - line.width) / 2;
-			else if(IS_SET(options.flags, DTF_RIGHT))
+			else if(IsSet(options.flags, DTF_RIGHT))
 				x = options.rect.Right() - line.width;
 			else
 				x = options.rect.Left();

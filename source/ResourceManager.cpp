@@ -162,7 +162,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 	total_size -= header.file_entry_table_size;
 
 	// decrypt table
-	if(IS_SET(header.flags, Pak::Encrypted))
+	if(IsSet(header.flags, Pak::Encrypted))
 	{
 		if(key == nullptr)
 		{
@@ -172,7 +172,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		}
 		io::Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
 	}
-	if(IS_SET(header.flags, Pak::FullEncrypted) && !IS_SET(header.flags, Pak::Encrypted))
+	if(IsSet(header.flags, Pak::FullEncrypted) && !IsSet(header.flags, Pak::Encrypted))
 	{
 		buf->Free();
 		Error("ResourceManager: Failed to read pak '%s', invalid flags combination %u.", path, header.flags);
@@ -181,7 +181,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 
 	// setup pak
 	Pak* pak = new Pak;
-	pak->encrypted = IS_SET(header.flags, Pak::FullEncrypted);
+	pak->encrypted = IsSet(header.flags, Pak::FullEncrypted);
 	if(key)
 		pak->key = key;
 	pak->filename_buf = buf;

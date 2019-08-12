@@ -161,7 +161,7 @@ namespace tokenizer
 
 			void SetFilename()
 			{
-				if(IS_SET(t->flags, Tokenizer::F_FILE_INFO))
+				if(IsSet(t->flags, Tokenizer::F_FILE_INFO))
 					e.filename = &t->filename;
 				else
 					e.filename = nullptr;

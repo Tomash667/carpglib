@@ -168,8 +168,8 @@ struct Mesh : public Resource
 			return GetTexture(index);
 	}
 
-	bool IsAnimated() const { return IS_SET(head.flags, F_ANIMATED); }
-	bool IsStatic() const { return IS_SET(head.flags, F_STATIC); }
+	bool IsAnimated() const { return IsSet(head.flags, F_ANIMATED); }
+	bool IsStatic() const { return IsSet(head.flags, F_STATIC); }
 
 	void GetKeyframeData(KeyframeBone& keyframe, Animation* ani, uint bone, float time);
 	// jeœli szuka hit to zwróci te¿ dla hit1, hit____ itp (u¿ywane dla boxów broni które siê powtarzaj¹)

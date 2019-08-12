@@ -91,5 +91,5 @@ int CheckBoxGroup::GetValue()
 void CheckBoxGroup::SetValue(int value)
 {
 	for(auto item : items)
-		item->checked = IS_SET(value, item->value);
+		item->checked = IsSet(value, item->value);
 }

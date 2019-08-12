@@ -177,7 +177,7 @@ redo:
 		if(s.pos == string::npos || str->at(s.pos) != '"')
 			formatter.Throw(Format("Not closed string \" opened at %u.", cp + 1));
 
-		if(IS_SET(flags, F_UNESCAPE))
+		if(IsSet(flags, F_UNESCAPE))
 			Unescape(*str, pos2 + 1, s.pos - pos2 - 1, s.item);
 		else
 			s.item = str->substr(pos2 + 1, s.pos - pos2 - 1);
@@ -217,7 +217,7 @@ redo:
 		if(!ok)
 			Throw("Missing closing alternate string '%s'.", ALTER_END);
 	}
-	else if(c == '-' && IS_SET(flags, F_JOIN_MINUS))
+	else if(c == '-' && IsSet(flags, F_JOIN_MINUS))
 	{
 		++s.charpos;
 		s.pos = pos2 + 1;
@@ -251,7 +251,7 @@ redo:
 	}
 	else if(strchr(SYMBOLS, c))
 	{
-		if(c == '\'' && IS_SET(flags, F_CHAR))
+		if(c == '\'' && IsSet(flags, F_CHAR))
 		{
 			// char
 			uint cp = s.charpos;
@@ -334,7 +334,7 @@ redo:
 	{
 		// find end of this item
 		bool ignore_dot = false;
-		if(IS_SET(flags, F_JOIN_DOT))
+		if(IsSet(flags, F_JOIN_DOT))
 			ignore_dot = true;
 		s.pos = FindFirstOf(s, ignore_dot ? WHITESPACE_SYMBOLS : WHITESPACE_SYMBOLS_DOT, pos2);
 		if(pos2 == string::npos)
@@ -461,7 +461,7 @@ bool Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 void Tokenizer::SetFlags(int _flags)
 {
 	flags = _flags;
-	if(IS_SET(flags, F_SEEK))
+	if(IsSet(flags, F_SEEK))
 	{
 		if(!seek)
 			seek = new SeekData;
@@ -486,7 +486,7 @@ void Tokenizer::CheckItemOrKeyword(SeekData& s, const string& _item)
 		s.keyword.clear();
 		if(it->enabled)
 			s.keyword.push_back(&*it);
-		if(IS_SET(flags, F_MULTI_KEYWORDS))
+		if(IsSet(flags, F_MULTI_KEYWORDS))
 		{
 			do
 			{
@@ -737,7 +737,7 @@ bool Tokenizer::RemoveKeyword(cstring name, int id, int group)
 		}
 
 		// not found exact id/group, if multikeywords check next items
-		if(IS_SET(flags, F_MULTI_KEYWORDS))
+		if(IsSet(flags, F_MULTI_KEYWORDS))
 		{
 			do
 			{
@@ -833,21 +833,21 @@ cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 			{
 				if(group)
 				{
-					if(IS_SET(flags, F_HIDE_ID))
+					if(IsSet(flags, F_HIDE_ID))
 						return Format("%s '%s' from group '%s'", name, keyword->name, group->name);
 					else
 						return Format("%s '%s'(%d) from group '%s'(%d)", name, keyword->name, keyword->id, group->name, group->id);
 				}
 				else if(what2)
 				{
-					if(IS_SET(flags, F_HIDE_ID))
+					if(IsSet(flags, F_HIDE_ID))
 						return Format("%s '%s' from group %d", name, keyword->name, *what2);
 					else
 						return Format("%s '%s'(%d) from group %d", name, keyword->name, keyword->id, *what2);
 				}
 				else
 				{
-					if(IS_SET(flags, F_HIDE_ID))
+					if(IsSet(flags, F_HIDE_ID))
 						return Format("%s '%s'", name, keyword->name);
 					else
 						return Format("%s '%s'(%d)", name, keyword->name, keyword->id);
@@ -857,7 +857,7 @@ cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 			{
 				if(group)
 				{
-					if(IS_SET(flags, F_HIDE_ID))
+					if(IsSet(flags, F_HIDE_ID))
 						return Format("missing %s %d from group '%s'", name, *what, group->name);
 					else
 						return Format("missing %s %d from group '%s'(%d)", name, *what, group->name, group->id);
@@ -874,7 +874,7 @@ cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 			const KeywordGroup* group = FindKeywordGroup(*what);
 			if(group)
 			{
-				if(IS_SET(flags, F_HIDE_ID))
+				if(IsSet(flags, F_HIDE_ID))
 					return Format("%s '%s'", name, group->name);
 				else
 					return Format("%s '%s'(%d)", name, group->name, group->id);
@@ -898,7 +898,7 @@ void Tokenizer::CheckSorting()
 	need_sorting = false;
 	std::sort(keywords.begin(), keywords.end());
 
-	if(!IS_SET(flags, F_MULTI_KEYWORDS))
+	if(!IsSet(flags, F_MULTI_KEYWORDS))
 	{
 		assert(CheckMultiKeywords());
 	}
@@ -947,7 +947,7 @@ void Tokenizer::ParseFlags(int group, int& flags)
 			if(IsSymbol('~'))
 			{
 				Next();
-				CLEAR_BIT(flags, MustGetKeywordId(group));
+				ClearBit(flags, MustGetKeywordId(group));
 			}
 			else
 				flags |= MustGetKeywordId(group);
@@ -959,7 +959,7 @@ void Tokenizer::ParseFlags(int group, int& flags)
 		if(IsSymbol('~'))
 		{
 			Next();
-			CLEAR_BIT(flags, MustGetKeywordId(group));
+			ClearBit(flags, MustGetKeywordId(group));
 		}
 		else
 			flags |= MustGetKeywordId(group);
@@ -995,7 +995,7 @@ void Tokenizer::ParseFlags(std::initializer_list<FlagGroup> const & flags)
 				if(IsKeywordGroup(f.group))
 				{
 					if(neg)
-						CLEAR_BIT(*f.flags, GetKeywordId(f.group));
+						ClearBit(*f.flags, GetKeywordId(f.group));
 					else
 						*f.flags |= GetKeywordId(f.group);
 					found = true;
@@ -1024,7 +1024,7 @@ void Tokenizer::ParseFlags(std::initializer_list<FlagGroup> const & flags)
 			if(IsKeywordGroup(f.group))
 			{
 				if(neg)
-					CLEAR_BIT(*f.flags, GetKeywordId(f.group));
+					ClearBit(*f.flags, GetKeywordId(f.group));
 				else
 					*f.flags |= GetKeywordId(f.group);
 				found = true;
@@ -1277,12 +1277,12 @@ cstring Tokenizer::GetTokenValue(const SeekData& s) const
 			{
 				Keyword& keyword = *s.keyword[0];
 				const KeywordGroup* group = FindKeywordGroup(keyword.group);
-				if(!IS_SET(flags, F_HIDE_ID))
+				if(!IsSet(flags, F_HIDE_ID))
 					str += Format("(%d)", keyword.id);
 				if(group)
 				{
 					str += Format(" from group '%s'", group->name);
-					if(!IS_SET(flags, F_HIDE_ID))
+					if(!IsSet(flags, F_HIDE_ID))
 						str += Format("(%d)", group->id);
 				}
 				else if(keyword.group != EMPTY_GROUP)
@@ -1301,7 +1301,7 @@ cstring Tokenizer::GetTokenValue(const SeekData& s) const
 					const KeywordGroup* group = FindKeywordGroup(k->group);
 					if(group)
 					{
-						if(IS_SET(flags, F_HIDE_ID))
+						if(IsSet(flags, F_HIDE_ID))
 							str += Format("'%s'", group->name);
 						else
 							str += Format("[%d,'%s'(%d)]", k->id, group->name, group->id);

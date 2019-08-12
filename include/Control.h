@@ -125,9 +125,9 @@ public:
 	void SetFocus();
 	void UpdateControl(Control* ctrl, float dt);
 
-	bool IsOnCharHandler() const { return IS_SET(flags, F_ON_CHAR_HANDLER); }
-	bool IsDocked() const { return IS_SET(flags, F_DOCKED); }
+	bool IsOnCharHandler() const { return IsSet(flags, F_ON_CHAR_HANDLER); }
+	bool IsDocked() const { return IsSet(flags, F_DOCKED); }
 	bool IsInitialized() const { return initialized; }
 
-	void SetOnCharHandler(bool handle) { SET_BIT_VALUE(flags, F_ON_CHAR_HANDLER, handle); }
+	void SetOnCharHandler(bool handle) { SetBitValue(flags, F_ON_CHAR_HANDLER, handle); }
 };

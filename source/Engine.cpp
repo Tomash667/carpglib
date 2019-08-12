@@ -17,8 +17,8 @@ const Int2 Engine::MIN_WINDOW_SIZE = Int2(800, 600);
 const Int2 Engine::DEFAULT_WINDOW_SIZE = Int2(1024, 768);
 
 //=================================================================================================
-Engine::Engine() : app(nullptr), initialized(false), shutdown(false), timer(false), hwnd(nullptr), cursor_visible(true), replace_cursor(false),
-locked_cursor(true), active(false), activation_point(-1, -1), phy_world(nullptr), title("Window"), force_pos(-1, -1), force_size(-1, -1), hidden_window(false),
+Engine::Engine() : initialized(false), shutdown(false), timer(false), hwnd(nullptr), cursor_visible(true), replace_cursor(false), locked_cursor(true),
+active(false), activation_point(-1, -1), phy_world(nullptr), title("Window"), force_pos(-1, -1), force_size(-1, -1), hidden_window(false),
 wnd_size(DEFAULT_WINDOW_SIZE)
 {
 	if(!Logger::GetInstance())

@@ -303,7 +303,7 @@ bool io::DirectoryExists(cstring dir)
 	if(attrib == INVALID_FILE_ATTRIBUTES)
 		return false;
 
-	return IS_SET(attrib, FILE_ATTRIBUTE_DIRECTORY);
+	return IsSet(attrib, FILE_ATTRIBUTE_DIRECTORY);
 }
 
 //=================================================================================================
@@ -315,7 +315,7 @@ bool io::FileExists(cstring filename)
 	if(attrib == INVALID_FILE_ATTRIBUTES)
 		return false;
 
-	return !IS_SET(attrib, FILE_ATTRIBUTE_DIRECTORY);
+	return !IsSet(attrib, FILE_ATTRIBUTE_DIRECTORY);
 }
 
 //=================================================================================================
@@ -348,7 +348,7 @@ bool io::FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func)
 		FileInfo info =
 		{
 			find_data.cFileName,
-			IS_SET(find_data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY)
+			IsSet(find_data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY)
 		};
 		if(!func(info))
 			break;

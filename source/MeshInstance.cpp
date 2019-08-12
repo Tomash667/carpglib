@@ -44,11 +44,11 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, int group)
 	Group& gr = groups[group];
 
 	// ignoruj animacjê
-	if(IS_SET(flags, PLAY_IGNORE) && gr.anim == anim)
+	if(IsSet(flags, PLAY_IGNORE) && gr.anim == anim)
 		return;
 
 	// resetuj szybkoœæ i blending
-	if(IS_SET(gr.state, PLAY_RESTORE))
+	if(IsSet(gr.state, PLAY_RESTORE))
 	{
 		gr.speed = 1.f;
 		gr.blend_max = 0.33f;
@@ -57,12 +57,12 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, int group)
 	int new_state = 0;
 
 	// blending
-	if(!IS_SET(flags, PLAY_NO_BLEND))
+	if(!IsSet(flags, PLAY_NO_BLEND))
 	{
 		SetupBlending(group);
-		SET_BIT(new_state, FLAG_BLENDING);
-		if(IS_SET(flags, PLAY_BLEND_WAIT))
-			SET_BIT(new_state, FLAG_BLEND_WAIT);
+		SetBit(new_state, FLAG_BLENDING);
+		if(IsSet(flags, PLAY_BLEND_WAIT))
+			SetBit(new_state, FLAG_BLEND_WAIT);
 		gr.blend_time = 0.f;
 	}
 
@@ -70,27 +70,27 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, int group)
 	gr.anim = anim;
 	gr.prio = ((flags & 0x60) >> 5);
 	gr.state = new_state | FLAG_PLAYING | FLAG_GROUP_ACTIVE;
-	if(IS_SET(flags, PLAY_ONCE))
-		SET_BIT(gr.state, FLAG_ONCE);
-	if(IS_SET(flags, PLAY_BACK))
+	if(IsSet(flags, PLAY_ONCE))
+		SetBit(gr.state, FLAG_ONCE);
+	if(IsSet(flags, PLAY_BACK))
 	{
-		SET_BIT(gr.state, FLAG_BACK);
+		SetBit(gr.state, FLAG_BACK);
 		gr.time = anim->length;
 	}
 	else
 		gr.time = 0.f;
-	if(IS_SET(flags, PLAY_STOP_AT_END))
-		SET_BIT(gr.state, FLAG_STOP_AT_END);
-	if(IS_SET(flags, PLAY_RESTORE))
-		SET_BIT(gr.state, FLAG_RESTORE);
+	if(IsSet(flags, PLAY_STOP_AT_END))
+		SetBit(gr.state, FLAG_STOP_AT_END);
+	if(IsSet(flags, PLAY_RESTORE))
+		SetBit(gr.state, FLAG_RESTORE);
 
 	// anuluj blending w innych grupach
-	if(IS_SET(flags, PLAY_NO_BLEND))
+	if(IsSet(flags, PLAY_NO_BLEND))
 	{
 		for(int g = 0; g < mesh->head.n_groups; ++g)
 		{
 			if(g != group && (!groups[g].IsActive() || groups[g].prio < gr.prio))
-				CLEAR_BIT(groups[g].state, FLAG_BLENDING);
+				ClearBit(groups[g].state, FLAG_BLENDING);
 		}
 	}
 }
@@ -104,11 +104,11 @@ void MeshInstance::Deactivate(int group, bool in_update)
 
 	Group& gr = groups[group];
 
-	if(IS_SET(gr.state, FLAG_GROUP_ACTIVE))
+	if(IsSet(gr.state, FLAG_GROUP_ACTIVE))
 	{
 		SetupBlending(group, true, in_update);
 
-		if(IS_SET(gr.state, FLAG_RESTORE))
+		if(IsSet(gr.state, FLAG_RESTORE))
 		{
 			gr.speed = 1.f;
 			gr.blend_max = 0.33f;
@@ -131,34 +131,34 @@ void MeshInstance::Update(float dt)
 	{
 		Group& gr = groups[i];
 
-		if(IS_SET(gr.state, FLAG_UPDATED))
+		if(IsSet(gr.state, FLAG_UPDATED))
 		{
-			CLEAR_BIT(gr.state, FLAG_UPDATED);
+			ClearBit(gr.state, FLAG_UPDATED);
 			continue;
 		}
 
 		// blending
-		if(IS_SET(gr.state, FLAG_BLENDING))
+		if(IsSet(gr.state, FLAG_BLENDING))
 		{
 			need_update = true;
 			gr.blend_time += dt;
 			if(gr.blend_time >= gr.blend_max)
-				CLEAR_BIT(gr.state, FLAG_BLENDING);
+				ClearBit(gr.state, FLAG_BLENDING);
 		}
 
 		// odtwarzaj animacjê
-		if(IS_SET(gr.state, FLAG_PLAYING))
+		if(IsSet(gr.state, FLAG_PLAYING))
 		{
 			need_update = true;
 
-			if(IS_SET(gr.state, FLAG_BLEND_WAIT))
+			if(IsSet(gr.state, FLAG_BLEND_WAIT))
 			{
-				if(IS_SET(gr.state, FLAG_BLENDING))
+				if(IsSet(gr.state, FLAG_BLENDING))
 					continue;
 			}
 
 			// odtwarzaj od ty³u
-			if(IS_SET(gr.state, FLAG_BACK))
+			if(IsSet(gr.state, FLAG_BACK))
 			{
 				gr.time -= dt * gr.speed;
 				if(gr.time < 0) // przekroczono czas animacji
@@ -168,10 +168,10 @@ void MeshInstance::Update(float dt)
 						frame_end_info = true;
 					else
 						frame_end_info2 = true;
-					if(IS_SET(gr.state, FLAG_ONCE))
+					if(IsSet(gr.state, FLAG_ONCE))
 					{
 						gr.time = 0;
-						if(IS_SET(gr.state, FLAG_STOP_AT_END))
+						if(IsSet(gr.state, FLAG_STOP_AT_END))
 							Stop(i);
 						else
 							Deactivate(i, true);
@@ -196,10 +196,10 @@ void MeshInstance::Update(float dt)
 						frame_end_info = true;
 					else
 						frame_end_info2 = true;
-					if(IS_SET(gr.state, FLAG_ONCE))
+					if(IsSet(gr.state, FLAG_ONCE))
 					{
 						gr.time = gr.anim->length;
-						if(IS_SET(gr.state, FLAG_STOP_AT_END))
+						if(IsSet(gr.state, FLAG_STOP_AT_END))
 							Stop(i);
 						else
 							Deactivate(i, true);
@@ -485,9 +485,9 @@ void MeshInstance::SetupBlending(int bones_group, bool first, bool in_update)
 			if(group != bones_group && (!gr.IsActive() || gr.prio < gr_bones.prio))
 			{
 				SetupBlending(group, false);
-				SET_BIT(gr.state, FLAG_BLENDING);
+				SetBit(gr.state, FLAG_BLENDING);
 				if(in_update && group > bones_group)
-					SET_BIT(gr.state, FLAG_UPDATED);
+					SetBit(gr.state, FLAG_UPDATED);
 				gr.blend_time = 0;
 			}
 		}
@@ -501,7 +501,7 @@ bool MeshInstance::IsBlending() const
 {
 	for(int i = 0; i < mesh->head.n_groups; ++i)
 	{
-		if(IS_SET(groups[i].state, FLAG_BLENDING))
+		if(IsSet(groups[i].state, FLAG_BLENDING))
 			return true;
 	}
 	return false;
@@ -622,7 +622,7 @@ void MeshInstance::ResetAnimation()
 
 	groups[0].time = 0.f;
 	groups[0].blend_time = 0.f;
-	SET_BIT(groups[0].state, FLAG_BLENDING | FLAG_PLAYING);
+	SetBit(groups[0].state, FLAG_BLENDING | FLAG_PLAYING);
 }
 
 //=================================================================================================
@@ -716,8 +716,8 @@ bool MeshInstance::Read(StreamReader& stream)
 	if(!stream)
 		return false;
 
-	frame_end_info = IS_SET(fai, 0x01);
-	frame_end_info2 = IS_SET(fai, 0x02);
+	frame_end_info = IsSet(fai, 0x01);
+	frame_end_info2 = IsSet(fai, 0x02);
 
 	if(preload)
 		groups.resize(groups_count);
