@@ -174,8 +174,8 @@ void FlowContainer::Draw(ControlDrawData*)
 		else
 		{
 			// button above or below box
-			if(global_pos.y + fi->pos.y - offset + fi->size.y < global_pos.y ||
-				global_pos.y + fi->pos.y - offset > global_pos.y + size.y)
+			if(global_pos.y + fi->pos.y - offset + fi->size.y < global_pos.y
+				|| global_pos.y + fi->pos.y - offset > global_pos.y + size.y)
 				continue;
 
 			const AreaLayout& area = button_tex[fi->tex_id].tex[fi->state];

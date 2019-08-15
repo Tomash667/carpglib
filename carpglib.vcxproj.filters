@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="include\App.h" />
-    <ClInclude Include="include\DirectX.h" />
-    <ClInclude Include="include\Engine.h" />
     <ClInclude Include="include\EngineCore.h" />
     <ClInclude Include="include\Algorithm.h">
       <Filter>core</Filter>
@@ -168,10 +165,10 @@
       <Filter>resources</Filter>
     </ClInclude>
     <ClInclude Include="include\SoundManager.h">
-      <Filter>systems</Filter>
+      <Filter>components</Filter>
     </ClInclude>
     <ClInclude Include="include\ResourceManager.h">
-      <Filter>systems</Filter>
+      <Filter>components</Filter>
     </ClInclude>
     <ClInclude Include="include\Control.h">
       <Filter>gui controls</Filter>
@@ -189,10 +186,10 @@
       <Filter>gui controls</Filter>
     </ClInclude>
     <ClInclude Include="include\Gui.h">
-      <Filter>systems</Filter>
+      <Filter>components</Filter>
     </ClInclude>
     <ClInclude Include="include\Render.h">
-      <Filter>systems</Filter>
+      <Filter>components</Filter>
     </ClInclude>
     <ClInclude Include="include\VertexData.h">
       <Filter>resources</Filter>
@@ -222,7 +219,7 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="include\Physics.h">
-      <Filter>systems</Filter>
+      <Filter>components</Filter>
     </ClInclude>
     <ClInclude Include="include\Core.h">
       <Filter>core</Filter>
@@ -244,7 +241,7 @@
     </ClInclude>
     <ClInclude Include="include\EnginePch.h" />
     <ClInclude Include="include\Input.h">
-      <Filter>systems</Filter>
+      <Filter>components</Filter>
     </ClInclude>
     <ClInclude Include="include\Notifications.h">
       <Filter>gui controls</Filter>
@@ -252,9 +249,17 @@
     <ClInclude Include="include\LayoutLoader.h">
       <Filter>resources</Filter>
     </ClInclude>
+    <ClInclude Include="include\Engine.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="include\App.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DirectX.h">
+      <Filter>core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\Engine.cpp" />
     <ClCompile Include="source\BoxToBox.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -406,10 +411,10 @@
       <Filter>gui controls</Filter>
     </ClCompile>
     <ClCompile Include="source\SoundManager.cpp">
-      <Filter>systems</Filter>
+      <Filter>components</Filter>
     </ClCompile>
     <ClCompile Include="source\ResourceManager.cpp">
-      <Filter>systems</Filter>
+      <Filter>components</Filter>
     </ClCompile>
     <ClCompile Include="source\GuiContainer.cpp">
       <Filter>gui controls</Filter>
@@ -418,10 +423,10 @@
       <Filter>gui controls</Filter>
     </ClCompile>
     <ClCompile Include="source\Gui.cpp">
-      <Filter>systems</Filter>
+      <Filter>components</Filter>
     </ClCompile>
     <ClCompile Include="source\Render.cpp">
-      <Filter>systems</Filter>
+      <Filter>components</Filter>
     </ClCompile>
     <ClCompile Include="source\VertexData.cpp">
       <Filter>resources</Filter>
@@ -448,14 +453,14 @@
       <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\Physics.cpp">
-      <Filter>systems</Filter>
+      <Filter>components</Filter>
     </ClCompile>
     <ClCompile Include="source\EnginePch.cpp" />
     <ClCompile Include="source\Resource.cpp">
       <Filter>resources</Filter>
     </ClCompile>
     <ClCompile Include="source\Input.cpp">
-      <Filter>systems</Filter>
+      <Filter>components</Filter>
     </ClCompile>
     <ClCompile Include="source\Notifications.cpp">
       <Filter>gui controls</Filter>
@@ -464,7 +469,10 @@
       <Filter>resources</Filter>
     </ClCompile>
     <ClCompile Include="source\CrashHandler.cpp">
-      <Filter>systems</Filter>
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Engine.cpp">
+      <Filter>components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -483,14 +491,14 @@
     <Filter Include="shaders">
       <UniqueIdentifier>{9fe5b09e-d471-462b-80f1-b7a633204ca4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="systems">
-      <UniqueIdentifier>{ed81dba0-00e0-4480-850f-eecdfe99c249}</UniqueIdentifier>
-    </Filter>
     <Filter Include="entity">
       <UniqueIdentifier>{ecc90b28-ccc2-4fa6-b3c2-79e375b8508d}</UniqueIdentifier>
     </Filter>
     <Filter Include="const">
       <UniqueIdentifier>{8dd306d7-b865-4bd3-b382-9faaff4f7177}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="components">
+      <UniqueIdentifier>{ed81dba0-00e0-4480-850f-eecdfe99c249}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

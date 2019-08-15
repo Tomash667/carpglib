@@ -41,8 +41,6 @@ public:
 	void SetUnlockPoint(const Int2& pt) { unlock_point = pt; }
 	void SetWindowInitialPos(const Int2& pos, const Int2& size) { force_pos = pos; force_size = size; }
 
-	CameraBase* cam_base;
-
 private:
 	void Init();
 	void AdjustWindowSize();

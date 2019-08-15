@@ -661,10 +661,9 @@ void CreateAABBOX(Box& out, const Matrix& matrix)
 
 bool BoxToBox(const Box& box1, const Box& box2)
 {
-	return
-		(box1.v1.x <= box2.v2.x) && (box1.v2.x >= box2.v1.x) &&
-		(box1.v1.y <= box2.v2.y) && (box1.v2.y >= box2.v1.y) &&
-		(box1.v1.z <= box2.v2.z) && (box1.v2.z >= box2.v1.z);
+	return (box1.v1.x <= box2.v2.x) && (box1.v2.x >= box2.v1.x)
+		&& (box1.v1.y <= box2.v2.y) && (box1.v2.y >= box2.v1.y)
+		&& (box1.v1.z <= box2.v2.z) && (box1.v2.z >= box2.v1.z);
 }
 
 bool RectangleToRectangle(float x1, float y1, float x2, float y2, float a1, float b1, float a2, float b2)
@@ -787,8 +786,8 @@ bool RotatedRectanglesCollision(const RotRect& r1, const RotRect& r2)
 
 	// check whether r2(ma) is in the vertical range of colliding with r1(r)
 	// (for the horizontal range of r2)
-	return !((ext1 < BL.y && ext2 < BL.y) ||
-		(ext1 > TR.y && ext2 > TR.y));
+	return !((ext1 < BL.y && ext2 < BL.y)
+		|| (ext1 > TR.y && ext2 > TR.y));
 }
 
 // kolizja promienia (A->B) z cylindrem (P->Q, promieñ R)
