@@ -106,6 +106,15 @@ class ResourceManager
 	{
 		return static_cast<T*>(GetResource(filename, T::Type));
 	}
+	// Return resource (load it now or in background depending on mode) or null if missing
+	template<typename T>
+	T* TryLoad(Cstring filename)
+	{
+		T* res = TryGet<T>(filename);
+		if(res)
+			Load(res);
+		return res;
+	}
 	// Return resource (load it now or in background depending on mode) or throw if missing
 	template<typename T>
 	T* Load(Cstring filename)

@@ -971,6 +971,25 @@ inline T& RandomItemWeight(vector<WeightPair<T>>& items, int max_weight)
 	return RandomItem(items).item;
 }
 
+template<typename T>
+struct WeightContainer
+{
+	WeightContainer() : total(0) {}
+	void Add(T& item, int weight)
+	{
+		assert(weight >= 1);
+		items.push_back(WeightPair<T>(item, weight));
+		total += weight;
+	}
+	T& GetRandom()
+	{
+		return RandomItemWeight(items, total);
+	}
+private:
+	vector<WeightPair<T>> items;
+	int total;
+};
+
 //-----------------------------------------------------------------------------
 // Like LocalVector but can store any data
 extern ObjectPool<vector<byte>> BufPool;
