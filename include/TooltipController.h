@@ -5,12 +5,6 @@
 #include "Layout.h"
 
 //-----------------------------------------------------------------------------
-class TooltipController;
-
-//-----------------------------------------------------------------------------
-typedef delegate<void(TooltipController*, int, int)> TooltipGetText;
-
-//-----------------------------------------------------------------------------
 namespace layout
 {
 	struct TooltipController : public Control
@@ -26,11 +20,13 @@ namespace layout
 class TooltipController : public Control, public LayoutControl<layout::TooltipController>
 {
 public:
+	typedef delegate<void(TooltipController*, int, int, bool)> Callback;
+
 	void Draw(ControlDrawData* cdd = nullptr) override;
 
-	void Init(TooltipGetText get_text);
+	void Init(Callback get_text);
 	void Clear();
-	void Refresh() { FormatBox(); }
+	void Refresh() { FormatBox(true); }
 	void UpdateTooltip(float dt, int group, int id);
 
 	string big_text, text, small_text;
@@ -45,11 +41,11 @@ private:
 		VISIBLE
 	};
 
-	void FormatBox();
+	void FormatBox(bool refresh);
 
 	State state;
 	int group, id;
-	TooltipGetText get_text;
+	Callback get_text;
 	float timer, alpha;
 	Rect r_big_text, r_text, r_small_text;
 };

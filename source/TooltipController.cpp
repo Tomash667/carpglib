@@ -8,10 +8,10 @@ static const int INVALID_INDEX = -1;
 static const float TIMER = 0.3f;
 
 //=================================================================================================
-void TooltipController::Init(TooltipGetText _get_text)
+void TooltipController::Init(Callback get_text)
 {
-	assert(_get_text);
-	get_text = _get_text;
+	assert(get_text);
+	this->get_text = get_text;
 	Clear();
 }
 
@@ -47,8 +47,8 @@ void TooltipController::UpdateTooltip(float dt, int new_group, int new_id)
 			{
 				state = State::VISIBLE;
 				alpha = 0.f;
-
-				FormatBox();
+				timer = 1.f;
+				FormatBox(false);
 			}
 		}
 		else
@@ -65,6 +65,12 @@ void TooltipController::UpdateTooltip(float dt, int new_group, int new_id)
 				pos.x = gui->wnd_size.x - size.x - 1;
 			if(pos.y + size.y >= gui->wnd_size.y)
 				pos.y = gui->wnd_size.y - size.y - 1;
+			timer -= dt;
+			if(timer <= 0.f)
+			{
+				timer = 1.f;
+				FormatBox(true);
+			}
 		}
 	}
 	else
@@ -119,9 +125,9 @@ void TooltipController::Draw(ControlDrawData*)
 }
 
 //=================================================================================================
-void TooltipController::FormatBox()
+void TooltipController::FormatBox(bool refresh)
 {
-	get_text(this, group, id);
+	get_text(this, group, id, refresh);
 
 	if(!anything)
 		return;

@@ -16,7 +16,7 @@ struct PickItemDialogParams
 	vector<FlowItem*> items;
 	int multiple;
 	DialogEvent event;
-	TooltipGetText get_tooltip;
+	TooltipController::Callback get_tooltip;
 	Control* parent;
 	string text;
 	Int2 size_min, size_max; // size.x is always taken from size_min for now
@@ -78,7 +78,7 @@ private:
 	void OnSelect();
 
 	FlowContainer flow;
-	TooltipGetText get_tooltip;
+	TooltipController::Callback get_tooltip;
 	int multiple;
 	Button btClose;
 	TooltipController tooltip;
