@@ -229,7 +229,9 @@ void SoundManager::PlaySound2d(Sound* sound)
 	assert(sound->IsLoaded());
 
 	FMOD::Channel* channel;
-	system->playSound(sound->sound, group_default, false, &channel);
+	system->playSound(sound->sound, group_default, true, &channel);
+	channel->setMode(FMOD_2D | FMOD_LOWMEM | FMOD_LOOP_OFF);
+	channel->setPaused(false);
 	playing_sounds.push_back(channel);
 }
 
@@ -245,6 +247,7 @@ void SoundManager::PlaySound3d(Sound* sound, const Vec3& pos, float distance)
 
 	FMOD::Channel* channel;
 	system->playSound(sound->sound, group_default, true, &channel);
+	channel->setMode(FMOD_3D | FMOD_LOWMEM | FMOD_LOOP_OFF);
 	channel->set3DAttributes((const FMOD_VECTOR*)&pos, nullptr);
 	channel->set3DMinMaxDistance(distance, 10000.f);
 	channel->setPaused(false);
@@ -259,6 +262,7 @@ FMOD::Channel* SoundManager::CreateChannel(Sound* sound, const Vec3& pos, float 
 
 	FMOD::Channel* channel;
 	system->playSound(sound->sound, group_default, true, &channel);
+	channel->setMode(FMOD_3D | FMOD_LOWMEM | FMOD_LOOP_OFF);
 	channel->set3DAttributes((const FMOD_VECTOR*)&pos, nullptr);
 	channel->set3DMinMaxDistance(distance, 10000.f);
 	channel->setPaused(false);
