@@ -46,10 +46,6 @@ inline int Rand(int a)
 {
 	return Rand() % a;
 }
-inline int MyRand(int a)
-{
-	return Rand(a);
-}
 
 // Random float number in range <0,1>
 inline float Random()

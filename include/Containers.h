@@ -230,13 +230,13 @@ inline T& Add1(list<T>& v)
 
 // Returns random item from vector
 template<typename T>
-T& RandomItem(vector<T>& v)
+inline T& RandomItem(vector<T>& v)
 {
 	return v[Rand() % v.size()];
 }
 
 template<typename T>
-T RandomItemPop(vector<T>& v)
+inline T RandomItemPop(vector<T>& v)
 {
 	uint index = Rand() % v.size();
 	T item = v[index];
@@ -251,6 +251,12 @@ inline T RandomItem(std::initializer_list<T> cont)
 	auto it = cont.begin();
 	std::advance(it, index);
 	return *it;
+}
+
+template<typename It>
+inline void Shuffle(It begin, It end)
+{
+	std::shuffle(begin, end, internal::rng);
 }
 
 template<typename T>
@@ -755,7 +761,7 @@ struct LocalVector
 
 	void Shuffle()
 	{
-		std::random_shuffle(v->begin(), v->end(), MyRand);
+		::Shuffle(v->begin(), v->end());
 	}
 
 	Iterator begin()
