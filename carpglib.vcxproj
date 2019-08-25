@@ -43,6 +43,7 @@
     <ClInclude Include="include\Engine.h" />
     <ClInclude Include="include\EngineCore.h" />
     <ClInclude Include="include\EnginePch.h" />
+    <ClInclude Include="include\Entity.h" />
     <ClInclude Include="include\FastFunc.h" />
     <ClInclude Include="include\File.h" />
     <ClInclude Include="include\FileFormat.h" />

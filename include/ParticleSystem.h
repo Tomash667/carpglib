@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Entity.h"
+
+//-----------------------------------------------------------------------------
 struct Particle
 {
 	Vec3 pos, speed;
@@ -16,7 +19,7 @@ enum PARTICLE_OP
 };
 
 //-----------------------------------------------------------------------------
-struct ParticleEmitter
+struct ParticleEmitter : public EntityType<ParticleEmitter>
 {
 	TexturePtr tex;
 	float emision_interval, life, particle_life, alpha, size;
@@ -30,13 +33,13 @@ struct ParticleEmitter
 	// automatycznie ustawiane
 	float time, radius;
 	vector<Particle> particles;
-	int alive, refid;
+	int alive;
 	bool destroy;
 
 	void Init();
 	bool Update(float dt);
 	void Save(FileWriter& f);
-	void Load(FileReader& f);
+	void Load(FileReader& f, int version);
 	float GetAlpha(const Particle &p) const
 	{
 		if(op_alpha == POP_CONST)
@@ -44,28 +47,12 @@ struct ParticleEmitter
 		else
 			return Lerp(0.f, alpha, p.life / particle_life);
 	}
-
 	float GetScale(const Particle &p) const
 	{
 		if(op_size == POP_CONST)
 			return size;
 		else
 			return Lerp(0.f, size, p.life / particle_life);
-	}
-
-	static vector<ParticleEmitter*> refid_table;
-	static ParticleEmitter* GetByRefid(int _refid)
-	{
-		if(_refid == -1 || _refid >= (int)refid_table.size())
-			return nullptr;
-		else
-			return refid_table[_refid];
-	}
-	static void AddRefid(ParticleEmitter* pe)
-	{
-		assert(pe);
-		pe->refid = (int)refid_table.size();
-		refid_table.push_back(pe);
 	}
 };
 
@@ -79,31 +66,16 @@ struct TrailParticle
 };
 
 //-----------------------------------------------------------------------------
-struct TrailParticleEmitter
+struct TrailParticleEmitter : public EntityType<TrailParticleEmitter>
 {
 	float fade, timer;
 	Vec4 color1, color2;
 	vector<TrailParticle> parts;
-	int first, last, alive, refid;
+	int first, last, alive;
 	bool destroy;
 
 	void Init(int maxp);
 	bool Update(float dt, Vec3* pt1, Vec3* pt2);
 	void Save(FileWriter& f);
-	void Load(FileReader& f);
-
-	static vector<TrailParticleEmitter*> refid_table;
-	static TrailParticleEmitter* GetByRefid(int _refid)
-	{
-		if(_refid == -1 || _refid >= (int)refid_table.size())
-			return nullptr;
-		else
-			return refid_table[_refid];
-	}
-	static void AddRefid(TrailParticleEmitter* pe)
-	{
-		assert(pe);
-		pe->refid = (int)refid_table.size();
-		refid_table.push_back(pe);
-	}
+	void Load(FileReader& f, int version);
 };

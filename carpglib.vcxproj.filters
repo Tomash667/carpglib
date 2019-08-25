@@ -258,6 +258,9 @@
     <ClInclude Include="include\DirectX.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="include\Entity.h">
+      <Filter>entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">

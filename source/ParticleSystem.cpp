@@ -4,8 +4,9 @@
 #include "ParticleSystem.h"
 #include "File.h"
 
-vector<ParticleEmitter*> ParticleEmitter::refid_table;
-vector<TrailParticleEmitter*> TrailParticleEmitter::refid_table;
+bool EntitySystem::clear;
+EntityType<ParticleEmitter>::Impl EntityType<ParticleEmitter>::impl;
+EntityType<TrailParticleEmitter>::Impl EntityType<TrailParticleEmitter>::impl;
 
 //=================================================================================================
 float drop_range(float v, float t)
@@ -74,6 +75,7 @@ void ParticleEmitter::Init()
 
 	// nowe
 	manual_delete = 0;
+	Register();
 }
 
 //=================================================================================================
@@ -136,6 +138,7 @@ bool ParticleEmitter::Update(float dt)
 //=================================================================================================
 void ParticleEmitter::Save(FileWriter& f)
 {
+	f << id;
 	f << tex->filename;
 	f << emision_interval;
 	f << life;
@@ -163,8 +166,12 @@ void ParticleEmitter::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void ParticleEmitter::Load(FileReader& f)
+void ParticleEmitter::Load(FileReader& f, int version)
 {
+	if(version > 0)
+		f >> id;
+	Register();
+
 	tex = app::res_mgr->Load<Texture>(f.ReadString1());
 	f >> emision_interval;
 	f >> life;
@@ -203,6 +210,7 @@ void TrailParticleEmitter::Init(int maxp)
 	alive = 0;
 	destroy = false;
 	timer = 0.f;
+	Register();
 }
 
 //=================================================================================================
@@ -279,6 +287,7 @@ bool TrailParticleEmitter::Update(float dt, Vec3* pt1, Vec3* pt2)
 //=================================================================================================
 void TrailParticleEmitter::Save(FileWriter& f)
 {
+	f << id;
 	f << fade;
 	f << color1;
 	f << color2;
@@ -291,8 +300,12 @@ void TrailParticleEmitter::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void TrailParticleEmitter::Load(FileReader& f)
+void TrailParticleEmitter::Load(FileReader& f, int version)
 {
+	if(version >= 1)
+		f >> id;
+	Register();
+
 	f >> fade;
 	f >> color1;
 	f >> color2;

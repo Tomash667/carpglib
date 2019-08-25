@@ -951,6 +951,22 @@ inline void LoopAndRemove(std::map<Key, Value>& items, Action action)
 }
 
 //-----------------------------------------------------------------------------
+// Loop over items and delete elements that returned true
+template<typename T, typename Pred>
+inline void DeleteElements(vector<T>& items, Pred pred)
+{
+	items.erase(std::remove_if(items.begin(), items.end(), [&](T item)
+	{
+		if(pred(item))
+		{
+			delete item;
+			return true;
+		}
+		return false;
+	}), items.end());
+}
+
+//-----------------------------------------------------------------------------
 // Return random weighted item
 template<typename T>
 struct WeightPair
