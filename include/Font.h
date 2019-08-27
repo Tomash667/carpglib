@@ -15,7 +15,8 @@ enum DrawTextFlag
 	DTF_BOTTOM = 1 << 3,
 	DTF_SINGLELINE = 1 << 4,
 	DTF_PARSE_SPECIAL = 1 << 5, // parse $ to set color/hitbox
-	DTF_OUTLINE = 1 << 6 // draw outline around text
+	DTF_OUTLINE = 1 << 6, // draw outline around text
+	DTF_DONT_DRAW = 1 << 7 // only calculate size
 };
 
 //-----------------------------------------------------------------------------

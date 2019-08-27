@@ -10,7 +10,7 @@ struct Profiler::Entry : ObjectPoolProxy<Profiler::Entry>
 	int frames;
 	vector<Entry*> e;
 
-	void OnFree()
+	~Entry()
 	{
 		for(Entry* child : e)
 			child->SafeFree();

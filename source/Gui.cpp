@@ -2207,7 +2207,8 @@ bool Gui::DrawText3D(Font* font, Cstring text, uint flags, Color color, const Ve
 
 	Int2 size = font->CalculateSize(text);
 	Rect r = { pt.x - size.x / 2, pt.y - size.y - 4, pt.x + size.x / 2 + 1, pt.y - 4 };
-	DrawText(font, text, flags, color, r);
+	if(!IsSet(flags, DTF_DONT_DRAW))
+		DrawText(font, text, flags, color, r);
 
 	if(text_rect)
 		*text_rect = r;

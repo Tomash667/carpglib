@@ -316,11 +316,8 @@ struct ObjectPool
 		else
 		{
 			t = pool.back();
+			new (t) T;
 			pool.pop_back();
-		}
-		__if_exists(T::OnGet)
-		{
-			t->OnGet();
 		}
 #ifdef CHECK_POOL_LEAKS
 		ObjectPoolLeakManager::instance.Register(t);
@@ -355,10 +352,7 @@ public:
 		VerifyElement(e);
 		ObjectPoolLeakManager::instance.Unregister(e);
 #endif
-		__if_exists(T::OnFree)
-		{
-			e->OnFree();
-		}
+		e->~T();
 		pool.push_back(e);
 	}
 
@@ -368,24 +362,18 @@ public:
 		if(elems.empty())
 			return;
 
-		__if_exists(T::OnFree)
-		{
-			for(T* e : elems)
-			{
-				assert(e);
-				e->OnFree();
-			}
-		}
-
 #ifdef CHECK_POOL_LEAKS
 		CheckDuplicates(elems);
+#endif
 		for(T* e : elems)
 		{
 			assert(e);
+			e->~T();
+#ifdef CHECK_POOL_LEAKS
 			VerifyElement(e);
 			ObjectPoolLeakManager::instance.Unregister(e);
-		}
 #endif
+		}
 
 		pool.insert(pool.end(), elems.begin(), elems.end());
 		elems.clear();
@@ -398,13 +386,9 @@ public:
 		else
 		{
 			assert(e);
-			__if_exists(T::OnFree)
-			{
-				e->OnFree();
 #ifdef CHECK_POOL_LEAKS
-				ObjectPoolLeakManager::instance.Unregister(e);
+			ObjectPoolLeakManager::instance.Unregister(e);
 #endif
-			}
 			delete e;
 		}
 	}
@@ -424,10 +408,7 @@ public:
 					VerifyElement(e);
 					ObjectPoolLeakManager::instance.Unregister(e);
 #endif
-					__if_exists(T::OnFree)
-					{
-						e->OnFree();
-					}
+					e->~T();
 					pool.push_back(e);
 				}
 			}
@@ -438,10 +419,6 @@ public:
 			{
 				if(e)
 				{
-					__if_exists(T::OnFree)
-					{
-						e->OnFree();
-					}
 #ifdef CHECK_POOL_LEAKS
 					ObjectPoolLeakManager::instance.Unregister(e);
 #endif
