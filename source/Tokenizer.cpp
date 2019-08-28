@@ -1311,7 +1311,7 @@ cstring Tokenizer::GetTokenValue(const SeekData& s) const
 				}
 				str += "}";
 			}
-			return str.c_str();
+			return Format("%s", str.c_str());
 		}
 	case T_NONE:
 	case T_EOF:
