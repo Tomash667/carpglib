@@ -2441,14 +2441,18 @@ void Gui::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* 
 }
 
 //=================================================================================================
-void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect)
+void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect, Color* tint)
 {
 	if(area_layout.mode == AreaLayout::Mode::None)
 		return;
 
+	Color color = area_layout.color;
+	if(tint)
+		color *= *tint;
+
 	if(area_layout.mode == AreaLayout::Mode::Item)
 	{
-		DrawItem(area_layout.tex, Int2(rect.LeftTop()), Int2(rect.Size()), area_layout.color, area_layout.size.x, area_layout.size.y, clip_rect);
+		DrawItem(area_layout.tex, Int2(rect.LeftTop()), Int2(rect.Size()), color, area_layout.size.x, area_layout.size.y, clip_rect);
 	}
 	else
 	{
@@ -2482,7 +2486,7 @@ void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d
 		}
 
 		Lock();
-		Vec4 col = Color(area_layout.color);
+		Vec4 col = color;
 		gui_rect.Populate(v, col);
 		in_buffer = 1;
 		Flush();
@@ -2493,7 +2497,7 @@ void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d
 		// border
 		assert(!clip_rect);
 		tCurrent = tPixel;
-		col = Color(area_layout.border_color);
+		col = area_layout.border_color;
 		Lock();
 
 		float s = (float)area_layout.width;

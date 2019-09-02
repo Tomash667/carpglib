@@ -68,7 +68,7 @@ ObjectPoolLeakManager::~ObjectPoolLeakManager()
 
 void ObjectPoolLeakManager::Register(void* ptr)
 {
-	assert(ptr);
+	assert(ptr && ptr != (void*)0xCDCDCDCD);
 	assert(call_stacks.find(ptr) == call_stacks.end());
 
 	CallStackEntry* cs;
@@ -89,7 +89,7 @@ void ObjectPoolLeakManager::Register(void* ptr)
 
 void ObjectPoolLeakManager::Unregister(void* ptr)
 {
-	assert(ptr);
+	assert(ptr && ptr != (void*)0xCDCDCDCD);
 
 	auto it = call_stacks.find(ptr);
 	assert(it != call_stacks.end());

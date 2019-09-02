@@ -466,7 +466,10 @@ void LayoutLoader::RegisterControls()
 
 	c = AddControl<layout::Notifications>("Notifications");
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::Notifications, box));
+	c->AddEntry("button", Entry::AreaLayout, offsetof(layout::Notifications, button));
 	c->AddEntry("font", Entry::Font, offsetof(layout::Notifications, font));
+	c->AddEntry("accept", Entry::Image, offsetof(layout::Notifications, accept));
+	c->AddEntry("cancel", Entry::Image, offsetof(layout::Notifications, cancel));
 
 	c = AddControl<layout::Overlay>("Overlay");
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::Overlay, background));

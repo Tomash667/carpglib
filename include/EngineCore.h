@@ -43,6 +43,7 @@ typedef VertexData* VertexDataPtr;
 
 // Gui types
 struct AreaLayout;
+struct Notification;
 class Button;
 class CheckBox;
 class Container;
