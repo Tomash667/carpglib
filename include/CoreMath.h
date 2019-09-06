@@ -278,13 +278,29 @@ inline float Clip(float f, float range = PI * 2)
 	return f - range * n;
 }
 
+inline constexpr bool IsNormalizedAngle(float angle)
+{
+	return angle >= 0.f && angle < PI * 2;
+}
+
+// Convert left handed <-> right handed rotation
+inline float ConvertAngle(float angle)
+{
+	assert(IsNormalizedAngle(angle));
+	return PI * 2 - angle;
+}
+
 // Return angle between two points
 float Angle(float x1, float y1, float x2, float y2);
+inline float AngleLH(float x1, float y1, float x2, float y2)
+{
+	return ConvertAngle(Angle(x1, y1, x2, y2));
+}
 
 // Return difference between two angles
 inline float AngleDiff(float a, float b)
 {
-	assert(a >= 0.f && a < PI * 2 && b >= 0.f && b < PI * 2);
+	assert(IsNormalizedAngle(a) && IsNormalizedAngle(b));
 	return min((2 * PI) - abs(a - b), abs(b - a));
 }
 
