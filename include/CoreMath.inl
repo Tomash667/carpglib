@@ -56,28 +56,46 @@ inline Int2& Int2::operator = (const Int2& i)
 	return *this;
 }
 
-inline void Int2::operator += (const Int2& i)
+inline Int2& Int2::operator += (const Int2& i)
 {
 	x += i.x;
 	y += i.y;
+	return *this;
 }
 
-inline void Int2::operator -= (const Int2& i)
+inline Int2& Int2::operator -= (const Int2& i)
 {
 	x -= i.x;
 	y -= i.y;
+	return *this;
 }
 
-inline void Int2::operator *= (int a)
+inline Int2& Int2::operator *= (int a)
 {
 	x *= a;
 	y *= a;
+	return *this;
 }
 
-inline void Int2::operator /= (int a)
+inline Int2& Int2::operator *= (float a)
+{
+	x = int(a * x);
+	y = int(a * y);
+	return *this;
+}
+
+inline Int2& Int2::operator /= (int a)
 {
 	x /= a;
 	y /= a;
+	return *this;
+}
+
+inline Int2& Int2::operator /= (float a)
+{
+	x = int(float(x) / a);
+	y = int(float(y) / a);
+	return *this;
 }
 
 inline Int2 Int2::operator + () const
@@ -123,6 +141,11 @@ inline Int2 Int2::operator * (float a) const
 inline Int2 Int2::operator / (int a) const
 {
 	return Int2(x / a, y / a);
+}
+
+inline Int2 Int2::operator / (float a) const
+{
+	return Int2(float(x) / a, float(y) / a);
 }
 
 inline Int2 operator * (int a, const Int2& i)

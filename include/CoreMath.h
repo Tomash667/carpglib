@@ -501,10 +501,12 @@ struct Int2
 
 	// Assignment operators
 	Int2& operator = (const Int2& i);
-	void operator += (const Int2& i);
-	void operator -= (const Int2& i);
-	void operator *= (int a);
-	void operator /= (int a);
+	Int2& operator += (const Int2& i);
+	Int2& operator -= (const Int2& i);
+	Int2& operator *= (int a);
+	Int2& operator *= (float a);
+	Int2& operator /= (int a);
+	Int2& operator /= (float a);
 
 	// Unary operators
 	Int2 operator + () const;
@@ -516,8 +518,9 @@ struct Int2
 	Int2 operator - (const Int2& i) const;
 	Int2 operator * (const Vec2& scale) const;
 	Int2 operator * (int a) const;
-	Int2 operator * (float s) const;
+	Int2 operator * (float a) const;
 	Int2 operator / (int a) const;
+	Int2 operator / (float a) const;
 	friend Int2 operator * (int a, const Int2& i);
 
 	// Methods

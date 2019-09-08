@@ -132,6 +132,14 @@ class ResourceManager
 		LoadInstant(res);
 		return res;
 	}
+	template<typename T>
+	T* TryLoadInstant(Cstring filename)
+	{
+		T* res = TryGet<T>(filename);
+		if(res)
+			LoadInstant(res);
+		return res;
+	}
 	void LoadInstant(Resource* res);
 	void LoadMeshMetadata(Mesh* mesh);
 
