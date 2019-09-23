@@ -2918,9 +2918,9 @@ inline bool Matrix::operator != (const Matrix& M) const
 		|| XMVector4NotEqual(x4, y4)) != 0;
 }
 
-inline Matrix& Matrix::operator = (const Matrix& m)
+inline Matrix& Matrix::operator = (const Matrix& M)
 {
-	memcpy_s(this, sizeof(float) * 16, &m, sizeof(float) * 16);
+	memcpy_s(this, sizeof(float) * 16, &M, sizeof(float) * 16);
 	return *this;
 }
 
@@ -3071,17 +3071,17 @@ inline Matrix Matrix::operator - () const
 	return R;
 }
 
-inline Matrix Matrix::operator + (const Matrix& m) const
+inline Matrix Matrix::operator + (const Matrix& M) const
 {
 	XMVECTOR x1 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&_11));
 	XMVECTOR x2 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&_21));
 	XMVECTOR x3 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&_31));
 	XMVECTOR x4 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&_41));
 
-	XMVECTOR y1 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&m._11));
-	XMVECTOR y2 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&m._21));
-	XMVECTOR y3 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&m._31));
-	XMVECTOR y4 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&m._41));
+	XMVECTOR y1 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&M._11));
+	XMVECTOR y2 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&M._21));
+	XMVECTOR y3 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&M._31));
+	XMVECTOR y4 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&M._41));
 
 	x1 = XMVectorAdd(x1, y1);
 	x2 = XMVectorAdd(x2, y2);
@@ -3096,17 +3096,17 @@ inline Matrix Matrix::operator + (const Matrix& m) const
 	return R;
 }
 
-inline Matrix Matrix::operator - (const Matrix& m) const
+inline Matrix Matrix::operator - (const Matrix& M) const
 {
 	XMVECTOR x1 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&_11));
 	XMVECTOR x2 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&_21));
 	XMVECTOR x3 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&_31));
 	XMVECTOR x4 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&_41));
 
-	XMVECTOR y1 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&m._11));
-	XMVECTOR y2 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&m._21));
-	XMVECTOR y3 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&m._31));
-	XMVECTOR y4 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&m._41));
+	XMVECTOR y1 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&M._11));
+	XMVECTOR y2 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&M._21));
+	XMVECTOR y3 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&M._31));
+	XMVECTOR y4 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&M._41));
 
 	x1 = XMVectorSubtract(x1, y1);
 	x2 = XMVectorSubtract(x2, y2);
@@ -3121,10 +3121,10 @@ inline Matrix Matrix::operator - (const Matrix& m) const
 	return R;
 }
 
-inline Matrix Matrix::operator * (const Matrix& m) const
+inline Matrix Matrix::operator * (const Matrix& M) const
 {
 	XMMATRIX m1 = XMLoadFloat4x4(this);
-	XMMATRIX m2 = XMLoadFloat4x4(&m);
+	XMMATRIX m2 = XMLoadFloat4x4(&M);
 	XMMATRIX X = XMMatrixMultiply(m1, m2);
 
 	Matrix R;
@@ -3176,17 +3176,17 @@ inline Matrix Matrix::operator / (float S) const
 	return R;
 }
 
-inline Matrix Matrix::operator / (const Matrix& m) const
+inline Matrix Matrix::operator / (const Matrix& M) const
 {
 	XMVECTOR x1 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&_11));
 	XMVECTOR x2 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&_21));
 	XMVECTOR x3 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&_31));
 	XMVECTOR x4 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&_41));
 
-	XMVECTOR y1 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&m._11));
-	XMVECTOR y2 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&m._21));
-	XMVECTOR y3 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&m._31));
-	XMVECTOR y4 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&m._41));
+	XMVECTOR y1 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&M._11));
+	XMVECTOR y2 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&M._21));
+	XMVECTOR y3 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&M._31));
+	XMVECTOR y4 = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&M._41));
 
 	x1 = XMVectorDivide(x1, y1);
 	x2 = XMVectorDivide(x2, y2);

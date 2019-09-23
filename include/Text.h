@@ -147,7 +147,7 @@ inline void Join(const vector<T>& v, string& s, cstring separator, Pred pred)
 		s += pred(v.front());
 	else
 	{
-		for(vector<T>::const_iterator it = v.begin(), end = v.end() - 1; it != end; ++it)
+		for(typename vector<T>::const_iterator it = v.begin(), end = v.end() - 1; it != end; ++it)
 		{
 			s += pred(*it);
 			s += separator;

@@ -418,8 +418,8 @@ struct FileTime
 };
 
 //-----------------------------------------------------------------------------
-#include "Containers.h"
 #include "CoreMath.h"
+#include "Containers.h"
 #include "Color.h"
-#include "Logger.h"
 #include "Text.h"
+#include "Logger.h"

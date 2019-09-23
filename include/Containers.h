@@ -9,7 +9,7 @@
 template<typename T>
 inline void DeleteElements(vector<T>& v)
 {
-	for(vector<T>::iterator it = v.begin(), end = v.end(); it != end; ++it)
+	for(typename vector<T>::iterator it = v.begin(), end = v.end(); it != end; ++it)
 		delete *it;
 	v.clear();
 }
@@ -262,7 +262,7 @@ inline void Shuffle(It begin, It end)
 template<typename T>
 inline bool IsInside(const vector<T>& v, const T& elem)
 {
-	for(vector<T>::const_iterator it = v.begin(), end = v.end(); it != end; ++it)
+	for(typename vector<T>::const_iterator it = v.begin(), end = v.end(); it != end; ++it)
 	{
 		if(*it == elem)
 			return true;
@@ -310,7 +310,7 @@ namespace internal
 	template<typename T> \
 	void Call##Name(T* t, std::true_type) { t->Name(); } \
 	template<typename T> \
-	void Call##Name(T* t, std::false_type) {} \
+	void Call##Name(T*, std::false_type) {} \
 	template<typename T> \
 	void Call##Name(T* t) { Call##Name(t, std::integral_constant<bool, Has##Name##Method<T>::Has>()); }
 
@@ -1129,7 +1129,7 @@ public:
 		return iterator(this, size());
 	}
 
-	void push_back(T& item)
+	void push_back(const T& item)
 	{
 		uint s = buf->size();
 		buf->resize(buf->size() + sizeof(T));
@@ -1370,7 +1370,7 @@ struct PointerVector
 		}
 		ConstIterator operator - (int offset) const
 		{
-			return Iterator(it  offset);
+			return Iterator(it - offset);
 		}
 		const T* ptr() const
 		{

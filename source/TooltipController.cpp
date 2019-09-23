@@ -87,15 +87,14 @@ void TooltipController::Draw(ControlDrawData*)
 	if(state != State::VISIBLE || !anything)
 		return;
 
-	int a = int(alpha * 222),
-		a2 = int(alpha * 255);
+	int a = int(alpha * 222);
 
 	// box
 	gui->DrawArea(Box2d::Create(pos, size), layout->box);
 
 	// image
 	if(img)
-		gui->DrawSprite(img, pos + Int2(12, 12), Color::Alpha(a2));
+		gui->DrawSprite(img, pos + Int2(12, 12), Color::Alpha(a));
 
 	Rect r;
 
@@ -104,7 +103,7 @@ void TooltipController::Draw(ControlDrawData*)
 	{
 		r = r_big_text;
 		r += pos;
-		gui->DrawText(layout->font_big, big_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
+		gui->DrawText(layout->font_big, big_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a), r);
 	}
 
 	// text
@@ -112,7 +111,7 @@ void TooltipController::Draw(ControlDrawData*)
 	{
 		r = r_text;
 		r += pos;
-		gui->DrawText(layout->font, text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
+		gui->DrawText(layout->font, text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a), r);
 	}
 
 	// small text
@@ -120,7 +119,7 @@ void TooltipController::Draw(ControlDrawData*)
 	{
 		r = r_small_text;
 		r += pos;
-		gui->DrawText(layout->font_small, small_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
+		gui->DrawText(layout->font_small, small_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a), r);
 	}
 }
 

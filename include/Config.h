@@ -79,7 +79,7 @@ public:
 	void Add(cstring name, uint value) { Add(name, Format("%u", value)); }
 	void Add(cstring name, float value) { Add(name, Format("%g", value)); }
 	void Add(cstring name, const Int2& value) { Add(name, Format("{%d %d}", value.x, value.y)); }
-	void AddVar(ConfigVar& var) { config_vars.push_back(var); }
+	void AddVar(const ConfigVar& var) { config_vars.push_back(var); }
 	Result Load(cstring filename);
 	Result Save(cstring filename);
 	void Remove(cstring name);
