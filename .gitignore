@@ -1,4 +1,8 @@
 *.user
-/.vs
+.vs
 /lib
 /output
+/tools/converter/Debug
+/tools/converter/Release
+/tools/pak/Debug
+/tools/pak/Release
