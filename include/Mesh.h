@@ -160,10 +160,10 @@ struct Mesh : public Resource
 		assert(idx < head.n_subs && subs[idx].tex && subs[idx].tex->tex);
 		return subs[idx].tex->tex;
 	}
-	TEX GetTexture(uint index, const TexId* tex_override) const
+	TEX GetTexture(uint index, const TexOverride* tex_override) const
 	{
-		if(tex_override && tex_override[index].tex)
-			return tex_override[index].tex->tex;
+		if(tex_override && tex_override[index].diffuse)
+			return tex_override[index].diffuse->tex;
 		else
 			return GetTexture(index);
 	}
