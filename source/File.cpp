@@ -1,8 +1,10 @@
 #include "EnginePch.h"
 #include "Core.h"
 #include "File.h"
+#include <zlib.h>
 #include "WindowsIncludes.h"
 #include <Shellapi.h>
+#pragma comment(lib, "Shell32.lib")
 
 //-----------------------------------------------------------------------------
 static DWORD tmp;
@@ -478,4 +480,16 @@ cstring io::FilenameFromPath(cstring path)
 void io::OpenUrl(Cstring url)
 {
 	ShellExecute(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
+}
+
+//=================================================================================================
+Buffer* io::Compress(byte* data, uint size)
+{
+	uint safe_size = size + size / 1000 + 13;
+	Buffer* buf = Buffer::Get();
+	buf->Resize(safe_size);
+	uint real_size;
+	compress((Bytef*)buf->Data(), (uLongf*)&real_size, data, size);
+	buf->Resize(real_size);
+	return buf;
 }

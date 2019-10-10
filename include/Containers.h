@@ -1470,9 +1470,7 @@ public:
 	void Clear() { data.clear(); }
 	void* Data() { return data.data(); }
 	// decompress buffer to new buffer and return it, old one is freed
-#ifndef COMMON_ONLY
 	Buffer* Decompress(uint real_size);
-#endif
 	void Resize(uint size) { data.resize(size); }
 	uint Size() const { return data.size(); }
 
