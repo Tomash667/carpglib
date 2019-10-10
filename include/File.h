@@ -33,6 +33,8 @@ namespace io
 	void Crypt(char* inp, uint inplen, cstring key, uint keylen);
 	// open url in default web browser
 	void OpenUrl(Cstring url);
+	// Compress data to buffer
+	Buffer* Compress(byte* data, uint size);
 }
 
 //-----------------------------------------------------------------------------
@@ -54,6 +56,7 @@ public:
 	virtual void Skip(uint size) = 0;
 
 	bool IsOk() const { return ok; }
+	bool IsEof() const { return GetPos() == GetSize(); }
 	operator bool() const { return IsOk(); }
 	const string& GetStringBuffer() const { return buf; }
 

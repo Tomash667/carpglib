@@ -1,18 +1,16 @@
 #include "EnginePch.h"
 #include "Core.h"
 #ifdef CHECK_POOL_LEAKS
-#include "WindowsIncludes.h"
-#define IN
-#define OUT
-#pragma warning(push)
-#pragma warning(disable:4091)
-#include <Dbghelp.h>
-#pragma warning(pop)
+#	include "WindowsIncludes.h"
+#	define IN
+#	define OUT
+#	pragma warning(push)
+#	pragma warning(disable:4091)
+#	include <Dbghelp.h>
+#	pragma warning(pop)
 #endif
 #undef FAR
-#ifndef COMMON_ONLY
 #include <zlib.h>
-#endif
 
 ObjectPool<string> StringPool;
 ObjectPool<vector<void*>> VectorPool;
@@ -100,7 +98,6 @@ void ObjectPoolLeakManager::Unregister(void* ptr)
 #endif
 
 //=================================================================================================
-#ifndef COMMON_ONLY
 Buffer* Buffer::Decompress(uint real_size)
 {
 	Buffer* buf = Buffer::Get();
@@ -110,4 +107,3 @@ Buffer* Buffer::Decompress(uint real_size)
 	Free();
 	return buf;
 }
-#endif

@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="source\BoxToBox.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Bresenham.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Color.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Config.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Containers.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\CoreMath.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Crc.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\CriticalSection.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\File.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Logger.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Perlin.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Profiler.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Text.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Timer.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Tokenizer.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Algorithm.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Base64.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Color.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Config.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Containers.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Core.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CoreMath.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Crc.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CriticalSection.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\FastFunc.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\File.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Logger.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Perlin.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Profiler.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\QuadTree.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Text.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Timer.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Tokenizer.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WindowsIncludes.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CoreInclude.h" />
+    <ClInclude Include="include\EnginePch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="core">
+      <UniqueIdentifier>{c11d0c30-721d-432d-aee9-bb536ff89991}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="include\CoreMath.inl">
+      <Filter>core</Filter>
+    </None>
+  </ItemGroup>
+</Project>
