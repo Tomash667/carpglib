@@ -24,9 +24,7 @@ enum PLAY_FLAGS
 	PLAY_PRIO2 = 0x40,
 	PLAY_PRIO3 = 0x60,
 	// odtwarza animacjê gdy skoñczy siê blending
-	PLAY_BLEND_WAIT = 0x100,
-	// resetuje speed i blend_max przy zmianie animacji
-	PLAY_RESTORE = 0x200
+	PLAY_BLEND_WAIT = 0x100
 };
 
 //-----------------------------------------------------------------------------
@@ -44,20 +42,20 @@ struct MeshInstance
 		FLAG_BLENDING = 1 << 4,
 		FLAG_STOP_AT_END = 1 << 5,
 		FLAG_BLEND_WAIT = 1 << 6,
-		FLAG_RESTORE = 1 << 7,
-		FLAG_UPDATED = 1 << 8
+		FLAG_UPDATED = 1 << 7
 		// jeœli bêdzie wiêcej flagi potrzeba zmian w Read/Write
 	};
 
 	struct Group
 	{
-		Group() : anim(nullptr), state(0), speed(1.f), prio(0), blend_max(0.33f)
+		Group() : anim(nullptr), state(0), speed(1.f), prio(0), blend_max(0.33f), frame_end(false)
 		{
 		}
 
 		float time, speed, blend_time, blend_max;
 		int state, prio, used_group;
 		Mesh::Animation* anim;
+		bool frame_end;
 
 		int GetFrameIndex(bool& hit) const
 		{
@@ -84,7 +82,6 @@ struct MeshInstance
 	typedef vector<byte>::const_iterator BoneIter;
 
 	explicit MeshInstance(Mesh* mesh, bool preload = false);
-
 	// kontynuuj odtwarzanie animacji
 	void Play(int group = 0)
 	{
@@ -136,40 +133,21 @@ struct MeshInstance
 	void SetToEnd(Matrix* mat_scale = nullptr);
 	void ResetAnimation();
 	void Save(FileWriter& f);
-	void Load(FileReader& f);
-	void Write(StreamWriter& stream) const;
-	bool Read(StreamReader& stream);
+	void Load(FileReader& f, int version);
+	void Write(StreamWriter& f) const;
+	bool Read(StreamReader& f);
 	bool ApplyPreload(Mesh* mesh);
-
 	int GetHighestPriority(uint& group);
 	int GetUsableGroup(uint group);
-	bool GetEndResultClear(uint g)
+	void ClearEndResult();
+	bool IsEnded(uint g = 0) const
 	{
-		bool r;
-		if(g == 0)
-		{
-			r = frame_end_info;
-			frame_end_info = false;
-		}
-		else
-		{
-			r = frame_end_info2;
-			frame_end_info2 = false;
-		}
-		return r;
+		return groups[g].frame_end;
 	}
-	bool GetEndResult(uint g) const
-	{
-		if(g == 0)
-			return frame_end_info;
-		else
-			return frame_end_info2;
-	}
-
 	bool IsBlending() const;
 
 	Mesh* mesh;
-	bool frame_end_info, frame_end_info2, need_update, preload;
+	bool need_update, preload;
 	vector<Matrix> mat_bones;
 	vector<Mesh::KeyframeBone> blendb;
 	vector<Group> groups;

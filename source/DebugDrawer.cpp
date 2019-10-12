@@ -6,7 +6,7 @@
 #include "DirectX.h"
 
 //=================================================================================================
-DebugDrawer::DebugDrawer(Render* render) : render(render), device(render->GetDevice()), effect(nullptr), vertex_decl(nullptr), vb(nullptr), batch(false)
+DebugDrawer::DebugDrawer() : device(app::render->GetDevice()), effect(nullptr), vertex_decl(nullptr), vb(nullptr), batch(false)
 {
 	const D3DVERTEXELEMENT9 decl[] = {
 		{ 0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,	0 },
@@ -14,8 +14,6 @@ DebugDrawer::DebugDrawer(Render* render) : render(render), device(render->GetDev
 		D3DDECL_END()
 	};
 	V(device->CreateVertexDeclaration(decl, &vertex_decl));
-
-	render->RegisterShader(this);
 }
 
 //=================================================================================================
@@ -27,7 +25,7 @@ DebugDrawer::~DebugDrawer()
 //=================================================================================================
 void DebugDrawer::OnInit()
 {
-	effect = render->CompileShader("debug.fx");
+	effect = app::render->CompileShader("debug.fx");
 
 	hTechSimple = effect->GetTechniqueByName("simple");
 	assert(hTechSimple);
@@ -70,10 +68,10 @@ void DebugDrawer::Draw()
 	if(!handler)
 		return;
 
-	render->SetAlphaBlend(true);
-	render->SetAlphaTest(false);
-	render->SetNoZWrite(false);
-	render->SetNoCulling(true);
+	app::render->SetAlphaBlend(true);
+	app::render->SetAlphaTest(false);
+	app::render->SetNoZWrite(false);
+	app::render->SetNoCulling(true);
 	V(device->SetVertexDeclaration(vertex_decl));
 	if(vb)
 		V(device->SetStreamSource(0, vb, 0, sizeof(VColor)));

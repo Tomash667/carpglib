@@ -8,7 +8,7 @@
 #include "DirectX.h"
 
 //=================================================================================================
-TerrainShader::TerrainShader(Render* render) : render(render), device(render->GetDevice()), vertex_decl(nullptr), effect(nullptr)
+TerrainShader::TerrainShader() : device(app::render->GetDevice()), vertex_decl(nullptr), effect(nullptr)
 {
 	const D3DVERTEXELEMENT9 decl[] = {
 		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
@@ -18,8 +18,6 @@ TerrainShader::TerrainShader(Render* render) : render(render), device(render->Ge
 		D3DDECL_END()
 	};
 	V(device->CreateVertexDeclaration(decl, &vertex_decl));
-
-	render->RegisterShader(this);
 }
 
 //=================================================================================================
@@ -31,7 +29,7 @@ TerrainShader::~TerrainShader()
 //=================================================================================================
 void TerrainShader::OnInit()
 {
-	effect = render->CompileShader("terrain.fx");
+	effect = app::render->CompileShader("terrain.fx");
 
 	tech = effect->GetTechniqueByName("terrain");
 	assert(tech);
@@ -97,10 +95,10 @@ void TerrainShader::SetLight(const Vec4& light_dir, const Vec4& diffuse_color, c
 //=================================================================================================
 void TerrainShader::Draw(Terrain* terrain, const vector<uint>& parts)
 {
-	render->SetAlphaTest(false);
-	render->SetAlphaBlend(false);
-	render->SetNoCulling(false);
-	render->SetNoZWrite(false);
+	app::render->SetAlphaTest(false);
+	app::render->SetAlphaBlend(false);
+	app::render->SetNoCulling(false);
+	app::render->SetNoZWrite(false);
 
 	V(effect->SetTechnique(tech));
 	V(effect->SetMatrix(h_world, (D3DXMATRIX*)&Matrix::IdentityMatrix));

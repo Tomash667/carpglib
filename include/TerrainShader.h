@@ -7,7 +7,7 @@
 class TerrainShader : public ShaderHandler
 {
 public:
-	TerrainShader(Render* render);
+	TerrainShader();
 	~TerrainShader();
 	void OnInit() override;
 	void OnReset() override;
@@ -19,7 +19,6 @@ public:
 	void Draw(Terrain* terrain, const vector<uint>& parts);
 
 private:
-	Render* render;
 	IDirect3DDevice9* device;
 	IDirect3DVertexDeclaration9* vertex_decl;
 	ID3DXEffect* effect;

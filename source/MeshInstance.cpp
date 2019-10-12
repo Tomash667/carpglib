@@ -21,8 +21,7 @@ void Mesh::MeshInit()
 //=================================================================================================
 // Konstruktor instancji Mesh
 //=================================================================================================
-MeshInstance::MeshInstance(Mesh* mesh, bool preload) : mesh(mesh), need_update(true), frame_end_info(false),
-frame_end_info2(false), ptr(nullptr), preload(preload)
+MeshInstance::MeshInstance(Mesh* mesh, bool preload) : mesh(mesh), need_update(true), ptr(nullptr), preload(preload)
 {
 	if(!preload)
 	{
@@ -48,11 +47,8 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, int group)
 		return;
 
 	// resetuj szybkoœæ i blending
-	if(IsSet(gr.state, PLAY_RESTORE))
-	{
-		gr.speed = 1.f;
-		gr.blend_max = 0.33f;
-	}
+	gr.speed = 1.f;
+	gr.blend_max = 0.33f;
 
 	int new_state = 0;
 
@@ -81,8 +77,7 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, int group)
 		gr.time = 0.f;
 	if(IsSet(flags, PLAY_STOP_AT_END))
 		SetBit(gr.state, FLAG_STOP_AT_END);
-	if(IsSet(flags, PLAY_RESTORE))
-		SetBit(gr.state, FLAG_RESTORE);
+	gr.frame_end = false;
 
 	// anuluj blending w innych grupach
 	if(IsSet(flags, PLAY_NO_BLEND))
@@ -107,13 +102,6 @@ void MeshInstance::Deactivate(int group, bool in_update)
 	if(IsSet(gr.state, FLAG_GROUP_ACTIVE))
 	{
 		SetupBlending(group, true, in_update);
-
-		if(IsSet(gr.state, FLAG_RESTORE))
-		{
-			gr.speed = 1.f;
-			gr.blend_max = 0.33f;
-		}
-
 		gr.state = FLAG_BLENDING;
 		gr.blend_time = 0.f;
 	}
@@ -124,9 +112,6 @@ void MeshInstance::Deactivate(int group, bool in_update)
 //=================================================================================================
 void MeshInstance::Update(float dt)
 {
-	frame_end_info = false;
-	frame_end_info2 = false;
-
 	for(word i = 0; i < mesh->head.n_groups; ++i)
 	{
 		Group& gr = groups[i];
@@ -163,11 +148,7 @@ void MeshInstance::Update(float dt)
 				gr.time -= dt * gr.speed;
 				if(gr.time < 0) // przekroczono czas animacji
 				{
-					// informacja o koñcu animacji (do wywalenia)
-					if(i == 0)
-						frame_end_info = true;
-					else
-						frame_end_info2 = true;
+					gr.frame_end = true;
 					if(IsSet(gr.state, FLAG_ONCE))
 					{
 						gr.time = 0;
@@ -192,10 +173,7 @@ void MeshInstance::Update(float dt)
 				gr.time += dt * gr.speed;
 				if(gr.time >= gr.anim->length) // przekroczono czas animacji
 				{
-					if(i == 0)
-						frame_end_info = true;
-					else
-						frame_end_info2 = true;
+					gr.frame_end = true;
 					if(IsSet(gr.state, FLAG_ONCE))
 					{
 						gr.time = gr.anim->length;
@@ -357,7 +335,7 @@ void MeshInstance::SetupBones(Matrix* mat_scale)
 		else
 			BoneToModelPoseMat[i] = BoneToParentPoseMat[i] * BoneToModelPoseMat[bone.parent];
 	}
-	
+
 	// przeskaluj koœci
 	if(mat_scale)
 	{
@@ -492,6 +470,13 @@ void MeshInstance::SetupBlending(int bones_group, bool first, bool in_update)
 			}
 		}
 	}
+}
+
+//=================================================================================================
+void MeshInstance::ClearEndResult()
+{
+	for(Group& group : groups)
+		group.frame_end = false;
 }
 
 //=================================================================================================
@@ -639,9 +624,6 @@ float MeshInstance::Group::GetBlendT() const
 //=================================================================================================
 void MeshInstance::Save(FileWriter& f)
 {
-	f << frame_end_info;
-	f << frame_end_info2;
-
 	for(Group& group : groups)
 	{
 		f << group.time;
@@ -653,15 +635,21 @@ void MeshInstance::Save(FileWriter& f)
 			f << group.anim->name;
 		else
 			f.Write0();
+		f << group.frame_end;
 	}
 }
 
 //=================================================================================================
-void MeshInstance::Load(FileReader& f)
+void MeshInstance::Load(FileReader& f, int version)
 {
-	f >> frame_end_info;
-	f >> frame_end_info2;
+	bool frame_end_info, frame_end_info2;
+	if(version == 0)
+	{
+		f >> frame_end_info;
+		f >> frame_end_info2;
+	}
 
+	int index = 0;
 	for(Group& group : groups)
 	{
 		f >> group.time;
@@ -675,62 +663,64 @@ void MeshInstance::Load(FileReader& f)
 			group.anim = nullptr;
 		else
 			group.anim = mesh->GetAnimation(anim_name.c_str());
+		if(version >= 1)
+			f >> group.frame_end;
+		else
+		{
+			if(index == 0)
+				group.frame_end = frame_end_info;
+			else if(index == 1)
+				group.frame_end = frame_end_info2;
+			else
+				group.frame_end = false;
+		}
+		++index;
 	}
 
 	need_update = true;
 }
 
 //=================================================================================================
-void MeshInstance::Write(StreamWriter& stream) const
+void MeshInstance::Write(StreamWriter& f) const
 {
-	int fai = 0;
-	if(frame_end_info)
-		fai |= 0x01;
-	if(frame_end_info2)
-		fai |= 0x02;
-	stream.WriteCasted<byte>(fai);
-	stream.WriteCasted<byte>(groups.size());
-
+	f.WriteCasted<byte>(groups.size());
 	for(const Group& group : groups)
 	{
-		stream.Write(group.time);
-		stream.Write(group.speed);
-		stream.Write(group.state);
-		stream.WriteCasted<byte>(group.prio);
-		stream.WriteCasted<byte>(group.used_group);
+		f << group.time;
+		f << group.speed;
+		f << group.state;
+		f.WriteCasted<byte>(group.prio);
+		f.WriteCasted<byte>(group.used_group);
 		if(group.anim)
-			stream << group.anim->name;
+			f << group.anim->name;
 		else
-			stream.WriteCasted<byte>(0);
+			f.Write0();
+		f << group.frame_end;
 	}
 }
 
 //=================================================================================================
-bool MeshInstance::Read(StreamReader& stream)
+bool MeshInstance::Read(StreamReader& f)
 {
-	int fai;
 	byte groups_count;
 
-	stream.ReadCasted<byte>(fai);
-	stream >> groups_count;
-	if(!stream)
+	f >> groups_count;
+	if(!f)
 		return false;
-
-	frame_end_info = IsSet(fai, 0x01);
-	frame_end_info2 = IsSet(fai, 0x02);
 
 	if(preload)
 		groups.resize(groups_count);
 
 	for(Group& group : groups)
 	{
-		stream.Read(group.time);
-		stream.Read(group.speed);
-		stream.Read(group.state);
-		stream.ReadCasted<byte>(group.prio);
-		stream.ReadCasted<byte>(group.used_group);
-		const string& anim_id = stream.ReadString1();
-		if(!stream)
+		f >> group.time;
+		f >> group.speed;
+		f >> group.state;
+		f.ReadCasted<byte>(group.prio);
+		f.ReadCasted<byte>(group.used_group);
+		const string& anim_id = f.ReadString1();
+		f >> group.frame_end;
+		if(!f)
 			return false;
 
 		if(!anim_id.empty())

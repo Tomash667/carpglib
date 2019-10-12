@@ -7,7 +7,7 @@
 #include "DirectX.h"
 
 //=================================================================================================
-GrassShader::GrassShader(Render* render) : render(render), device(render->GetDevice()), vertex_decl(nullptr), effect(nullptr), vb(nullptr), vb_size(0)
+GrassShader::GrassShader() : device(app::render->GetDevice()), vertex_decl(nullptr), effect(nullptr), vb(nullptr), vb_size(0)
 {
 	const D3DVERTEXELEMENT9 decl[] = {
 		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,	0},
@@ -20,8 +20,6 @@ GrassShader::GrassShader(Render* render) : render(render), device(render->GetDev
 		D3DDECL_END()
 	};
 	V(device->CreateVertexDeclaration(decl, &vertex_decl));
-
-	render->RegisterShader(this);
 }
 
 //=================================================================================================
@@ -33,7 +31,7 @@ GrassShader::~GrassShader()
 //=================================================================================================
 void GrassShader::OnInit()
 {
-	effect = render->CompileShader("grass.fx");
+	effect = app::render->CompileShader("grass.fx");
 
 	tech = effect->GetTechniqueByName("grass");
 	assert(tech);
@@ -85,10 +83,10 @@ void GrassShader::SetCamera(const CameraBase& camera)
 //=================================================================================================
 void GrassShader::Begin(uint max_size)
 {
-	render->SetAlphaBlend(false);
-	render->SetAlphaTest(true);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(false);
+	app::render->SetAlphaBlend(false);
+	app::render->SetAlphaTest(true);
+	app::render->SetNoCulling(true);
+	app::render->SetNoZWrite(false);
 
 	// create vertex buffer if existing is too small
 	if(!vb || vb_size < max_size)

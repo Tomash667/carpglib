@@ -6,11 +6,9 @@
 #include "DirectX.h"
 
 //=================================================================================================
-SuperShader::SuperShader(Render* render) : render(render), pool(nullptr)
+SuperShader::SuperShader() : pool(nullptr)
 {
 	V(D3DXCreateEffectPool(&pool));
-
-	render->RegisterShader(this);
 }
 
 //=================================================================================================
@@ -22,7 +20,7 @@ SuperShader::~SuperShader()
 //=================================================================================================
 void SuperShader::OnInit()
 {
-	cstring path = Format("%s/super.fx", render->GetShadersDir().c_str());
+	cstring path = Format("%s/super.fx", app::render->GetShadersDir().c_str());
 	FileReader f(path);
 	if(!f)
 		throw Format("Failed to open file '%s'.", path);
@@ -115,7 +113,7 @@ ID3DXEffect* SuperShader::GetShader(uint id)
 //=================================================================================================
 ID3DXEffect* SuperShader::CompileShader(uint id)
 {
-	int shader_version = render->GetShaderVersion();
+	int shader_version = app::render->GetShaderVersion();
 	D3DXMACRO macros[10] = { 0 };
 	uint i = 0;
 
@@ -184,7 +182,7 @@ ID3DXEffect* SuperShader::CompileShader(uint id)
 	params.pool = pool;
 
 	Shader& s = Add1(shaders);
-	s.e = render->CompileShader(params);
+	s.e = app::render->CompileShader(params);
 	s.id = id;
 
 	return s.e;

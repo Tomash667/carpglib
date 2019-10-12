@@ -7,7 +7,7 @@
 class GrassShader : public ShaderHandler
 {
 public:
-	GrassShader(Render* render);
+	GrassShader();
 	~GrassShader();
 	void OnInit() override;
 	void OnReset() override;
@@ -20,7 +20,6 @@ public:
 	void End();
 
 private:
-	Render* render;
 	IDirect3DDevice9* device;
 	IDirect3DVertexDeclaration9* vertex_decl;
 	ID3DXEffect* effect;

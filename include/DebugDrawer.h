@@ -10,7 +10,7 @@ class DebugDrawer : public ShaderHandler
 public:
 	typedef delegate<void(DebugDrawer*)> Handler;
 
-	DebugDrawer(Render* render);
+	DebugDrawer();
 	~DebugDrawer();
 	void OnInit() override;
 	void OnReset() override;
@@ -27,7 +27,6 @@ public:
 	void SetHandler(Handler handler) { this->handler = handler; }
 
 private:
-	Render* render;
 	IDirect3DDevice9* device;
 	Handler handler;
 	ID3DXEffect* effect;
