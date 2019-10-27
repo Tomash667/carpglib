@@ -6,17 +6,7 @@
 //---------------------------
 const int BLEND_TO_BIND_POSE = -1;
 void(*MeshInstance::Predraw)(void*, Matrix*, int) = nullptr;
-Mesh::KeyframeBone blendb_zero;
-
-//=================================================================================================
-// Inicjalizacja obiektów u¿ywanych do animacji modeli
-//=================================================================================================
-void Mesh::MeshInit()
-{
-	blendb_zero.scale = 1.f;
-	blendb_zero.rot = Quat::Identity;
-	blendb_zero.pos = Vec3::Zero;
-};
+Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, 1.f);
 
 //=================================================================================================
 // Konstruktor instancji Mesh

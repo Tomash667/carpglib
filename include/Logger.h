@@ -68,6 +68,7 @@ protected:
 class ConsoleLogger : public Logger
 {
 public:
+	ConsoleLogger();
 	~ConsoleLogger();
 
 protected:

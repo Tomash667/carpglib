@@ -109,16 +109,7 @@ struct MeshInstance
 	void SetupBlending(int grupa, bool first = true, bool in_update = false);
 	// ustawianie koœci
 	void SetupBones(Matrix* mat_scale = nullptr);
-	float GetProgress() const
-	{
-		return groups[0].GetProgress();
-	}
-	float GetProgress2() const
-	{
-		assert(mesh->head.n_groups > 1);
-		return groups[1].GetProgress();
-	}
-	float GetProgress(int group) const
+	float GetProgress(int group = 0) const
 	{
 		assert(InRange(group, 0, mesh->head.n_groups - 1));
 		return groups[group].GetProgress();

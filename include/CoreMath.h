@@ -64,7 +64,7 @@ inline T Random(T a)
 template<>
 inline float Random(float a)
 {
-	return ((float)Rand() / internal::rng.max())*a;
+	return ((float)Rand() / internal::rng.max()) * a;
 }
 
 inline int RandomNormal(int a)
@@ -97,7 +97,7 @@ template<>
 inline float Random(float a, float b)
 {
 	assert(b >= a);
-	return ((float)Rand() / internal::rng.max())*(b - a) + a;
+	return ((float)Rand() / internal::rng.max()) * (b - a) + a;
 }
 
 inline float RandomPart(int parts)
@@ -262,7 +262,7 @@ inline T Distance(T x1, T y1, T x2, T y2)
 {
 	T x = abs(x1 - x2);
 	T y = abs(y1 - y2);
-	return sqrt(x*x + y * y);
+	return sqrt(x * x + y * y);
 }
 inline float DistanceSqrt(float x1, float y1, float x2, float y2)
 {
@@ -336,16 +336,16 @@ inline T Sign(T f)
 // Return linear interpolation of value
 inline float Lerp(float a, float b, float t)
 {
-	return (b - a)*t + a;
+	return (b - a) * t + a;
 }
 inline int Lerp(int a, int b, float t)
 {
-	return int(t*(b - a)) + a;
+	return int(t * (b - a)) + a;
 }
 template<typename T>
 inline T Lerp(T a, T b, float t)
 {
-	return T(t*(b - a)) + a;
+	return T(t * (b - a)) + a;
 }
 
 // Return shortes direction between angles
@@ -811,6 +811,7 @@ struct Vec3 : XMFLOAT3
 	static float Distance(const Vec3& v1, const Vec3& v2);
 	static float DistanceSquared(const Vec3& v1, const Vec3& v2);
 	static float Distance2d(const Vec3& v1, const Vec3& v2);
+	static Vec3 FromAxisAngle(const Vec3& v, float angle);
 	static void Hermite(const Vec3& v1, const Vec3& t1, const Vec3& v2, const Vec3& t2, float t, Vec3& result);
 	static Vec3 Hermite(const Vec3& v1, const Vec3& t1, const Vec3& v2, const Vec3& t2, float t);
 	static void Lerp(const Vec3& v1, const Vec3& v2, float t, Vec3& result);

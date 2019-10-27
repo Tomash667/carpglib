@@ -36,8 +36,6 @@ ResourceManager::~ResourceManager()
 void ResourceManager::Init()
 {
 	RegisterExtensions();
-
-	Mesh::MeshInit();
 }
 
 //=================================================================================================

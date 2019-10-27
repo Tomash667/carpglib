@@ -17,3 +17,4 @@
 #undef IN
 #undef OUT
 #undef ERROR
+#undef TRANSPARENT

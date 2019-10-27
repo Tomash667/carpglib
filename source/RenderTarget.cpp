@@ -1,6 +1,7 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
 #include "RenderTarget.h"
+#include "Render.h"
 #include "File.h"
 #include "DirectX.h"
 
@@ -47,6 +48,14 @@ uint RenderTarget::SaveToFile(FileWriter& f)
 		s->Release();
 
 	return size;
+}
+
+void RenderTarget::Resize(const Int2& new_size)
+{
+	SafeRelease(tex.tex);
+	SafeRelease(surf);
+	size = new_size;
+	app::render->CreateRenderTargetTexture(this);
 }
 
 void RenderTarget::FreeSurface()

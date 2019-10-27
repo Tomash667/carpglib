@@ -1,6 +1,7 @@
 #include "EnginePch.h"
 #include "Core.h"
 #include "File.h"
+#include <Windows.h>
 
 //-----------------------------------------------------------------------------
 Logger* Logger::global;
@@ -32,6 +33,15 @@ void Logger::SetInstance(Logger* logger)
 }
 
 //-----------------------------------------------------------------------------
+ConsoleLogger::ConsoleLogger()
+{
+	AllocConsole();
+	FILE* file;
+	freopen_s(&file, "CONIN$", "r", stdin);
+	freopen_s(&file, "CONOUT$", "w", stdout);
+	freopen_s(&file, "CONOUT$", "w", stderr);
+}
+
 ConsoleLogger::~ConsoleLogger()
 {
 	printf("*** End of log.");

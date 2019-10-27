@@ -137,9 +137,6 @@
     <ClInclude Include="include\Button.h">
       <Filter>gui controls</Filter>
     </ClInclude>
-    <ClInclude Include="include\DebugDrawer.h">
-      <Filter>shaders</Filter>
-    </ClInclude>
     <ClInclude Include="include\GrassShader.h">
       <Filter>shaders</Filter>
     </ClInclude>
@@ -260,6 +257,27 @@
     </ClInclude>
     <ClInclude Include="include\Entity.h">
       <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\AppEntry.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ParticleShader.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GlowShader.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostfxShader.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SkyboxShader.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GuiShader.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\BasicShader.h">
+      <Filter>shaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -392,9 +410,6 @@
     <ClCompile Include="source\Button.cpp">
       <Filter>gui controls</Filter>
     </ClCompile>
-    <ClCompile Include="source\DebugDrawer.cpp">
-      <Filter>shaders</Filter>
-    </ClCompile>
     <ClCompile Include="source\GrassShader.cpp">
       <Filter>shaders</Filter>
     </ClCompile>
@@ -476,6 +491,24 @@
     </ClCompile>
     <ClCompile Include="source\Engine.cpp">
       <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ParticleShader.cpp">
+      <Filter>shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GlowShader.cpp">
+      <Filter>shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="source\PostfxShader.cpp">
+      <Filter>shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SkyboxShader.cpp">
+      <Filter>shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GuiShader.cpp">
+      <Filter>shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="source\BasicShader.cpp">
+      <Filter>shaders</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

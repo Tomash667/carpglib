@@ -5,33 +5,25 @@
 #include "VertexDeclaration.h"
 
 //-----------------------------------------------------------------------------
-class DebugDrawer : public ShaderHandler
+class BasicShader : public ShaderHandler
 {
 public:
-	typedef delegate<void(DebugDrawer*)> Handler;
-
-	DebugDrawer();
-	~DebugDrawer();
+	BasicShader();
 	void OnInit() override;
 	void OnReset() override;
 	void OnReload() override;
 	void OnRelease() override;
-	void SetCamera(const CameraBase& camera);
-	void Draw();
+	void Prepare(const CameraBase& camera);
 	void BeginBatch();
 	void AddQuad(const Vec3(&pts)[4], const Vec4& color);
 	void EndBatch();
 
-	Handler GetHandler() const { return handler; }
-
-	void SetHandler(Handler handler) { this->handler = handler; }
+	ID3DXEffect* effect;
+	D3DXHANDLE techSimple, techColor, techArea;
+	D3DXHANDLE hMatCombined, hColor, hPlayerPos, hRange;
 
 private:
 	IDirect3DDevice9* device;
-	Handler handler;
-	ID3DXEffect* effect;
-	D3DXHANDLE hTechSimple, hMatCombined;
-	IDirect3DVertexDeclaration9* vertex_decl;
 	VB vb;
 	uint vb_size;
 	vector<VColor> verts;

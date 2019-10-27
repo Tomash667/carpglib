@@ -13,6 +13,7 @@ class RenderTarget : public Texture
 public:
 	void SaveToFile(cstring filename);
 	uint SaveToFile(FileWriter& f);
+	void Resize(const Int2& new_size);
 	void FreeSurface();
 	Texture* GetTexture() { return &tex; }
 	SURFACE GetSurface();

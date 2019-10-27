@@ -35,4 +35,5 @@ struct Resource
 	bool IsLoaded() const { return state == ResourceState::Loaded; }
 	cstring GetPath() const;
 	Buffer* GetBuffer();
+	void EnsureIsLoaded();
 };

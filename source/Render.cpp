@@ -15,7 +15,7 @@ static const D3DFORMAT ZBUFFER_FORMAT = D3DFMT_D24S8;
 
 //=================================================================================================
 Render::Render() : initialized(false), d3d(nullptr), device(nullptr), sprite(nullptr), current_target(nullptr), current_surf(nullptr), vsync(true),
-lost_device(false), res_freed(false), shaders_dir("../shaders"), refresh_hz(0), shader_version(-1), used_adapter(0), multisampling(0), multisampling_quality(0)
+lost_device(false), res_freed(false), shaders_dir("shaders"), refresh_hz(0), shader_version(-1), used_adapter(0), multisampling(0), multisampling_quality(0)
 {
 	for(int i = 0; i < VDI_MAX; ++i)
 		vertex_decl[i] = nullptr;
@@ -26,11 +26,8 @@ Render::~Render()
 {
 	for(ShaderHandler* shader : shaders)
 	{
-		if(!shader->IsManual())
-		{
-			shader->OnRelease();
-			delete shader;
-		}
+		shader->OnRelease();
+		delete shader;
 	}
 	for(RenderTarget* target : targets)
 	{
@@ -620,6 +617,26 @@ void Render::RegisterShader(ShaderHandler* shader)
 }
 
 //=================================================================================================
+void Render::ReloadShaders()
+{
+	Info("Reloading shaders...");
+
+	for(ShaderHandler* shader : shaders)
+		shader->OnRelease();
+
+	try
+	{
+		for(ShaderHandler* shader : shaders)
+			shader->OnInit();
+	}
+	catch(cstring err)
+	{
+		app::engine->FatalError(Format("Failed to reload shaders.\n%s", err));
+		return;
+	}
+}
+
+//=================================================================================================
 ID3DXEffect* Render::CompileShader(cstring name)
 {
 	assert(name);
@@ -822,29 +839,33 @@ void Render::CreateRenderTargetTexture(RenderTarget* target)
 //=================================================================================================
 Texture* Render::CopyToTexture(RenderTarget* target)
 {
+	TEX tex = CopyToTextureRaw(target);
+	if(!tex)
+		return nullptr;
+	Texture* t = new Texture;
+	t->tex = tex;
+	t->state = ResourceState::Loaded;
+	return t;
+}
+
+//=================================================================================================
+TEX Render::CopyToTextureRaw(RenderTarget* target)
+{
 	assert(target);
-	D3DSURFACE_DESC desc;
-	V(target->tex.tex->GetLevelDesc(0, &desc));
 	TEX tex;
-	V(device->CreateTexture(desc.Width, desc.Height, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, nullptr));
+	V(device->CreateTexture(target->GetSize().x, target->GetSize().y, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, nullptr));
 	SURFACE surf;
 	V(tex->GetSurfaceLevel(0, &surf));
 	HRESULT hr = D3DXLoadSurfaceFromSurface(surf, nullptr, nullptr, target->GetSurface(), nullptr, nullptr, D3DX_DEFAULT, 0);
 	target->FreeSurface();
 	surf->Release();
-	if(SUCCEEDED(hr))
-	{
-		Texture* t = new Texture;
-		t->tex = tex;
-		t->state = ResourceState::Loaded;
-		return t;
-	}
-	else
+	if(FAILED(hr))
 	{
 		tex->Release();
 		WaitReset();
 		return nullptr;
 	}
+	return tex;
 }
 
 //=================================================================================================

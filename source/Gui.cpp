@@ -10,13 +10,15 @@
 #include "Render.h"
 #include "Input.h"
 #include "ResourceManager.h"
+#include "GuiShader.h"
+#include "RenderTarget.h"
 #include "DirectX.h"
 
 Gui* app::gui;
 
 //=================================================================================================
-Gui::Gui() : tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr), tPixel(nullptr),
-master_layout(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), vertex_decl(nullptr), effect(nullptr)
+Gui::Gui() : rtFontTarget(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr), tPixel(nullptr), master_layout(nullptr),
+layout(nullptr), overlay(nullptr), grayscale(false), shader(nullptr)
 {
 }
 
@@ -26,6 +28,8 @@ Gui::~Gui()
 	DeleteElements(created_dialogs);
 	SafeRelease(tPixel);
 	delete master_layout;
+	delete layer;
+	delete dialog_layer;
 }
 
 //=================================================================================================
@@ -35,11 +39,8 @@ void Gui::Init()
 	sprite = app::render->GetSprite();
 	Control::input = app::input;
 	Control::gui = this;
-	tFontTarget = nullptr;
 	wnd_size = app::engine->GetWindowSize();
 	cursor_pos = wnd_size / 2;
-
-	CreateVertexBuffer();
 
 	color_table[1] = Vec4(1, 0, 0, 1);
 	color_table[2] = Vec4(0, 1, 0, 1);
@@ -59,52 +60,7 @@ void Gui::Init()
 	*((DWORD*)lock.pBits) = Color(255, 255, 255).value;
 	V(tPixel->UnlockRect(0));
 
-	// create vertex declaration
-	const D3DVERTEXELEMENT9 v[] = {
-		{ 0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0 },
-		{ 0, 12, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0 },
-		{ 0, 20, D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_COLOR,			0 },
-		D3DDECL_END()
-	};
-	V(device->CreateVertexDeclaration(v, &vertex_decl));
-
-	app::render->RegisterShader(this);
-}
-
-//=================================================================================================
-void Gui::OnInit()
-{
-	effect = app::render->CompileShader("gui.fx");
-	techGui = effect->GetTechniqueByName("gui");
-	techGui2 = effect->GetTechniqueByName("gui2");
-	techGuiGrayscale = effect->GetTechniqueByName("gui_grayscale");
-	hGuiSize = effect->GetParameterByName(nullptr, "size");
-	hGuiTex = effect->GetParameterByName(nullptr, "tex0");
-	assert(techGui && techGui2 && techGuiGrayscale && hGuiSize && hGuiTex);
-}
-
-//=================================================================================================
-void Gui::OnReset()
-{
-	if(effect)
-		effect->OnLostDevice();
-	SafeRelease(vb);
-	SafeRelease(vb2);
-	SafeRelease(tFontTarget);
-}
-
-//=================================================================================================
-void Gui::OnReload()
-{
-	if(effect)
-		effect->OnResetDevice();
-	CreateVertexBuffer();
-}
-
-//=================================================================================================
-void Gui::OnRelease()
-{
-	SafeRelease(effect);
+	app::render->RegisterShader(shader = new GuiShader);
 }
 
 //=================================================================================================
@@ -242,79 +198,50 @@ Font* Gui::CreateFont(cstring name, int size, int weight, int tex_size, int outl
 	f->height = height;
 	f->outline_shift = float(outline) / tex_size;
 
-	bool error = !CreateFontInternal(f, dx_font, tex_size, 0, outline);
-	if(!error && outline)
-		error = !CreateFontInternal(f, dx_font, tex_size, outline, outline);
+	CreateFontInternal(f, dx_font, tex_size, 0, outline);
+	if(outline)
+		CreateFontInternal(f, dx_font, tex_size, outline, outline);
 
 	// zwolnij czcionkê
 	SafeRelease(dx_font);
 
-	// przywróæ render target
-	SURFACE surf;
-	V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
-	V(device->SetRenderTarget(0, surf));
-	surf->Release();
+	// zapisz wygenerowan¹ czcionkê do pliku
+	/*D3DXSaveTextureToFile(Format("%s-%d.png", name, size), D3DXIFF_PNG, f->tex, nullptr);
+	if(outline > 0)
+		D3DXSaveTextureToFile(Format("%s-%d-outline.png", name, size), D3DXIFF_PNG, f->texOutline, nullptr);*/
 
-	if(!error)
-	{
-		// zapisz wygenerowan¹ czcionkê do pliku
-		/*D3DXSaveTextureToFile(Format("%s-%d.png", name, size), D3DXIFF_PNG, f->tex, nullptr);
-		if(outline > 0)
-			D3DXSaveTextureToFile(Format("%s-%d-outline.png", name, size), D3DXIFF_PNG, f->texOutline, nullptr);*/
+	f->type = ResourceType::Font;
+	f->state = ResourceState::Loaded;
+	f->path = res_name;
+	f->filename = f->path.c_str();
+	app::res_mgr->AddResource(f);
 
-		f->type = ResourceType::Font;
-		f->state = ResourceState::Loaded;
-		f->path = res_name;
-		f->filename = f->path.c_str();
-		app::res_mgr->AddResource(f);
-
-		return f;
-	}
-	else
-	{
-		if(f->tex)
-			f->tex->Release();
-		if(f->texOutline)
-			f->texOutline->Release();
-		delete f;
-		return nullptr;
-	}
+	return f;
 }
 
 //=================================================================================================
-bool Gui::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline)
+void Gui::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline)
 {
 	while(true)
 	{
-		int result = TryCreateFontInternal(font, dx_font, tex_size, outline, max_outline);
-		if(result == 0)
-			return true;
-		else if(result == 1)
-			return false;
+		bool result = TryCreateFontInternal(font, dx_font, tex_size, outline, max_outline);
+		if(result)
+			break;
 	}
 }
 
 //=================================================================================================
-// 0-ok, 1-failed, 2-retry
-int Gui::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline)
+bool Gui::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline)
 {
 	// stwórz render target
-	if(!tFontTarget || tex_size > max_tex_size)
-	{
-		SafeRelease(tFontTarget);
-		HRESULT hr = device->CreateTexture(tex_size, tex_size, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tFontTarget, nullptr);
-		if(FAILED(hr))
-		{
-			Error("Failed to create font render target texture (size:%d, error:%d).", tex_size, hr);
-			return 1;
-		}
-		max_tex_size = tex_size;
-	}
+	const Int2 tex_size2(tex_size);
+	if(!rtFontTarget)
+		rtFontTarget = app::render->CreateRenderTarget(tex_size2);
+	else if(tex_size2 > rtFontTarget->GetSize())
+		rtFontTarget->Resize(tex_size2);
 
 	// rozpocznij renderowanie do tekstury
-	SURFACE surf;
-	V(tFontTarget->GetSurfaceLevel(0, &surf));
-	V(device->SetRenderTarget(0, surf));
+	app::render->SetTarget(rtFontTarget);
 	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 0, 0));
 	V(device->BeginScene());
 	V(sprite->Begin(D3DXSPRITE_ALPHABLEND));
@@ -342,9 +269,9 @@ int Gui::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int
 
 				for(int j = 0; j < 8; ++j)
 				{
-					const float a = float(j)*PI / 4;
-					rect.Left() = offset.x + int(outline*sin(a));
-					rect.Top() = offset.y + int(outline*cos(a));
+					const float a = float(j) * PI / 4;
+					rect.Left() = offset.x + int(outline * sin(a));
+					rect.Top() = offset.y + int(outline * cos(a));
 					dx_font->DrawTextA(sprite, cbuf, 1, (RECT*)&rect, DT_LEFT | DT_NOCLIP, Color::White.value);
 				}
 
@@ -376,45 +303,17 @@ int Gui::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int
 	// koniec renderowania
 	V(sprite->End());
 	V(device->EndScene());
+	app::render->SetTarget(nullptr);
 
-	TEX tex;
-
-	// stwórz teksturê na now¹ czcionkê
-	HRESULT hr = device->CreateTexture(tex_size, tex_size, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, nullptr);
-	if(FAILED(hr))
-	{
-		Error("Failed to create font texture (size: %d, error: %d).", tex_size, hr);
-		return 1;
-	}
-
-	// kopiuj do nowej tekstury
-	SURFACE out_surf;
-	V(tex->GetSurfaceLevel(0, &out_surf));
-	hr = D3DXLoadSurfaceFromSurface(out_surf, nullptr, nullptr, surf, nullptr, nullptr, D3DX_DEFAULT, 0);
-	if(hr == D3DERR_DEVICELOST)
-	{
-		SURFACE backbuffer;
-		V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backbuffer));
-		V(device->SetRenderTarget(0, backbuffer));
-		backbuffer->Release();
-		surf->Release();
-		app::render->WaitReset();
-		return 2;
-	}
-	else if(FAILED(hr))
-	{
-		Error("Failed to copy font to texture (size: %d, error: %d).", tex_size, hr);
-		return 1;
-	}
-	surf->Release();
-	out_surf->Release();
+	TEX tex = app::render->CopyToTextureRaw(rtFontTarget);
+	if(!tex)
+		return false;
 
 	if(outline)
 		font->texOutline = tex;
 	else
 		font->tex = tex;
-
-	return 0;
+	return true;
 }
 
 //=================================================================================================
@@ -454,7 +353,7 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 
 	Lock(outline);
 
-	typedef void (Gui::*DrawLineF)(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color,
+	typedef void (Gui::* DrawLineF)(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color,
 		Vec4& color, int x, int y, const Rect* clipping, HitboxContext* hc, bool parse_special, const Vec2& scale);
 	DrawLineF call;
 	if(outline)
@@ -560,9 +459,9 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 		// pocz¹tkowa pozycja y
 		int y;
 		if(IsSet(flags, DTF_BOTTOM))
-			y = rect.Bottom() - lines->size()*font->height;
+			y = rect.Bottom() - lines->size() * font->height;
 		else
-			y = rect.Top() + (rect.SizeY() - int(lines->size())*font->height) / 2;
+			y = rect.Top() + (rect.SizeY() - int(lines->size()) * font->height) / 2;
 
 		for(vector<TextLine>::const_iterator it = lines->begin(), end = lines->end(); it != end; ++it)
 		{
@@ -822,8 +721,8 @@ void Gui::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, con
 			shift.x /= orig_size.x;
 			shift.y /= orig_size.y;
 			Vec2 uv_size = g.uv.Size();
-			Box2d clip_uv(g.uv.v1 + Vec2(shift.x*uv_size.x, shift.y*uv_size.y));
-			clip_uv.v2 += Vec2(uv_size.x*s.x, uv_size.y*s.y);
+			Box2d clip_uv(g.uv.v1 + Vec2(shift.x * uv_size.x, shift.y * uv_size.y));
+			clip_uv.v2 += Vec2(uv_size.x * s.x, uv_size.y * s.y);
 
 			// dodaj znak do bufora
 			v->pos = clip_pos.LeftTop().XY();
@@ -1021,8 +920,8 @@ void Gui::DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_e
 			shift.x /= orig_size.x;
 			shift.y /= orig_size.y;
 			Vec2 uv_size = g.uv.Size();
-			Box2d clip_uv(g.uv.v1 + Vec2(shift.x*uv_size.x, shift.y*uv_size.y));
-			clip_uv.v2 += Vec2(uv_size.x*s.x, uv_size.y*s.y);
+			Box2d clip_uv(g.uv.v1 + Vec2(shift.x * uv_size.x, shift.y * uv_size.y));
+			clip_uv.v2 += Vec2(uv_size.x * s.x, uv_size.y * s.y);
 
 			// dodaj znak do bufora
 			v2->pos = clip_pos.LeftTop().XY();
@@ -1085,12 +984,12 @@ void Gui::DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_e
 //=================================================================================================
 void Gui::Lock(bool outline)
 {
-	V(vb->Lock(0, 0, (void**)&v, D3DLOCK_DISCARD));
+	V(shader->vb->Lock(0, 0, (void**)&v, D3DLOCK_DISCARD));
 	in_buffer = 0;
 
 	if(outline)
 	{
-		V(vb2->Lock(0, 0, (void**)&v2, D3DLOCK_DISCARD));
+		V(shader->vb2->Lock(0, 0, (void**)&v2, D3DLOCK_DISCARD));
 		in_buffer2 = 0;
 		vb2_locked = true;
 	}
@@ -1104,7 +1003,7 @@ void Gui::Flush(bool lock)
 	if(vb2_locked)
 	{
 		// odblokuj drugi bufor
-		V(vb2->Unlock());
+		V(shader->vb2->Unlock());
 
 		// rysuj o ile jest co
 		if(in_buffer2)
@@ -1113,17 +1012,17 @@ void Gui::Flush(bool lock)
 			if(tCurrent2 != tSet)
 			{
 				tSet = tCurrent2;
-				V(effect->SetTexture(hGuiTex, tSet));
-				V(effect->CommitChanges());
+				V(shader->effect->SetTexture(shader->hTex, tSet));
+				V(shader->effect->CommitChanges());
 			}
 
 			// rysuj
-			V(device->SetStreamSource(0, vb2, 0, sizeof(VParticle)));
+			V(device->SetStreamSource(0, shader->vb2, 0, sizeof(VParticle)));
 			V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, in_buffer * 2));
 		}
 	}
 
-	V(vb->Unlock());
+	V(shader->vb->Unlock());
 
 	if(in_buffer)
 	{
@@ -1131,12 +1030,12 @@ void Gui::Flush(bool lock)
 		if(tCurrent != tSet)
 		{
 			tSet = tCurrent;
-			V(effect->SetTexture(hGuiTex, tSet));
-			V(effect->CommitChanges());
+			V(shader->effect->SetTexture(shader->hTex, tSet));
+			V(shader->effect->CommitChanges());
 		}
 
 		// rysuj
-		V(device->SetStreamSource(0, vb, 0, sizeof(VParticle)));
+		V(device->SetStreamSource(0, shader->vb, 0, sizeof(VParticle)));
 		V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, in_buffer * 2));
 	}
 
@@ -1161,7 +1060,7 @@ void Gui::Draw(bool draw_layers, bool draw_dialogs)
 	app::render->SetNoCulling(true);
 	app::render->SetNoZWrite(false);
 
-	V(device->SetVertexDeclaration(vertex_decl));
+	V(device->SetVertexDeclaration(app::render->GetVertexDeclaration(VDI_PARTICLE)));
 
 	tSet = nullptr;
 	tCurrent = nullptr;
@@ -1169,11 +1068,11 @@ void Gui::Draw(bool draw_layers, bool draw_dialogs)
 
 	uint passes;
 
-	V(effect->SetTechnique(techGui));
+	V(shader->effect->SetTechnique(shader->techTex));
 	Vec4 wnd_s(float(wnd_size.x), float(wnd_size.y), 0, 0);
-	V(effect->SetVector(hGuiSize, (D3DXVECTOR4*)&wnd_s));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
+	V(shader->effect->SetVector(shader->hSize, (D3DXVECTOR4*)&wnd_s));
+	V(shader->effect->Begin(&passes, 0));
+	V(shader->effect->BeginPass(0));
 
 	// rysowanie
 	if(draw_layers)
@@ -1190,8 +1089,8 @@ void Gui::Draw(bool draw_layers, bool draw_dialogs)
 		DrawSprite(layout->cursor[cursor_mode], pos);
 	}
 
-	V(effect->EndPass());
-	V(effect->End());
+	V(shader->effect->EndPass());
+	V(shader->effect->End());
 }
 
 //=================================================================================================
@@ -1495,25 +1394,6 @@ void Gui::DrawSprite(Texture* t, const Int2& pos, Color color, const Rect* clipp
 }
 
 //=================================================================================================
-void Gui::OnClean()
-{
-	OnReset();
-
-	delete layer;
-	delete dialog_layer;
-}
-
-//=================================================================================================
-void Gui::CreateVertexBuffer()
-{
-	if(device)
-	{
-		V(device->CreateVertexBuffer(sizeof(VParticle) * 6 * 256, D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb, nullptr));
-		V(device->CreateVertexBuffer(sizeof(VParticle) * 6 * 256, D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb2, nullptr));
-	}
-}
-
-//=================================================================================================
 /*
 Przycinanie tekstu do wybranego regionu, zwraca:
 0 - tekst w ca³oœci w regionie
@@ -1657,7 +1537,7 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 	{
 		d->bts.resize(2);
 		Button& bt1 = d->bts[0],
-			&bt2 = d->bts[1];
+			& bt2 = d->bts[1];
 
 		if(info.custom_names)
 		{
@@ -1711,7 +1591,7 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 	else
 	{
 		Button& bt1 = d->bts[0],
-			&bt2 = d->bts[1];
+			& bt2 = d->bts[1];
 		bt1.pos.y = bt2.pos.y = d->size.y - 8 - bt1.size.y;
 		bt1.pos.x = 12;
 		bt2.pos.x = d->size.x - bt2.size.x - 12;
@@ -2159,32 +2039,32 @@ void Gui::DrawLine(const Vec2* lines, uint count, Color color, bool strip)
 		}
 	}
 
-	V(vb->Unlock());
-	V(device->SetVertexDeclaration(vertex_decl));
-	V(device->SetStreamSource(0, vb, 0, sizeof(VParticle)));
+	V(shader->vb->Unlock());
+	V(device->SetVertexDeclaration(app::render->GetVertexDeclaration(VDI_PARTICLE)));
+	V(device->SetStreamSource(0, shader->vb, 0, sizeof(VParticle)));
 	V(device->DrawPrimitive(strip ? D3DPT_LINESTRIP : D3DPT_LINELIST, 0, count));
 }
 
 //=================================================================================================
 void Gui::LineBegin()
 {
-	effect->EndPass();
-	effect->End();
-	effect->SetTechnique(techGui2);
+	shader->effect->EndPass();
+	shader->effect->End();
+	shader->effect->SetTechnique(shader->techColor);
 	uint passes;
-	effect->Begin(&passes, 0);
-	effect->BeginPass(0);
+	shader->effect->Begin(&passes, 0);
+	shader->effect->BeginPass(0);
 }
 
 //=================================================================================================
 void Gui::LineEnd()
 {
-	effect->EndPass();
-	effect->End();
-	effect->SetTechnique(techGui);
+	shader->effect->EndPass();
+	shader->effect->End();
+	shader->effect->SetTechnique(shader->techTex);
 	uint passes;
-	effect->Begin(&passes, 0);
-	effect->BeginPass(0);
+	shader->effect->Begin(&passes, 0);
+	shader->effect->BeginPass(0);
 }
 
 //=================================================================================================
@@ -2239,8 +2119,8 @@ bool Gui::To2dPoint(const Vec3& pos, Int2& pt)
 		v3 /= v4.w;
 	}
 
-	pt.x = int(v3.x*(wnd_size.x / 2) + (wnd_size.x / 2));
-	pt.y = -int(v3.y*(wnd_size.y / 2) - (wnd_size.y / 2));
+	pt.x = int(v3.x * (wnd_size.x / 2) + (wnd_size.x / 2));
+	pt.y = -int(v3.y * (wnd_size.y / 2) - (wnd_size.y / 2));
 
 	return true;
 }
@@ -2589,12 +2469,12 @@ void Gui::UseGrayscale(bool grayscale)
 	assert(grayscale != this->grayscale);
 	this->grayscale = grayscale;
 
-	effect->EndPass();
-	effect->End();
-	effect->SetTechnique(grayscale ? techGuiGrayscale : techGui);
+	shader->effect->EndPass();
+	shader->effect->End();
+	shader->effect->SetTechnique(grayscale ? shader->techGrayscale : shader->techTex);
 	uint passes;
-	effect->Begin(&passes, 0);
-	effect->BeginPass(0);
+	shader->effect->Begin(&passes, 0);
+	shader->effect->BeginPass(0);
 }
 
 //=================================================================================================
@@ -2627,7 +2507,7 @@ bool Gui::DrawText2(DrawTextOptions& options)
 
 	Lock(outline);
 
-	typedef void (Gui::*DrawLineF)(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color,
+	typedef void (Gui::* DrawLineF)(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color,
 		Vec4& color, int x, int y, const Rect* clipping, HitboxContext* hc, bool parse_special, const Vec2& scale);
 	DrawLineF call;
 	if(outline)
@@ -2662,10 +2542,10 @@ bool Gui::DrawText2(DrawTextOptions& options)
 				// znaki w tej linijce
 				if(clip_result == 0)
 					CALL(options.font, options.str, line_begin, line_end, default_color, current_color, scaled_pos.x, scaled_pos.y, nullptr, hc, parse_special,
-						options.scale);
+					options.scale);
 				else if(clip_result == 5)
 					CALL(options.font, options.str, line_begin, line_end, default_color, current_color, scaled_pos.x, scaled_pos.y, options.clipping, hc, parse_special,
-						options.scale);
+					options.scale);
 				else if(clip_result == 2)
 				{
 					// tekst jest pod widocznym regionem, przerwij rysowanie
@@ -2704,10 +2584,10 @@ bool Gui::DrawText2(DrawTextOptions& options)
 				// znaki w tej linijce
 				if(clip_result == 0)
 					CALL(options.font, options.str, line.begin, line.end, default_color, current_color, scaled_pos.x, scaled_pos.y, nullptr, hc, parse_special,
-						options.scale);
+					options.scale);
 				else if(clip_result == 5)
 					CALL(options.font, options.str, line.begin, line.end, default_color, current_color, scaled_pos.x, scaled_pos.y, options.clipping, hc, parse_special,
-						options.scale);
+					options.scale);
 				else if(clip_result == 2)
 				{
 					// tekst jest pod widocznym regionem, przerwij rysowanie
@@ -2743,9 +2623,9 @@ bool Gui::DrawText2(DrawTextOptions& options)
 		// pocz¹tkowa pozycja y
 		int y;
 		if(IsSet(options.flags, DTF_BOTTOM))
-			y = options.rect.Bottom() - options.lines->size()*options.font->height;
+			y = options.rect.Bottom() - options.lines->size() * options.font->height;
 		else
-			y = options.rect.Top() + (options.rect.SizeY() - int(options.lines->size())*options.font->height) / 2;
+			y = options.rect.Top() + (options.rect.SizeY() - int(options.lines->size()) * options.font->height) / 2;
 
 		for(uint line_index = options.lines_start, lines_max = min(options.lines_end, options.lines->size()); line_index < lines_max; ++line_index)
 		{
@@ -2767,10 +2647,10 @@ bool Gui::DrawText2(DrawTextOptions& options)
 			// znaki w tej linijce
 			if(clip_result == 0)
 				CALL(options.font, options.str, line.begin, line.end, default_color, current_color, scaled_pos.x, scaled_pos.y, nullptr, hc, parse_special,
-					options.scale);
+				options.scale);
 			else if(clip_result == 5)
 				CALL(options.font, options.str, line.begin, line.end, default_color, current_color, scaled_pos.x, scaled_pos.y, options.clipping, hc, parse_special,
-					options.scale);
+				options.scale);
 			else if(clip_result == 2)
 			{
 				// tekst jest pod widocznym regionem, przerwij rysowanie

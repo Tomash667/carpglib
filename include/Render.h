@@ -43,11 +43,14 @@ public:
 	void Draw(bool call_present = true);
 	bool CheckDisplay(const Int2& size, int& hz); // dla zera zwraca najlepszy hz
 	void RegisterShader(ShaderHandler* shader);
+	void ReloadShaders();
 	ID3DXEffect* CompileShader(cstring name);
 	ID3DXEffect* CompileShader(CompileShaderParams& params);
 	TEX CreateTexture(const Int2& size);
 	RenderTarget* CreateRenderTarget(const Int2& size);
+	void CreateRenderTargetTexture(RenderTarget* target);
 	Texture* CopyToTexture(RenderTarget* target);
+	TEX CopyToTextureRaw(RenderTarget* target);
 	bool IsLostDevice() const { return lost_device; }
 	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	bool IsVsyncEnabled() const { return vsync; }
@@ -57,7 +60,6 @@ public:
 	void GetResolutions(vector<Resolution>& v) const;
 	void GetMultisamplingModes(vector<Int2>& v) const;
 	int GetRefreshRate() const { return refresh_hz; }
-	vector<ShaderHandler*>& GetShaders() { return shaders; }
 	int GetShaderVersion() const { return shader_version; }
 	int GetAdapter() const { return used_adapter; }
 	const string& GetShadersDir() const { return shaders_dir; }
@@ -81,7 +83,6 @@ private:
 	void LogAndSelectResolution();
 	void SetDefaultRenderState();
 	void CreateVertexDeclarations();
-	void CreateRenderTargetTexture(RenderTarget* target);
 	void BeforeReset();
 	void AfterReset();
 

@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClInclude Include="include\Algorithm.h" />
     <ClInclude Include="include\App.h" />
+    <ClInclude Include="include\AppEntry.h" />
     <ClInclude Include="include\Base64.h" />
     <ClInclude Include="include\Button.h" />
     <ClInclude Include="include\CameraBase.h" />
@@ -28,7 +29,7 @@
     <ClInclude Include="include\CoreMath.h" />
     <ClInclude Include="include\Crc.h" />
     <ClInclude Include="include\CriticalSection.h" />
-    <ClInclude Include="include\DebugDrawer.h" />
+    <ClInclude Include="include\BasicShader.h" />
     <ClInclude Include="include\DialogBox.h" />
     <ClInclude Include="include\DirectX.h" />
     <ClInclude Include="include\DrawBox.h" />
@@ -43,6 +44,7 @@
     <ClInclude Include="include\Font.h" />
     <ClInclude Include="include\GetNumberDialog.h" />
     <ClInclude Include="include\GetTextDialog.h" />
+    <ClInclude Include="include\GlowShader.h" />
     <ClInclude Include="include\GrassShader.h" />
     <ClInclude Include="include\Grid.h" />
     <ClInclude Include="include\Gui.h" />
@@ -50,6 +52,7 @@
     <ClInclude Include="include\GuiDialog.h" />
     <ClInclude Include="include\GuiElement.h" />
     <ClInclude Include="include\GuiRect.h" />
+    <ClInclude Include="include\GuiShader.h" />
     <ClInclude Include="include\InputTextBox.h" />
     <ClInclude Include="include\Key.h" />
     <ClInclude Include="include\Input.h" />
@@ -67,11 +70,13 @@
     <ClInclude Include="include\Overlay.h" />
     <ClInclude Include="include\Pak.h" />
     <ClInclude Include="include\Panel.h" />
+    <ClInclude Include="include\ParticleShader.h" />
     <ClInclude Include="include\ParticleSystem.h" />
     <ClInclude Include="include\Perlin.h" />
     <ClInclude Include="include\Physics.h" />
     <ClInclude Include="include\PickFileDialog.h" />
     <ClInclude Include="include\PickItemDialog.h" />
+    <ClInclude Include="include\PostfxShader.h" />
     <ClInclude Include="include\Profiler.h" />
     <ClInclude Include="include\QuadTree.h" />
     <ClInclude Include="include\Render.h" />
@@ -80,6 +85,7 @@
     <ClInclude Include="include\ResourceManager.h" />
     <ClInclude Include="include\Scrollbar.h" />
     <ClInclude Include="include\ShaderHandler.h" />
+    <ClInclude Include="include\SkyboxShader.h" />
     <ClInclude Include="include\Slider.h" />
     <ClInclude Include="include\Sound.h" />
     <ClInclude Include="include\SoundManager.h" />
@@ -119,7 +125,7 @@
     <ClCompile Include="source\CrashHandler.cpp" />
     <ClCompile Include="source\Crc.cpp" />
     <ClCompile Include="source\CriticalSection.cpp" />
-    <ClCompile Include="source\DebugDrawer.cpp" />
+    <ClCompile Include="source\BasicShader.cpp" />
     <ClCompile Include="source\DialogBox.cpp" />
     <ClCompile Include="source\DrawBox.cpp" />
     <ClCompile Include="source\Engine.cpp" />
@@ -132,11 +138,13 @@
     <ClCompile Include="source\Font.cpp" />
     <ClCompile Include="source\GetNumberDialog.cpp" />
     <ClCompile Include="source\GetTextDialog.cpp" />
+    <ClCompile Include="source\GlowShader.cpp" />
     <ClCompile Include="source\GrassShader.cpp" />
     <ClCompile Include="source\Grid.cpp" />
     <ClCompile Include="source\Gui.cpp" />
     <ClCompile Include="source\GuiContainer.cpp" />
     <ClCompile Include="source\GuiDialog.cpp" />
+    <ClCompile Include="source\GuiShader.cpp" />
     <ClCompile Include="source\InputTextBox.cpp" />
     <ClCompile Include="source\Input.cpp" />
     <ClCompile Include="source\Label.cpp" />
@@ -152,17 +160,20 @@
     <ClCompile Include="source\Notifications.cpp" />
     <ClCompile Include="source\Overlay.cpp" />
     <ClCompile Include="source\Panel.cpp" />
+    <ClCompile Include="source\ParticleShader.cpp" />
     <ClCompile Include="source\ParticleSystem.cpp" />
     <ClCompile Include="source\Perlin.cpp" />
     <ClCompile Include="source\Physics.cpp" />
     <ClCompile Include="source\PickFileDialog.cpp" />
     <ClCompile Include="source\PickItemDialog.cpp" />
+    <ClCompile Include="source\PostfxShader.cpp" />
     <ClCompile Include="source\Profiler.cpp" />
     <ClCompile Include="source\Render.cpp" />
     <ClCompile Include="source\RenderTarget.cpp" />
     <ClCompile Include="source\Resource.cpp" />
     <ClCompile Include="source\ResourceManager.cpp" />
     <ClCompile Include="source\Scrollbar.cpp" />
+    <ClCompile Include="source\SkyboxShader.cpp" />
     <ClCompile Include="source\Slider.cpp" />
     <ClCompile Include="source\SoundManager.cpp" />
     <ClCompile Include="source\SplitPanel.cpp" />

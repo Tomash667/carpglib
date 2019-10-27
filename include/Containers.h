@@ -465,6 +465,7 @@ private:
 template<typename T>
 class ObjectPoolProxy
 {
+	friend struct ObjectPool<T>;
 public:
 	static T* Get() { return GetPool().Get(); }
 	static void Free(T* t) { GetPool().Free(t); }
@@ -475,6 +476,9 @@ public:
 	void Free() { Free((T*)this); }
 	void SafeFree() { SafeFree((T*)this); }
 
+protected:
+	ObjectPoolProxy() {}
+	~ObjectPoolProxy() {}
 private:
 	static ObjectPool<T>& GetPool() { static ObjectPool<T> pool; return pool; }
 };
@@ -956,14 +960,14 @@ template<typename T, typename Pred>
 inline void DeleteElements(vector<T>& items, Pred pred)
 {
 	items.erase(std::remove_if(items.begin(), items.end(), [&](T item)
-	{
-		if(pred(item))
 		{
-			delete item;
-			return true;
-		}
-		return false;
-	}), items.end());
+			if(pred(item))
+			{
+				delete item;
+				return true;
+			}
+			return false;
+		}), items.end());
 }
 
 //-----------------------------------------------------------------------------

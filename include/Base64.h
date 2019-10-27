@@ -112,7 +112,7 @@ public:
 
 			a4[i++] = *(input++);
 			if(i == 4) {
-				for(i = 0; i <4; i++) {
+				for(i = 0; i < 4; i++) {
 					a4[i] = b64_lookup(a4[i]);
 				}
 
@@ -162,7 +162,7 @@ public:
 
 			a4[i++] = *(input++);
 			if(i == 4) {
-				for(i = 0; i <4; i++) {
+				for(i = 0; i < 4; i++) {
 					a4[i] = b64_lookup(a4[i]);
 				}
 

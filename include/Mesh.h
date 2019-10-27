@@ -83,6 +83,8 @@ struct Mesh : public Resource
 		Quat rot;
 		float scale;
 
+		KeyframeBone() {}
+		KeyframeBone(const Vec3& pos, const Quat& rot, float scale) : pos(pos), rot(rot), scale(scale) {}
 		void Mix(Matrix& out, const Matrix& mul) const;
 		static void Interpolate(KeyframeBone& out, const KeyframeBone& k, const KeyframeBone& k2, float t);
 	};
@@ -140,8 +142,6 @@ struct Mesh : public Resource
 
 	Mesh();
 	~Mesh();
-
-	static void MeshInit();
 
 	void SetupBoneMatrices();
 	void Load(StreamReader& stream, IDirect3DDevice9* device);

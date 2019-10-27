@@ -1,41 +1,34 @@
 #include "EnginePch.h"
 #include "EngineCore.h"
-#include "DebugDrawer.h"
+#include "BasicShader.h"
 #include "Render.h"
 #include "CameraBase.h"
 #include "DirectX.h"
 
 //=================================================================================================
-DebugDrawer::DebugDrawer() : device(app::render->GetDevice()), effect(nullptr), vertex_decl(nullptr), vb(nullptr), batch(false)
+BasicShader::BasicShader() : device(app::render->GetDevice()), effect(nullptr), vb(nullptr), batch(false)
 {
-	const D3DVERTEXELEMENT9 decl[] = {
-		{ 0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,	0 },
-		{ 0, 12, D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_COLOR,		0 },
-		D3DDECL_END()
-	};
-	V(device->CreateVertexDeclaration(decl, &vertex_decl));
 }
 
 //=================================================================================================
-DebugDrawer::~DebugDrawer()
-{
-	SafeRelease(vertex_decl);
-}
-
-//=================================================================================================
-void DebugDrawer::OnInit()
+void BasicShader::OnInit()
 {
 	effect = app::render->CompileShader("debug.fx");
 
-	hTechSimple = effect->GetTechniqueByName("simple");
-	assert(hTechSimple);
+	techSimple = effect->GetTechniqueByName("techSimple");
+	techColor = effect->GetTechniqueByName("techColor");
+	techArea = effect->GetTechniqueByName("techArea");
+	assert(techSimple && techColor && techArea);
 
 	hMatCombined = effect->GetParameterByName(nullptr, "matCombined");
-	assert(hMatCombined);
+	hColor = effect->GetParameterByName(nullptr, "color");
+	hPlayerPos = effect->GetParameterByName(nullptr, "playerPos");
+	hRange = effect->GetParameterByName(nullptr, "range");
+	assert(hMatCombined && hColor && hPlayerPos && hRange);
 }
 
 //=================================================================================================
-void DebugDrawer::OnReset()
+void BasicShader::OnReset()
 {
 	if(effect)
 		V(effect->OnLostDevice());
@@ -43,51 +36,42 @@ void DebugDrawer::OnReset()
 }
 
 //=================================================================================================
-void DebugDrawer::OnReload()
+void BasicShader::OnReload()
 {
 	if(effect)
 		V(effect->OnResetDevice());
 }
 
 //=================================================================================================
-void DebugDrawer::OnRelease()
+void BasicShader::OnRelease()
 {
 	SafeRelease(effect);
 	SafeRelease(vb);
 }
 
 //=================================================================================================
-void DebugDrawer::SetCamera(const CameraBase& camera)
+void BasicShader::Prepare(const CameraBase& camera)
 {
 	mat_view_proj = camera.matViewProj;
-}
-
-//=================================================================================================
-void DebugDrawer::Draw()
-{
-	if(!handler)
-		return;
 
 	app::render->SetAlphaBlend(true);
 	app::render->SetAlphaTest(false);
 	app::render->SetNoZWrite(false);
 	app::render->SetNoCulling(true);
-	V(device->SetVertexDeclaration(vertex_decl));
+	V(device->SetVertexDeclaration(app::render->GetVertexDeclaration(VDI_COLOR)));
 	if(vb)
 		V(device->SetStreamSource(0, vb, 0, sizeof(VColor)));
-
-	handler(this);
 }
 
 //=================================================================================================
-void DebugDrawer::BeginBatch()
+void BasicShader::BeginBatch()
 {
 	assert(!batch);
 	batch = true;
 }
 
 //=================================================================================================
-void DebugDrawer::AddQuad(const Vec3(&pts)[4], const Vec4& color)
+void BasicShader::AddQuad(const Vec3(&pts)[4], const Vec4& color)
 {
 	verts.push_back(VColor(pts[0], color));
 	verts.push_back(VColor(pts[1], color));
@@ -98,7 +82,7 @@ void DebugDrawer::AddQuad(const Vec3(&pts)[4], const Vec4& color)
 }
 
 //=================================================================================================
-void DebugDrawer::EndBatch()
+void BasicShader::EndBatch()
 {
 	assert(batch);
 	batch = false;
@@ -121,7 +105,7 @@ void DebugDrawer::EndBatch()
 
 	uint passes;
 
-	V(effect->SetTechnique(hTechSimple));
+	V(effect->SetTechnique(techSimple));
 	V(effect->Begin(&passes, 0));
 	V(effect->BeginPass(0));
 

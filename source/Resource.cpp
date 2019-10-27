@@ -2,6 +2,7 @@
 #include "EngineCore.h"
 #include "Resource.h"
 #include "Pak.h"
+#include "ResourceManager.h"
 
 //=================================================================================================
 cstring Resource::GetPath() const
@@ -25,4 +26,11 @@ Buffer* Resource::GetBuffer()
 	if(file.compressed_size != file.size)
 		buf = buf->Decompress(file.size);
 	return buf;
+}
+
+//=================================================================================================
+void Resource::EnsureIsLoaded()
+{
+	if(state != ResourceState::Loaded)
+		app::res_mgr->LoadInstant(this);
 }
