@@ -3,5 +3,6 @@
 //-----------------------------------------------------------------------------
 struct CameraBase
 {
-	Matrix matViewProj;
+	Matrix mat_view_proj;
+	Matrix mat_view_inv;
 };

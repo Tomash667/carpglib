@@ -74,7 +74,7 @@ void TerrainShader::OnRelease()
 //=================================================================================================
 void TerrainShader::SetCamera(const CameraBase& camera)
 {
-	mat_view_proj = camera.matViewProj;
+	mat_view_proj = camera.mat_view_proj;
 }
 
 //=================================================================================================
