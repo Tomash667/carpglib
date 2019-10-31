@@ -14,6 +14,7 @@ public:
 	void OnRelease() override;
 	void Prepare(CameraBase& camera);
 	void DrawParticles(const vector<ParticleEmitter*>& pes);
+	void DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes);
 
 	ID3DXEffect* effect;
 	D3DXHANDLE techParticle, techTrail;

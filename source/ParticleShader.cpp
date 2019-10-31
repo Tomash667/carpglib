@@ -53,17 +53,17 @@ void ParticleShader::Prepare(CameraBase& camera)
 {
 	mat_view_proj = camera.mat_view_proj;
 	mat_view_inv = camera.mat_view_inv;
+
+	app::render->SetAlphaTest(false);
+	app::render->SetAlphaBlend(true);
+	app::render->SetNoCulling(true);
+	app::render->SetNoZWrite(true);
 }
 
 //=================================================================================================
 void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 {
 	IDirect3DDevice9* device = app::render->GetDevice();
-
-	app::render->SetAlphaTest(false);
-	app::render->SetAlphaBlend(true);
-	app::render->SetNoCulling(true);
-	app::render->SetNoZWrite(true);
 
 	V(device->SetVertexDeclaration(app::render->GetVertexDeclaration(VDI_PARTICLE)));
 
@@ -163,4 +163,55 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
 	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+}
+
+//=================================================================================================
+void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
+{
+	IDirect3DDevice9* device = app::render->GetDevice();
+
+	V(device->SetVertexDeclaration(app::render->GetVertexDeclaration(VDI_COLOR)));
+
+	uint passes;
+	V(effect->SetTechnique(techTrail));
+	V(effect->SetMatrix(hMatCombined, (D3DXMATRIX*)&mat_view_proj));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
+
+	VColor v[4];
+
+	for(vector<TrailParticleEmitter*>::const_iterator it = tpes.begin(), end = tpes.end(); it != end; ++it)
+	{
+		const TrailParticleEmitter& tp = **it;
+
+		if(tp.alive < 2)
+			continue;
+
+		int id = tp.first;
+		const TrailParticle* prev = &tp.parts[id];
+		id = prev->next;
+
+		while(id != -1)
+		{
+			const TrailParticle& p = tp.parts[id];
+
+			v[0].pos = prev->pt1;
+			v[1].pos = prev->pt2;
+			v[2].pos = p.pt1;
+			v[3].pos = p.pt2;
+
+			v[0].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - prev->t / tp.fade);
+			v[1].color = v[0].color;
+			v[2].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - p.t / tp.fade);
+			v[3].color = v[2].color;
+
+			V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v, sizeof(VColor)));
+
+			prev = &p;
+			id = prev->next;
+		}
+	}
+
+	V(effect->EndPass());
+	V(effect->End());
 }
