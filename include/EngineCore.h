@@ -7,6 +7,7 @@
 struct CameraBase;
 struct MeshInstance;
 struct ParticleEmitter;
+struct PostEffect;
 struct TaskData;
 struct Terrain;
 struct TrailParticleEmitter;

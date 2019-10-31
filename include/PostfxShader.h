@@ -4,6 +4,15 @@
 #include "ShaderHandler.h"
 
 //-----------------------------------------------------------------------------
+struct PostEffect
+{
+	int id;
+	D3DXHANDLE tech;
+	float power;
+	Vec4 skill;
+};
+
+//-----------------------------------------------------------------------------
 class PostfxShader : public ShaderHandler
 {
 public:
