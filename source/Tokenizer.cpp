@@ -219,33 +219,43 @@ redo:
 	}
 	else if(c == '-' && IsSet(flags, F_JOIN_MINUS))
 	{
-		++s.charpos;
-		s.pos = pos2 + 1;
-		int old_pos = s.pos;
-		int old_charpos = s.charpos;
-		int old_line = s.line;
-		// znajdŸ nastêpny znak
-		pos2 = FindFirstNotOf(s, return_eol ? " \t" : " \t\n\r", s.pos);
-		if(pos2 == string::npos)
+		if(pos2 + 1 == str->length())
 		{
-			// same spacje, entery, taby
-			// to koniec pliku
 			s.token = T_SYMBOL;
 			s._char = c;
 			s.item = c;
+			s.pos = pos2 + 1;
 		}
 		else
 		{
-			char c = str->at(pos2);
-			if(!(c >= '0' && c <= '9' && ParseNumber(s, pos2, true)))
+			++s.charpos;
+			s.pos = pos2 + 1;
+			int old_pos = s.pos;
+			int old_charpos = s.charpos;
+			int old_line = s.line;
+			// znajdŸ nastêpny znak
+			pos2 = FindFirstNotOf(s, return_eol ? " \t" : " \t\n\r", s.pos);
+			if(pos2 == string::npos)
 			{
-				// nie liczba, zwróc minus
+				// same spacje, entery, taby
+				// to koniec pliku
 				s.token = T_SYMBOL;
-				s._char = '-';
-				s.item = '-';
-				s.pos = old_pos;
-				s.charpos = old_charpos;
-				s.line = old_line;
+				s._char = c;
+				s.item = c;
+			}
+			else
+			{
+				char c = str->at(pos2);
+				if(!(c >= '0' && c <= '9' && ParseNumber(s, pos2, true)))
+				{
+					// nie liczba, zwróc minus
+					s.token = T_SYMBOL;
+					s._char = '-';
+					s.item = '-';
+					s.pos = old_pos;
+					s.charpos = old_charpos;
+					s.line = old_line;
+				}
 			}
 		}
 	}

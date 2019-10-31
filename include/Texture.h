@@ -35,6 +35,7 @@ struct TextureLock
 	TextureLock(TEX tex);
 	~TextureLock();
 	uint* operator [] (uint row) { return (uint*)(data + pitch * row); }
+	void Fill(Color color);
 	void GenerateMipSubLevels();
 
 private:

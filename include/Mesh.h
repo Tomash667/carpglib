@@ -27,7 +27,9 @@ struct Mesh : public Resource
 		F_ANIMATED = 1 << 1,
 		F_STATIC = 1 << 2,
 		F_PHYSICS = 1 << 3,
-		F_SPLIT = 1 << 4
+		F_SPLIT = 1 << 4,
+		F_NORMAL_MAP = 1 << 5,
+		F_SPECULAR_MAP = 1 << 6
 	};
 
 	struct Header

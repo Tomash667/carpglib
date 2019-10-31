@@ -60,7 +60,6 @@ enum FontKeyword
 	FK_NAME,
 	FK_SIZE,
 	FK_WEIGHT,
-	FK_TEX_SIZE,
 	FK_OUTLINE
 };
 
@@ -141,7 +140,7 @@ void LayoutLoader::ParseFont(const string& name)
 		t.Throw("Font '%s' already exists.", name.c_str());
 
 	string n = name, font_name;
-	int size = -1, weight = 5, outline = 0, tex_size = 0;
+	int size = -1, weight = 5, outline = 0;
 
 	t.Next();
 	t.AssertSymbol('{');
@@ -168,11 +167,6 @@ void LayoutLoader::ParseFont(const string& name)
 		case FK_OUTLINE:
 			outline = t.MustGetInt();
 			break;
-		case FK_TEX_SIZE:
-			tex_size = t.MustGetInt();
-			if(tex_size < 128 || !IsPow2(tex_size))
-				t.Throw("Invalid texture size '%d'.", tex_size);
-			break;
 		}
 		t.Next();
 	}
@@ -180,7 +174,7 @@ void LayoutLoader::ParseFont(const string& name)
 	if(font_name.empty() || size < 1)
 		t.Throw("Font name or size not set.");
 
-	Font* font = gui->CreateFont(font_name.c_str(), size, weight * 100, tex_size, outline);
+	Font* font = gui->CreateFont(font_name.c_str(), size, weight * 100, outline);
 	fonts[n] = font;
 }
 
@@ -366,7 +360,6 @@ void LayoutLoader::RegisterKeywords()
 		{"name",FK_NAME},
 		{"size",FK_SIZE},
 		{"weight",FK_WEIGHT},
-		{"tex_size",FK_TEX_SIZE},
 		{"outline",FK_OUTLINE}
 		});
 

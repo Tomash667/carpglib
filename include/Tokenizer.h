@@ -393,6 +393,7 @@ namespace tokenizer
 		bool IsSymbol(cstring s, char* c = nullptr) const;
 		bool IsText() const { return IsItem() || IsString() || IsKeyword(); }
 		bool IsInt() const { return IsToken(T_INT); }
+		bool IsInt(int value) const { return IsInt() && GetInt() == value; }
 		bool IsFloat() const { return IsToken(T_FLOAT) || IsToken(T_INT); }
 		bool IsKeyword() const { return IsToken(T_KEYWORD); }
 		bool IsKeyword(int id) const

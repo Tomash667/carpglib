@@ -46,11 +46,11 @@ public:
 	void ReloadShaders();
 	ID3DXEffect* CompileShader(cstring name);
 	ID3DXEffect* CompileShader(CompileShaderParams& params);
-	TEX CreateTexture(const Int2& size);
+	TEX CreateTexture(const Int2& size, Color* fill = nullptr);
 	RenderTarget* CreateRenderTarget(const Int2& size);
 	void CreateRenderTargetTexture(RenderTarget* target);
 	Texture* CopyToTexture(RenderTarget* target);
-	TEX CopyToTextureRaw(RenderTarget* target);
+	TEX CopyToTextureRaw(RenderTarget* target, Int2 size = Int2::Zero);
 	bool IsLostDevice() const { return lost_device; }
 	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	bool IsVsyncEnabled() const { return vsync; }

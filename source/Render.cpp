@@ -806,10 +806,15 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 }
 
 //=================================================================================================
-TEX Render::CreateTexture(const Int2& size)
+TEX Render::CreateTexture(const Int2& size, Color* fill)
 {
 	TEX tex;
 	V(device->CreateTexture(size.x, size.y, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, nullptr));
+	if(fill)
+	{
+		TextureLock lock(tex);
+		lock.Fill(*fill);
+	}
 	return tex;
 }
 
@@ -849,14 +854,21 @@ Texture* Render::CopyToTexture(RenderTarget* target)
 }
 
 //=================================================================================================
-TEX Render::CopyToTextureRaw(RenderTarget* target)
+TEX Render::CopyToTextureRaw(RenderTarget* target, Int2 size)
 {
 	assert(target);
+
+	if(size == Int2::Zero)
+		size = target->GetSize();
+
 	TEX tex;
-	V(device->CreateTexture(target->GetSize().x, target->GetSize().y, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, nullptr));
+	V(device->CreateTexture(size.x, size.y, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, nullptr));
 	SURFACE surf;
 	V(tex->GetSurfaceLevel(0, &surf));
-	HRESULT hr = D3DXLoadSurfaceFromSurface(surf, nullptr, nullptr, target->GetSurface(), nullptr, nullptr, D3DX_DEFAULT, 0);
+
+	RECT rect = { 0, 0, size.x, size.y };
+	HRESULT hr = D3DXLoadSurfaceFromSurface(surf, nullptr, nullptr, target->GetSurface(), nullptr, &rect, D3DX_DEFAULT, 0);
+
 	target->FreeSurface();
 	surf->Release();
 	if(FAILED(hr))

@@ -126,7 +126,7 @@ public:
 	void SetText(cstring ok, cstring yes, cstring no, cstring cancel);
 	void Draw(bool draw_layers, bool draw_dialogs);
 	bool AddFont(cstring filename);
-	Font* CreateFont(cstring name, int size, int weight, int tex_size, int outline = 0);
+	Font* CreateFont(cstring name, int size, int weight, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)
 	zwraca false je¿eli by³ clipping od do³u (nie kontuuj tekstu w flow)
 	Znak $ oznacza jak¹œ specjaln¹ czynnoœæ (o ile jest ustawiona flaga DTF_PARSE_SPECIAL):
@@ -221,16 +221,15 @@ public:
 	float mouse_wheel;
 
 private:
-	void DrawLine(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color, Vec4& color, int x, int y, const Rect* clipping,
+	void DrawTextLine(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color, Vec4& color, int x, int y, const Rect* clipping,
 		HitboxContext* hc, bool parse_special, const Vec2& scale);
-	void DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color, Vec4& color, int x, int y, const Rect* clipping,
-		HitboxContext* hc, bool parse_special, const Vec2& scale);
+	void DrawTextOutline(Font* font, cstring text, uint line_begin, uint line_end, int x, int y, const Rect* clipping, bool parse_special, const Vec2& scale);
 	int Clip(int x, int y, int w, int h, const Rect* clipping);
 	void Lock(bool outline = false);
 	void Flush(bool lock = false);
 	void SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc);
-	void CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline);
-	bool TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline);
+	void CreateFontInternal(Font* font, ID3DXFont* dx_font, const Int2& tex_size, int outline, int max_outline);
+	bool TryCreateFontInternal(Font* font, ID3DXFont* dx_font, const Int2& tex_size, int outline, int max_outline);
 	void AddRect(const Vec2& left_top, const Vec2& right_bottom, const Vec4& color);
 
 	GuiShader* shader;
@@ -245,7 +244,7 @@ private:
 	Vec4 color_table[6];
 	HitboxContext tmpHitboxContext;
 	vector<OnCharHandler*> on_char;
-	bool vb2_locked, grayscale;
+	bool vb2_locked, grayscale, use_outline;
 	float outline_alpha;
 	Layout* master_layout;
 	layout::Gui* layout;

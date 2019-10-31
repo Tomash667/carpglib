@@ -38,8 +38,8 @@ struct Font : public Resource
 	};
 
 	TEX tex, texOutline;
-	int height;
-	float outline_shift;
+	int height, outline;
+	Vec2 outline_shift;
 	Glyph glyph[256];
 
 	Font();

@@ -51,6 +51,22 @@ TextureLock::~TextureLock()
 }
 
 //=================================================================================================
+void TextureLock::Fill(Color color)
+{
+	Int2 size = Texture::GetSize(tex);
+	for(int y = 0; y < size.y; ++y)
+	{
+		uint* line = operator [](y);
+		for(int x = 0; x < size.x; ++x)
+		{
+			*line = color;
+			++line;
+		}
+	}
+	GenerateMipSubLevels();
+}
+
+//=================================================================================================
 void TextureLock::GenerateMipSubLevels()
 {
 	assert(tex);
