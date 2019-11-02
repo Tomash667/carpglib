@@ -282,6 +282,9 @@
     <ClInclude Include="include\SceneNode.h">
       <Filter>entity</Filter>
     </ClInclude>
+    <ClInclude Include="include\DebugSceneNode.h">
+      <Filter>entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">

@@ -30,6 +30,7 @@
     <ClInclude Include="include\Crc.h" />
     <ClInclude Include="include\CriticalSection.h" />
     <ClInclude Include="include\BasicShader.h" />
+    <ClInclude Include="include\DebugSceneNode.h" />
     <ClInclude Include="include\DialogBox.h" />
     <ClInclude Include="include\DirectX.h" />
     <ClInclude Include="include\DrawBox.h" />

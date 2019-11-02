@@ -5,9 +5,11 @@
 
 // Engine types
 struct CameraBase;
+struct DebugSceneNode;
 struct MeshInstance;
 struct ParticleEmitter;
 struct PostEffect;
+struct SceneNode;
 struct TaskData;
 struct Terrain;
 struct TrailParticleEmitter;
