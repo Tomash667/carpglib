@@ -19,6 +19,8 @@ public:
 	ID3DXEffect* effect;
 	D3DXHANDLE techParticle, techTrail;
 	D3DXHANDLE hMatCombined, hTex;
+
+private:
 	VB vb;
 	Matrix mat_view_proj, mat_view_inv;
 	int particle_count;

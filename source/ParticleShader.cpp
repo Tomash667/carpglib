@@ -91,9 +91,8 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 		VParticle* v;
 		V(vb->Lock(0, sizeof(VParticle) * pe.alive * 6, (void**)&v, D3DLOCK_DISCARD));
 		int idx = 0;
-		for(vector<Particle>::const_iterator it2 = pe.particles.begin(), end2 = pe.particles.end(); it2 != end2; ++it2)
+		for(const ParticleEmitter::Particle& p : pe.particles)
 		{
-			const Particle& p = *it2;
 			if(!p.exists)
 				continue;
 
@@ -188,12 +187,12 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 			continue;
 
 		int id = tp.first;
-		const TrailParticle* prev = &tp.parts[id];
+		const TrailParticleEmitter::Particle* prev = &tp.parts[id];
 		id = prev->next;
 
 		while(id != -1)
 		{
-			const TrailParticle& p = tp.parts[id];
+			const TrailParticleEmitter::Particle& p = tp.parts[id];
 
 			v[0].pos = prev->pt1;
 			v[1].pos = prev->pt2;

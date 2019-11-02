@@ -202,7 +202,7 @@ void ParticleEmitter::Load(FileReader& f, int version)
 void TrailParticleEmitter::Init(int maxp)
 {
 	parts.resize(maxp);
-	for(vector<TrailParticle>::iterator it = parts.begin(), end = parts.end(); it != end; ++it)
+	for(vector<Particle>::iterator it = parts.begin(), end = parts.end(); it != end; ++it)
 		it->exists = false;
 
 	first = -1;
@@ -222,7 +222,7 @@ bool TrailParticleEmitter::Update(float dt, Vec3* pt1, Vec3* pt2)
 
 		while(id != -1)
 		{
-			TrailParticle& tp = parts[id];
+			Particle& tp = parts[id];
 			tp.t -= dt;
 			if(tp.t < 0)
 			{
@@ -246,7 +246,7 @@ bool TrailParticleEmitter::Update(float dt, Vec3* pt1, Vec3* pt2)
 
 		if(last == -1)
 		{
-			TrailParticle& tp = parts[0];
+			Particle& tp = parts[0];
 			tp.t = fade;
 			tp.exists = true;
 			tp.next = -1;
@@ -265,7 +265,7 @@ bool TrailParticleEmitter::Update(float dt, Vec3* pt1, Vec3* pt2)
 			while(parts[id].exists)
 				++id;
 
-			TrailParticle& tp = parts[id];
+			Particle& tp = parts[id];
 			tp.t = fade;
 			tp.exists = true;
 			tp.next = -1;
