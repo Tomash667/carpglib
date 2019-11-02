@@ -48,3 +48,9 @@ struct SceneNode
 			return *parent_mesh_inst;
 	}
 };
+
+//-----------------------------------------------------------------------------
+struct SceneNodeGroup
+{
+	int flags, start, end;
+};
