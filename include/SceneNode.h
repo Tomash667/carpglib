@@ -16,7 +16,9 @@ struct SceneNode
 		F_NORMAL_MAP = 1 << 3,
 		F_NO_ZWRITE = 1 << 4,
 		F_NO_CULLING = 1 << 5,
-		F_ALPHA_TEST = 1 << 6
+		F_ALPHA_TEST = 1 << 6,
+		F_ALPHA_BLEND = 1 << 7,
+		F_NO_LIGHTING = 1 << 8
 	};
 
 	Matrix mat;
@@ -26,9 +28,11 @@ struct SceneNode
 		MeshInstance* mesh_inst;
 	};
 	MeshInstance* parent_mesh_inst;
+	float dist;
 	int flags, lights, subs;
 	const TexOverride* tex_override;
 	Vec4 tint;
+	Vec3 pos;
 	bool billboard;
 
 	const Mesh& GetMesh() const
