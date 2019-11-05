@@ -545,7 +545,7 @@ void Render::BeforeReset()
 		shader->OnReset();
 	for(RenderTarget* target : targets)
 	{
-		SafeRelease(target->tex.tex);
+		SafeRelease(target->tex);
 		SafeRelease(target->surf);
 	}
 }
@@ -832,13 +832,13 @@ RenderTarget* Render::CreateRenderTarget(const Int2& size)
 //=================================================================================================
 void Render::CreateRenderTargetTexture(RenderTarget* target)
 {
-	V(device->CreateTexture(target->size.x, target->size.y, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &target->tex.tex, nullptr));
+	V(device->CreateTexture(target->size.x, target->size.y, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &target->tex, nullptr));
 	D3DMULTISAMPLE_TYPE type = (D3DMULTISAMPLE_TYPE)multisampling;
 	if(type != D3DMULTISAMPLE_NONE)
 		V(device->CreateRenderTarget(target->size.x, target->size.y, D3DFMT_A8R8G8B8, type, multisampling_quality, FALSE, &target->surf, nullptr));
 	else
 		target->surf = nullptr;
-	target->tex.state = ResourceState::Loaded;
+	target->state = ResourceState::Loaded;
 }
 
 //=================================================================================================
@@ -1008,7 +1008,7 @@ void Render::SetTarget(RenderTarget* target)
 			V(device->SetRenderTarget(0, target->surf));
 		else
 		{
-			V(target->tex.tex->GetSurfaceLevel(0, &current_surf));
+			V(target->tex->GetSurfaceLevel(0, &current_surf));
 			V(device->SetRenderTarget(0, current_surf));
 		}
 
@@ -1029,7 +1029,7 @@ void Render::SetTarget(RenderTarget* target)
 			// copy to surface if using multisampling
 			if(current_target->surf)
 			{
-				V(current_target->tex.tex->GetSurfaceLevel(0, &current_surf));
+				V(current_target->tex->GetSurfaceLevel(0, &current_surf));
 				V(device->StretchRect(current_target->surf, nullptr, current_surf, nullptr, D3DTEXF_NONE));
 			}
 			current_surf->Release();
