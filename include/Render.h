@@ -47,6 +47,8 @@ public:
 	ID3DXEffect* CompileShader(cstring name);
 	ID3DXEffect* CompileShader(CompileShaderParams& params);
 	TEX CreateTexture(const Int2& size, Color* fill = nullptr);
+	Texture* CreateDynamicTexture(const Int2& size);
+	void CreateDynamicTexture(DynamicTexture* tex);
 	RenderTarget* CreateRenderTarget(const Int2& size);
 	void CreateRenderTargetTexture(RenderTarget* target);
 	Texture* CopyToTexture(RenderTarget* target);
@@ -91,6 +93,7 @@ private:
 	ID3DXSprite* sprite;
 	vector<ShaderHandler*> shaders;
 	vector<RenderTarget*> targets;
+	vector<DynamicTexture*> textures;
 	IDirect3DVertexDeclaration9* vertex_decl[VDI_MAX];
 	RenderTarget* current_target;
 	SURFACE current_surf;

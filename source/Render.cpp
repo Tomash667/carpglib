@@ -34,6 +34,7 @@ Render::~Render()
 		SafeRelease(target->surf);
 		delete target;
 	}
+	DeleteElements(textures);
 	for(int i = 0; i < VDI_MAX; ++i)
 		SafeRelease(vertex_decl[i]);
 	if(device)
@@ -548,6 +549,8 @@ void Render::BeforeReset()
 		SafeRelease(target->tex);
 		SafeRelease(target->surf);
 	}
+	for(DynamicTexture* tex : textures)
+		SafeRelease(tex->tex);
 }
 
 //=================================================================================================
@@ -559,6 +562,8 @@ void Render::AfterReset()
 		shader->OnReload();
 	for(RenderTarget* target : targets)
 		CreateRenderTargetTexture(target);
+	for(DynamicTexture* tex : textures)
+		CreateDynamicTexture(tex);
 	V(sprite->OnResetDevice());
 	app::app->OnReload();
 	lost_device = false;
@@ -816,6 +821,24 @@ TEX Render::CreateTexture(const Int2& size, Color* fill)
 		lock.Fill(*fill);
 	}
 	return tex;
+}
+
+//=================================================================================================
+Texture* Render::CreateDynamicTexture(const Int2& size)
+{
+	assert(size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y));
+	DynamicTexture* tex = new DynamicTexture;
+	tex->size = size;
+	CreateDynamicTexture(tex);
+	tex->state = ResourceState::Loaded;
+	textures.push_back(tex);
+	return tex;
+}
+
+//=================================================================================================
+void Render::CreateDynamicTexture(DynamicTexture* tex)
+{
+	V(device->CreateTexture(tex->size.x, tex->size.y, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tex->tex, nullptr));
 }
 
 //=================================================================================================

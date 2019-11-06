@@ -6,6 +6,7 @@
 // Engine types
 struct CameraBase;
 struct DebugSceneNode;
+struct DynamicTexture;
 struct MeshInstance;
 struct ParticleEmitter;
 struct PostEffect;
