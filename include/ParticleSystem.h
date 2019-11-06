@@ -37,7 +37,7 @@ struct ParticleEmitter : public EntityType<ParticleEmitter>
 	void Init();
 	bool Update(float dt);
 	void Save(FileWriter& f);
-	void Load(FileReader& f, int version);
+	void Load(FileReader& f, int version = 1);
 	float GetAlpha(const Particle &p) const
 	{
 		if(op_alpha == POP_CONST)
@@ -59,20 +59,20 @@ struct TrailParticleEmitter : public EntityType<TrailParticleEmitter>
 {
 	struct Particle
 	{
-		Vec3 pt1, pt2;
+		Vec3 pt;
 		float t;
 		int next;
 		bool exists;
 	};
 
-	float fade, timer;
+	float fade, timer, width;
 	Vec4 color1, color2;
 	vector<Particle> parts;
 	int first, last, alive;
 	bool destroy;
 
 	void Init(int maxp);
-	bool Update(float dt, Vec3* pt1, Vec3* pt2);
+	bool Update(float dt, Vec3* pt);
 	void Save(FileWriter& f);
-	void Load(FileReader& f, int version);
+	void Load(FileReader& f, int version = 2);
 };

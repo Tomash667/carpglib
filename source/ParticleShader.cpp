@@ -53,6 +53,7 @@ void ParticleShader::Prepare(CameraBase& camera)
 {
 	mat_view_proj = camera.mat_view_proj;
 	mat_view_inv = camera.mat_view_inv;
+	cam_pos = camera.from;
 
 	app::render->SetAlphaTest(false);
 	app::render->SetAlphaBlend(true);
@@ -177,6 +178,10 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 	V(effect->Begin(&passes, 0));
 	V(effect->BeginPass(0));
 
+	const Vec3 shift[2] = {
+		Vec3(0,-1,0),
+		Vec3(0, 1,0)
+	};
 	VColor v[4];
 
 	for(vector<TrailParticleEmitter*>::const_iterator it = tpes.begin(), end = tpes.end(); it != end; ++it)
@@ -188,16 +193,21 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 
 		int id = tp.first;
 		const TrailParticleEmitter::Particle* prev = &tp.parts[id];
+		const float width = tp.width / 2;
 		id = prev->next;
 
 		while(id != -1)
 		{
 			const TrailParticleEmitter::Particle& p = tp.parts[id];
 
-			v[0].pos = prev->pt1;
-			v[1].pos = prev->pt2;
-			v[2].pos = p.pt1;
-			v[3].pos = p.pt2;
+			Vec3 line_dir = p.pt - prev->pt;
+			Vec3 quad_normal = cam_pos - (p.pt + prev->pt) / 2;
+			Vec3 extrude_dir = line_dir.Cross(quad_normal).Normalize();
+
+			v[0].pos = prev->pt + extrude_dir * width;
+			v[1].pos = prev->pt - extrude_dir * width;
+			v[2].pos = p.pt + extrude_dir * width;
+			v[3].pos = p.pt - extrude_dir * width;
 
 			v[0].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - prev->t / tp.fade);
 			v[1].color = v[0].color;

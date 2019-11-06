@@ -23,5 +23,6 @@ public:
 private:
 	VB vb;
 	Matrix mat_view_proj, mat_view_inv;
+	Vec3 cam_pos;
 	int particle_count;
 };

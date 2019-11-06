@@ -15,12 +15,12 @@ float drop_range(float v, float t)
 	{
 		float t_wznoszenia = v / G;
 		if(t_wznoszenia >= t)
-			return (v*v) / (2 * G);
+			return (v * v) / (2 * G);
 		else
-			return v*t - (G*(t*t)) / 2;
+			return v * t - (G * (t * t)) / 2;
 	}
 	else
-		return v*t - G*(t*t) / 2;
+		return v * t - G * (t * t) / 2;
 }
 
 //=================================================================================================
@@ -71,7 +71,7 @@ void ParticleEmitter::Init()
 	if(r2 > r)
 		r = r2;
 
-	radius = sqrt(2 * r*r);
+	radius = sqrt(2 * r * r);
 
 	// nowe
 	manual_delete = 0;
@@ -214,7 +214,7 @@ void TrailParticleEmitter::Init(int maxp)
 }
 
 //=================================================================================================
-bool TrailParticleEmitter::Update(float dt, Vec3* pt1, Vec3* pt2)
+bool TrailParticleEmitter::Update(float dt, Vec3* pt)
 {
 	if(first != -1 && dt > 0.f)
 	{
@@ -240,7 +240,7 @@ bool TrailParticleEmitter::Update(float dt, Vec3* pt1, Vec3* pt2)
 
 	timer += dt;
 
-	if(pt1 && pt2 && timer >= 1.f / parts.size())
+	if(pt && timer >= 1.f / parts.size())
 	{
 		timer = 0.f;
 
@@ -250,8 +250,7 @@ bool TrailParticleEmitter::Update(float dt, Vec3* pt1, Vec3* pt2)
 			tp.t = fade;
 			tp.exists = true;
 			tp.next = -1;
-			tp.pt1 = *pt1;
-			tp.pt2 = *pt2;
+			tp.pt = *pt;
 			first = 0;
 			last = 0;
 			++alive;
@@ -269,8 +268,7 @@ bool TrailParticleEmitter::Update(float dt, Vec3* pt1, Vec3* pt2)
 			tp.t = fade;
 			tp.exists = true;
 			tp.next = -1;
-			tp.pt1 = *pt1;
-			tp.pt2 = *pt2;
+			tp.pt = *pt;
 
 			parts[last].next = id;
 			last = id;
@@ -297,6 +295,7 @@ void TrailParticleEmitter::Save(FileWriter& f)
 	f << destroy;
 	f << alive;
 	f << timer;
+	f << width;
 }
 
 //=================================================================================================
@@ -309,10 +308,32 @@ void TrailParticleEmitter::Load(FileReader& f, int version)
 	f >> fade;
 	f >> color1;
 	f >> color2;
-	f >> parts;
+	if(version >= 2)
+		f >> parts;
+	else
+	{
+		uint count;
+		f >> count;
+		parts.resize(count);
+		for(Particle& p : parts)
+		{
+			Vec3 pt1, pt2;
+			f >> pt1;
+			f >> pt2;
+			f >> p.t;
+			f >> p.next;
+			f >> p.exists;
+			if(p.exists)
+				p.pt = (pt1 + pt2) / 2;
+		}
+	}
 	f >> first;
 	f >> last;
 	f >> destroy;
 	f >> alive;
 	f >> timer;
+	if(version >= 2)
+		f >> width;
+	else
+		width = 0.1f;
 }
