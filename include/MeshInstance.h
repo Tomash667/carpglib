@@ -138,6 +138,7 @@ struct MeshInstance
 	bool IsBlending() const;
 
 	Mesh* mesh;
+	float base_speed;
 	bool need_update, preload;
 	vector<Matrix> mat_bones;
 	vector<Mesh::KeyframeBone> blendb;

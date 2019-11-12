@@ -11,7 +11,7 @@ Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, 1.f);
 //=================================================================================================
 // Konstruktor instancji Mesh
 //=================================================================================================
-MeshInstance::MeshInstance(Mesh* mesh, bool preload) : mesh(mesh), need_update(true), ptr(nullptr), preload(preload)
+MeshInstance::MeshInstance(Mesh* mesh, bool preload) : mesh(mesh), need_update(true), ptr(nullptr), preload(preload), base_speed(1.f)
 {
 	if(!preload)
 	{
@@ -37,7 +37,7 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, int group)
 		return;
 
 	// resetuj szybkoœæ i blending
-	gr.speed = 1.f;
+	gr.speed = base_speed;
 	gr.blend_max = 0.33f;
 
 	int new_state = 0;
