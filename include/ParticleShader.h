@@ -17,12 +17,16 @@ public:
 	void DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes);
 
 	ID3DXEffect* effect;
-	D3DXHANDLE techParticle, techTrail;
+	D3DXHANDLE tech;
 	D3DXHANDLE hMatCombined, hTex;
 
 private:
+	void ReserveVertexBuffer(uint size);
+
+	IDirect3DDevice9* device;
 	VB vb;
 	Matrix mat_view_proj, mat_view_inv;
+	TEX tex_empty;
 	Vec3 cam_pos;
-	int particle_count;
+	uint particle_count;
 };

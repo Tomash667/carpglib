@@ -8,7 +8,7 @@
 #include "DirectX.h"
 
 //=================================================================================================
-ParticleShader::ParticleShader() : effect(nullptr), vb(nullptr)
+ParticleShader::ParticleShader() : device(app::render->GetDevice()), effect(nullptr), vb(nullptr)
 {
 }
 
@@ -17,13 +17,15 @@ void ParticleShader::OnInit()
 {
 	effect = app::render->CompileShader("particle.fx");
 
-	techParticle = effect->GetTechniqueByName("particle");
-	techTrail = effect->GetTechniqueByName("trail");
-	assert(techParticle && techTrail);
+	tech = effect->GetTechniqueByName("particle");
+	assert(tech);
 
 	hMatCombined = effect->GetParameterByName(nullptr, "matCombined");
 	hTex = effect->GetParameterByName(nullptr, "tex0");
 	assert(hMatCombined && hTex);
+
+	if(!tex_empty)
+		tex_empty = app::render->CreateTexture(Int2(1, 1), &Color::White);
 }
 
 //=================================================================================================
@@ -59,18 +61,20 @@ void ParticleShader::Prepare(CameraBase& camera)
 	app::render->SetAlphaBlend(true);
 	app::render->SetNoCulling(true);
 	app::render->SetNoZWrite(true);
+
+	V(device->SetVertexDeclaration(app::render->GetVertexDeclaration(VDI_PARTICLE)));
+	if(vb)
+		V(device->SetStreamSource(0, vb, 0, sizeof(VParticle)));
+
+	V(effect->SetTechnique(tech));
+	V(effect->SetMatrix(hMatCombined, (D3DXMATRIX*)&mat_view_proj));
 }
 
 //=================================================================================================
 void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 {
-	IDirect3DDevice9* device = app::render->GetDevice();
-
-	V(device->SetVertexDeclaration(app::render->GetVertexDeclaration(VDI_PARTICLE)));
-
+	Texture* last_tex = nullptr;
 	uint passes;
-	V(effect->SetTechnique(techParticle));
-	V(effect->SetMatrix(hMatCombined, (D3DXMATRIX*)&mat_view_proj));
 	V(effect->Begin(&passes, 0));
 	V(effect->BeginPass(0));
 
@@ -78,17 +82,9 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 	{
 		const ParticleEmitter& pe = **it;
 
-		// stwórz vertex buffer na cz¹steczki jeœli nie ma wystarczaj¹co du¿ego
-		if(!vb || particle_count < pe.alive)
-		{
-			if(vb)
-				vb->Release();
-			V(device->CreateVertexBuffer(sizeof(VParticle) * pe.alive * 6, D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vb, nullptr));
-			particle_count = pe.alive;
-		}
-		V(device->SetStreamSource(0, vb, 0, sizeof(VParticle)));
+		ReserveVertexBuffer(pe.alive);
 
-		// wype³nij vertex buffer
+		// fill vertex buffer
 		VParticle* v;
 		V(vb->Lock(0, sizeof(VParticle) * pe.alive * 6, (void**)&v, D3DLOCK_DISCARD));
 		int idx = 0;
@@ -126,9 +122,9 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 
 			idx += 6;
 		}
-
 		V(vb->Unlock());
 
+		// set blending
 		switch(pe.mode)
 		{
 		case 0:
@@ -151,9 +147,15 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 			break;
 		}
 
-		V(effect->SetTexture(hTex, pe.tex->tex));
-		V(effect->CommitChanges());
+		// set texture
+		if(last_tex != pe.tex)
+		{
+			last_tex = pe.tex;
+			V(effect->SetTexture(hTex, pe.tex->tex));
+			V(effect->CommitChanges());
+		}
 
+		// draw
 		V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, pe.alive * 2));
 	}
 
@@ -168,13 +170,8 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 //=================================================================================================
 void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 {
-	IDirect3DDevice9* device = app::render->GetDevice();
-
-	V(device->SetVertexDeclaration(app::render->GetVertexDeclaration(VDI_COLOR)));
-
 	uint passes;
-	V(effect->SetTechnique(techTrail));
-	V(effect->SetMatrix(hMatCombined, (D3DXMATRIX*)&mat_view_proj));
+	V(effect->SetTexture(hTex, tex_empty));
 	V(effect->Begin(&passes, 0));
 	V(effect->BeginPass(0));
 
@@ -182,7 +179,7 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 		Vec3(0,-1,0),
 		Vec3(0, 1,0)
 	};
-	VColor v[4];
+	VParticle v[4];
 
 	for(vector<TrailParticleEmitter*>::const_iterator it = tpes.begin(), end = tpes.end(); it != end; ++it)
 	{
@@ -191,11 +188,17 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 		if(tp.alive < 2)
 			continue;
 
+		uint count = tp.alive - 1;
+		ReserveVertexBuffer(count);
+
+		// fill vertex buffer
 		int id = tp.first;
 		const TrailParticleEmitter::Particle* prev = &tp.parts[id];
 		const float width = tp.width / 2;
 		id = prev->next;
-
+		VParticle* v;
+		V(vb->Lock(0, sizeof(VParticle) * count * 6, (void**)&v, D3DLOCK_DISCARD));
+		int idx = 0;
 		while(id != -1)
 		{
 			const TrailParticleEmitter::Particle& p = tp.parts[id];
@@ -204,23 +207,47 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 			Vec3 quad_normal = cam_pos - (p.pt + prev->pt) / 2;
 			Vec3 extrude_dir = line_dir.Cross(quad_normal).Normalize();
 
-			v[0].pos = prev->pt + extrude_dir * width;
-			v[1].pos = prev->pt - extrude_dir * width;
-			v[2].pos = p.pt + extrude_dir * width;
-			v[3].pos = p.pt - extrude_dir * width;
+			v[idx].pos = prev->pt + extrude_dir * width;
+			v[idx + 1].pos = prev->pt - extrude_dir * width;
+			v[idx + 2].pos = p.pt + extrude_dir * width;
+			v[idx + 3].pos = p.pt - extrude_dir * width;
 
-			v[0].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - prev->t / tp.fade);
-			v[1].color = v[0].color;
-			v[2].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - p.t / tp.fade);
-			v[3].color = v[2].color;
+			v[idx].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - prev->t / tp.fade);
+			v[idx + 1].color = v[idx].color;
+			v[idx + 2].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - p.t / tp.fade);
+			v[idx + 3].color = v[idx + 2].color;
 
-			V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v, sizeof(VColor)));
+			v[idx].tex = Vec2(0, 0);
+			v[idx + 1].tex = Vec2(0, 1);
+			v[idx + 2].tex = Vec2(1, 0);
+			v[idx + 3].tex = Vec2(1, 1);
+
+			v[idx + 4] = v[idx + 1];
+			v[idx + 5] = v[idx + 2];
 
 			prev = &p;
 			id = prev->next;
+			idx += 6;
 		}
+		V(vb->Unlock());
+
+		// draw
+		V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, count * 2));
 	}
 
 	V(effect->EndPass());
 	V(effect->End());
+}
+
+//=================================================================================================
+void ParticleShader::ReserveVertexBuffer(uint size)
+{
+	if(!vb || particle_count < size)
+	{
+		if(vb)
+			vb->Release();
+		V(device->CreateVertexBuffer(sizeof(VParticle) * size * 6, D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vb, nullptr));
+		V(device->SetStreamSource(0, vb, 0, sizeof(VParticle)));
+		particle_count = size;
+	}
 }
