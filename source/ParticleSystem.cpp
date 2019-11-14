@@ -208,7 +208,6 @@ void TrailParticleEmitter::Init(int maxp)
 	first = -1;
 	last = -1;
 	alive = 0;
-	destroy = false;
 	timer = 0.f;
 	Register();
 }
@@ -216,6 +215,9 @@ void TrailParticleEmitter::Init(int maxp)
 //=================================================================================================
 bool TrailParticleEmitter::Update(float dt, Vec3* pt)
 {
+	if(manual)
+		return destroy;
+
 	if(first != -1 && dt > 0.f)
 	{
 		int id = first;
@@ -296,6 +298,10 @@ void TrailParticleEmitter::Save(FileWriter& f)
 	f << alive;
 	f << timer;
 	f << width;
+	if(tex)
+		f << tex->filename;
+	else
+		f.Write0();
 }
 
 //=================================================================================================
@@ -333,7 +339,17 @@ void TrailParticleEmitter::Load(FileReader& f, int version)
 	f >> alive;
 	f >> timer;
 	if(version >= 2)
+	{
 		f >> width;
+		const string& tex_id = f.ReadString1();
+		if(!tex_id.empty())
+			tex = app::res_mgr->Load<Texture>(tex_id);
+		else
+			tex = nullptr;
+	}
 	else
+	{
 		width = 0.1f;
+		tex = nullptr;
+	}
 }

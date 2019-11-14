@@ -68,9 +68,11 @@ struct TrailParticleEmitter : public EntityType<TrailParticleEmitter>
 	float fade, timer, width;
 	Vec4 color1, color2;
 	vector<Particle> parts;
+	Texture* tex;
 	int first, last, alive;
-	bool destroy;
+	bool destroy, manual;
 
+	TrailParticleEmitter() : tex(nullptr), width(0.1f), destroy(false), manual(false) {}
 	void Init(int maxp);
 	bool Update(float dt, Vec3* pt);
 	void Save(FileWriter& f);
