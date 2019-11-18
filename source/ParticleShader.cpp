@@ -51,7 +51,7 @@ void ParticleShader::OnRelease()
 }
 
 //=================================================================================================
-void ParticleShader::Prepare(CameraBase& camera)
+void ParticleShader::Begin(CameraBase& camera)
 {
 	mat_view_proj = camera.mat_view_proj;
 	mat_view_inv = camera.mat_view_inv;
@@ -68,6 +68,19 @@ void ParticleShader::Prepare(CameraBase& camera)
 
 	V(effect->SetTechnique(tech));
 	V(effect->SetMatrix(hMatCombined, (D3DXMATRIX*)&mat_view_proj));
+
+	last_mode = 0;
+}
+
+//=================================================================================================
+void ParticleShader::End()
+{
+	if(last_mode != 0)
+	{
+		V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+		V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+		V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+	}
 }
 
 //=================================================================================================
@@ -125,26 +138,30 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 		V(vb->Unlock());
 
 		// set blending
-		switch(pe.mode)
+		if(last_mode != pe.mode)
 		{
-		case 0:
-			V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-			V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-			V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-			break;
-		case 1:
-			V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-			V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-			V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
-			break;
-		case 2:
-			V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT));
-			V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-			V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
-			break;
-		default:
-			assert(0);
-			break;
+			last_mode = pe.mode;
+			switch(pe.mode)
+			{
+			case 0:
+				V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+				V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+				V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+				break;
+			case 1:
+				V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+				V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+				V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
+				break;
+			case 2:
+				V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT));
+				V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+				V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
+				break;
+			default:
+				assert(0);
+				break;
+			}
 		}
 
 		// set texture
@@ -170,6 +187,15 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 //=================================================================================================
 void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 {
+	if(last_mode != 1)
+	{
+		last_mode = 1;
+		V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+		V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+		V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
+	}
+
+	Texture* last_tex = nullptr;
 	uint passes;
 	V(effect->SetTexture(hTex, tex_empty));
 	V(effect->Begin(&passes, 0));
@@ -230,6 +256,14 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 			idx += 6;
 		}
 		V(vb->Unlock());
+
+		// set texture
+		if(tp.tex != last_tex)
+		{
+			last_tex = tp.tex;
+			V(effect->SetTexture(hTex, tp.tex ? tp.tex->tex : tex_empty));
+			V(effect->CommitChanges());
+		}
 
 		// draw
 		V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, count * 2));

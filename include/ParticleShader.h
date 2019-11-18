@@ -12,7 +12,8 @@ public:
 	void OnReset() override;
 	void OnReload() override;
 	void OnRelease() override;
-	void Prepare(CameraBase& camera);
+	void Begin(CameraBase& camera);
+	void End();
 	void DrawParticles(const vector<ParticleEmitter*>& pes);
 	void DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes);
 
@@ -29,4 +30,5 @@ private:
 	TEX tex_empty;
 	Vec3 cam_pos;
 	uint particle_count;
+	int last_mode;
 };
