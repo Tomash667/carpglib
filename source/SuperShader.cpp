@@ -8,7 +8,6 @@
 //=================================================================================================
 SuperShader::SuperShader() : pool(nullptr)
 {
-	V(D3DXCreateEffectPool(&pool));
 }
 
 //=================================================================================================
@@ -20,6 +19,14 @@ SuperShader::~SuperShader()
 //=================================================================================================
 void SuperShader::OnInit()
 {
+	if(!pool)
+	{
+		V(D3DXCreateEffectPool(&pool));
+
+		tex_empty_normal_map = app::render->CreateTexture(Int2(1, 1), &Color(128, 128, 255));
+		tex_empty_specular_map = app::render->CreateTexture(Int2(1, 1), &Color::None);
+	}
+
 	cstring path = Format("%s/super.fx", app::render->GetShadersDir().c_str());
 	FileReader f(path);
 	if(!f)

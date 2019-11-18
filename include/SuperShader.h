@@ -37,6 +37,7 @@ public:
 
 	D3DXHANDLE hMatCombined, hMatWorld, hMatBones, hTint, hAmbientColor, hFogColor, hFogParams, hLightDir, hLightColor, hLights, hSpecularColor,
 		hSpecularIntensity, hSpecularHardness, hCameraPos, hTexDiffuse, hTexNormal, hTexSpecular;
+	TEX tex_empty_normal_map, tex_empty_specular_map;
 
 private:
 	string code;
