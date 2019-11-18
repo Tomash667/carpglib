@@ -10,6 +10,7 @@ struct DynamicTexture;
 struct MeshInstance;
 struct ParticleEmitter;
 struct PostEffect;
+struct Scene;
 struct SceneNode;
 struct TaskData;
 struct Terrain;

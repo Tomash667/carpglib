@@ -22,35 +22,14 @@ struct SceneNode
 	};
 
 	Matrix mat;
-	union
-	{
-		Mesh* mesh;
-		MeshInstance* mesh_inst;
-	};
-	MeshInstance* parent_mesh_inst;
+	Mesh* mesh;
+	MeshInstance* mesh_inst;
 	float dist;
 	int flags, lights, subs;
 	const TexOverride* tex_override;
 	Vec4 tint;
 	Vec3 pos;
 	bool billboard;
-
-	const Mesh& GetMesh() const
-	{
-		if(!IsSet(flags, F_ANIMATED) || parent_mesh_inst)
-			return *mesh;
-		else
-			return *mesh_inst->mesh;
-	}
-
-	const MeshInstance& GetMeshInstance() const
-	{
-		assert(IsSet(flags, F_ANIMATED));
-		if(!parent_mesh_inst)
-			return *mesh_inst;
-		else
-			return *parent_mesh_inst;
-	}
 };
 
 //-----------------------------------------------------------------------------

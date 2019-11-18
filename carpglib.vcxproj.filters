@@ -288,6 +288,9 @@
     <ClInclude Include="include\SceneManager.h">
       <Filter>components</Filter>
     </ClInclude>
+    <ClInclude Include="include\Scene.h">
+      <Filter>entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">
@@ -521,6 +524,9 @@
     </ClCompile>
     <ClCompile Include="source\SceneManager.cpp">
       <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Scene.cpp">
+      <Filter>entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
