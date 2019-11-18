@@ -30,6 +30,7 @@ class PostfxShader;
 class Render;
 class RenderTarget;
 class ResourceManager;
+class SceneManager;
 class ShaderHandler;
 class SkyboxShader;
 class SoundManager;
@@ -129,6 +130,7 @@ namespace app
 	extern Input* input;
 	extern Render* render;
 	extern ResourceManager* res_mgr;
+	extern SceneManager* scene_mgr;
 	extern SoundManager* sound_mgr;
 }
 

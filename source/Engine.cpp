@@ -8,6 +8,7 @@
 #include "Gui.h"
 #include "Input.h"
 #include "App.h"
+#include "SceneManager.h"
 #include "WindowsIncludes.h"
 
 //-----------------------------------------------------------------------------
@@ -28,6 +29,7 @@ wnd_size(DEFAULT_WINDOW_SIZE)
 	app::engine = this;
 	app::render = new Render;
 	app::res_mgr = new ResourceManager;
+	app::scene_mgr = new SceneManager;
 	app::sound_mgr = new SoundManager;
 }
 
@@ -150,6 +152,7 @@ void Engine::Cleanup()
 	app::app->OnCleanup();
 
 	delete app::input;
+	delete app::scene_mgr;
 	delete app::res_mgr;
 	delete app::render;
 	delete app::gui;

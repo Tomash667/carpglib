@@ -53,6 +53,26 @@ bool Config::GetBool(cstring name, bool def)
 }
 
 //=================================================================================================
+bool Config::GetBool(cstring name, cstring name_old, bool def)
+{
+	Entry* e = GetEntry(name);
+	if(!e)
+	{
+		e = GetEntry(name_old);
+		if(!e)
+			return def;
+		e->name = name;
+	}
+
+	if(OR3_EQ(e->value, "0", "false", "FALSE"))
+		return false;
+	else if(OR3_EQ(e->value, "1", "true", "TRUE"))
+		return true;
+	else
+		return def;
+}
+
+//=================================================================================================
 Bool3 Config::GetBool3(cstring name, Bool3 def)
 {
 	Entry* e = GetEntry(name);

@@ -285,6 +285,9 @@
     <ClInclude Include="include\DebugSceneNode.h">
       <Filter>entity</Filter>
     </ClInclude>
+    <ClInclude Include="include\SceneManager.h">
+      <Filter>components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">
@@ -515,6 +518,9 @@
     </ClCompile>
     <ClCompile Include="source\BasicShader.cpp">
       <Filter>shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SceneManager.cpp">
+      <Filter>components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

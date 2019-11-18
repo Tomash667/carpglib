@@ -84,6 +84,7 @@
     <ClInclude Include="include\RenderTarget.h" />
     <ClInclude Include="include\Resource.h" />
     <ClInclude Include="include\ResourceManager.h" />
+    <ClInclude Include="include\SceneManager.h" />
     <ClInclude Include="include\SceneNode.h" />
     <ClInclude Include="include\Scrollbar.h" />
     <ClInclude Include="include\ShaderHandler.h" />
@@ -174,6 +175,7 @@
     <ClCompile Include="source\RenderTarget.cpp" />
     <ClCompile Include="source\Resource.cpp" />
     <ClCompile Include="source\ResourceManager.cpp" />
+    <ClCompile Include="source\SceneManager.cpp" />
     <ClCompile Include="source\Scrollbar.cpp" />
     <ClCompile Include="source\SkyboxShader.cpp" />
     <ClCompile Include="source\Slider.cpp" />
