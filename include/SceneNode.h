@@ -4,7 +4,7 @@
 #include "MeshInstance.h"
 
 //-----------------------------------------------------------------------------
-struct SceneNode
+struct SceneNode : public ObjectPoolProxy<SceneNode>
 {
 	static constexpr int SPLIT_INDEX = 1 << 31;
 
@@ -30,10 +30,30 @@ struct SceneNode
 	Vec4 tint;
 	Vec3 pos;
 	bool billboard;
+
+	void OnGet()
+	{
+		tex_override = nullptr;
+		tint = Vec4::One;
+		billboard = false;
+	}
 };
 
 //-----------------------------------------------------------------------------
 struct SceneNodeGroup
 {
 	int flags, start, end;
+};
+
+//-----------------------------------------------------------------------------
+struct SceneNodeBatch
+{
+	CameraBase* camera;
+	vector<SceneNode*> nodes;
+	vector<SceneNodeGroup> groups;
+	vector<SceneNode*> alpha_nodes;
+
+	void Clear();
+	void Add(SceneNode* node);
+	void Process();
 };

@@ -13,6 +13,8 @@ struct ParticleEmitter;
 struct PostEffect;
 struct Scene;
 struct SceneNode;
+struct SceneNodeBatch;
+struct SceneNodeGroup;
 struct TaskData;
 struct Terrain;
 struct TrailParticleEmitter;

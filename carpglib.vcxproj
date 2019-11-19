@@ -178,6 +178,7 @@
     <ClCompile Include="source\ResourceManager.cpp" />
     <ClCompile Include="source\Scene.cpp" />
     <ClCompile Include="source\SceneManager.cpp" />
+    <ClCompile Include="source\SceneNode.cpp" />
     <ClCompile Include="source\Scrollbar.cpp" />
     <ClCompile Include="source\SkyboxShader.cpp" />
     <ClCompile Include="source\Slider.cpp" />

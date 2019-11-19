@@ -528,6 +528,9 @@
     <ClCompile Include="source\Scene.cpp">
       <Filter>entity</Filter>
     </ClCompile>
+    <ClCompile Include="source\SceneNode.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
