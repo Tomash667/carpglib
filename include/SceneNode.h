@@ -34,10 +34,16 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 
 	void OnGet()
 	{
+		mesh_inst = nullptr;
 		tex_override = nullptr;
 		tint = Vec4::One;
 		billboard = false;
 		tmp = true;
+	}
+	void OnFree()
+	{
+		if(!tmp)
+			delete mesh_inst;
 	}
 	void Remove();
 };
