@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-struct DebugSceneNode
+struct DebugSceneNode : public ObjectPoolProxy<DebugSceneNode>
 {
 	enum Type
 	{
