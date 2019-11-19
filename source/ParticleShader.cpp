@@ -25,7 +25,27 @@ void ParticleShader::OnInit()
 	assert(hMatCombined && hTex);
 
 	if(!tex_empty)
+	{
 		tex_empty = app::render->CreateTexture(Int2(1, 1), &Color::White);
+
+		billboard_v[0].pos = Vec3(-1, -1, 0);
+		billboard_v[0].tex = Vec2(0, 0);
+		billboard_v[0].color = Vec4(1.f, 1.f, 1.f, 1.f);
+		billboard_v[1].pos = Vec3(-1, 1, 0);
+		billboard_v[1].tex = Vec2(0, 1);
+		billboard_v[1].color = Vec4(1.f, 1.f, 1.f, 1.f);
+		billboard_v[2].pos = Vec3(1, -1, 0);
+		billboard_v[2].tex = Vec2(1, 0);
+		billboard_v[2].color = Vec4(1.f, 1.f, 1.f, 1.f);
+		billboard_v[3].pos = Vec3(1, 1, 0);
+		billboard_v[3].tex = Vec2(1, 1);
+		billboard_v[3].color = Vec4(1.f, 1.f, 1.f, 1.f);
+
+		billboard_ext[0] = Vec3(-1, -1, 0);
+		billboard_ext[1] = Vec3(-1, 1, 0);
+		billboard_ext[2] = Vec3(1, -1, 0);
+		billboard_ext[3] = Vec3(1, 1, 0);
+	}
 }
 
 //=================================================================================================
@@ -81,6 +101,35 @@ void ParticleShader::End()
 		V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
 		V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
 	}
+}
+
+//=================================================================================================
+void ParticleShader::DrawBillboards(const vector<Billboard>& billboards)
+{
+	TEX last_tex = nullptr;
+	app::render->SetNoZWrite(false);
+
+	for(vector<Billboard>::const_iterator it = billboards.begin(), end = billboards.end(); it != end; ++it)
+	{
+		mat_view_inv._41 = it->pos.x;
+		mat_view_inv._42 = it->pos.y;
+		mat_view_inv._43 = it->pos.z;
+		Matrix m1 = Matrix::Scale(it->size) * mat_view_inv;
+
+		for(int i = 0; i < 4; ++i)
+			billboard_v[i].pos = Vec3::Transform(billboard_ext[i], m1);
+
+		if(last_tex != it->tex)
+		{
+			last_tex = it->tex;
+			V(effect->SetTexture(hTex, it->tex));
+			V(effect->CommitChanges());
+		}
+
+		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, billboard_v, sizeof(VParticle)));
+	}
+
+	app::render->SetNoZWrite(true);
 }
 
 //=================================================================================================

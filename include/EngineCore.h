@@ -4,6 +4,7 @@
 #include "FileFormat.h"
 
 // Engine types
+struct Billboard;
 struct CameraBase;
 struct DebugSceneNode;
 struct DynamicTexture;

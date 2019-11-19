@@ -4,6 +4,14 @@
 #include "Entity.h"
 
 //-----------------------------------------------------------------------------
+struct Billboard
+{
+	TEX tex;
+	Vec3 pos;
+	float size;
+};
+
+//-----------------------------------------------------------------------------
 struct ParticleEmitter : public EntityType<ParticleEmitter>
 {
 	enum PARTICLE_OP

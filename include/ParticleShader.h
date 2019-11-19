@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "ShaderHandler.h"
+#include "VertexDeclaration.h"
 
 //-----------------------------------------------------------------------------
 class ParticleShader : public ShaderHandler
@@ -14,6 +15,7 @@ public:
 	void OnRelease() override;
 	void Begin(CameraBase& camera);
 	void End();
+	void DrawBillboards(const vector<Billboard>& billboards);
 	void DrawParticles(const vector<ParticleEmitter*>& pes);
 	void DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes);
 
@@ -26,6 +28,8 @@ private:
 
 	IDirect3DDevice9* device;
 	VB vb;
+	VParticle billboard_v[4];
+	Vec3 billboard_ext[4];
 	Matrix mat_view_proj, mat_view_inv;
 	TEX tex_empty;
 	Vec3 cam_pos;
