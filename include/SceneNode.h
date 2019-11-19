@@ -21,6 +21,7 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 		F_NO_LIGHTING = 1 << 8
 	};
 
+	Scene* scene;
 	Matrix mat;
 	Mesh* mesh;
 	MeshInstance* mesh_inst;
@@ -29,14 +30,16 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	const TexOverride* tex_override;
 	Vec4 tint;
 	Vec3 pos;
-	bool billboard;
+	bool billboard, tmp;
 
 	void OnGet()
 	{
 		tex_override = nullptr;
 		tint = Vec4::One;
 		billboard = false;
+		tmp = true;
 	}
+	void Remove();
 };
 
 //-----------------------------------------------------------------------------

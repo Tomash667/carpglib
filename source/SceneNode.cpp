@@ -4,10 +4,20 @@
 #include "SceneManager.h"
 #include "ResourceManager.h"
 #include "CameraBase.h"
+#include "Scene.h"
+
+//=================================================================================================
+void SceneNode::Remove()
+{
+	assert(scene);
+	scene->Remove(this);
+}
 
 //=================================================================================================
 void SceneNodeBatch::Clear()
 {
+	LoopAndRemove(nodes, [](SceneNode* node) { return !node->tmp; });
+	LoopAndRemove(alpha_nodes, [](SceneNode* node) { return !node->tmp; });
 	SceneNode::Free(nodes);
 	SceneNode::Free(alpha_nodes);
 	groups.clear();
