@@ -168,7 +168,7 @@ void ParticleEmitter::Save(FileWriter& f)
 //=================================================================================================
 void ParticleEmitter::Load(FileReader& f, int version)
 {
-	if(version > 0)
+	if(version >= 1)
 		f >> id;
 	Register();
 
@@ -302,6 +302,7 @@ void TrailParticleEmitter::Save(FileWriter& f)
 		f << tex->filename;
 	else
 		f.Write0();
+	f << manual;
 }
 
 //=================================================================================================
@@ -346,10 +347,12 @@ void TrailParticleEmitter::Load(FileReader& f, int version)
 			tex = app::res_mgr->Load<Texture>(tex_id);
 		else
 			tex = nullptr;
+		f >> manual;
 	}
 	else
 	{
 		width = 0.1f;
 		tex = nullptr;
+		manual = false;
 	}
 }

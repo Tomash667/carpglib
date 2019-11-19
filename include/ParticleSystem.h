@@ -45,7 +45,7 @@ struct ParticleEmitter : public EntityType<ParticleEmitter>
 	void Init();
 	bool Update(float dt);
 	void Save(FileWriter& f);
-	void Load(FileReader& f, int version = 1);
+	void Load(FileReader& f, int version = 2);
 	float GetAlpha(const Particle &p) const
 	{
 		if(op_alpha == POP_CONST)
