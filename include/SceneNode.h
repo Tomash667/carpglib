@@ -19,7 +19,7 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	{
 		F_ANIMATED = 1 << 0,
 		F_SPECULAR_MAP = 1 << 1,
-		F_BINORMALS = 1 << 2,
+		F_TANGENTS = 1 << 2,
 		F_NORMAL_MAP = 1 << 3,
 		F_NO_ZWRITE = 1 << 4,
 		F_NO_CULLING = 1 << 5,
@@ -52,6 +52,10 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 			delete mesh_inst;
 	}
 	void Remove();
+	void SetMesh(Mesh* mesh);
+	void SetMeshInstance(Mesh* mesh);
+	void SetMeshInstance(MeshInstance* mesh_inst);
+	void ApplyFlags();
 };
 
 //-----------------------------------------------------------------------------

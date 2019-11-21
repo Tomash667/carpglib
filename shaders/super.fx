@@ -2,7 +2,7 @@
 --------------------------------------------------------------------------------
 Switches:
 - ANIMATED
-- HAVE_BINORMALS
+- HAVE_TANGENTS
 - FOG
 - SPECULAR_MAP
 - NORMAL_MAP
@@ -20,8 +20,8 @@ Defines:
 #	error "Mixed lighting not supported yet!"
 #endif
 
-#if defined(NORMAL_MAP) && !defined(HAVE_BINORMALS)
-#	error "Normal mapping require binormals!"
+#if defined(NORMAL_MAP) && !defined(HAVE_TANGENTS)
+#	error "Normal mapping require tangents!"
 #endif
 
 //******************************************************************************
@@ -95,7 +95,7 @@ struct MESH_INPUT
 #endif
 	float3 normal : NORMAL;
 	float2 tex : TEXCOORD0;
-#ifdef HAVE_BINORMALS
+#ifdef HAVE_TANGENTS
 	float3 tangent : TANGENT;
 	float3 binormal : BINORMAL;
 #endif

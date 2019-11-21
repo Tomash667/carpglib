@@ -14,6 +14,42 @@ void SceneNode::Remove()
 }
 
 //=================================================================================================
+void SceneNode::SetMesh(Mesh* mesh)
+{
+	assert(mesh);
+	this->mesh = mesh;
+	ApplyFlags();
+}
+
+//=================================================================================================
+void SceneNode::SetMeshInstance(Mesh* mesh)
+{
+	assert(mesh);
+	this->mesh = mesh;
+	this->mesh_inst = new MeshInstance(mesh);
+	ApplyFlags();
+}
+
+//=================================================================================================
+void SceneNode::SetMeshInstance(MeshInstance* mesh_inst)
+{
+	assert(mesh_inst);
+	this->mesh = mesh_inst->mesh;
+	this->mesh_inst = mesh_inst;
+	ApplyFlags();
+}
+
+//=================================================================================================
+void SceneNode::ApplyFlags()
+{
+	flags = 0;
+	if(mesh_inst)
+		flags |= SceneNode::F_ANIMATED;
+	if(IsSet(mesh->head.flags, Mesh::F_TANGENTS))
+		flags |= SceneNode::F_TANGENTS;
+}
+
+//=================================================================================================
 void SceneNodeBatch::Clear()
 {
 	LoopAndRemove(nodes, [](SceneNode* node) { return node->type != SceneNode::TEMPORARY; });
@@ -32,7 +68,7 @@ void SceneNodeBatch::Add(SceneNode* node)
 	if(mesh.state != ResourceState::Loaded)
 		app::res_mgr->LoadInstant(const_cast<Mesh*>(&mesh));
 	if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
-		node->flags |= SceneNode::F_BINORMALS;
+		node->flags |= SceneNode::F_TANGENTS;
 	if(app::scene_mgr->use_normalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
 		node->flags |= SceneNode::F_NORMAL_MAP;
 	if(app::scene_mgr->use_specularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))

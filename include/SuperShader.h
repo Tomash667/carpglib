@@ -9,7 +9,7 @@ class SuperShader : public ShaderHandler
 	enum Switches
 	{
 		ANIMATED,
-		HAVE_BINORMALS,
+		HAVE_TANGENTS,
 		FOG,
 		SPECULAR,
 		NORMAL,
@@ -30,7 +30,7 @@ public:
 	void OnReset() override;
 	void OnReload() override;
 	void OnRelease() override;
-	uint GetShaderId(bool animated, bool have_binormals, bool fog, bool specular, bool normal, bool point_light, bool dir_light) const;
+	uint GetShaderId(bool animated, bool have_tangents, bool fog, bool specular, bool normal, bool point_light, bool dir_light) const;
 	ID3DXEffect* GetShader(uint id);
 	ID3DXEffect* CompileShader(uint id);
 	ID3DXEffect* GetEffect() const { return shaders.front().e; }
