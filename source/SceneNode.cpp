@@ -39,6 +39,9 @@ void SceneNodeBatch::Add(SceneNode* node)
 		node->flags |= SceneNode::F_SPECULAR_MAP;
 	node->subs = 0x7FFFFFFF;
 
+	if(!node->tmp && node->billboard)
+		node->mat = Matrix::CreateLookAt(node->pos, camera->from);
+
 	if(IsSet(node->flags, SceneNode::F_ALPHA_BLEND))
 	{
 		node->dist = Vec3::DistanceSquared(node->pos, camera->from);
