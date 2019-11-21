@@ -16,8 +16,8 @@ void SceneNode::Remove()
 //=================================================================================================
 void SceneNodeBatch::Clear()
 {
-	LoopAndRemove(nodes, [](SceneNode* node) { return !node->tmp; });
-	LoopAndRemove(alpha_nodes, [](SceneNode* node) { return !node->tmp; });
+	LoopAndRemove(nodes, [](SceneNode* node) { return node->type != SceneNode::TEMPORARY; });
+	LoopAndRemove(alpha_nodes, [](SceneNode* node) { return node->type != SceneNode::TEMPORARY; });
 	SceneNode::Free(nodes);
 	SceneNode::Free(alpha_nodes);
 	groups.clear();
@@ -39,7 +39,7 @@ void SceneNodeBatch::Add(SceneNode* node)
 		node->flags |= SceneNode::F_SPECULAR_MAP;
 	node->subs = 0x7FFFFFFF;
 
-	if(!node->tmp && node->billboard)
+	if(node->type == SceneNode::BILLBOARD)
 		node->mat = Matrix::CreateLookAt(node->pos, camera->from);
 
 	if(IsSet(node->flags, SceneNode::F_ALPHA_BLEND))

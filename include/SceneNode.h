@@ -8,6 +8,13 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 {
 	static constexpr int SPLIT_INDEX = 1 << 31;
 
+	enum Type
+	{
+		NORMAL,
+		TEMPORARY,
+		BILLBOARD
+	};
+
 	enum Flags
 	{
 		F_ANIMATED = 1 << 0,
@@ -26,23 +33,22 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	Mesh* mesh;
 	MeshInstance* mesh_inst;
 	float dist;
+	Type type;
 	int flags, lights, subs;
 	const TexOverride* tex_override;
 	Vec4 tint;
 	Vec3 pos;
-	bool billboard, tmp;
 
 	void OnGet()
 	{
 		mesh_inst = nullptr;
 		tex_override = nullptr;
 		tint = Vec4::One;
-		billboard = false;
-		tmp = true;
+		type = TEMPORARY;
 	}
 	void OnFree()
 	{
-		if(!tmp)
+		if(type != TEMPORARY)
 			delete mesh_inst;
 	}
 	void Remove();
