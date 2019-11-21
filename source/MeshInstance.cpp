@@ -11,7 +11,7 @@ Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, 1.f);
 //=================================================================================================
 // Konstruktor instancji Mesh
 //=================================================================================================
-MeshInstance::MeshInstance(Mesh* mesh, bool preload) : mesh(mesh), need_update(true), ptr(nullptr), preload(preload), base_speed(1.f)
+MeshInstance::MeshInstance(Mesh* mesh, bool preload) : mesh(mesh), need_update(true), ptr(nullptr), preload(preload), base_speed(1.f), mat_scale(nullptr)
 {
 	if(!preload)
 	{
@@ -190,7 +190,7 @@ void MeshInstance::Update(float dt)
 //====================================================================================================
 // Ustawia koœci przed rysowaniem modelu
 //====================================================================================================
-void MeshInstance::SetupBones(Matrix* mat_scale)
+void MeshInstance::SetupBones()
 {
 	if(!need_update)
 		return;
@@ -539,7 +539,7 @@ void MeshInstance::ClearBones()
 //=================================================================================================
 // Ustawia podan¹ animacje na koniec
 //=================================================================================================
-void MeshInstance::SetToEnd(Mesh::Animation* a, Matrix* mat_scale)
+void MeshInstance::SetToEnd(Mesh::Animation* a)
 {
 	assert(a);
 
@@ -564,11 +564,11 @@ void MeshInstance::SetToEnd(Mesh::Animation* a, Matrix* mat_scale)
 
 	need_update = true;
 
-	SetupBones(mat_scale);
+	SetupBones();
 }
 
 //=================================================================================================
-void MeshInstance::SetToEnd(Matrix* mat_scale)
+void MeshInstance::SetToEnd()
 {
 	groups[0].blend_time = 0.f;
 	groups[0].state = FLAG_GROUP_ACTIVE;
@@ -585,7 +585,7 @@ void MeshInstance::SetToEnd(Matrix* mat_scale)
 
 	need_update = true;
 
-	SetupBones(mat_scale);
+	SetupBones();
 }
 
 //=================================================================================================
