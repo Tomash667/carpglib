@@ -17,6 +17,8 @@ void SceneNode::Remove()
 void SceneNode::SetMesh(Mesh* mesh)
 {
 	assert(mesh);
+	if(mesh->state != ResourceState::Loaded)
+		app::res_mgr->LoadInstant(const_cast<Mesh*>(mesh));
 	this->mesh = mesh;
 	ApplyFlags();
 }
@@ -25,6 +27,8 @@ void SceneNode::SetMesh(Mesh* mesh)
 void SceneNode::SetMeshInstance(Mesh* mesh)
 {
 	assert(mesh);
+	if(mesh->state != ResourceState::Loaded)
+		app::res_mgr->LoadInstant(const_cast<Mesh*>(mesh));
 	this->mesh = mesh;
 	this->mesh_inst = new MeshInstance(mesh);
 	ApplyFlags();
@@ -33,10 +37,18 @@ void SceneNode::SetMeshInstance(Mesh* mesh)
 //=================================================================================================
 void SceneNode::SetMeshInstance(MeshInstance* mesh_inst)
 {
-	assert(mesh_inst);
+	assert(mesh_inst && mesh_inst->mesh && mesh_inst->mesh->IsLoaded());
 	this->mesh = mesh_inst->mesh;
 	this->mesh_inst = mesh_inst;
 	ApplyFlags();
+}
+
+//=================================================================================================
+void SceneNode::SetParentMeshInstance(MeshInstance* mesh_inst)
+{
+	assert(mesh_inst);
+	this->mesh_inst = mesh_inst;
+	flags |= F_ANIMATED;
 }
 
 //=================================================================================================
@@ -65,10 +77,6 @@ void SceneNodeBatch::Add(SceneNode* node)
 	assert(node && node->mesh && node->mesh->head.n_subs < 31);
 
 	const Mesh& mesh = *node->mesh;
-	if(mesh.state != ResourceState::Loaded)
-		app::res_mgr->LoadInstant(const_cast<Mesh*>(&mesh));
-	if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
-		node->flags |= SceneNode::F_TANGENTS;
 	if(app::scene_mgr->use_normalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
 		node->flags |= SceneNode::F_NORMAL_MAP;
 	if(app::scene_mgr->use_specularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))

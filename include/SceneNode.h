@@ -55,6 +55,7 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	void SetMesh(Mesh* mesh);
 	void SetMeshInstance(Mesh* mesh);
 	void SetMeshInstance(MeshInstance* mesh_inst);
+	void SetParentMeshInstance(MeshInstance* mesh_inst);
 	void ApplyFlags();
 };
 
