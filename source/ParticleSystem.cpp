@@ -325,11 +325,13 @@ void TrailParticleEmitter::Load(FileReader& f, int version)
 		for(Particle& p : parts)
 		{
 			Vec3 pt1, pt2;
+			uint exists;
 			f >> pt1;
 			f >> pt2;
 			f >> p.t;
 			f >> p.next;
-			f >> p.exists;
+			f >> exists;
+			p.exists = (exists & 0xFF) != 0; // saved as 4 bytes due to padding
 			if(p.exists)
 				p.pt = (pt1 + pt2) / 2;
 		}
