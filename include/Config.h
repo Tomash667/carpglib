@@ -90,6 +90,7 @@ public:
 	const string& GetError() const { return error; }
 	Entry* GetEntry(cstring name);
 	bool GetBool(cstring name, bool def = false);
+	bool GetBool(cstring name, cstring prev_name, bool def = false);
 	Bool3 GetBool3(cstring name, Bool3 def = None);
 	const string& GetString(cstring name);
 	const string& GetString(cstring name, const string& def);

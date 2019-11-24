@@ -155,15 +155,21 @@ Font* Gui::CreateFont(cstring name, int size, int weight, int outline)
 	font->height = height;
 
 	// calculate texture size
+	// drawing font to texture fails when texture is larger then window size (probably backbuffer size matters)
 	const int padding = outline + 1;
 	Int2 offset(padding, padding);
 	Int2 tex_size(padding * 2, padding * 2 + font->height);
+	Int2 max_size = Int2(NextPow2(wnd_size.x), NextPow2(wnd_size.y));
+	if(max_size.x > wnd_size.x)
+		max_size.x >>= 1;
+	if(max_size.y > wnd_size.y)
+		max_size.y >>= 1;
 	for(int i = 32; i <= 255; ++i)
 	{
 		const int width = glyph_w[i];
 		if(width)
 		{
-			if(offset.x + width + padding > 1024)
+			if(offset.x + width + padding > max_size.x)
 			{
 				offset.x = padding;
 				offset.y += height + padding;
@@ -175,6 +181,7 @@ Font* Gui::CreateFont(cstring name, int size, int weight, int outline)
 	}
 	tex_size.x = NextPow2(tex_size.x);
 	tex_size.y = NextPow2(offset.y);
+	assert(tex_size <= max_size);
 
 	// set glyphs
 	offset = Int2(padding, padding);

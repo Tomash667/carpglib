@@ -15,12 +15,10 @@ public:
 	uint SaveToFile(FileWriter& f);
 	void Resize(const Int2& new_size);
 	void FreeSurface();
-	Texture* GetTexture() { return &tex; }
 	SURFACE GetSurface();
 	const Int2& GetSize() const { return size; }
 
 private:
-	Texture tex;
 	SURFACE surf;
 	Int2 size;
 	bool tmp_surf;

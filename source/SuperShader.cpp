@@ -8,7 +8,6 @@
 //=================================================================================================
 SuperShader::SuperShader() : pool(nullptr)
 {
-	V(D3DXCreateEffectPool(&pool));
 }
 
 //=================================================================================================
@@ -20,6 +19,14 @@ SuperShader::~SuperShader()
 //=================================================================================================
 void SuperShader::OnInit()
 {
+	if(!pool)
+	{
+		V(D3DXCreateEffectPool(&pool));
+
+		tex_empty_normal_map = app::render->CreateTexture(Int2(1, 1), &Color(128, 128, 255));
+		tex_empty_specular_map = app::render->CreateTexture(Int2(1, 1), &Color::None);
+	}
+
 	cstring path = Format("%s/super.fx", app::render->GetShadersDir().c_str());
 	FileReader f(path);
 	if(!f)
@@ -78,13 +85,13 @@ void SuperShader::OnRelease()
 }
 
 //=================================================================================================
-uint SuperShader::GetShaderId(bool animated, bool have_binormals, bool fog, bool specular, bool normal, bool point_light, bool dir_light) const
+uint SuperShader::GetShaderId(bool animated, bool have_tangents, bool fog, bool specular, bool normal, bool point_light, bool dir_light) const
 {
 	uint id = 0;
 	if(animated)
 		id |= (1 << ANIMATED);
-	if(have_binormals)
-		id |= (1 << HAVE_BINORMALS);
+	if(have_tangents)
+		id |= (1 << HAVE_TANGENTS);
 	if(fog)
 		id |= (1 << FOG);
 	if(specular)
@@ -123,9 +130,9 @@ ID3DXEffect* SuperShader::CompileShader(uint id)
 		macros[i].Definition = "1";
 		++i;
 	}
-	if(IsSet(id, 1 << HAVE_BINORMALS))
+	if(IsSet(id, 1 << HAVE_TANGENTS))
 	{
-		macros[i].Name = "HAVE_BINORMALS";
+		macros[i].Name = "HAVE_TANGENTS";
 		macros[i].Definition = "1";
 		++i;
 	}

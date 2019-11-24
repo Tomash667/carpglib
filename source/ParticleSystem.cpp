@@ -15,12 +15,12 @@ float drop_range(float v, float t)
 	{
 		float t_wznoszenia = v / G;
 		if(t_wznoszenia >= t)
-			return (v*v) / (2 * G);
+			return (v * v) / (2 * G);
 		else
-			return v*t - (G*(t*t)) / 2;
+			return v * t - (G * (t * t)) / 2;
 	}
 	else
-		return v*t - G*(t*t) / 2;
+		return v * t - G * (t * t) / 2;
 }
 
 //=================================================================================================
@@ -71,7 +71,7 @@ void ParticleEmitter::Init()
 	if(r2 > r)
 		r = r2;
 
-	radius = sqrt(2 * r*r);
+	radius = sqrt(2 * r * r);
 
 	// nowe
 	manual_delete = 0;
@@ -168,7 +168,7 @@ void ParticleEmitter::Save(FileWriter& f)
 //=================================================================================================
 void ParticleEmitter::Load(FileReader& f, int version)
 {
-	if(version > 0)
+	if(version >= 1)
 		f >> id;
 	Register();
 
@@ -202,27 +202,29 @@ void ParticleEmitter::Load(FileReader& f, int version)
 void TrailParticleEmitter::Init(int maxp)
 {
 	parts.resize(maxp);
-	for(vector<TrailParticle>::iterator it = parts.begin(), end = parts.end(); it != end; ++it)
+	for(vector<Particle>::iterator it = parts.begin(), end = parts.end(); it != end; ++it)
 		it->exists = false;
 
 	first = -1;
 	last = -1;
 	alive = 0;
-	destroy = false;
 	timer = 0.f;
 	Register();
 }
 
 //=================================================================================================
-bool TrailParticleEmitter::Update(float dt, Vec3* pt1, Vec3* pt2)
+bool TrailParticleEmitter::Update(float dt, Vec3* pt)
 {
+	if(manual)
+		return destroy;
+
 	if(first != -1 && dt > 0.f)
 	{
 		int id = first;
 
 		while(id != -1)
 		{
-			TrailParticle& tp = parts[id];
+			Particle& tp = parts[id];
 			tp.t -= dt;
 			if(tp.t < 0)
 			{
@@ -240,18 +242,17 @@ bool TrailParticleEmitter::Update(float dt, Vec3* pt1, Vec3* pt2)
 
 	timer += dt;
 
-	if(pt1 && pt2 && timer >= 1.f / parts.size())
+	if(pt && timer >= 1.f / parts.size())
 	{
 		timer = 0.f;
 
 		if(last == -1)
 		{
-			TrailParticle& tp = parts[0];
+			Particle& tp = parts[0];
 			tp.t = fade;
 			tp.exists = true;
 			tp.next = -1;
-			tp.pt1 = *pt1;
-			tp.pt2 = *pt2;
+			tp.pt = *pt;
 			first = 0;
 			last = 0;
 			++alive;
@@ -265,12 +266,11 @@ bool TrailParticleEmitter::Update(float dt, Vec3* pt1, Vec3* pt2)
 			while(parts[id].exists)
 				++id;
 
-			TrailParticle& tp = parts[id];
+			Particle& tp = parts[id];
 			tp.t = fade;
 			tp.exists = true;
 			tp.next = -1;
-			tp.pt1 = *pt1;
-			tp.pt2 = *pt2;
+			tp.pt = *pt;
 
 			parts[last].next = id;
 			last = id;
@@ -297,6 +297,12 @@ void TrailParticleEmitter::Save(FileWriter& f)
 	f << destroy;
 	f << alive;
 	f << timer;
+	f << width;
+	if(tex)
+		f << tex->filename;
+	else
+		f.Write0();
+	f << manual;
 }
 
 //=================================================================================================
@@ -309,10 +315,46 @@ void TrailParticleEmitter::Load(FileReader& f, int version)
 	f >> fade;
 	f >> color1;
 	f >> color2;
-	f >> parts;
+	if(version >= 2)
+		f >> parts;
+	else
+	{
+		uint count;
+		f >> count;
+		parts.resize(count);
+		for(Particle& p : parts)
+		{
+			Vec3 pt1, pt2;
+			uint exists;
+			f >> pt1;
+			f >> pt2;
+			f >> p.t;
+			f >> p.next;
+			f >> exists;
+			p.exists = (exists & 0xFF) != 0; // saved as 4 bytes due to padding
+			if(p.exists)
+				p.pt = (pt1 + pt2) / 2;
+		}
+	}
 	f >> first;
 	f >> last;
 	f >> destroy;
 	f >> alive;
 	f >> timer;
+	if(version >= 2)
+	{
+		f >> width;
+		const string& tex_id = f.ReadString1();
+		if(!tex_id.empty())
+			tex = app::res_mgr->Load<Texture>(tex_id);
+		else
+			tex = nullptr;
+		f >> manual;
+	}
+	else
+	{
+		width = 0.1f;
+		tex = nullptr;
+		manual = false;
+	}
 }

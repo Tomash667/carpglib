@@ -34,6 +34,7 @@ Render::~Render()
 		SafeRelease(target->surf);
 		delete target;
 	}
+	DeleteElements(textures);
 	for(int i = 0; i < VDI_MAX; ++i)
 		SafeRelease(vertex_decl[i]);
 	if(device)
@@ -545,9 +546,11 @@ void Render::BeforeReset()
 		shader->OnReset();
 	for(RenderTarget* target : targets)
 	{
-		SafeRelease(target->tex.tex);
+		SafeRelease(target->tex);
 		SafeRelease(target->surf);
 	}
+	for(DynamicTexture* tex : textures)
+		SafeRelease(tex->tex);
 }
 
 //=================================================================================================
@@ -559,6 +562,8 @@ void Render::AfterReset()
 		shader->OnReload();
 	for(RenderTarget* target : targets)
 		CreateRenderTargetTexture(target);
+	for(DynamicTexture* tex : textures)
+		CreateDynamicTexture(tex);
 	V(sprite->OnResetDevice());
 	app::app->OnReload();
 	lost_device = false;
@@ -750,6 +755,7 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 
 		SafeRelease(errors);
 
+		assert(0);
 		throw msg;
 	}
 	SafeRelease(errors);
@@ -766,6 +772,7 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 		SafeRelease(effect_buffer);
 		SafeRelease(compiler);
 
+		assert(0);
 		throw msg;
 	}
 	SafeRelease(errors);
@@ -794,6 +801,7 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 		SafeRelease(effect_buffer);
 		SafeRelease(compiler);
 
+		assert(0);
 		throw msg;
 	}
 
@@ -808,6 +816,7 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 //=================================================================================================
 TEX Render::CreateTexture(const Int2& size, Color* fill)
 {
+	assert(size <= app::engine->wnd_size);
 	TEX tex;
 	V(device->CreateTexture(size.x, size.y, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, nullptr));
 	if(fill)
@@ -819,8 +828,28 @@ TEX Render::CreateTexture(const Int2& size, Color* fill)
 }
 
 //=================================================================================================
+Texture* Render::CreateDynamicTexture(const Int2& size)
+{
+	assert(size <= app::engine->wnd_size);
+	assert(size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y));
+	DynamicTexture* tex = new DynamicTexture;
+	tex->size = size;
+	CreateDynamicTexture(tex);
+	tex->state = ResourceState::Loaded;
+	textures.push_back(tex);
+	return tex;
+}
+
+//=================================================================================================
+void Render::CreateDynamicTexture(DynamicTexture* tex)
+{
+	V(device->CreateTexture(tex->size.x, tex->size.y, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tex->tex, nullptr));
+}
+
+//=================================================================================================
 RenderTarget* Render::CreateRenderTarget(const Int2& size)
 {
+	assert(size <= app::engine->wnd_size);
 	assert(size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y));
 	RenderTarget* target = new RenderTarget;
 	target->size = size;
@@ -832,13 +861,13 @@ RenderTarget* Render::CreateRenderTarget(const Int2& size)
 //=================================================================================================
 void Render::CreateRenderTargetTexture(RenderTarget* target)
 {
-	V(device->CreateTexture(target->size.x, target->size.y, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &target->tex.tex, nullptr));
+	V(device->CreateTexture(target->size.x, target->size.y, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &target->tex, nullptr));
 	D3DMULTISAMPLE_TYPE type = (D3DMULTISAMPLE_TYPE)multisampling;
 	if(type != D3DMULTISAMPLE_NONE)
 		V(device->CreateRenderTarget(target->size.x, target->size.y, D3DFMT_A8R8G8B8, type, multisampling_quality, FALSE, &target->surf, nullptr));
 	else
 		target->surf = nullptr;
-	target->tex.state = ResourceState::Loaded;
+	target->state = ResourceState::Loaded;
 }
 
 //=================================================================================================
@@ -1008,7 +1037,7 @@ void Render::SetTarget(RenderTarget* target)
 			V(device->SetRenderTarget(0, target->surf));
 		else
 		{
-			V(target->tex.tex->GetSurfaceLevel(0, &current_surf));
+			V(target->tex->GetSurfaceLevel(0, &current_surf));
 			V(device->SetRenderTarget(0, current_surf));
 		}
 
@@ -1029,7 +1058,7 @@ void Render::SetTarget(RenderTarget* target)
 			// copy to surface if using multisampling
 			if(current_target->surf)
 			{
-				V(current_target->tex.tex->GetSurfaceLevel(0, &current_surf));
+				V(current_target->tex->GetSurfaceLevel(0, &current_surf));
 				V(device->StretchRect(current_target->surf, nullptr, current_surf, nullptr, D3DTEXF_NONE));
 			}
 			current_surf->Release();

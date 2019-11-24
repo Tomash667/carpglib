@@ -108,20 +108,20 @@ struct MeshInstance
 	// ustawianie blendingu
 	void SetupBlending(int grupa, bool first = true, bool in_update = false);
 	// ustawianie koœci
-	void SetupBones(Matrix* mat_scale = nullptr);
+	void SetupBones();
 	float GetProgress(int group = 0) const
 	{
 		assert(InRange(group, 0, mesh->head.n_groups - 1));
 		return groups[group].GetProgress();
 	}
 	void ClearBones();
-	void SetToEnd(cstring anim, Matrix* mat_scale = nullptr)
+	void SetToEnd(cstring anim)
 	{
 		Mesh::Animation* a = mesh->GetAnimation(anim);
-		SetToEnd(a, mat_scale);
+		SetToEnd(a);
 	}
-	void SetToEnd(Mesh::Animation* anim, Matrix* mat_scale = nullptr);
-	void SetToEnd(Matrix* mat_scale = nullptr);
+	void SetToEnd(Mesh::Animation* anim);
+	void SetToEnd();
 	void ResetAnimation();
 	void Save(FileWriter& f);
 	void Load(FileReader& f, int version);
@@ -138,10 +138,12 @@ struct MeshInstance
 	bool IsBlending() const;
 
 	Mesh* mesh;
+	float base_speed;
 	bool need_update, preload;
 	vector<Matrix> mat_bones;
 	vector<Mesh::KeyframeBone> blendb;
 	vector<Group> groups;
+	Matrix* mat_scale;
 	void* ptr;
 	static void(*Predraw)(void*, Matrix*, int);
 };

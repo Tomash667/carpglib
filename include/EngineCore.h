@@ -4,9 +4,12 @@
 #include "FileFormat.h"
 
 // Engine types
+struct Billboard;
 struct CameraBase;
+struct DynamicTexture;
 struct MeshInstance;
 struct ParticleEmitter;
+struct PostEffect;
 struct TaskData;
 struct Terrain;
 struct TrailParticleEmitter;

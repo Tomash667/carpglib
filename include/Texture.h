@@ -18,6 +18,12 @@ struct Texture : public Resource
 };
 
 //-----------------------------------------------------------------------------
+struct DynamicTexture : public Texture
+{
+	Int2 size;
+};
+
+//-----------------------------------------------------------------------------
 struct TexOverride
 {
 	explicit TexOverride(Texture* diffuse = nullptr) : diffuse(diffuse), normal(nullptr), specular(nullptr) {}
@@ -33,6 +39,7 @@ struct TexOverride
 struct TextureLock
 {
 	TextureLock(TEX tex);
+	TextureLock(Texture* tex) : TextureLock(tex->tex) {}
 	~TextureLock();
 	uint* operator [] (uint row) { return (uint*)(data + pitch * row); }
 	void Fill(Color color);

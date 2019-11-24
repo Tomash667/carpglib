@@ -52,7 +52,7 @@ void BasicShader::OnRelease()
 //=================================================================================================
 void BasicShader::Prepare(const CameraBase& camera)
 {
-	mat_view_proj = camera.matViewProj;
+	mat_view_proj = camera.mat_view_proj;
 
 	app::render->SetAlphaBlend(true);
 	app::render->SetAlphaTest(false);

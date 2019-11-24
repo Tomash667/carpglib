@@ -4,23 +4,29 @@
 #include "Entity.h"
 
 //-----------------------------------------------------------------------------
-struct Particle
+struct Billboard
 {
-	Vec3 pos, speed;
-	float life, gravity;
-	bool exists;
-};
-
-//-----------------------------------------------------------------------------
-enum PARTICLE_OP
-{
-	POP_CONST,
-	POP_LINEAR_SHRINK
+	Texture* tex;
+	Vec3 pos;
+	float size;
 };
 
 //-----------------------------------------------------------------------------
 struct ParticleEmitter : public EntityType<ParticleEmitter>
 {
+	enum PARTICLE_OP
+	{
+		POP_CONST,
+		POP_LINEAR_SHRINK
+	};
+
+	struct Particle
+	{
+		Vec3 pos, speed;
+		float life, gravity;
+		bool exists;
+	};
+
 	TexturePtr tex;
 	float emision_interval, life, particle_life, alpha, size;
 	int emisions, spawn_min, spawn_max, max_particles, mode;
@@ -39,7 +45,7 @@ struct ParticleEmitter : public EntityType<ParticleEmitter>
 	void Init();
 	bool Update(float dt);
 	void Save(FileWriter& f);
-	void Load(FileReader& f, int version);
+	void Load(FileReader& f, int version = 2);
 	float GetAlpha(const Particle &p) const
 	{
 		if(op_alpha == POP_CONST)
@@ -57,25 +63,26 @@ struct ParticleEmitter : public EntityType<ParticleEmitter>
 };
 
 //-----------------------------------------------------------------------------
-struct TrailParticle
-{
-	Vec3 pt1, pt2;
-	float t;
-	int next;
-	bool exists;
-};
-
-//-----------------------------------------------------------------------------
 struct TrailParticleEmitter : public EntityType<TrailParticleEmitter>
 {
-	float fade, timer;
-	Vec4 color1, color2;
-	vector<TrailParticle> parts;
-	int first, last, alive;
-	bool destroy;
+	struct Particle
+	{
+		Vec3 pt;
+		float t;
+		int next;
+		bool exists;
+	};
 
+	float fade, timer, width;
+	Vec4 color1, color2;
+	vector<Particle> parts;
+	Texture* tex;
+	int first, last, alive;
+	bool destroy, manual;
+
+	TrailParticleEmitter() : tex(nullptr), width(0.1f), destroy(false), manual(false) {}
 	void Init(int maxp);
-	bool Update(float dt, Vec3* pt1, Vec3* pt2);
+	bool Update(float dt, Vec3* pt);
 	void Save(FileWriter& f);
-	void Load(FileReader& f, int version);
+	void Load(FileReader& f, int version = 2);
 };

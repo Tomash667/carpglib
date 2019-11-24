@@ -77,7 +77,7 @@ void GrassShader::SetFog(const Vec4& color, const Vec4& params)
 //=================================================================================================
 void GrassShader::SetCamera(const CameraBase& camera)
 {
-	mat_view_proj = camera.matViewProj;
+	mat_view_proj = camera.mat_view_proj;
 }
 
 //=================================================================================================
