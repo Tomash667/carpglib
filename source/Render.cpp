@@ -755,6 +755,7 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 
 		SafeRelease(errors);
 
+		assert(0);
 		throw msg;
 	}
 	SafeRelease(errors);
@@ -771,6 +772,7 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 		SafeRelease(effect_buffer);
 		SafeRelease(compiler);
 
+		assert(0);
 		throw msg;
 	}
 	SafeRelease(errors);
@@ -799,6 +801,7 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 		SafeRelease(effect_buffer);
 		SafeRelease(compiler);
 
+		assert(0);
 		throw msg;
 	}
 
