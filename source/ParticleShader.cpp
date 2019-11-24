@@ -86,15 +86,21 @@ void ParticleShader::Begin(CameraBase& camera)
 	if(vb)
 		V(device->SetStreamSource(0, vb, 0, sizeof(VParticle)));
 
+	uint passes;
 	V(effect->SetTechnique(tech));
 	V(effect->SetMatrix(hMatCombined, (D3DXMATRIX*)&mat_view_proj));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 
 	last_mode = 0;
+	last_tex = (Texture*)0xFEFEFEFE;
 }
 
 //=================================================================================================
 void ParticleShader::End()
 {
+	V(effect->EndPass());
+	V(effect->End());
 	if(last_mode != 0)
 	{
 		V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
@@ -106,7 +112,6 @@ void ParticleShader::End()
 //=================================================================================================
 void ParticleShader::DrawBillboards(const vector<Billboard>& billboards)
 {
-	TEX last_tex = nullptr;
 	app::render->SetNoZWrite(false);
 
 	for(vector<Billboard>::const_iterator it = billboards.begin(), end = billboards.end(); it != end; ++it)
@@ -122,7 +127,7 @@ void ParticleShader::DrawBillboards(const vector<Billboard>& billboards)
 		if(last_tex != it->tex)
 		{
 			last_tex = it->tex;
-			V(effect->SetTexture(hTex, it->tex));
+			V(effect->SetTexture(hTex, last_tex->tex));
 			V(effect->CommitChanges());
 		}
 
@@ -135,11 +140,6 @@ void ParticleShader::DrawBillboards(const vector<Billboard>& billboards)
 //=================================================================================================
 void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 {
-	Texture* last_tex = nullptr;
-	uint passes;
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
 	for(vector<ParticleEmitter*>::const_iterator it = pes.begin(), end = pes.end(); it != end; ++it)
 	{
 		const ParticleEmitter& pe = **it;
@@ -217,20 +217,13 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 		if(last_tex != pe.tex)
 		{
 			last_tex = pe.tex;
-			V(effect->SetTexture(hTex, pe.tex->tex));
+			V(effect->SetTexture(hTex, last_tex->tex));
 			V(effect->CommitChanges());
 		}
 
 		// draw
 		V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, pe.alive * 2));
 	}
-
-	V(effect->EndPass());
-	V(effect->End());
-
-	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
 }
 
 //=================================================================================================
@@ -243,18 +236,6 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 		V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
 		V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
 	}
-
-	Texture* last_tex = nullptr;
-	uint passes;
-	V(effect->SetTexture(hTex, tex_empty));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	const Vec3 shift[2] = {
-		Vec3(0,-1,0),
-		Vec3(0, 1,0)
-	};
-	VParticle v[4];
 
 	for(vector<TrailParticleEmitter*>::const_iterator it = tpes.begin(), end = tpes.end(); it != end; ++it)
 	{
@@ -310,16 +291,13 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 		if(tp.tex != last_tex)
 		{
 			last_tex = tp.tex;
-			V(effect->SetTexture(hTex, tp.tex ? tp.tex->tex : tex_empty));
+			V(effect->SetTexture(hTex, last_tex ? last_tex->tex : tex_empty));
 			V(effect->CommitChanges());
 		}
 
 		// draw
 		V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, count * 2));
 	}
-
-	V(effect->EndPass());
-	V(effect->End());
 }
 
 //=================================================================================================

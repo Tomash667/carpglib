@@ -19,14 +19,13 @@ public:
 	void DrawParticles(const vector<ParticleEmitter*>& pes);
 	void DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes);
 
-	ID3DXEffect* effect;
-	D3DXHANDLE tech;
-	D3DXHANDLE hMatCombined, hTex;
-
 private:
 	void ReserveVertexBuffer(uint size);
 
 	IDirect3DDevice9* device;
+	ID3DXEffect* effect;
+	D3DXHANDLE tech;
+	D3DXHANDLE hMatCombined, hTex;
 	VB vb;
 	VParticle billboard_v[4];
 	Vec3 billboard_ext[4];
@@ -34,5 +33,6 @@ private:
 	TEX tex_empty;
 	Vec3 cam_pos;
 	uint particle_count;
+	Texture* last_tex;
 	int last_mode;
 };

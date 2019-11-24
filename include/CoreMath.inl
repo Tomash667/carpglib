@@ -49,6 +49,11 @@ inline bool Int2::operator > (const Int2& i) const
 	return x > i.x || y > i.y;
 }
 
+inline bool Int2::operator <= (const Int2& i) const
+{
+	return x <= i.x && y <= i.y;
+}
+
 inline Int2& Int2::operator = (const Int2& i)
 {
 	x = i.x;

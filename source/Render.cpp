@@ -813,6 +813,7 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 //=================================================================================================
 TEX Render::CreateTexture(const Int2& size, Color* fill)
 {
+	assert(size <= app::engine->wnd_size);
 	TEX tex;
 	V(device->CreateTexture(size.x, size.y, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, nullptr));
 	if(fill)
@@ -826,6 +827,7 @@ TEX Render::CreateTexture(const Int2& size, Color* fill)
 //=================================================================================================
 Texture* Render::CreateDynamicTexture(const Int2& size)
 {
+	assert(size <= app::engine->wnd_size);
 	assert(size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y));
 	DynamicTexture* tex = new DynamicTexture;
 	tex->size = size;
@@ -844,6 +846,7 @@ void Render::CreateDynamicTexture(DynamicTexture* tex)
 //=================================================================================================
 RenderTarget* Render::CreateRenderTarget(const Int2& size)
 {
+	assert(size <= app::engine->wnd_size);
 	assert(size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y));
 	RenderTarget* target = new RenderTarget;
 	target->size = size;

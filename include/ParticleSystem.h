@@ -6,7 +6,7 @@
 //-----------------------------------------------------------------------------
 struct Billboard
 {
-	TEX tex;
+	Texture* tex;
 	Vec3 pos;
 	float size;
 };
