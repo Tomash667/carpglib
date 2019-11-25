@@ -345,6 +345,15 @@ void Config::Remove(cstring name)
 }
 
 //=================================================================================================
+void Config::Rename(cstring name, cstring new_name)
+{
+	assert(name && new_name);
+	Entry* e = GetEntry(name);
+	if(e)
+		e->name = new_name;
+}
+
+//=================================================================================================
 void Config::ParseConfigVar(cstring arg)
 {
 	assert(arg);

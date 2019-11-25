@@ -83,6 +83,7 @@ public:
 	Result Load(cstring filename);
 	Result Save(cstring filename);
 	void Remove(cstring name);
+	void Rename(cstring name, cstring new_name);
 	void ParseConfigVar(cstring var);
 	void LoadConfigVars();
 
