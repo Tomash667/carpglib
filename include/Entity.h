@@ -78,6 +78,10 @@ struct Entity
 	{
 		return id == e.id;
 	}
+	bool operator == (Entity<T> e) const
+	{
+		return id == e.id;
+	}
 	bool operator != (nullptr_t) const
 	{
 		return id != -1;
@@ -88,6 +92,10 @@ struct Entity
 		return id != id2;
 	}
 	bool operator != (T& e) const
+	{
+		return id != e.id;
+	}
+	bool operator != (Entity<T>& e) const
 	{
 		return id != e.id;
 	}
@@ -103,6 +111,10 @@ struct Entity
 			id = -1;
 	}
 	void operator = (T& e)
+	{
+		id = e.id;
+	}
+	void operator = (Entity<T> e)
 	{
 		id = e.id;
 	}

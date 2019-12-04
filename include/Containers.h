@@ -726,161 +726,44 @@ struct LocalVector
 		v = (vector<T>*)VectorPool.Get();
 		v->clear();
 	}
-
 	explicit LocalVector(vector<T>& v2)
 	{
 		v = (vector<T>*)VectorPool.Get();
 		*v = v2;
 	}
-
 	~LocalVector()
 	{
 		VectorPool.Free((vector<void*>*)v);
 	}
 
-	operator vector<T>& ()
-	{
-		return *v;
-	}
+	operator vector<T>& () { return *v; }
+	operator vector<T>* () { return v; }
+	vector<T>* operator -> () { return v; }
+	const vector<T>* operator -> () const { return v; }
+	T& operator [] (int n) { return v->at(n); }
+	const T& operator [] (int n) const { return v->at(n); }
 
-	operator vector<T>* ()
-	{
-		return v;
-	}
+	vector<T>& Get() { return *v; }
+	T& RandomItem() { return v->at(Rand() % v->size()); }
+	void Shuffle() { ::Shuffle(v->begin(), v->end()); }
 
-	vector<T>* operator -> ()
-	{
-		return v;
-	}
-
-	const vector<T>* operator -> () const
-	{
-		return v;
-	}
-
-	T& operator [] (int n)
-	{
-		return v->at(n);
-	}
-
-	void Shuffle()
-	{
-		::Shuffle(v->begin(), v->end());
-	}
-
-	Iterator begin()
-	{
-		return v->begin();
-	}
-	ConstIterator begin() const
-	{
-		return v->begin();
-	}
-
-	Iterator end()
-	{
-		return v->end();
-	}
-	ConstIterator end() const
-	{
-		return v->end();
-	}
+	Iterator begin() { return v->begin(); }
+	ConstIterator begin() const { return v->begin(); }
+	void clear() { v->clear(); }
+	bool empty() const { return v->empty(); }
+	Iterator end() { return v->end(); }
+	ConstIterator end() const { return v->end(); }
+	void push_back(T e) { v->push_back(e); }
+	uint size() const { return v->size(); }
 
 private:
 	vector<T>* v;
 };
 
-template<typename T>
-struct LocalVector2
-{
-	typedef vector<T> Vector;
-	typedef Vector* VectorPtr;
-	typedef typename Vector::iterator Iter;
-
-	static_assert(sizeof(T) == sizeof(void*), "LocalVector2 element must be pointer or have sizeof pointer.");
-
-	LocalVector2()
-	{
-		v = (VectorPtr)VectorPool.Get();
-		v->clear();
-	}
-
-	explicit LocalVector2(Vector& v2)
-	{
-		v = (VectorPtr*)VectorPool.Get();
-		*v = v2;
-	}
-
-	~LocalVector2()
-	{
-		VectorPool.Free((vector<void*>*)v);
-	}
-
-	void push_back(T e)
-	{
-		v->push_back(e);
-	}
-
-	bool empty() const
-	{
-		return v->empty();
-	}
-
-	Iter begin()
-	{
-		return v->begin();
-	}
-
-	Iter end()
-	{
-		return v->end();
-	}
-
-	uint size() const
-	{
-		return v->size();
-	}
-
-	T& RandomItem()
-	{
-		return v->at(Rand() % v->size());
-	}
-
-	T& operator [] (int n)
-	{
-		return v->at(n);
-	}
-
-	const T& operator [] (int n) const
-	{
-		return v->at(n);
-	}
-
-	vector<T>& Get()
-	{
-		return *v;
-	}
-
-	void clear()
-	{
-		v->clear();
-	}
-
-private:
-	VectorPtr v;
-};
-
-template<typename T>
-inline T& RandomItem(LocalVector2<T>& v)
-{
-	return v.RandomItem();
-}
-
 //-----------------------------------------------------------------------------
 template<typename T>
 struct rvector
 {
-
 	struct iter
 	{
 		typedef typename vector<T*>::iterator InnerIt;
