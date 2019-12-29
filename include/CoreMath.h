@@ -457,6 +457,9 @@ inline int Join3(int a, int b, int c)
 	return (a & 0xFF) | ((b & 0xFF) << 8) | ((c & 0xFF) << 16);
 }
 
+uint Hash(const string& str);
+uint Hash(cstring str);
+
 //-----------------------------------------------------------------------------
 // check for overflow a + b, and return value
 inline bool CheckedAdd(uint a, uint b, uint& result)

@@ -4,6 +4,7 @@
 #include "File.h"
 
 //---------------------------
+const float DEFAULT_BLENDING = 0.33f;
 const int BLEND_TO_BIND_POSE = -1;
 void(*MeshInstance::Predraw)(void*, Matrix*, int) = nullptr;
 Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, 1.f);
@@ -38,7 +39,7 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, int group)
 
 	// resetuj szybkoœæ i blending
 	gr.speed = base_speed;
-	gr.blend_max = 0.33f;
+	gr.blend_max = DEFAULT_BLENDING;
 
 	int new_state = 0;
 
@@ -94,6 +95,7 @@ void MeshInstance::Deactivate(int group, bool in_update)
 		SetupBlending(group, true, in_update);
 		gr.state = FLAG_BLENDING;
 		gr.blend_time = 0.f;
+		gr.blend_max = DEFAULT_BLENDING;
 	}
 }
 

@@ -1062,3 +1062,35 @@ Vec2 Vec2::RandomPoissonDiscPoint()
 	const Vec2& pos = POISSON_DISC_2D[index];
 	return pos;
 }
+
+uint Hash(const string& str)
+{
+	uint hash = 0x811c9dc5;
+	uint prime = 0x1000193;
+
+	for(uint i = 0, len = str.size(); i < len; ++i)
+	{
+		byte value = str[i];
+		hash = hash ^ value;
+		hash *= prime;
+	}
+
+	assert(hash != 0u);
+	return hash;
+}
+
+uint Hash(cstring str)
+{
+	uint hash = 0x811c9dc5;
+	uint prime = 0x1000193;
+	byte value;
+
+	while((value = *str++) != 0)
+	{
+		hash = hash ^ value;
+		hash *= prime;
+	}
+
+	assert(hash != 0u);
+	return hash;
+}
