@@ -180,7 +180,7 @@ Font* Gui::CreateFont(cstring name, int size, int weight, int outline)
 		}
 	}
 	tex_size.x = NextPow2(tex_size.x);
-	tex_size.y = NextPow2(offset.y);
+	tex_size.y = NextPow2(offset.y + height + padding);
 	assert(tex_size <= max_size);
 
 	// set glyphs
