@@ -242,7 +242,7 @@ bool TrailParticleEmitter::Update(float dt, Vec3* pt)
 
 	timer += dt;
 
-	if(pt && timer >= 1.f / parts.size())
+	if(pt && (timer >= 1.f / parts.size() || first == -1))
 	{
 		timer = 0.f;
 
