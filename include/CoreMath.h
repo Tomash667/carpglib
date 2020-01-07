@@ -899,6 +899,7 @@ struct Vec4 : XMFLOAT4
 	Vec4 operator + (const Vec4& v) const;
 	Vec4 operator - (const Vec4& v) const;
 	Vec4 operator * (float s) const;
+	Vec4 operator * (const Vec4& v) const;
 	Vec4 operator / (float s) const;
 	friend Vec4 operator * (float s, const Vec4& v);
 

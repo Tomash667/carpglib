@@ -2046,6 +2046,16 @@ inline Vec4 Vec4::operator * (float s) const
 	return result;
 }
 
+inline Vec4 Vec4::operator * (const Vec4& v) const
+{
+	XMVECTOR v1 = XMLoadFloat4(this);
+	XMVECTOR v2 = XMLoadFloat4(&v);
+	XMVECTOR r = XMVectorMultiply(v1, v2);
+	Vec4 result;
+	XMStoreFloat4(&result, r);
+	return result;
+}
+
 inline Vec4 Vec4::operator / (float s) const
 {
 	assert(s != 0.f);

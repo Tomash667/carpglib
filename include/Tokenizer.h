@@ -796,6 +796,8 @@ namespace tokenizer
 		void Parse(Int2& i);
 		void Parse(Rect& b);
 		void Parse(Vec2& v);
+		void Parse(Vec3& v);
+		void Parse(Vec4& v);
 		void Parse(Color& c);
 		void ParseFlags(int group, int& flags);
 		void ParseFlags(std::initializer_list<FlagGroup> const& flags);

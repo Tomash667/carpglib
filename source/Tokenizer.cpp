@@ -1118,6 +1118,43 @@ void Tokenizer::Parse(Vec2& v)
 }
 
 //=================================================================================================
+void Tokenizer::Parse(Vec3& v)
+{
+	AssertSymbol('{');
+	Next();
+	v.x = MustGetFloat();
+	Next();
+	v.y = MustGetFloat();
+	Next();
+	v.z = MustGetFloat();
+	Next();
+	AssertSymbol('}');
+	Next();
+}
+
+//=================================================================================================
+void Tokenizer::Parse(Vec4& v)
+{
+	AssertSymbol('{');
+	Next();
+	v.x = MustGetFloat();
+	Next();
+	v.y = MustGetFloat();
+	Next();
+	v.z = MustGetFloat();
+	Next();
+	if(IsSymbol('}'))
+	{
+		v.w = 1.f;
+		return;
+	}
+	v.w = MustGetFloat();
+	Next();
+	AssertSymbol('}');
+	Next();
+}
+
+//=================================================================================================
 void Tokenizer::Parse(Color& c)
 {
 	if(IsSymbol('{'))
