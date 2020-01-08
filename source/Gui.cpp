@@ -156,7 +156,7 @@ Font* Gui::CreateFont(cstring name, int size, int weight, int outline)
 
 	// calculate texture size
 	// drawing font to texture fails when texture is larger then window size (probably backbuffer size matters)
-	const int padding = outline + 1;
+	const int padding = outline ? outline + 2 : 1;
 	Int2 offset(padding, padding);
 	Int2 tex_size(padding * 2, padding * 2 + font->height);
 	Int2 max_size = Int2(NextPow2(wnd_size.x), NextPow2(wnd_size.y));
@@ -259,7 +259,7 @@ bool Gui::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, const Int2& tex_
 	V(device->BeginScene());
 	V(sprite->Begin(D3DXSPRITE_ALPHABLEND));
 
-	int padding = max_outline + 1;
+	const int padding = max_outline ? max_outline + 2 : 1;
 
 	// renderuj do tekstury
 	Int2 offset(padding, padding);

@@ -81,8 +81,10 @@ void Render::Init()
 
 	// check shaders version
 	D3DCAPS9 caps;
-	d3d->GetDeviceCaps(used_adapter, D3DDEVTYPE_HAL, &caps);
-	if(D3DVS_VERSION(2, 0) > caps.VertexShaderVersion || D3DPS_VERSION(2, 0) > caps.PixelShaderVersion)
+	hr = d3d->GetDeviceCaps(used_adapter, D3DDEVTYPE_HAL, &caps);
+	if(FAILED(hr))
+		throw Format("Render: Failed to GetDeviceCaps (%u)! Make sure that you have graphic card drivers installed.", hr);
+	else if(D3DVS_VERSION(2, 0) > caps.VertexShaderVersion || D3DPS_VERSION(2, 0) > caps.PixelShaderVersion)
 	{
 		throw Format("Render: Too old graphic card! This game require vertex and pixel shader in version 2.0+. "
 			"Your card support:\nVertex shader: %d.%d\nPixel shader: %d.%d",

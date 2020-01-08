@@ -515,7 +515,6 @@ void Engine::ShowError(cstring msg, Logger::Level level)
 {
 	assert(msg);
 
-	ShowWindow(hwnd, SW_MINIMIZE);
 	ShowWindow(hwnd, SW_HIDE);
 	ShowCursor(true);
 	Logger* logger = Logger::GetInstance();
