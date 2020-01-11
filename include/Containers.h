@@ -1402,7 +1402,7 @@ struct RemoveRandomPred
 {
 	int chance, a, b;
 
-	RemoveRandomPred(int chance, int a, int b)
+	RemoveRandomPred(int chance, int a, int b) : chance(chance), a(a), b(b)
 	{
 	}
 
