@@ -39,6 +39,7 @@
     <ClInclude Include="..\src\LinearMath\btTransform.h" />
     <ClInclude Include="..\src\LinearMath\btTransformUtil.h" />
     <ClInclude Include="..\src\LinearMath\btVector3.h" />
+    <ClInclude Include="..\src\LinearMath\btImplicitQRSVD.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\LinearMath\TaskScheduler\btTaskScheduler.cpp">

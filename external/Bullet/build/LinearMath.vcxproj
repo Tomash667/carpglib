@@ -22,6 +22,7 @@
     <ClInclude Include="..\src\LinearMath\btGrahamScan2dConvexHull.h" />
     <ClInclude Include="..\src\LinearMath\btHashMap.h" />
     <ClInclude Include="..\src\LinearMath\btIDebugDraw.h" />
+    <ClInclude Include="..\src\LinearMath\btImplicitQRSVD.h" />
     <ClInclude Include="..\src\LinearMath\btList.h" />
     <ClInclude Include="..\src\LinearMath\btMatrix3x3.h" />
     <ClInclude Include="..\src\LinearMath\btMatrixX.h" />

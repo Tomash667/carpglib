@@ -1,6 +1,6 @@
 EXTERNAL VERSION LIST
 --------------------------------------------------------------------------------
-Bullet - 2.88 (<https://github.com/bulletphysics/bullet3/releases>)
+Bullet - 2.89 (<https://github.com/bulletphysics/bullet3/releases>)
 CrashRpt - 1.5 fork (<https://github.com/Tomash667/crashrpt2>)
 DirectX - Microsoft DirectX SDK (June 2010)
 DirectXMath - 3.14 (<https://github.com/Microsoft/DirectXMath/releases>)

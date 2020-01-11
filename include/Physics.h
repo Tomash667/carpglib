@@ -1,8 +1,11 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#pragma warning (push)
+#pragma warning (disable: 4266)
 #include <btBulletCollisionCommon.h>
 #include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
+#pragma warning (pop)
 
 //-----------------------------------------------------------------------------
 class CustomCollisionWorld : public btCollisionWorld

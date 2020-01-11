@@ -426,6 +426,9 @@
     <ClInclude Include="..\src\BulletCollision\NarrowPhaseCollision\btMprPenetration.h">
       <Filter>NarrowPhaseCollision</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\BulletCollision\Gimpact\gim_pair.h">
+      <Filter>Gimpact</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\BulletCollision\BroadphaseCollision\btAxisSweep3.cpp">

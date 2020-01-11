@@ -229,6 +229,7 @@
     <ClInclude Include="..\src\BulletCollision\Gimpact\gim_linear_math.h" />
     <ClInclude Include="..\src\BulletCollision\Gimpact\gim_math.h" />
     <ClInclude Include="..\src\BulletCollision\Gimpact\gim_memory.h" />
+    <ClInclude Include="..\src\BulletCollision\Gimpact\gim_pair.h" />
     <ClInclude Include="..\src\BulletCollision\Gimpact\gim_radixsort.h" />
     <ClInclude Include="..\src\BulletCollision\Gimpact\gim_tri_collision.h" />
     <ClInclude Include="..\src\BulletCollision\NarrowPhaseCollision\btComputeGjkEpaPenetration.h" />

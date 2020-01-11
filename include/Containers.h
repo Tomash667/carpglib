@@ -907,9 +907,15 @@ template<typename T>
 class LocalVector3
 {
 public:
-	struct iterator : std::iterator<std::input_iterator_tag, T>
+	struct iterator
 	{
 		friend class LocalVector3;
+
+		typedef std::input_iterator_tag iterator_category;
+		typedef T value_type;
+		typedef std::ptrdiff_t difference_type;
+		typedef T* pointer;
+		typedef T& reference;
 
 		T& operator * ()
 		{
