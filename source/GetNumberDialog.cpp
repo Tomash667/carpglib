@@ -96,7 +96,7 @@ void GetNumberDialog::Update(float dt)
 		if(!changed)
 		{
 			int num = atoi(textBox.GetText().c_str());
-			if(!scrollbar.clicked)
+			if(!scrollbar.clicked && min_value != max_value)
 				scrollbar.offset = float(num - min_value) / (max_value - min_value) * (scrollbar.total - scrollbar.part);
 		}
 		if(textBox.GetText().empty())

@@ -98,13 +98,15 @@ void Container::Update(float dt)
 	else
 	{
 		Control* top = nullptr;
-
-		for(Control* c : ctrls)
+		if(focus)
 		{
-			if(c->visible)
+			for(Control* c : ctrls)
 			{
-				if(focus && c->focusable && !top)
+				if(c->visible && c->focusable)
+				{
 					top = c;
+					break;
+				}
 			}
 		}
 

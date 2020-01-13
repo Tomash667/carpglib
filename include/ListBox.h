@@ -86,6 +86,7 @@ public:
 	MenuStrip* menu_strip;
 	DialogEvent event_handler;
 	Handler event_handler2;
+	int flags;
 
 private:
 	int PosToIndex(int y);
