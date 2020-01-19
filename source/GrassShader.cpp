@@ -3,7 +3,9 @@
 #include "GrassShader.h"
 #include "Render.h"
 #include "Mesh.h"
-#include "CameraBase.h"
+#include "Camera.h"
+#include "Scene.h"
+#include "SceneManager.h"
 #include "DirectX.h"
 
 //=================================================================================================
@@ -68,21 +70,10 @@ void GrassShader::OnRelease()
 }
 
 //=================================================================================================
-void GrassShader::SetFog(const Vec4& color, const Vec4& params)
+void GrassShader::Begin(Scene* scene, Camera* camera, uint max_size)
 {
-	fog_color = color;
-	fog_params = params;
-}
+	assert(scene && camera);
 
-//=================================================================================================
-void GrassShader::SetCamera(const CameraBase& camera)
-{
-	mat_view_proj = camera.mat_view_proj;
-}
-
-//=================================================================================================
-void GrassShader::Begin(uint max_size)
-{
 	app::render->SetAlphaBlend(false);
 	app::render->SetAlphaTest(true);
 	app::render->SetNoCulling(true);
@@ -103,13 +94,12 @@ void GrassShader::Begin(uint max_size)
 	V(device->SetVertexDeclaration(vertex_decl));
 
 	// set effect
-	Vec4 ambient_color(0.8f, 0.8f, 0.8f, 1.f);
 	uint passes;
 	V(effect->SetTechnique(tech));
-	V(effect->SetVector(h_fog_color, (D3DXVECTOR4*)&fog_color));
-	V(effect->SetVector(h_fog_params, (D3DXVECTOR4*)&fog_params));
-	V(effect->SetVector(h_ambient, (D3DXVECTOR4*)&ambient_color));
-	V(effect->SetMatrix(h_view_proj, (D3DXMATRIX*)&mat_view_proj));
+	V(effect->SetVector(h_fog_color, (D3DXVECTOR4*)&scene->GetFogColor()));
+	V(effect->SetVector(h_fog_params, (D3DXVECTOR4*)&scene->GetFogParams()));
+	V(effect->SetVector(h_ambient, (D3DXVECTOR4*)&scene->GetAmbientColor()));
+	V(effect->SetMatrix(h_view_proj, (D3DXMATRIX*)&camera->mat_view_proj));
 	V(effect->Begin(&passes, 0));
 	V(effect->BeginPass(0));
 }

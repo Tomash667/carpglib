@@ -16,7 +16,8 @@ struct Color
 
 	Color() {}
 	Color(uint value) : value(value) {}
-	Color(byte r, byte g, byte b, byte a = 255) : r(r), g(g), b(b), a(a) {}
+	Color(int r, int g, int b, int a = 255) : r(r), g(g), b(b), a(a) {}
+	Color(float r, float g, float b, float a = 1.f) : r(byte(r * 255)), g(byte(g * 255)), b(byte(b * 255)), a(byte(a * 255)) {}
 	Color(const Color& c) : value(c.value) {}
 
 	bool operator == (Color c) const { return value == c.value; }
@@ -51,11 +52,12 @@ struct Color
 		return Vec4(1.f / 256 * (((h) & 0xFF0000) >> 16), 1.f / 256 * (((h) & 0xFF00) >> 8), 1.f / 256 * ((h) & 0xFF), 1.f);
 	}
 
-	static Color None;
-	static Color Black;
-	static Color White;
-	static Color Red;
-	static Color Green;
-	static Color Blue;
-	static Color Yellow;
+	static const Color None;
+	static const Color Black;
+	static const Color Gray;
+	static const Color White;
+	static const Color Red;
+	static const Color Green;
+	static const Color Blue;
+	static const Color Yellow;
 };

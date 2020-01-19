@@ -2,6 +2,7 @@
 #include "EngineCore.h"
 #include "Engine.h"
 #include "ResourceManager.h"
+#include "SceneManager.h"
 #include "SoundManager.h"
 #include "Physics.h"
 #include "Render.h"
@@ -28,6 +29,7 @@ wnd_size(DEFAULT_WINDOW_SIZE)
 	app::engine = this;
 	app::render = new Render;
 	app::res_mgr = new ResourceManager;
+	app::scene_mgr = new SceneManager;
 	app::sound_mgr = new SoundManager;
 }
 
@@ -153,6 +155,7 @@ void Engine::Cleanup()
 	delete app::res_mgr;
 	delete app::render;
 	delete app::gui;
+	delete app::scene_mgr;
 	delete app::sound_mgr;
 
 	CustomCollisionWorld::Cleanup(phy_world);
@@ -585,6 +588,7 @@ void Engine::Init()
 	phy_world = CustomCollisionWorld::Init();
 	app::res_mgr->Init();
 	app::gui->Init();
+	app::scene_mgr->Init();
 	initialized = true;
 }
 

@@ -177,7 +177,7 @@ struct TreeItem
 
 //-----------------------------------------------------------------------------
 // Get N best entry/value pairs
-template<typename T, uint COUNT, typename ValueT = int>
+template<typename T, uint COUNT, typename ValueT = int, typename Pred = std::greater<>>
 struct TopN
 {
 	TopN(T default_best, ValueT default_value)
@@ -191,9 +191,11 @@ struct TopN
 
 	void Add(T entry, ValueT value)
 	{
+		if(!CanAdd(value))
+			return;
 		for(uint i = 0; i < COUNT; ++i)
 		{
-			if(value > best_values[i])
+			if(pred(value, best_values[i]))
 			{
 				for(uint j = COUNT - 1; j > i; --j)
 				{
@@ -217,6 +219,17 @@ struct TopN
 		return false;
 	}
 
+	bool CanAdd(ValueT value) const
+	{
+		return pred(value, best_values[COUNT - 1]);
+	}
+
+	T operator [](int index)
+	{
+		return best[index];
+	}
+
 	T best[COUNT];
 	ValueT best_values[COUNT];
+	Pred pred;
 };

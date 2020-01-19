@@ -13,7 +13,7 @@ public:
 	void OnReset() override;
 	void OnReload() override;
 	void OnRelease() override;
-	void Prepare(const CameraBase& camera);
+	void Prepare(const Camera& camera);
 	void BeginBatch();
 	void AddQuad(const Vec3(&pts)[4], const Vec4& color);
 	void EndBatch();

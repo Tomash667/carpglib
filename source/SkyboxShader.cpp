@@ -3,7 +3,7 @@
 #include "SkyboxShader.h"
 #include "Render.h"
 #include "Mesh.h"
-#include "CameraBase.h"
+#include "Camera.h"
 #include "DirectX.h"
 
 //=================================================================================================
@@ -45,7 +45,7 @@ void SkyboxShader::OnRelease()
 }
 
 //=================================================================================================
-void SkyboxShader::Draw(Mesh& mesh, CameraBase& camera)
+void SkyboxShader::Draw(Mesh& mesh, Camera& camera)
 {
 	IDirect3DDevice9* device = app::render->GetDevice();
 

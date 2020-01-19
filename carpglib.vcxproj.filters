@@ -221,9 +221,6 @@
     <ClInclude Include="include\Core.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="include\CameraBase.h">
-      <Filter>entity</Filter>
-    </ClInclude>
     <ClInclude Include="include\Key.h">
       <Filter>const</Filter>
     </ClInclude>
@@ -278,6 +275,21 @@
     </ClInclude>
     <ClInclude Include="include\BasicShader.h">
       <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SceneManager.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Scene.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SceneNode.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Camera.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Light.h">
+      <Filter>entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -509,6 +521,15 @@
     </ClCompile>
     <ClCompile Include="source\BasicShader.cpp">
       <Filter>shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SceneManager.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Scene.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SceneNode.cpp">
+      <Filter>entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -3,6 +3,7 @@
 #include "SuperShader.h"
 #include "File.h"
 #include "Render.h"
+#include "Light.h"
 #include "DirectX.h"
 
 //=================================================================================================
@@ -193,4 +194,26 @@ ID3DXEffect* SuperShader::CompileShader(uint id)
 	s.id = id;
 
 	return s.e;
+}
+
+//=================================================================================================
+void SuperShader::ApplyLights(const array<Light*, 3>& lights)
+{
+	Lights l;
+	for(uint i = 0; i < 3; ++i)
+	{
+		if(lights[i])
+		{
+			l.ld[i].pos = lights[i]->pos;
+			l.ld[i].range = lights[i]->range;
+			l.ld[i].color = lights[i]->color;
+		}
+		else
+		{
+			l.ld[i].pos = Vec3::Zero;
+			l.ld[i].range = 1;
+			l.ld[i].color = Vec4::Zero;
+		}
+	}
+	V(GetEffect()->SetRawValue(hLights, &l, 0, sizeof(Lights)));
 }

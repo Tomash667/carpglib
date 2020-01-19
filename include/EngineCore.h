@@ -5,11 +5,17 @@
 
 // Engine types
 struct Billboard;
-struct CameraBase;
+struct Camera;
 struct DynamicTexture;
+struct Light;
+struct Lights;
 struct MeshInstance;
 struct ParticleEmitter;
 struct PostEffect;
+struct Scene;
+struct SceneBatch;
+struct SceneNode;
+struct SceneNodeGroup;
 struct TaskData;
 struct Terrain;
 struct TrailParticleEmitter;
@@ -29,6 +35,7 @@ class PostfxShader;
 class Render;
 class RenderTarget;
 class ResourceManager;
+class SceneManager;
 class ShaderHandler;
 class SkyboxShader;
 class SoundManager;
@@ -128,6 +135,7 @@ namespace app
 	extern Input* input;
 	extern Render* render;
 	extern ResourceManager* res_mgr;
+	extern SceneManager* scene_mgr;
 	extern SoundManager* sound_mgr;
 }
 

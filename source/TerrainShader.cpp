@@ -2,19 +2,21 @@
 #include "EngineCore.h"
 #include "TerrainShader.h"
 #include "Terrain.h"
-#include "CameraBase.h"
+#include "Camera.h"
 #include "Texture.h"
 #include "Render.h"
+#include "SceneManager.h"
+#include "Scene.h"
 #include "DirectX.h"
 
 //=================================================================================================
 TerrainShader::TerrainShader() : device(app::render->GetDevice()), vertex_decl(nullptr), effect(nullptr)
 {
 	const D3DVERTEXELEMENT9 decl[] = {
-		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
-		{0, 12,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_NORMAL,		0},
-		{0, 24, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0},
-		{0, 32, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		1},
+		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,	0},
+		{0, 12,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_NORMAL,	0},
+		{0, 24, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,	0},
+		{0, 32, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,	1},
 		D3DDECL_END()
 	};
 	V(device->CreateVertexDeclaration(decl, &vertex_decl));
@@ -72,29 +74,10 @@ void TerrainShader::OnRelease()
 }
 
 //=================================================================================================
-void TerrainShader::SetCamera(const CameraBase& camera)
+void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const vector<uint>& parts)
 {
-	mat_view_proj = camera.mat_view_proj;
-}
+	assert(scene && camera && terrain);
 
-//=================================================================================================
-void TerrainShader::SetFog(const Vec4& fog_color, const Vec4& fog_params)
-{
-	this->fog_color = fog_color;
-	this->fog_params = fog_params;
-}
-
-//=================================================================================================
-void TerrainShader::SetLight(const Vec4& light_dir, const Vec4& diffuse_color, const Vec4& ambient_color)
-{
-	this->light_dir = light_dir;
-	this->diffuse_color = diffuse_color;
-	this->ambient_color = ambient_color;
-}
-
-//=================================================================================================
-void TerrainShader::Draw(Terrain* terrain, const vector<uint>& parts)
-{
 	app::render->SetAlphaTest(false);
 	app::render->SetAlphaBlend(false);
 	app::render->SetNoCulling(false);
@@ -102,16 +85,16 @@ void TerrainShader::Draw(Terrain* terrain, const vector<uint>& parts)
 
 	V(effect->SetTechnique(tech));
 	V(effect->SetMatrix(h_world, (D3DXMATRIX*)&Matrix::IdentityMatrix));
-	V(effect->SetMatrix(h_mat, (D3DXMATRIX*)&mat_view_proj));
+	V(effect->SetMatrix(h_mat, (D3DXMATRIX*)&camera->mat_view_proj));
 	V(effect->SetTexture(h_tex_blend, terrain->GetSplatTexture()));
 	TexturePtr* tex = terrain->GetTextures();
 	for(int i = 0; i < 5; ++i)
 		V(effect->SetTexture(h_tex[i], tex[i]->tex));
-	V(effect->SetVector(h_fog_color, (D3DXVECTOR4*)&fog_color));
-	V(effect->SetVector(h_fog_params, (D3DXVECTOR4*)&fog_params));
-	V(effect->SetVector(h_light_dir, (D3DXVECTOR4*)&light_dir));
-	V(effect->SetVector(h_color_ambient, (D3DXVECTOR4*)&ambient_color));
-	V(effect->SetVector(h_color_diffuse, (D3DXVECTOR4*)&diffuse_color));
+	V(effect->SetVector(h_fog_color, (D3DXVECTOR4*)&scene->GetFogColor()));
+	V(effect->SetVector(h_fog_params, (D3DXVECTOR4*)&scene->GetFogParams()));
+	V(effect->SetVector(h_color_ambient, (D3DXVECTOR4*)&scene->GetAmbientColor()));
+	V(effect->SetVector(h_color_diffuse, (D3DXVECTOR4*)&scene->GetLightColor()));
+	V(effect->SetVector(h_light_dir, (D3DXVECTOR4*)&scene->GetLightDir()));
 
 	VB vb;
 	IB ib;

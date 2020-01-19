@@ -34,6 +34,7 @@ public:
 	ID3DXEffect* GetShader(uint id);
 	ID3DXEffect* CompileShader(uint id);
 	ID3DXEffect* GetEffect() const { return shaders.front().e; }
+	void ApplyLights(const array<Light*, 3>& lights);
 
 	D3DXHANDLE hMatCombined, hMatWorld, hMatBones, hTint, hAmbientColor, hFogColor, hFogParams, hLightDir, hLightColor, hLights, hSpecularColor,
 		hSpecularIntensity, hSpecularHardness, hCameraPos, hTexDiffuse, hTexNormal, hTexSpecular;

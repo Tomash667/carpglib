@@ -3,7 +3,7 @@
 #include "ParticleShader.h"
 #include "ParticleSystem.h"
 #include "Render.h"
-#include "CameraBase.h"
+#include "Camera.h"
 #include "Texture.h"
 #include "DirectX.h"
 
@@ -71,7 +71,7 @@ void ParticleShader::OnRelease()
 }
 
 //=================================================================================================
-void ParticleShader::Begin(CameraBase& camera)
+void ParticleShader::Begin(Camera& camera)
 {
 	mat_view_proj = camera.mat_view_proj;
 	mat_view_inv = camera.mat_view_inv;

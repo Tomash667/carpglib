@@ -46,7 +46,7 @@ public:
 	void ReloadShaders();
 	ID3DXEffect* CompileShader(cstring name);
 	ID3DXEffect* CompileShader(CompileShaderParams& params);
-	TEX CreateTexture(const Int2& size, Color* fill = nullptr);
+	TEX CreateTexture(const Int2& size, const Color* fill = nullptr);
 	Texture* CreateDynamicTexture(const Int2& size);
 	void CreateDynamicTexture(DynamicTexture* tex);
 	RenderTarget* CreateRenderTarget(const Int2& size);

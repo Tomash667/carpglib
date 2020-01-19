@@ -2,7 +2,7 @@
 #include "EngineCore.h"
 #include "BasicShader.h"
 #include "Render.h"
-#include "CameraBase.h"
+#include "Camera.h"
 #include "DirectX.h"
 
 //=================================================================================================
@@ -50,7 +50,7 @@ void BasicShader::OnRelease()
 }
 
 //=================================================================================================
-void BasicShader::Prepare(const CameraBase& camera)
+void BasicShader::Prepare(const Camera& camera)
 {
 	mat_view_proj = camera.mat_view_proj;
 

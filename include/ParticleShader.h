@@ -13,7 +13,7 @@ public:
 	void OnReset() override;
 	void OnReload() override;
 	void OnRelease() override;
-	void Begin(CameraBase& camera);
+	void Begin(Camera& camera);
 	void End();
 	void DrawBillboards(const vector<Billboard>& billboards);
 	void DrawParticles(const vector<ParticleEmitter*>& pes);

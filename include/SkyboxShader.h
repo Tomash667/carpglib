@@ -12,7 +12,7 @@ public:
 	void OnReset() override;
 	void OnReload() override;
 	void OnRelease() override;
-	void Draw(Mesh& mesh, CameraBase& camera);
+	void Draw(Mesh& mesh, Camera& camera);
 
 private:
 	ID3DXEffect* effect;

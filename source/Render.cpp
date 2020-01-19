@@ -494,7 +494,6 @@ void Render::WaitReset()
 	AfterReset();
 }
 
-
 //=================================================================================================
 void Render::Draw(bool call_present)
 {
@@ -816,7 +815,7 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 }
 
 //=================================================================================================
-TEX Render::CreateTexture(const Int2& size, Color* fill)
+TEX Render::CreateTexture(const Int2& size, const Color* fill)
 {
 	assert(size <= app::engine->wnd_size);
 	TEX tex;
