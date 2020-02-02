@@ -74,7 +74,7 @@ Layout* LayoutLoader::LoadFromFile(cstring path)
 {
 	if(!initialized)
 	{
-		t.SetFlags(Tokenizer::F_JOIN_MINUS | Tokenizer::F_MULTI_KEYWORDS | Tokenizer::F_UNESCAPE);
+		t.SetFlags(Tokenizer::F_MULTI_KEYWORDS);
 		RegisterKeywords();
 		RegisterControls();
 		initialized = true;

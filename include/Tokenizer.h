@@ -218,17 +218,15 @@ namespace tokenizer
 
 		enum FLAGS
 		{
-			F_JOIN_MINUS = 1 << 0, // join minus with number (otherwise it's symbol minus and number)
-			F_JOIN_DOT = 1 << 1, // join dot after text (log.txt is one item, otherwise log dot txt - 2 items and symbol)
-			F_UNESCAPE = 1 << 2, // unescape strings
-			F_MULTI_KEYWORDS = 1 << 3, // allows multiple keywords
-			F_SEEK = 1 << 4, // allows to use seek operations
-			F_FILE_INFO = 1 << 5, // add filename in errors
-			F_CHAR = 1 << 6, // handle 'c' as char type (otherwise it's symbol ', identifier c, symbol ')
-			F_HIDE_ID = 1 << 7, // in exceptions don't write keyword/group id, only name
+			F_JOIN_DOT = 1 << 0, // join dot after text (log.txt is one item, otherwise log dot txt - 2 items and symbol)
+			F_MULTI_KEYWORDS = 1 << 1, // allows multiple keywords
+			F_SEEK = 1 << 2, // allows to use seek operations
+			F_FILE_INFO = 1 << 3, // add filename in errors
+			F_CHAR = 1 << 4, // handle 'c' as char type (otherwise it's symbol ', identifier c, symbol ')
+			F_HIDE_ID = 1 << 5, // in exceptions don't write keyword/group id, only name
 		};
 
-		explicit Tokenizer(int flags = F_UNESCAPE);
+		explicit Tokenizer(int flags = 0);
 		~Tokenizer();
 
 		void FromString(cstring str);

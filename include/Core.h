@@ -366,7 +366,7 @@ inline T& offset_cast(void* data, uint offset)
 //-----------------------------------------------------------------------------
 // Cast using union
 template<typename To, typename From>
-inline To union_cast(const From& f)
+inline constexpr To union_cast(const From& f)
 {
 	union
 	{

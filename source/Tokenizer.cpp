@@ -177,10 +177,7 @@ redo:
 		if(s.pos == string::npos || str->at(s.pos) != '"')
 			formatter.Throw(Format("Not closed string \" opened at %u.", cp + 1));
 
-		if(IsSet(flags, F_UNESCAPE))
-			Unescape(*str, pos2 + 1, s.pos - pos2 - 1, s.item);
-		else
-			s.item = str->substr(pos2 + 1, s.pos - pos2 - 1);
+		Unescape(*str, pos2 + 1, s.pos - pos2 - 1, s.item);
 		s.token = T_STRING;
 		++s.pos;
 	}
@@ -217,7 +214,7 @@ redo:
 		if(!ok)
 			Throw("Missing closing alternate string '%s'.", ALTER_END);
 	}
-	else if(c == '-' && IsSet(flags, F_JOIN_MINUS))
+	else if(c == '-')
 	{
 		if(pos2 + 1 == str->length())
 		{

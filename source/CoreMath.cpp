@@ -1063,7 +1063,7 @@ Vec2 Vec2::RandomPoissonDiscPoint()
 	return pos;
 }
 
-uint Hash(const string& str)
+int Hash(const string& str)
 {
 	uint hash = 0x811c9dc5;
 	uint prime = 0x1000193;
@@ -1076,21 +1076,20 @@ uint Hash(const string& str)
 	}
 
 	assert(hash != 0u);
-	return hash;
+	return union_cast<int>(hash);
 }
 
-uint Hash(cstring str)
+int Hash(cstring str)
 {
 	uint hash = 0x811c9dc5;
-	uint prime = 0x1000193;
-	byte value;
+	const uint prime = 0x1000193;
 
-	while((value = *str++) != 0)
+	while(byte value = *str++)
 	{
 		hash = hash ^ value;
 		hash *= prime;
 	}
 
 	assert(hash != 0u);
-	return hash;
+	return union_cast<int>(hash);
 }

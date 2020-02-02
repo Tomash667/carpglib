@@ -192,7 +192,6 @@ Int2 Config::GetInt2(cstring name, Int2 def)
 	}
 
 	// new syntax {800 600}
-	t.SetFlags(Tokenizer::F_JOIN_MINUS);
 	t.FromString(e->value);
 	try
 	{
@@ -226,7 +225,7 @@ Config::Result Config::Load(cstring filename)
 {
 	assert(filename);
 
-	t.SetFlags(Tokenizer::F_JOIN_DOT | Tokenizer::F_JOIN_MINUS);
+	t.SetFlags(Tokenizer::F_JOIN_DOT);
 	if(!t.FromFile(filename))
 		return NO_FILE;
 
@@ -247,7 +246,7 @@ Config::Result Config::Load(cstring filename)
 				if(version < 0 || version > CONFIG_VERSION)
 					t.Throw("Invalid version %d.", version);
 				if(version == 1)
-					t.SetFlags(Tokenizer::F_JOIN_MINUS | Tokenizer::F_UNESCAPE);
+					t.SetFlags(0);
 				t.Next();
 			}
 		}

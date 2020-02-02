@@ -149,7 +149,7 @@ T GetRandomWeight(const vector<pair<T, uint>>& v, uint total)
 //-----------------------------------------------------------------------------
 // Clamp value to range
 template<typename T>
-inline T Clamp(T value, T min, T max)
+inline constexpr T Clamp(T value, T min, T max)
 {
 	if(value > max)
 		return max;
@@ -323,7 +323,7 @@ inline bool AlmostZero(float f)
 
 // Return sign of value
 template<typename T>
-inline T Sign(T f)
+inline constexpr T Sign(T f)
 {
 	if(f > 0)
 		return 1;
@@ -334,16 +334,16 @@ inline T Sign(T f)
 }
 
 // Return linear interpolation of value
-inline float Lerp(float a, float b, float t)
+inline constexpr float Lerp(float a, float b, float t)
 {
 	return (b - a) * t + a;
 }
-inline int Lerp(int a, int b, float t)
+inline constexpr int Lerp(int a, int b, float t)
 {
 	return int(t * (b - a)) + a;
 }
 template<typename T>
-inline T Lerp(T a, T b, float t)
+inline constexpr T Lerp(T a, T b, float t)
 {
 	return T(t * (b - a)) + a;
 }
@@ -358,12 +358,12 @@ void AdjustAngle(float& angle, float expected, float max_diff);
 
 // Return true if value is in range
 template<typename T>
-inline bool InRange(T v, T left, T right)
+inline constexpr bool InRange(T v, T left, T right)
 {
 	return (v >= left && v <= right);
 }
 template<typename T>
-inline bool InRange(T left, T a, T b, T right)
+inline constexpr bool InRange(T left, T a, T b, T right)
 {
 	return (a >= left && b >= a && b <= right);
 }
@@ -383,7 +383,7 @@ inline float Slerp(float a, float b, float t)
 }
 
 // Count 1 bits in value
-inline int CountBits(int i)
+inline constexpr int CountBits(int i)
 {
 	// It's write-only code. Just put a comment that you are not meant to understand or maintain this code, just worship the gods that revealed it to mankind.
 	i = i - ((i >> 1) & 0x55555555);
@@ -393,14 +393,14 @@ inline int CountBits(int i)
 
 // Return true if value is power of 2
 template <class T>
-inline bool IsPow2(T x)
+inline constexpr bool IsPow2(T x)
 {
 	return ((x > 0) && ((x & (x - 1)) == 0));
 }
 
 // Round up to next highest power of 2
 template<typename T>
-inline T NextPow2(T x)
+inline constexpr T NextPow2(T x)
 {
 	x--;
 	x |= x >> 1;
@@ -419,13 +419,13 @@ inline float Inf()
 }
 
 // Convert angle from degrees to radians
-inline float ToRadians(float degrees)
+inline constexpr float ToRadians(float degrees)
 {
 	return degrees * PI / 180;
 }
 
 // Convert angle from radians to degrees
-inline float ToDegrees(float radians)
+inline constexpr float ToDegrees(float radians)
 {
 	return radians * 180 / PI;
 }
@@ -437,7 +437,7 @@ inline int Roundi(float value)
 }
 
 // Return module
-inline int Modulo(int a, int mod)
+inline constexpr int Modulo(int a, int mod)
 {
 	if(a >= 0)
 		return a % mod;
@@ -445,20 +445,20 @@ inline int Modulo(int a, int mod)
 		return a + mod * ((-a / mod) + 1);
 }
 
-inline void Split3(int val, int& a, int& b, int& c)
+inline constexpr void Split3(int val, int& a, int& b, int& c)
 {
 	a = (val & 0xFF);
 	b = ((val & 0xFF00) >> 8);
 	c = ((val & 0xFF0000) >> 16);
 }
 
-inline int Join3(int a, int b, int c)
+inline constexpr int Join3(int a, int b, int c)
 {
 	return (a & 0xFF) | ((b & 0xFF) << 8) | ((c & 0xFF) << 16);
 }
 
-uint Hash(const string& str);
-uint Hash(cstring str);
+int Hash(const string& str);
+int Hash(cstring str);
 
 //-----------------------------------------------------------------------------
 // check for overflow a + b, and return value
