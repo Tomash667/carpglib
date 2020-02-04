@@ -35,7 +35,6 @@ public:
 	float GetWindowAspect() const { return float(wnd_size.x) / wnd_size.y; }
 	HWND GetWindowHandle() const { return hwnd; }
 	const Int2& GetWindowSize() const { return wnd_size; }
-	CustomCollisionWorld* GetPhysicsWorld() { return phy_world; }
 
 	void SetTitle(cstring title);
 	void SetUnlockPoint(const Int2& pt) { unlock_point = pt; }
@@ -57,7 +56,6 @@ private:
 	bool IsWindowActive();
 	void SetWindowSizeInternal(const Int2& size);
 
-	CustomCollisionWorld* phy_world;
 	HWND hwnd;
 	Timer timer;
 	string title;

@@ -4,23 +4,26 @@
 #pragma warning (push)
 #pragma warning (disable: 4266)
 #include <btBulletCollisionCommon.h>
-#include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
 #pragma warning (pop)
 
 //-----------------------------------------------------------------------------
-class CustomCollisionWorld : public btCollisionWorld
+class Physics
 {
 public:
-	CustomCollisionWorld(btDispatcher* dispatcher, btBroadphaseInterface* broadphase, btCollisionConfiguration* config);
-	static CustomCollisionWorld* Init();
-	static void Cleanup(CustomCollisionWorld* world);
+	Physics();
+	~Physics();
+	void Init();
 	void Reset();
+	void AddShape(btCollisionShape* shape) { shapes.push_back(shape); }
 	void UpdateAabb(btCollisionObject* cobj);
+	btCollisionWorld* GetWorld() { return world; }
 
 private:
 	btCollisionConfiguration* config;
 	btDispatcher* dispatcher;
 	btBroadphaseInterface* broadphase;
+	btCollisionWorld* world;
+	vector<btCollisionShape*> shapes;
 };
 
 //-----------------------------------------------------------------------------

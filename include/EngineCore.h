@@ -21,7 +21,6 @@ struct Terrain;
 struct TrailParticleEmitter;
 class App;
 class BasicShader;
-class CustomCollisionWorld;
 class Engine;
 class GlowShader;
 class GrassShader;
@@ -133,6 +132,7 @@ namespace app
 	extern Engine* engine;
 	extern Gui* gui;
 	extern Input* input;
+	extern Physics* physics;
 	extern Render* render;
 	extern ResourceManager* res_mgr;
 	extern SceneManager* scene_mgr;
