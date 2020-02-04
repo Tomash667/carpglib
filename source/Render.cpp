@@ -495,7 +495,7 @@ void Render::WaitReset()
 }
 
 //=================================================================================================
-void Render::Draw(bool call_present)
+bool Render::CanDraw()
 {
 	HRESULT hr = device->TestCooperativeLevel();
 	if(hr != D3D_OK)
@@ -505,7 +505,7 @@ void Render::Draw(bool call_present)
 		{
 			// device lost, can't reset yet
 			Sleep(1);
-			return;
+			return false;
 		}
 		else if(hr == D3DERR_DEVICENOTRESET)
 		{
@@ -513,25 +513,26 @@ void Render::Draw(bool call_present)
 			if(!Reset(false))
 			{
 				Sleep(1);
-				return;
+				return false;
 			}
 		}
 		else
 			throw Format("Render: Lost directx device (%d).", hr);
 	}
 
-	app::app->OnDraw();
+	return true;
+}
 
-	if(call_present)
+//=================================================================================================
+void Render::Present()
+{
+	HRESULT hr = device->Present(nullptr, nullptr, app::engine->GetWindowHandle(), nullptr);
+	if(FAILED(hr))
 	{
-		hr = device->Present(nullptr, nullptr, app::engine->GetWindowHandle(), nullptr);
-		if(FAILED(hr))
-		{
-			if(hr == D3DERR_DEVICELOST)
-				lost_device = true;
-			else
-				throw Format("Render: Failed to present screen (%d).", hr);
-		}
+		if(hr == D3DERR_DEVICELOST)
+			lost_device = true;
+		else
+			throw Format("Render: Failed to present screen (%d).", hr);
 	}
 }
 

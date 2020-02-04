@@ -29,15 +29,14 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 		F_ALPHA_BLEND = 1 << 9
 	};
 
-	Matrix mat;
 	Mesh* mesh;
 	MeshInstance* mesh_inst;
 	Type type;
+	Vec3 pos, rot, scale;
 	int flags, subs;
 	float radius, dist;
 	const TexOverride* tex_override;
 	Vec4 tint;
-	Vec3 center;
 	array<Light*, 3> lights;
 
 	void SetMesh(Mesh* mesh, MeshInstance* mesh_inst = nullptr);

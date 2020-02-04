@@ -248,7 +248,12 @@ void Engine::DoTick(bool update_game)
 	}
 	app::input->UpdateMouseWheel(0);
 
-	app::render->Draw();
+	if(app::render->CanDraw())
+	{
+		app::scene_mgr->Draw();
+		app::render->Present();
+	}
+
 	app::input->Update();
 	app::sound_mgr->Update(dt);
 }

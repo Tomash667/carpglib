@@ -531,6 +531,12 @@
     <ClCompile Include="source\SceneNode.cpp">
       <Filter>entity</Filter>
     </ClCompile>
+    <ClCompile Include="source\App.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Camera.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

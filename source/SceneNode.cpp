@@ -63,7 +63,7 @@ void SceneBatch::Add(SceneNode* node, int sub)
 
 	if(IsSet(node->flags, SceneNode::F_ALPHA_BLEND))
 	{
-		node->dist = Vec3::DistanceSquared(node->center, camera->from);
+		node->dist = Vec3::DistanceSquared(node->pos, camera->from);
 		alpha_nodes.push_back(node);
 	}
 	else

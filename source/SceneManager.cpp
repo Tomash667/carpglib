@@ -11,7 +11,7 @@
 SceneManager* app::scene_mgr;
 
 //=================================================================================================
-SceneManager::SceneManager() : use_lighting(true), use_fog(true), use_normalmap(true), use_specularmap(true)
+SceneManager::SceneManager() : use_lighting(true), use_fog(true), use_normalmap(true), use_specularmap(true), active_scene(nullptr), active_camera(nullptr)
 {
 }
 
@@ -25,12 +25,28 @@ void SceneManager::Init()
 }
 
 //=================================================================================================
+void SceneManager::Draw()
+{
+	if(active_scene && active_camera)
+		Draw(active_scene, active_camera, nullptr);
+	else
+	{
+		Color color = Color::Black;
+		if(active_scene)
+			color = active_scene->clear_color;
+		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, color, 1.f, 0));
+	}
+}
+
+//=================================================================================================
 void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 {
-	assert(scene && camera && target);
+	assert(scene && camera);
 
 	this->scene = scene;
 	this->camera = camera;
+
+	camera->Setup();
 
 	batch.Clear();
 	batch.camera = camera;
@@ -40,8 +56,9 @@ void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 
 	IDirect3DDevice9* device = app::render->GetDevice();
 
-	app::render->SetTarget(target);
-	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
+	if(target)
+		app::render->SetTarget(target);
+	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, scene->clear_color, 1.f, 0));
 	V(device->BeginScene());
 
 	if(!batch.node_groups.empty())
@@ -51,7 +68,8 @@ void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 		DrawAlphaSceneNodes(batch.alpha_nodes);
 
 	V(device->EndScene());
-	app::render->SetTarget(nullptr);
+	if(target)
+		app::render->SetTarget(nullptr);
 }
 
 //=================================================================================================
@@ -121,13 +139,13 @@ void SceneManager::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<
 			const Mesh& mesh = *node->mesh;
 
 			// set shader params
-			Matrix m1;
-			if(node->type == SceneNode::BILLBOARD)
-				m1 = node->mat.Inverse() * camera->mat_view_proj;
-			else
-				m1 = node->mat * camera->mat_view_proj;
-			V(effect->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m1));
-			V(effect->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&node->mat));
+			const Matrix mat_world = Matrix::Transform(node->pos, node->rot, node->scale);
+			const Matrix mat_combined = mat_world * camera->mat_view_proj;
+			//if(node->type == SceneNode::BILLBOARD)
+			//	m1 = node->mat.Inverse() * camera->mat_view_proj;
+			FIXME;
+			V(effect->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&mat_combined));
+			V(effect->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&mat_world));
 			V(effect->SetVector(super_shader->hTint, (D3DXVECTOR4*)&node->tint));
 			if(animated)
 			{
@@ -291,13 +309,13 @@ void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 		const Mesh& mesh = *node->mesh;
 
 		// shader params
-		Matrix m1;
-		if(node->type == SceneNode::BILLBOARD)
-			m1 = node->mat.Inverse() * camera->mat_view_proj;
-		else
-			m1 = node->mat * camera->mat_view_proj;
-		V(effect->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m1));
-		V(effect->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&node->mat));
+		const Matrix mat_world = Matrix::Transform(node->pos, node->rot, node->scale);
+		const Matrix mat_combined = mat_world * camera->mat_view_proj;
+		//if(node->type == SceneNode::BILLBOARD)
+		//	m1 = node->mat.Inverse() * camera->mat_view_proj;
+		FIXME;
+		V(effect->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&mat_combined));
+		V(effect->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&mat_world));
 		V(effect->SetVector(super_shader->hTint, (D3DXVECTOR4*)&node->tint));
 		if(animated)
 		{
