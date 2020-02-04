@@ -6,6 +6,24 @@
 #include "ResourceManager.h"
 
 //=================================================================================================
+void SceneNode::OnGet()
+{
+	type = NORMAL;
+	pos = Vec3::Zero;
+	rot = Vec3::Zero;
+	scale = Vec3::One;
+	tint = Vec4::One;
+	tex_override = nullptr;
+	mesh_inst = nullptr;
+}
+
+//=================================================================================================
+void SceneNode::OnFree()
+{
+	delete mesh_inst;
+}
+
+//=================================================================================================
 void SceneNode::SetMesh(Mesh* mesh, MeshInstance* mesh_inst)
 {
 	assert(mesh);

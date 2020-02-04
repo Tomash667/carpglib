@@ -150,6 +150,7 @@ void SceneManager::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<
 			if(animated)
 			{
 				const vector<Matrix>& mat_bones = node->mesh_inst->mat_bones;
+				node->mesh_inst->SetupBones();
 				V(effect->SetMatrixArray(super_shader->hMatBones, (D3DXMATRIX*)mat_bones.data(), mat_bones.size()));
 			}
 
@@ -320,6 +321,7 @@ void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 		if(animated)
 		{
 			const vector<Matrix>& mat_bones = node->mesh_inst->mat_bones;
+			node->mesh_inst->SetupBones();
 			V(effect->SetMatrixArray(super_shader->hMatBones, (D3DXMATRIX*)mat_bones.data(), mat_bones.size()));
 		}
 
