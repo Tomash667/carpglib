@@ -1,29 +1,20 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "Key.h"
 
 //-----------------------------------------------------------------------------
-// stan klawisza
-enum InputState
-{
-	IS_UP,			// 00
-	IS_RELEASED,	// 01
-	IS_DOWN,		// 10
-	IS_PRESSED		// 11
-};
-
-enum ShortcutKey
-{
-	KEY_SHIFT = 1 << 0,
-	KEY_CONTROL = 1 << 1,
-	KEY_ALT = 1 << 2
-};
-
-//-----------------------------------------------------------------------------
-// stan klawiatury
 class Input
 {
 public:
+	enum InputState
+	{
+		IS_UP,			// 00
+		IS_RELEASED,	// 01
+		IS_DOWN,		// 10
+		IS_PRESSED		// 11
+	};
+
 	typedef bool (Input::*Func)(Key);
 	typedef bool (Input::*FuncC)(Key) const;
 	typedef delegate<void(Key)> Callback;

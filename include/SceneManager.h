@@ -16,6 +16,7 @@ public:
 
 	IDirect3DDevice9* device;
 	SuperShader* super_shader;
+	SkyboxShader* skybox_shader;
 	SceneBatch batch;
 	Scene* active_scene;
 	Scene* scene;

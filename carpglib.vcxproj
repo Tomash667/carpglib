@@ -75,6 +75,7 @@
     <ClInclude Include="include\ParticleSystem.h" />
     <ClInclude Include="include\Perlin.h" />
     <ClInclude Include="include\Physics.h" />
+    <ClInclude Include="include\PhysicsDrawer.h" />
     <ClInclude Include="include\PickFileDialog.h" />
     <ClInclude Include="include\PickItemDialog.h" />
     <ClInclude Include="include\PostfxShader.h" />
@@ -85,6 +86,7 @@
     <ClInclude Include="include\Resource.h" />
     <ClInclude Include="include\ResourceManager.h" />
     <ClInclude Include="include\Scene.h" />
+    <ClInclude Include="include\SceneCallback.h" />
     <ClInclude Include="include\SceneManager.h" />
     <ClInclude Include="include\SceneNode.h" />
     <ClInclude Include="include\Scrollbar.h" />
@@ -170,6 +172,7 @@
     <ClCompile Include="source\ParticleSystem.cpp" />
     <ClCompile Include="source\Perlin.cpp" />
     <ClCompile Include="source\Physics.cpp" />
+    <ClCompile Include="source\PhysicsDrawer.cpp" />
     <ClCompile Include="source\PickFileDialog.cpp" />
     <ClCompile Include="source\PickItemDialog.cpp" />
     <ClCompile Include="source\PostfxShader.cpp" />

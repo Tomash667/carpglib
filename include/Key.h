@@ -112,3 +112,10 @@ enum class Key : byte
 
 	Max = 0xFF
 };
+
+enum ShortcutKey
+{
+	KEY_SHIFT = 1 << 0,
+	KEY_CONTROL = 1 << 1,
+	KEY_ALT = 1 << 2
+};

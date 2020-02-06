@@ -6,6 +6,7 @@
 #include "SceneNode.h"
 #include "SuperShader.h"
 #include "Camera.h"
+#include "SkyboxShader.h"
 #include "DirectX.h"
 
 SceneManager* app::scene_mgr;
@@ -22,6 +23,9 @@ void SceneManager::Init()
 
 	super_shader = new SuperShader;
 	app::render->RegisterShader(super_shader);
+
+	skybox_shader = new SkyboxShader;
+	app::render->RegisterShader(skybox_shader);
 }
 
 //=================================================================================================
@@ -60,6 +64,9 @@ void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 		app::render->SetTarget(target);
 	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, scene->clear_color, 1.f, 0));
 	V(device->BeginScene());
+
+	if(scene->skybox)
+		skybox_shader->Draw(*scene->skybox, *camera);
 
 	if(!batch.node_groups.empty())
 		DrawSceneNodes(batch.nodes, batch.node_groups);

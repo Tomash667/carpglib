@@ -7,6 +7,7 @@
 struct Billboard;
 struct Camera;
 struct DynamicTexture;
+struct PhysicsDrawer;
 struct Light;
 struct Lights;
 struct MeshInstance;
@@ -14,6 +15,7 @@ struct ParticleEmitter;
 struct PostEffect;
 struct Scene;
 struct SceneBatch;
+struct SceneCallback;
 struct SceneNode;
 struct SceneNodeGroup;
 struct TaskData;

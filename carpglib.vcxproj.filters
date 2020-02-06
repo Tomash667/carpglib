@@ -291,6 +291,12 @@
     <ClInclude Include="include\Light.h">
       <Filter>entity</Filter>
     </ClInclude>
+    <ClInclude Include="include\PhysicsDrawer.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SceneCallback.h">
+      <Filter>entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">
@@ -537,6 +543,9 @@
     <ClCompile Include="source\Camera.cpp">
       <Filter>entity</Filter>
     </ClCompile>
+    <ClCompile Include="source\PhysicsDrawer.cpp">
+      <Filter>utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
@@ -562,6 +571,9 @@
     </Filter>
     <Filter Include="components">
       <UniqueIdentifier>{ed81dba0-00e0-4480-850f-eecdfe99c249}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utility">
+      <UniqueIdentifier>{ac87f326-7192-4961-b9fc-0ebcf141ef82}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

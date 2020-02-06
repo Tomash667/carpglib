@@ -21,8 +21,10 @@ struct Scene
 	Vec4 GetLightColor() const { return light_color; }
 	Vec4 GetLightDir() const { return Vec4(light_dir, 1); }
 
+	Mesh* skybox;
 	vector<SceneNode*> nodes;
 	vector<Light> lights;
+	vector<SceneCallback*> callbacks;
 	Vec3 light_dir;
 	Vec2 fog_range;
 	Color clear_color, ambient_color, light_color, fog_color;
