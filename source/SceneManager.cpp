@@ -3,6 +3,7 @@
 #include "SceneManager.h"
 #include "Render.h"
 #include "Scene.h"
+#include "SceneCallback.h"
 #include "SceneNode.h"
 #include "SuperShader.h"
 #include "Camera.h"
@@ -73,6 +74,9 @@ void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 
 	if(!batch.alpha_nodes.empty())
 		DrawAlphaSceneNodes(batch.alpha_nodes);
+
+	for(SceneCallback* callback : scene->callbacks)
+		callback->Draw(*camera);
 
 	V(device->EndScene());
 	if(target)

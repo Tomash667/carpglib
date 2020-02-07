@@ -18,6 +18,7 @@ void PhysicsDrawer::Draw(Camera& camera)
 		app::render->RegisterShader(shader);
 	}
 
+	shader->Prepare(camera);
 	shader->BeginBatch();
 
 	btCollisionWorld* world = app::physics->GetWorld();
@@ -29,6 +30,6 @@ void PhysicsDrawer::Draw(Camera& camera)
 
 void PhysicsDrawer::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {
-	//shader->SetColor(Color(color.x(), color.y(), color.z()));
-	//shader->AddLine(ToVec3(from), ToVec3(to), 0.01f);
+	Vec4 col(ToVec3(color), 1);
+	shader->AddLine(ToVec3(from), ToVec3(to), 1.f /*0.01f*/, col);
 }

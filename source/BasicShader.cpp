@@ -53,6 +53,7 @@ void BasicShader::OnRelease()
 void BasicShader::Prepare(const Camera& camera)
 {
 	mat_view_proj = camera.mat_view_proj;
+	cam_pos = camera.from;
 
 	app::render->SetAlphaBlend(true);
 	app::render->SetAlphaTest(false);
@@ -73,12 +74,39 @@ void BasicShader::BeginBatch()
 //=================================================================================================
 void BasicShader::AddQuad(const Vec3(&pts)[4], const Vec4& color)
 {
+	assert(batch);
+
 	verts.push_back(VColor(pts[0], color));
 	verts.push_back(VColor(pts[1], color));
 	verts.push_back(VColor(pts[2], color));
 	verts.push_back(VColor(pts[2], color));
 	verts.push_back(VColor(pts[1], color));
 	verts.push_back(VColor(pts[3], color));
+}
+
+//=================================================================================================
+void BasicShader::AddLine(const Vec3& from, const Vec3& to, float width, const Vec4& color)
+{
+	assert(batch);
+
+	uint offset = verts.size();
+	verts.resize(offset + 6);
+	VColor* v = verts.data() + offset;
+
+	width /= 2;
+
+	Vec3 line_dir = from - to;
+	Vec3 quad_normal = cam_pos - (to + from) / 2;
+	Vec3 extrude_dir = line_dir.Cross(quad_normal).Normalize();
+
+	v[0].pos = from + extrude_dir * width;
+	v[1].pos = from - extrude_dir * width;
+	v[2].pos = to + extrude_dir * width;
+	v[3].pos = v[1].pos;
+	v[4].pos = v[2].pos;
+	v[5].pos = to - extrude_dir * width;
+	for(int i = 0; i < 6; ++i)
+		v[i].color = color;
 }
 
 //=================================================================================================

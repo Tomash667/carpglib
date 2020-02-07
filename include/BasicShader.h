@@ -16,6 +16,7 @@ public:
 	void Prepare(const Camera& camera);
 	void BeginBatch();
 	void AddQuad(const Vec3(&pts)[4], const Vec4& color);
+	void AddLine(const Vec3& from, const Vec3& to, float width, const Vec4& color);
 	void EndBatch();
 
 	ID3DXEffect* effect;
@@ -27,6 +28,7 @@ private:
 	VB vb;
 	uint vb_size;
 	vector<VColor> verts;
+	Vec3 cam_pos;
 	Matrix mat_view_proj;
 	bool batch;
 };
