@@ -30,6 +30,5 @@ void PhysicsDrawer::Draw(Camera& camera)
 
 void PhysicsDrawer::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {
-	Vec4 col(ToVec3(color), 1);
-	shader->AddLine(ToVec3(from), ToVec3(to), 1.f /*0.01f*/, col);
+	shader->AddLine(ToVec3(from), ToVec3(to), 0.01f, Color(255, 0, 128));
 }

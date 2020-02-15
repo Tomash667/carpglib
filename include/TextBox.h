@@ -20,7 +20,7 @@ namespace layout
 class TextBox : public Control, public LayoutControl<layout::TextBox>, public OnCharHandler
 {
 public:
-	explicit TextBox(bool is_new = false);
+	explicit TextBox();
 	~TextBox();
 
 	// from Control
@@ -32,7 +32,6 @@ public:
 	// new
 	virtual void OnTextChanged() {}
 
-	void AddScrollbar();
 	void Move(const Int2& global_pos);
 	void Add(cstring str);
 	void CalculateOffset(bool center);

@@ -17,6 +17,5 @@ namespace layout
 class Panel : public Container, public LayoutControl<layout::Panel>
 {
 public:
-	Panel() : Container(true) {}
 	void Draw(ControlDrawData* cdd = nullptr) override;
 };

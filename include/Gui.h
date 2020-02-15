@@ -124,7 +124,7 @@ public:
 	~Gui();
 	void Init();
 	void SetText(cstring ok, cstring yes, cstring no, cstring cancel);
-	void Draw(bool draw_layers, bool draw_dialogs);
+	void Draw();
 	bool AddFont(cstring filename);
 	Font* CreateFont(cstring name, int size, int weight, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)

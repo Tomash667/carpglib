@@ -19,7 +19,7 @@ namespace layout
 class MenuList : public Control, public LayoutControl<layout::MenuList>
 {
 public:
-	MenuList(bool is_new = false);
+	MenuList();
 	~MenuList();
 
 	void Draw(ControlDrawData* cdd = nullptr) override;

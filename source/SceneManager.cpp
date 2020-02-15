@@ -8,6 +8,7 @@
 #include "SuperShader.h"
 #include "Camera.h"
 #include "SkyboxShader.h"
+#include "Gui.h"
 #include "DirectX.h"
 
 SceneManager* app::scene_mgr;
@@ -33,18 +34,21 @@ void SceneManager::Init()
 void SceneManager::Draw()
 {
 	if(active_scene && active_camera)
-		Draw(active_scene, active_camera, nullptr);
+		Draw(active_scene, active_camera, nullptr, true);
 	else
 	{
 		Color color = Color::Black;
 		if(active_scene)
 			color = active_scene->clear_color;
 		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, color, 1.f, 0));
+		V(device->BeginScene());
+		app::gui->Draw();
+		V(device->EndScene());
 	}
 }
 
 //=================================================================================================
-void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
+void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target, bool draw_gui)
 {
 	assert(scene && camera);
 
@@ -77,6 +81,9 @@ void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 
 	for(SceneCallback* callback : scene->callbacks)
 		callback->Draw(*camera);
+
+	if(draw_gui)
+		app::gui->Draw();
 
 	V(device->EndScene());
 	if(target)

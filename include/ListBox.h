@@ -32,7 +32,7 @@ public:
 
 	typedef delegate<bool(int, int)> Handler;
 
-	ListBox(bool is_new = false);
+	ListBox();
 	~ListBox();
 
 	void Draw(ControlDrawData* cdd = nullptr) override;

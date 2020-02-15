@@ -133,7 +133,7 @@ void BasicShader::EndBatch()
 
 	uint passes;
 
-	V(effect->SetTechnique(techSimple));
+	V(effect->SetTechnique(techColor));
 	V(effect->Begin(&passes, 0));
 	V(effect->BeginPass(0));
 

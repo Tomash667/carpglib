@@ -3,7 +3,7 @@
 #include "CheckBoxGroup.h"
 #include "Input.h"
 
-CheckBoxGroup::CheckBoxGroup() : scrollbar(false, true)
+CheckBoxGroup::CheckBoxGroup() : scrollbar(false)
 {
 	row_height = max(layout->font->height, layout->box.size.y) + 2;
 }

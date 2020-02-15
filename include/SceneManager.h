@@ -10,7 +10,7 @@ public:
 	SceneManager();
 	void Init();
 	void Draw();
-	void Draw(Scene* scene, Camera* camera, RenderTarget* target);
+	void Draw(Scene* scene, Camera* camera, RenderTarget* target, bool draw_gui = false);
 	void DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<SceneNodeGroup>& groups);
 	void DrawAlphaSceneNodes(const vector<SceneNode*>& nodes);
 
