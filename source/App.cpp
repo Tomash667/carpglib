@@ -18,5 +18,5 @@ App::~App()
 int App::Start()
 {
 	bool result = engine->Start(this);
-	return result ? 1 : 0;
+	return result ? 0 : 1;
 }
