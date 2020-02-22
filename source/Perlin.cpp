@@ -2,8 +2,7 @@
 /* coherent noise function over 1, 2 or 3 dimensions */
 /* (copyright Ken Perlin) */
 
-#include "EnginePch.h"
-#include "Core.h"
+#include "Pch.h"
 #include "Perlin.h"
 
 #define B size

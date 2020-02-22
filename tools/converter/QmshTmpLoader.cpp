@@ -49,7 +49,7 @@ const int DefaultSpecularHardness = 50;
 
 void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 {
-	Tokenizer t(Tokenizer::F_JOIN_MINUS | Tokenizer::F_UNESCAPE);
+	Tokenizer t;
 	t.FromFile(FileName);
 
 	t.AddKeywords(0, {

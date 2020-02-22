@@ -1,5 +1,4 @@
-#include "EnginePch.h"
-#include "Core.h"
+#include "Pch.h"
 #include "WindowsIncludes.h"
 
 void CriticalSection::Create(uint spin_count)

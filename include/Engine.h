@@ -20,7 +20,7 @@ public:
 	void Shutdown();
 	void FatalError(cstring err);
 	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);
-	bool Start(App* app);
+	bool Start();
 	void UnlockCursor(bool lock_on_focus = true);
 	void LockCursor();
 	void HideWindow(bool hide);

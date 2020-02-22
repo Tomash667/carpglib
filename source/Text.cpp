@@ -1,5 +1,4 @@
-#include "EnginePch.h"
-#include "Core.h"
+#include "Pch.h"
 #include <cstdarg>
 #include <sstream>
 // for lstrlenW

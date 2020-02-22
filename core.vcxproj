@@ -17,14 +17,14 @@
     <ClInclude Include="include\Config.h" />
     <ClInclude Include="include\Containers.h" />
     <ClInclude Include="include\Core.h" />
-    <ClInclude Include="include\CoreInclude.h" />
+    <ClInclude Include="include\CarpgLibCore.h" />
     <ClInclude Include="include\CoreMath.h" />
     <ClInclude Include="include\Crc.h" />
     <ClInclude Include="include\CriticalSection.h" />
-    <ClInclude Include="include\EnginePch.h" />
     <ClInclude Include="include\FastFunc.h" />
     <ClInclude Include="include\File.h" />
     <ClInclude Include="include\Logger.h" />
+    <ClInclude Include="include\Pch.h" />
     <ClInclude Include="include\Perlin.h" />
     <ClInclude Include="include\Profiler.h" />
     <ClInclude Include="include\QuadTree.h" />
@@ -47,6 +47,10 @@
     <ClCompile Include="source\CriticalSection.cpp" />
     <ClCompile Include="source\File.cpp" />
     <ClCompile Include="source\Logger.cpp" />
+    <ClCompile Include="source\Pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="source\Perlin.cpp" />
     <ClCompile Include="source\Profiler.cpp" />
     <ClCompile Include="source\Text.cpp" />
@@ -101,14 +105,13 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external\Bullet\src;$(ProjectDir)external\CrashRpt\include;$(ProjectDir)external\DirectX\Include;$(ProjectDir)external\DirectXMath\Inc;$(ProjectDir)external\FMod\inc;$(ProjectDir)external\Visual Leak Detector\include;$(ProjectDir)external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>COMMON_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CORE_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -121,14 +124,13 @@
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external\Bullet\src;$(ProjectDir)external\CrashRpt\include;$(ProjectDir)external\DirectX\Include;$(ProjectDir)external\DirectXMath\Inc;$(ProjectDir)external\FMod\inc;$(ProjectDir)external\Visual Leak Detector\include;$(ProjectDir)external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>COMMON_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CORE_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

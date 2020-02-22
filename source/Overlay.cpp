@@ -1,5 +1,4 @@
-#include "EnginePch.h"
-#include "EngineCore.h"
+#include "Pch.h"
 #include "DialogBox.h"
 #include "GuiDialog.h"
 #include "Input.h"

@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="include\EngineCore.h" />
     <ClInclude Include="include\Algorithm.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -233,7 +232,6 @@
     <ClInclude Include="include\WindowsIncludes.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="include\EnginePch.h" />
     <ClInclude Include="include\Input.h">
       <Filter>components</Filter>
     </ClInclude>
@@ -291,6 +289,9 @@
     <ClInclude Include="include\Light.h">
       <Filter>entity</Filter>
     </ClInclude>
+    <ClInclude Include="include\Pch.h" />
+    <ClInclude Include="include\Common.h" />
+    <ClInclude Include="include\CarpgLib.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">
@@ -485,7 +486,6 @@
     <ClCompile Include="source\Physics.cpp">
       <Filter>components</Filter>
     </ClCompile>
-    <ClCompile Include="source\EnginePch.cpp" />
     <ClCompile Include="source\Resource.cpp">
       <Filter>resources</Filter>
     </ClCompile>
@@ -531,6 +531,10 @@
     <ClCompile Include="source\SceneNode.cpp">
       <Filter>entity</Filter>
     </ClCompile>
+    <ClCompile Include="source\App.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Pch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

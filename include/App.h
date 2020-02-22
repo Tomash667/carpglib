@@ -4,7 +4,9 @@
 class App
 {
 public:
-	virtual ~App() {}
+	App();
+	virtual ~App();
+	virtual bool Start();
 	virtual bool OnInit() { return true; }
 	virtual void OnCleanup() {}
 	virtual void OnDraw() {}

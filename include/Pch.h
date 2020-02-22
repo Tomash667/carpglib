@@ -8,7 +8,7 @@
 #	define _HAS_ITERATOR_DEBUGGING 0
 #else
 #	define D3D_DEBUG_INFO
-#	ifndef COMMON_ONLY
+#	ifndef CORE_ONLY
 #		include <vld.h>
 #	endif
 #endif
@@ -42,3 +42,9 @@ using std::max;
 using std::thread;
 using std::pair;
 using std::array;
+
+//-----------------------------------------------------------------------------
+#include "Core.h"
+#ifndef CORE_ONLY
+#	include "Common.h"
+#endif

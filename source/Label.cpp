@@ -1,5 +1,4 @@
-#include "EnginePch.h"
-#include "EngineCore.h"
+#include "Pch.h"
 #include "Label.h"
 
 Label::Label(cstring text, bool auto_size) : text(text), auto_size(auto_size)

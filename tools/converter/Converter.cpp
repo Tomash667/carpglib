@@ -1072,7 +1072,7 @@ void Converter::CreateBoneGroups(QMSH& qmsh, const tmp::QMSH &QmshTmp, Conversio
 	}
 	else
 	{
-		Tokenizer t(Tokenizer::F_JOIN_MINUS | Tokenizer::F_UNESCAPE);
+		Tokenizer t;
 		t.FromFile(cs.group_file.c_str());
 
 		Info("Wczytywanie pliku konfiguracyjnego '%s'.", cs.group_file.c_str());

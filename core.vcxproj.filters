@@ -46,6 +46,7 @@
     <ClCompile Include="source\Tokenizer.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="source\Pch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Algorithm.h">
@@ -105,8 +106,8 @@
     <ClInclude Include="include\WindowsIncludes.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="include\CoreInclude.h" />
-    <ClInclude Include="include\EnginePch.h" />
+    <ClInclude Include="include\CarpgLibCore.h" />
+    <ClInclude Include="include\Pch.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

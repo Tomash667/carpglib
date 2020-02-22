@@ -1,5 +1,4 @@
-#include "EnginePch.h"
-#include "EngineCore.h"
+#include "Pch.h"
 #include "SoundManager.h"
 #include "ResourceManager.h"
 #include "WindowsIncludes.h"
@@ -70,7 +69,6 @@ void SoundManager::Init()
 	Info("Engine: Using driver %d and output type %d.", driver, output);
 
 	// initialize FMOD system
-	const int tries = 3;
 	bool ok = false;
 	for(int i = 0; i < 3; ++i)
 	{

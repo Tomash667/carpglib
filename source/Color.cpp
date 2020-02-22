@@ -1,5 +1,4 @@
-#include "EnginePch.h"
-#include "Core.h"
+#include "Pch.h"
 
 const Color Color::None = Color(0, 0, 0, 0);
 const Color Color::Black = Color(0, 0, 0);

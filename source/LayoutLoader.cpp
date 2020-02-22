@@ -1,5 +1,4 @@
-#include "EnginePch.h"
-#include "EngineCore.h"
+#include "Pch.h"
 #include "LayoutLoader.h"
 #include "ResourceManager.h"
 // controls
@@ -363,7 +362,7 @@ void LayoutLoader::RegisterKeywords()
 		{"outline",FK_OUTLINE}
 		});
 
-	t.AddEnums<AreaLayout::Mode>(G_AREA_MODE, {
+	t.AddKeywords<AreaLayout::Mode>(G_AREA_MODE, {
 		{"COLOR",AreaLayout::Mode::Color},
 		{"BORDER_COLOR",AreaLayout::Mode::BorderColor},
 		{"IMAGE",AreaLayout::Mode::Image},

@@ -1,5 +1,4 @@
-#include "EnginePch.h"
-#include "Core.h"
+#include "Pch.h"
 #include "File.h"
 #include <zlib.h>
 #include "WindowsIncludes.h"
@@ -393,12 +392,7 @@ void io::Crypt(char* inp, uint inplen, cstring key, uint keylen)
 	//we will consider size of sbox 256 bytes
 	//(extra byte are only to prevent any mishep just in case)
 	char Sbox[257], Sbox2[257];
-	uint i, j, t, x;
-
-	//this unsecured key is to be used only when there is no input key from user
-	char temp, k;
-	i = j = t = x = 0;
-	temp = k = 0;
+	uint i = 0, j = 0;
 
 	//always initialize the arrays with zero
 	ZeroMemory(Sbox, sizeof(Sbox));
@@ -425,13 +419,13 @@ void io::Crypt(char* inp, uint inplen, cstring key, uint keylen)
 	for(i = 0; i < 256; i++)
 	{
 		j = (j + (uint)Sbox[i] + (uint)Sbox2[i]) % 256U;
-		temp = Sbox[i];
+		char temp = Sbox[i];
 		Sbox[i] = Sbox[j];
 		Sbox[j] = temp;
 	}
 
 	i = j = 0;
-	for(x = 0; x < inplen; x++)
+	for(uint x = 0; x < inplen; x++)
 	{
 		//increment i
 		i = (i + 1U) % 256U;
@@ -440,15 +434,15 @@ void io::Crypt(char* inp, uint inplen, cstring key, uint keylen)
 
 		//Scramble SBox #1 further so encryption routine will
 		//will repeat itself at great interval
-		temp = Sbox[i];
+		char temp = Sbox[i];
 		Sbox[i] = Sbox[j];
 		Sbox[j] = temp;
 
 		//Get ready to create pseudo random  byte for encryption key
-		t = ((uint)Sbox[i] + (uint)Sbox[j]) % 256U;
+		uint t = ((uint)Sbox[i] + (uint)Sbox[j]) % 256U;
 
 		//get the random byte
-		k = Sbox[t];
+		char k = Sbox[t];
 
 		//xor with the data and done
 		inp[x] = (inp[x] ^ k);

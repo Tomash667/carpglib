@@ -55,31 +55,29 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;COMMON_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>PCH.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <AdditionalOptions>d3d9.lib d3dx9.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>core_debug.lib;d3d9.lib;d3dx9.lib;dxerr.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>..\..\external\DirectX\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\lib;..\..\external\DirectX\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>.;..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;COMMON_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>PCH.hpp</PrecompiledHeaderFile>
@@ -88,7 +86,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>d3d9.lib d3dx9.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>core.lib;d3d9.lib;d3dx9.lib;dxerr.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -96,17 +94,10 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>..\..\external\DirectX\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\lib;..\..\external\DirectX\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\source\Color.cpp" />
-    <ClCompile Include="..\..\source\Containers.cpp" />
-    <ClCompile Include="..\..\source\CoreMath.cpp" />
-    <ClCompile Include="..\..\source\File.cpp" />
-    <ClCompile Include="..\..\source\Logger.cpp" />
-    <ClCompile Include="..\..\source\Text.cpp" />
-    <ClCompile Include="..\..\source\Tokenizer.cpp" />
     <ClCompile Include="Converter.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -116,13 +107,6 @@
     <ClCompile Include="QmshTmpLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\source\Containers.h" />
-    <ClInclude Include="..\..\source\Core.h" />
-    <ClInclude Include="..\..\source\CoreMath.h" />
-    <ClInclude Include="..\..\source\File.h" />
-    <ClInclude Include="..\..\source\Logger.h" />
-    <ClInclude Include="..\..\source\Text.h" />
-    <ClInclude Include="..\..\source\Tokenizer.h" />
     <ClInclude Include="ConversionData.h" />
     <ClInclude Include="Converter.h" />
     <ClInclude Include="Mesh.h" />
@@ -137,9 +121,6 @@
   <ItemGroup>
     <Text Include="changelog.txt" />
     <Text Include="UWAGI.TXT" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\source\CoreMath.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

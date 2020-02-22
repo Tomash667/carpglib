@@ -1,5 +1,4 @@
-#include "EnginePch.h"
-#include "EngineCore.h"
+#include "Pch.h"
 #include "TabControl.h"
 #include "Panel.h"
 #include "Input.h"

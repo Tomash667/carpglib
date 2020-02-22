@@ -17,6 +17,7 @@
     <ClInclude Include="include\Base64.h" />
     <ClInclude Include="include\Button.h" />
     <ClInclude Include="include\Camera.h" />
+    <ClInclude Include="include\CarpgLib.h" />
     <ClInclude Include="include\CheckBox.h" />
     <ClInclude Include="include\CheckBoxGroup.h" />
     <ClInclude Include="include\Color.h" />
@@ -34,8 +35,8 @@
     <ClInclude Include="include\DirectX.h" />
     <ClInclude Include="include\DrawBox.h" />
     <ClInclude Include="include\Engine.h" />
-    <ClInclude Include="include\EngineCore.h" />
-    <ClInclude Include="include\EnginePch.h" />
+    <ClInclude Include="include\Common.h" />
+    <ClInclude Include="include\Pch.h" />
     <ClInclude Include="include\Entity.h" />
     <ClInclude Include="include\FastFunc.h" />
     <ClInclude Include="include\File.h" />
@@ -114,6 +115,7 @@
     <None Include="include\CoreMath.inl" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\App.cpp" />
     <ClCompile Include="source\BoxToBox.cpp" />
     <ClCompile Include="source\Bresenham.cpp" />
     <ClCompile Include="source\Button.cpp" />
@@ -133,7 +135,7 @@
     <ClCompile Include="source\DialogBox.cpp" />
     <ClCompile Include="source\DrawBox.cpp" />
     <ClCompile Include="source\Engine.cpp" />
-    <ClCompile Include="source\EnginePch.cpp">
+    <ClCompile Include="source\Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
@@ -247,7 +249,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external\Bullet\src;$(ProjectDir)external\CrashRpt\include;$(ProjectDir)external\DirectX\Include;$(ProjectDir)external\DirectXMath\Inc;$(ProjectDir)external\FMod\inc;$(ProjectDir)external\Visual Leak Detector\include;$(ProjectDir)external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>EnginePch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -265,7 +267,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external\Bullet\src;$(ProjectDir)external\CrashRpt\include;$(ProjectDir)external\DirectX\Include;$(ProjectDir)external\DirectXMath\Inc;$(ProjectDir)external\FMod\inc;$(ProjectDir)external\Visual Leak Detector\include;$(ProjectDir)external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>EnginePch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Core.h"
 #include "FileFormat.h"
 
 // Engine types

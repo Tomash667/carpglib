@@ -68,10 +68,7 @@ public:
 	void RebuildUv();
 	void Make(bool smooth = true);
 	void SetHeight(float height);
-	void ClearHeight()
-	{
-		SetHeight(0.f);
-	}
+	void ClearHeight() { SetHeight(0.f); }
 	void RandomizeHeight(float hmin, float hmax);
 	void RoundHeight();
 	void Randomize();
@@ -89,72 +86,27 @@ public:
 		return &parts[idx];
 	}
 	float GetH(float x, float z) const;
-	float GetH(const Vec3& _v) const
-	{
-		return GetH(_v.x, _v.z);
-	}
-	float GetH(const Vec2& v) const
-	{
-		return GetH(v.x, v.y);
-	}
-	void SetH(Vec3& _v) const
-	{
-		_v.y = GetH(_v.x, _v.z);
-	}
+	float GetH(const Vec3& v) const { return GetH(v.x, v.z); }
+	float GetH(const Vec2& v) const { return GetH(v.x, v.y); }
+	void SetH(Vec3& v) const { v.y = GetH(v.x, v.z); }
 	void GetAngle(float x, float z, Vec3& angle) const;
-	uint GetPartsCount() const
-	{
-		return n_parts2;
-	}
-	TEX GetSplatTexture()
-	{
-		return texSplat;
-	}
-	TexturePtr* GetTextures()
-	{
-		return tex;
-	}
-	const Box& GetBox() const
-	{
-		return box;
-	}
-	const Vec3& GetPos() const
-	{
-		return pos;
-	}
-	ID3DXMesh* GetMesh()
-	{
-		return mesh;
-	}
-	float* GetHeightMap()
-	{
-		return h;
-	}
-	uint GetTerrainWidth() const
-	{
-		return hszer;
-	}
-	uint GetTilesCount() const
-	{
-		return n_tiles;
-	}
-	uint GetSplatSize() const
-	{
-		return tex_size;
-	}
+	uint GetPartsCount() const { return n_parts2; }
+	TEX GetSplatTexture() { return texSplat; }
+	TexturePtr* GetTextures() { return tex; }
+	const Box& GetBox() const { return box; }
+	const Vec3& GetPos() const { return pos; }
+	ID3DXMesh* GetMesh() { return mesh; }
+	float* GetHeightMap() { return h; }
+	uint GetTerrainWidth() const { return width; }
+	uint GetTilesCount() const { return n_tiles; }
+	uint GetSplatSize() const { return tex_size; }
 	void GetDrawOptions(uint& verts, uint& tris)
 	{
 		verts = n_verts;
 		tris = part_tris;
 	}
-	float GetPartSize() const
-	{
-		return tiles_size / n_parts;
-	}
-	float GetTileSize() const
-	{
-		return tile_size;
-	}
+	float GetPartSize() const { return tiles_size / n_parts; }
+	float GetTileSize() const { return tile_size; }
 
 	//---------------------------
 	void SetTextures(TexturePtr* textures);
@@ -179,7 +131,7 @@ private:
 	uint n_tiles, n_tiles2; // liczba kwadracików na boku, wszystkich
 	uint n_parts, n_parts2; // liczba sektorów na boku, wszystkich
 	uint tiles_per_part;
-	uint hszer, hszer2; // n_tiles+1
+	uint width, width2; // n_tiles+1
 	uint n_tris, n_verts, part_tris, part_verts, tex_size;
 	Box box;
 	ID3DXMesh* mesh;

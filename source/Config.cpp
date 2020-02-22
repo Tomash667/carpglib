@@ -1,6 +1,5 @@
 // configuration reader/writer
-#include "EnginePch.h"
-#include "Core.h"
+#include "Pch.h"
 #include "Config.h"
 #include "File.h"
 

@@ -110,7 +110,7 @@ void MeshInfo(const char* path, const char* options)
 
 	if(options)
 	{
-		Tokenizer t(Tokenizer::F_JOIN_MINUS | Tokenizer::F_UNESCAPE);
+		Tokenizer t;
 		try
 		{
 			t.FromString(options);

@@ -1,5 +1,4 @@
-#include "EnginePch.h"
-#include "EngineCore.h"
+#include "Pch.h"
 #include "SplitPanel.h"
 
 SplitPanel::SplitPanel() : min_size1(0), min_size2(0), panel1(nullptr), panel2(nullptr), allow_move(true), horizontal(true), splitter_size(3)

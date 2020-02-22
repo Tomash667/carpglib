@@ -16,7 +16,7 @@ bool export_phy, force_output;
 //=================================================================================================
 void ParseConfig(ConversionData& cs, std::string& filename)
 {
-	Tokenizer t(Tokenizer::F_JOIN_MINUS | Tokenizer::F_UNESCAPE);
+	Tokenizer t;
 
 	try
 	{

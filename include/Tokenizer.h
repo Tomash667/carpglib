@@ -303,7 +303,7 @@ namespace tokenizer
 		// Add keyword for group in format {name, id}
 		void AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register, cstring group_name = nullptr);
 		template<typename T>
-		void AddEnums(int group, std::initializer_list<KeywordToRegisterEnum<T>> const & to_register, cstring group_name = nullptr)
+		void AddKeywords(int group, std::initializer_list<KeywordToRegisterEnum<T>> const & to_register, cstring group_name = nullptr)
 		{
 			AddKeywords(group, (std::initializer_list<KeywordToRegister> const&)to_register, group_name);
 		}

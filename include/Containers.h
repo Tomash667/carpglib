@@ -279,7 +279,7 @@ inline bool IsInside(const vector<T>* v, const T& elem)
 //-----------------------------------------------------------------------------
 // Object pool pattern
 //-----------------------------------------------------------------------------
-#if defined(_DEBUG) && !defined(COMMON_ONLY)
+#if defined(_DEBUG) && !defined(CORE_ONLY)
 #	define CHECK_POOL_LEAKS
 #endif
 #ifdef CHECK_POOL_LEAKS

@@ -1,5 +1,4 @@
-﻿#include "EnginePch.h"
-#include "EngineCore.h"
+﻿#include "Pch.h"
 #include "Engine.h"
 #include "ResourceManager.h"
 #include "SceneManager.h"
@@ -12,7 +11,6 @@
 #include "WindowsIncludes.h"
 
 //-----------------------------------------------------------------------------
-App* app::app;
 Engine* app::engine;
 const Int2 Engine::MIN_WINDOW_SIZE = Int2(800, 600);
 const Int2 Engine::DEFAULT_WINDOW_SIZE = Int2(1024, 768);
@@ -26,7 +24,6 @@ wnd_size(DEFAULT_WINDOW_SIZE)
 		Logger::SetInstance(new Logger);
 	app::gui = new Gui;
 	app::input = new Input;
-	app::engine = this;
 	app::render = new Render;
 	app::res_mgr = new ResourceManager;
 	app::scene_mgr = new SceneManager;
@@ -528,10 +525,8 @@ void Engine::ShowError(cstring msg, Logger::Level level)
 
 //=================================================================================================
 // Initialize and start engine
-bool Engine::Start(App* app)
+bool Engine::Start()
 {
-	app::app = app;
-
 	// initialize engine
 	try
 	{
@@ -547,7 +542,7 @@ bool Engine::Start(App* app)
 	// initialize game
 	try
 	{
-		if(!app->OnInit())
+		if(!app::app->OnInit())
 		{
 			Cleanup();
 			return false;
