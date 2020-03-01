@@ -4004,6 +4004,13 @@ inline Quat Quat::CreateFromYawPitchRoll(float yaw, float pitch, float roll)
 	return R;
 }
 
+inline Quat Quat::CreateFromYawPitchRoll(const Vec3& rot)
+{
+	Quat R;
+	XMStoreFloat4(&R, XMQuaternionRotationRollPitchYaw(rot.x, rot.y, rot.z));
+	return R;
+}
+
 inline void Quat::Lerp(const Quat& q1, const Quat& q2, float t, Quat& result)
 {
 	XMVECTOR Q0 = XMLoadFloat4(&q1);
@@ -4052,6 +4059,21 @@ inline Quat Quat::Lerp(const Quat& q1, const Quat& q2, float t)
 	Quat result;
 	XMStoreFloat4(&result, XMQuaternionNormalize(R));
 	return result;
+}
+
+inline Quat Quat::RotX(float angle)
+{
+	return CreateFromAxisAngle(Vec3::UnitX, angle);
+}
+
+inline Quat Quat::RotY(float angle)
+{
+	return CreateFromAxisAngle(Vec3::UnitY, angle);
+}
+
+inline Quat Quat::RotZ(float angle)
+{
+	return CreateFromAxisAngle(Vec3::UnitZ, angle);
 }
 
 inline void Quat::Slerp(const Quat& q1, const Quat& q2, float t, Quat& result)

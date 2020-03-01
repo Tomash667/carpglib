@@ -1331,8 +1331,12 @@ struct Quat : public XMFLOAT4
 	static Quat CreateFromAxisAngle(const Vec3& axis, float angle);
 	static Quat CreateFromRotationMatrix(const Matrix& M);
 	static Quat CreateFromYawPitchRoll(float yaw, float pitch, float roll);
+	static Quat CreateFromYawPitchRoll(const Vec3& rot);
 	static void Lerp(const Quat& q1, const Quat& q2, float t, Quat& result);
 	static Quat Lerp(const Quat& q1, const Quat& q2, float t);
+	static Quat RotX(float angle);
+	static Quat RotY(float angle);
+	static Quat RotZ(float angle);
 	static void Slerp(const Quat& q1, const Quat& q2, float t, Quat& result);
 	static Quat Slerp(const Quat& q1, const Quat& q2, float t);
 
