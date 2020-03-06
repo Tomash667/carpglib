@@ -19,10 +19,10 @@ void Button::Draw(ControlDrawData*)
 		gui->DrawArea(Box2d::Create(global_pos, size), layout->tex[real_state]);
 
 		Rect r = {
-			global_pos.x + 4,
-			global_pos.y + 4,
-			global_pos.x + size.x - 8,
-			global_pos.y + size.y - 8
+			global_pos.x + layout->padding,
+			global_pos.y + layout->padding,
+			global_pos.x + size.x - layout->padding * 2,
+			global_pos.y + size.y - layout->padding * 2
 		};
 
 		if(state == DOWN)
@@ -41,8 +41,22 @@ void Button::Draw(ControlDrawData*)
 			Int2 required_size = force_img_size, img_size;
 			Vec2 scale;
 			img->ResizeImage(required_size, img_size, scale);
-			mat = Matrix::Transform2D(&Vec2(float(img_size.x) / 2, float(img_size.y) / 2), 0.f, &scale, nullptr, 0.f,
-				&Vec2((float)r.Left(), float(r.Top() + (required_size.y - img_size.y) / 2)));
+
+			// position image
+			Vec2 img_pos;
+			if(text.empty())
+			{
+				// when no text put at center
+				img_pos = Vec2((float)(size.x - required_size.x) / 2 + r.Left(),
+					(float)(size.y - required_size.y) / 2 + r.Top());
+			}
+			else
+			{
+				// put at left
+				img_pos = Vec2((float)r.Left(), float(r.Top() + (size.y - required_size.y) / 2));
+			}
+
+			mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &img_pos);
 			gui->DrawSprite2(img, mat, nullptr, &r, Color::White);
 			r.Left() += img_size.x;
 		}

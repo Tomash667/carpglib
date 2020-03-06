@@ -381,6 +381,7 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("tex_down", Entry::AreaLayout, offsetof(layout::Button, tex[Button::DOWN]));
 	c->AddEntry("tex_disabled", Entry::AreaLayout, offsetof(layout::Button, tex[Button::DISABLED]));
 	c->AddEntry("font", Entry::Font, offsetof(layout::Button, font));
+	c->AddEntry("padding", Entry::Int, offsetof(layout::Button, padding));
 
 	c = AddControl<layout::CheckBox>("CheckBox");
 	c->AddEntry("tex", Entry::AreaLayout, offsetof(layout::CheckBox, tex[CheckBox::NONE]));

@@ -15,7 +15,7 @@ namespace layout
 }
 
 //-----------------------------------------------------------------------------
-class CheckBox : public Control, LayoutControl<layout::CheckBox>
+class CheckBox : public Control, public LayoutControl<layout::CheckBox>
 {
 public:
 	enum State

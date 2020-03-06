@@ -16,11 +16,12 @@ namespace layout
 	{
 		AreaLayout tex[4];
 		Font* font;
+		int padding;
 	};
 }
 
 //-----------------------------------------------------------------------------
-class Button : public Control, LayoutControl<layout::Button>
+class Button : public Control, public LayoutControl<layout::Button>
 {
 public:
 	enum State

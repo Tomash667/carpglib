@@ -108,6 +108,14 @@ class LayoutControl
 
 public:
 	LayoutControl() : layout(Control::gui->GetLayout()->Get<T>()) {}
+	T* GetLayout() const { return layout; }
+	void SetLayout(T* layout)
+	{
+		if(layout)
+			this->layout = layout;
+		else
+			this->layout = Control::gui->GetLayout()->Get<T>();
+	}
 
 protected:
 	T* layout;

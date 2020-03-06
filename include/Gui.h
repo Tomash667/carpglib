@@ -150,7 +150,8 @@ public:
 	void CloseDialogInternal(DialogBox* d);
 	bool HaveTopDialog(cstring name) const;
 	bool HaveDialog() const;
-	void DrawSpriteFull(Texture* t, Color color);
+	void DrawSpriteFull(Texture* t, Color color = Color::White);
+	void DrawSpriteFullWrap(Texture* t, Color color = Color::White);
 	void AddOnCharHandler(OnCharHandler* h) { on_char.push_back(h); }
 	void RemoveOnCharHandler(OnCharHandler* h) { RemoveElement(on_char, h); }
 	void SimpleDialog(cstring text, Control* parent, cstring name = "simple");

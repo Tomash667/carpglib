@@ -1761,6 +1761,15 @@ void Gui::DrawSpriteFull(Texture* t, const Color color)
 }
 
 //=================================================================================================
+void Gui::DrawSpriteFullWrap(Texture* t, Color color)
+{
+	Rect rect(Int2::Zero, wnd_size);
+	app::render->SetTextureAddressMode(TEX_ADR_WRAP);
+	DrawSpriteRectPart(t, rect, rect, color);
+	app::render->SetTextureAddressMode(TEX_ADR_CLAMP);
+}
+
+//=================================================================================================
 void Gui::OnChar(char c)
 {
 	if((c != (char)Key::Backspace && c != (char)Key::Enter && byte(c) < 0x20) || c == '`')
