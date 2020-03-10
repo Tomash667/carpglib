@@ -880,6 +880,20 @@ inline T& RandomItemWeight(vector<WeightPair<T>>& items, int max_weight)
 	return RandomItem(items).item;
 }
 
+template<typename T, typename GetWeight, typename GetItem>
+inline auto RandomItemWeight(const vector<T>& items, int max_weight, GetWeight get_weight, GetItem get_item)
+{
+	int a = Rand() % max_weight, b = 0;
+	for(auto& item : items)
+	{
+		b += get_weight(item);
+		if(a < b)
+			return get_item(item);
+	}
+	// if it gets here max_count is wrong, return random item
+	return get_item(items[Rand() % items.size()]);
+}
+
 template<typename T>
 struct WeightContainer
 {
