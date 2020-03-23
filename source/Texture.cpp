@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "Texture.h"
+#include "Render.h"
 #include "DirectX.h"
 
 //=================================================================================================
@@ -30,6 +31,26 @@ Int2 Texture::GetSize(TEX tex)
 	D3DSURFACE_DESC desc;
 	V(tex->GetLevelDesc(0, &desc));
 	return Int2(desc.Width, desc.Height);
+}
+
+//=================================================================================================
+void DynamicTexture::OnReset()
+{
+	SafeRelease(tex);
+}
+
+//=================================================================================================
+void DynamicTexture::OnReload()
+{
+	app::render->CreateDynamicTexture(this);
+	if(reload)
+		reload();
+}
+
+//=================================================================================================
+void DynamicTexture::OnRelease()
+{
+	delete this;
 }
 
 //=================================================================================================

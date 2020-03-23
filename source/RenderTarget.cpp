@@ -4,6 +4,27 @@
 #include "File.h"
 #include "DirectX.h"
 
+//=================================================================================================
+void RenderTarget::OnReset()
+{
+	SafeRelease(tex);
+	SafeRelease(surf);
+}
+
+//=================================================================================================
+void RenderTarget::OnReload()
+{
+	app::render->CreateRenderTargetTexture(this);
+}
+
+//=================================================================================================
+void RenderTarget::OnRelease()
+{
+	SafeRelease(surf);
+	delete this;
+}
+
+//=================================================================================================
 SURFACE RenderTarget::GetSurface()
 {
 	if(!surf)
@@ -14,6 +35,7 @@ SURFACE RenderTarget::GetSurface()
 	return surf;
 }
 
+//=================================================================================================
 void RenderTarget::SaveToFile(cstring filename)
 {
 	SURFACE s;
@@ -28,6 +50,7 @@ void RenderTarget::SaveToFile(cstring filename)
 		s->Release();
 }
 
+//=================================================================================================
 uint RenderTarget::SaveToFile(FileWriter& f)
 {
 	SURFACE s;
@@ -49,6 +72,7 @@ uint RenderTarget::SaveToFile(FileWriter& f)
 	return size;
 }
 
+//=================================================================================================
 void RenderTarget::Resize(const Int2& new_size)
 {
 	SafeRelease(tex);
@@ -57,6 +81,7 @@ void RenderTarget::Resize(const Int2& new_size)
 	app::render->CreateRenderTargetTexture(this);
 }
 
+//=================================================================================================
 void RenderTarget::FreeSurface()
 {
 	if(tmp_surf)

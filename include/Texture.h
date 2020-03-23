@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Resource.h"
+#include "ManagedResource.h"
 
 //-----------------------------------------------------------------------------
 struct Texture : public Resource
@@ -18,9 +19,14 @@ struct Texture : public Resource
 };
 
 //-----------------------------------------------------------------------------
-struct DynamicTexture : public Texture
+struct DynamicTexture : public Texture, public ManagedResource
 {
+	void OnReset() override;
+	void OnReload() override;
+	void OnRelease() override;
+
 	Int2 size;
+	delegate<void()> reload;
 };
 
 //-----------------------------------------------------------------------------

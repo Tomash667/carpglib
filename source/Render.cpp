@@ -5,6 +5,7 @@
 #include "ShaderHandler.h"
 #include "File.h"
 #include "App.h"
+#include "ManagedResource.h"
 #include "DirectX.h"
 
 Render* app::render;
@@ -28,12 +29,8 @@ Render::~Render()
 		shader->OnRelease();
 		delete shader;
 	}
-	for(RenderTarget* target : targets)
-	{
-		SafeRelease(target->surf);
-		delete target;
-	}
-	DeleteElements(textures);
+	for(ManagedResource* res : managed_res)
+		res->OnRelease();
 	for(int i = 0; i < VDI_MAX; ++i)
 		SafeRelease(vertex_decl[i]);
 	if(device)
@@ -540,17 +537,11 @@ void Render::BeforeReset()
 	if(res_freed)
 		return;
 	res_freed = true;
-	app::app->OnReset();
 	V(sprite->OnLostDevice());
 	for(ShaderHandler* shader : shaders)
 		shader->OnReset();
-	for(RenderTarget* target : targets)
-	{
-		SafeRelease(target->tex);
-		SafeRelease(target->surf);
-	}
-	for(DynamicTexture* tex : textures)
-		SafeRelease(tex->tex);
+	for(ManagedResource* res : managed_res)
+		res->OnReset();
 }
 
 //=================================================================================================
@@ -560,12 +551,9 @@ void Render::AfterReset()
 	V(sprite->OnResetDevice());
 	for(ShaderHandler* shader : shaders)
 		shader->OnReload();
-	for(RenderTarget* target : targets)
-		CreateRenderTargetTexture(target);
-	for(DynamicTexture* tex : textures)
-		CreateDynamicTexture(tex);
+	for(ManagedResource* res : managed_res)
+		res->OnReload();
 	V(sprite->OnResetDevice());
-	app::app->OnReload();
 	lost_device = false;
 	res_freed = false;
 }
@@ -828,7 +816,7 @@ TEX Render::CreateTexture(const Int2& size, const Color* fill)
 }
 
 //=================================================================================================
-Texture* Render::CreateDynamicTexture(const Int2& size)
+DynamicTexture* Render::CreateDynamicTexture(const Int2& size)
 {
 	assert(size <= app::engine->wnd_size);
 	assert(size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y));
@@ -836,7 +824,7 @@ Texture* Render::CreateDynamicTexture(const Int2& size)
 	tex->size = size;
 	CreateDynamicTexture(tex);
 	tex->state = ResourceState::Loaded;
-	textures.push_back(tex);
+	managed_res.push_back(tex);
 	return tex;
 }
 
@@ -854,7 +842,7 @@ RenderTarget* Render::CreateRenderTarget(const Int2& size)
 	RenderTarget* target = new RenderTarget;
 	target->size = size;
 	CreateRenderTargetTexture(target);
-	targets.push_back(target);
+	managed_res.push_back(target);
 	return target;
 }
 

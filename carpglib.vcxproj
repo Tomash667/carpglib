@@ -36,6 +36,7 @@
     <ClInclude Include="include\DrawBox.h" />
     <ClInclude Include="include\Engine.h" />
     <ClInclude Include="include\Common.h" />
+    <ClInclude Include="include\ManagedResource.h" />
     <ClInclude Include="include\Pch.h" />
     <ClInclude Include="include\Entity.h" />
     <ClInclude Include="include\FastFunc.h" />

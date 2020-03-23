@@ -47,12 +47,13 @@ public:
 	ID3DXEffect* CompileShader(cstring name);
 	ID3DXEffect* CompileShader(CompileShaderParams& params);
 	TEX CreateTexture(const Int2& size, const Color* fill = nullptr);
-	Texture* CreateDynamicTexture(const Int2& size);
+	DynamicTexture* CreateDynamicTexture(const Int2& size);
 	void CreateDynamicTexture(DynamicTexture* tex);
 	RenderTarget* CreateRenderTarget(const Int2& size);
 	void CreateRenderTargetTexture(RenderTarget* target);
 	Texture* CopyToTexture(RenderTarget* target);
 	TEX CopyToTextureRaw(RenderTarget* target, Int2 size = Int2::Zero);
+	void AddManagedResource(ManagedResource* res) { managed_res.push_back(res); }
 	bool IsLostDevice() const { return lost_device; }
 	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	bool IsVsyncEnabled() const { return vsync; }
@@ -92,8 +93,7 @@ private:
 	IDirect3DDevice9* device;
 	ID3DXSprite* sprite;
 	vector<ShaderHandler*> shaders;
-	vector<RenderTarget*> targets;
-	vector<DynamicTexture*> textures;
+	vector<ManagedResource*> managed_res;
 	IDirect3DVertexDeclaration9* vertex_decl[VDI_MAX];
 	RenderTarget* current_target;
 	SURFACE current_surf;

@@ -8,6 +8,7 @@ struct Camera;
 struct DynamicTexture;
 struct Light;
 struct Lights;
+struct ManagedResource;
 struct MeshInstance;
 struct ParticleEmitter;
 struct PostEffect;
