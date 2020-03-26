@@ -148,6 +148,22 @@ namespace ssvu
 			}
 		};
 
+		// helper to get return type
+		template<typename R, typename... A>
+		R GetResult(R(*)(A...));
+		template<typename C, typename R, typename... A>
+		R GetResult(R(C::*)(A...));
+		template<typename C, typename R, typename... A>
+		R GetResult(R(C::*)(A...) const);
+
+		// helper to get arguments
+		template<typename R, typename... A>
+		std::tuple<A...> GetArgs(R(*)(A...));
+		template<typename R, typename C, typename... A>
+		std::tuple<A...> GetArgs(R(C::*)(A...));
+		template<typename R, typename C, typename... A>
+		std::tuple<A...> GetArgs(R(C::*)(A...) const);
+
 		template<typename TReturn, typename... TArgs>
 		struct Closure
 		{
@@ -158,10 +174,21 @@ namespace ssvu
 			AnyPtrFunc ptrFunction{ nullptr };
 
 		public:
-			template<class TThis, class TFunc> inline void bind(TThis* mThis, TFunc mFunc) noexcept { ptrThis = ssvu::Internal::SimplifyMemFunc<sizeof(mFunc)>::convert(mThis, mFunc, ptrFunction); }
-			template<class TThis, class TInvoker> inline void bind(TThis* mThis, TInvoker mInvoker, PtrStaticFuncT mFunc) noexcept
+			template<class TThis, class TFunc>
+			inline void bind(TThis* mThis, TFunc mFunc) noexcept
 			{
-				if(mFunc == nullptr) ptrFunction = nullptr; else bind(mThis, mInvoker);
+				static_assert(std::is_same<std::tuple<TArgs...>, decltype(GetArgs(mFunc))>::value
+					&& std::is_same<TReturn, decltype(GetResult(mFunc))>::value, "Delegate mismatch!");
+				ptrThis = ssvu::Internal::SimplifyMemFunc<sizeof(mFunc)>::convert(mThis, mFunc, ptrFunction);
+			}
+
+			template<class TThis, class TInvoker>
+			inline void bind(TThis* mThis, TInvoker mInvoker, PtrStaticFuncT mFunc) noexcept
+			{
+				if(mFunc == nullptr)
+					ptrFunction = nullptr;
+				else
+					bind(mThis, mInvoker);
 				ptrThis = horrible_cast<AnyPtrThis>(mFunc);
 			}
 
