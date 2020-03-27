@@ -923,79 +923,119 @@ class LocalVector3
 public:
 	struct iterator
 	{
-		friend class LocalVector3;
-
-		typedef std::input_iterator_tag iterator_category;
+		typedef std::random_access_iterator_tag iterator_category;
 		typedef T value_type;
 		typedef std::ptrdiff_t difference_type;
 		typedef T* pointer;
 		typedef T& reference;
 
+		friend class LocalVector3;
+
 		T& operator * ()
 		{
+			assert(offset < (int)v->size());
 			return v->at(offset);
 		}
-
+		T& operator [](difference_type n)
+		{
+			int pos = offset + n;
+			assert(pos >= 0 && pos < (int)v->size());
+			return v->at(offset + n);
+		}
 		bool operator == (const iterator& it) const
 		{
 			assert(it.v == v);
 			return offset == it.offset;
 		}
-
 		bool operator != (const iterator& it) const
 		{
 			assert(it.v == v);
 			return offset != it.offset;
 		}
-
+		bool operator > (const iterator& it) const
+		{
+			assert(it.v == v);
+			return offset > it.offset;
+		}
+		bool operator >= (const iterator& it) const
+		{
+			assert(it.v == v);
+			return offset >= it.offset;
+		}
 		bool operator < (const iterator& it) const
 		{
 			assert(it.v == v);
 			return offset < it.offset;
 		}
-
+		bool operator <= (const iterator& it) const
+		{
+			assert(it.v == v);
+			return offset <= it.offset;
+		}
 		iterator& operator ++ ()
 		{
+			assert(offset != (int)v->size());
 			++offset;
 			return *this;
 		}
-
 		iterator operator ++ (int)
 		{
+			assert(offset != (int)v->size());
 			iterator it(v, offset);
 			++offset;
 			return it;
 		}
-
 		iterator& operator -- ()
 		{
+			assert(offset != 0);
 			--offset;
 			return *this;
 		}
-
-		iterator& operator + (uint count)
+		iterator operator -- (int)
 		{
-			offset += count;
+			assert(offset != 0);
+			iterator it(v, offset);
+			--offset;
+			return it;
+		}
+		iterator& operator += (difference_type n)
+		{
+			offset += n;
+			assert(offset >= 0 && offset <= (int)v->size());
 			return *this;
 		}
-
-		iterator& operator - (uint count)
+		iterator& operator -= (difference_type n)
 		{
-			offset -= count;
+			offset -= n;
+			assert(offset >= 0 && offset <= (int)v->size());
 			return *this;
 		}
-
-		int operator - (const iterator& it) const
+		iterator operator + (difference_type n) const
+		{
+			return iterator(v, offset + n);
+		}
+		friend iterator operator + (difference_type n, const iterator& it)
+		{
+			return iterator(v, offset + n);
+		}
+		iterator operator - (difference_type n) const
+		{
+			return iterator(v, offset - n);
+		}
+		difference_type operator - (const iterator& it) const
 		{
 			assert(it.v == v);
 			return offset - it.offset;
 		}
 
 	private:
-		iterator(LocalVector3* v, uint offset) : v(v), offset(offset) {}
+		iterator(LocalVector3* v, int offset) : v(v), offset(offset)
+		{
+			assert(v && offset >= 0 && offset <= (int)v->size());
+		}
 
 		LocalVector3* v;
-		uint offset;
+		int offset;
 	};
 
 	LocalVector3()
