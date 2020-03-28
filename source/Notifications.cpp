@@ -181,7 +181,7 @@ void Notifications::Update(float dt)
 		{
 			real_box_size.y += 40;
 
-			Int2 offset(gui->wnd_size.x - real_box_size.x - 8, 8);
+			Int2 offset(gui->wnd_size.x - real_box_size.x - 8, offset_y);
 			Rect rect = { offset.x + 8 + 64, offset.y + 8, offset.x + box_size.x - 8, offset.y + box_size.y - 8 };
 
 			int text_size2 = rect.SizeX();
