@@ -192,8 +192,12 @@ void Notifications::Update(float dt)
 			else
 				n->active = 0;
 
-			if(n->active != 0 && !gui->HaveDialog() && input->Pressed(Key::LeftButton))
-				n->callback(n->active == 1);
+			if(n->active != 0 && !gui->HaveDialog())
+			{
+				gui->cursor_mode = CURSOR_HOVER;
+				if(input->Pressed(Key::LeftButton))
+					n->callback(n->active == 1);
+			}
 		}
 		else
 			n->active = 0;
