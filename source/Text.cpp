@@ -90,7 +90,7 @@ cstring Upper(cstring str)
 }
 
 //=================================================================================================
-int TextHelper::ToNumber(cstring s, __int64& i, float& f)
+TextHelper::ParseResult TextHelper::ToNumber(cstring s, int64& i, float& f)
 {
 	assert(s);
 
@@ -106,6 +106,7 @@ int TextHelper::ToNumber(cstring s, __int64& i, float& f)
 		++s;
 	}
 
+	// parse integer part
 	while((c = *s) != 0)
 	{
 		if(c == '.')
@@ -119,24 +120,28 @@ int TextHelper::ToNumber(cstring s, __int64& i, float& f)
 			i += (int)c - '0';
 		}
 		else
-			return 0;
+			return Broken;
 		++s;
 	}
 
-	if(c == 0)
-	{
-		if(sign)
-			i = -i;
-		f = (float)i;
-		return 1;
-	}
+	if(i > std::numeric_limits<uint>::max())
+		return Broken;
 
+	if(sign)
+		i = -i;
+	f = (float)i;
+
+	// end of string, this is int
+	if(c == 0)
+		return Int;
+
+	// parse fraction part
 	while((c = *s) != 0)
 	{
 		if(c == 'f')
 		{
 			if(digits == 0)
-				return 0;
+				return Broken;
 			break;
 		}
 		else if(c >= '0' && c <= '9')
@@ -146,24 +151,18 @@ int TextHelper::ToNumber(cstring s, __int64& i, float& f)
 			diver *= 10;
 		}
 		else
-			return 0;
+			return Broken;
 		++s;
 	}
-	f += (float)i;
-	if(sign)
-	{
-		f = -f;
-		i = -i;
-	}
-	return 2;
+	return Float;
 }
 
 //=================================================================================================
 bool TextHelper::ToInt(cstring s, int& result)
 {
-	__int64 i;
+	int64 i;
 	float f;
-	if(ToNumber(s, i, f) != 0 && InRange<int>(i))
+	if(ToNumber(s, i, f) != Broken && InRange<int>(i))
 	{
 		result = (int)i;
 		return true;
@@ -175,9 +174,9 @@ bool TextHelper::ToInt(cstring s, int& result)
 //=================================================================================================
 bool TextHelper::ToUint(cstring s, uint& result)
 {
-	__int64 i;
+	int64 i;
 	float f;
-	if(ToNumber(s, i, f) != 0 && InRange<uint>(i))
+	if(ToNumber(s, i, f) != Broken)
 	{
 		result = (uint)i;
 		return true;
@@ -189,9 +188,9 @@ bool TextHelper::ToUint(cstring s, uint& result)
 //=================================================================================================
 bool TextHelper::ToFloat(cstring s, float& result)
 {
-	__int64 i;
+	int64 i;
 	float f;
-	if(ToNumber(s, i, f) != 0)
+	if(ToNumber(s, i, f) != Broken)
 	{
 		result = f;
 		return true;

@@ -103,8 +103,14 @@ inline int StrCharIndex(cstring chrs, char c)
 
 namespace TextHelper
 {
-	// parse string to number, return 0-broken, 1-int, 2-float
-	int ToNumber(cstring s, __int64& i, float& f);
+	enum ParseResult
+	{
+		Broken,
+		Int,
+		Float
+	};
+
+	ParseResult ToNumber(cstring s, int64& i, float& f);
 	bool ToInt(cstring s, int& result);
 	bool ToUint(cstring s, uint& result);
 	bool ToFloat(cstring s, float& result);

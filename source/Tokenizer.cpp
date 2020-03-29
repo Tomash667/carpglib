@@ -437,29 +437,16 @@ bool Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 	} while(1);
 
 	// parse number
-	__int64 val;
-	int type = TextHelper::ToNumber(s.item.c_str(), val, s._float);
-	assert(type > 0);
-	s._int = (int)val;
-	if(s._int < 0)
-		s._uint = 0;
-	else
-		s._uint = s._int;
-	if(val > UINT_MAX)
-	{
-		Warn("Tokenizer: Too big number %I64.", val);
-		type = 0;
-	}
-	if(type == 2)
-		s.token = T_FLOAT;
-	else if(type == 1)
-		s.token = T_INT;
-	else
+	int64 val;
+	TextHelper::ParseResult result = TextHelper::ToNumber(s.item.c_str(), val, s._float);
+	if(result == TextHelper::Broken)
 	{
 		s.token = T_ITEM;
 		return false;
 	}
-
+	s._int = (int)val;
+	s._uint = (s._int < 0 ? 0 : s._int);
+	s.token = (result == TextHelper::Float ? T_FLOAT : T_INT);
 	return true;
 }
 

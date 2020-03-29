@@ -370,7 +370,7 @@ inline constexpr bool InRange(T left, T a, T b, T right)
 
 // Return true if number is in other numeric type range
 template<typename T>
-inline bool InRange(__int64 value)
+inline bool InRange(int64 value)
 {
 	return value >= std::numeric_limits<T>::min() && value <= std::numeric_limits<T>::max();
 }

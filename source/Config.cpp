@@ -145,23 +145,6 @@ uint Config::GetUint(cstring name, uint def)
 }
 
 //=================================================================================================
-__int64 Config::GetInt64(cstring name, int def)
-{
-	Entry* e = GetEntry(name);
-	if(!e)
-		return def;
-	else
-	{
-		__int64 value;
-		float f;
-		if(TextHelper::ToNumber(e->value.c_str(), value, f) != 0)
-			return value;
-		else
-			return def;
-	}
-}
-
-//=================================================================================================
 float Config::GetFloat(cstring name, float def)
 {
 	Entry* e = GetEntry(name);

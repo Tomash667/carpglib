@@ -97,7 +97,6 @@ public:
 	const string& GetString(cstring name, const string& def);
 	int GetInt(cstring name, int def = 0);
 	uint GetUint(cstring name, uint def = 0);
-	__int64 GetInt64(cstring name, int def = 0);
 	float GetFloat(cstring name, float def = 0.f);
 	Int2 GetInt2(cstring name, Int2 def = Int2(0, 0));
 

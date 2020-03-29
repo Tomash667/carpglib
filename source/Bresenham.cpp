@@ -277,7 +277,7 @@ void Pixel::PlotCubicBezierSeg(int x0, int y0, int x1, int y1, int x2, int y2, i
 void Pixel::PlotCubicBezier(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, float th, vector<Pixel>& pixels)
 {                                              /* plot any cubic Bezier curve */
 	int n = 0;
-	__int64 i = 0;
+	int64 i = 0;
 	int xc = x0 + x1 - x2 - x3, xa = xc - 4 * (x1 - x2);
 	int xb = x0 - x1 - x2 + x3, xd = xb + 4 * (x1 + x2);
 	int yc = y0 + y1 - y2 - y3, ya = yc - 4 * (y1 - y2);
