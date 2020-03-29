@@ -2,7 +2,7 @@
 .vs
 /lib
 /output
-/tools/converter/Debug
-/tools/converter/Release
+/tools/converter/bin
+/tools/converter/output
 /tools/pak/Debug
 /tools/pak/Release
