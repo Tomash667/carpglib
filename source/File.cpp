@@ -477,6 +477,7 @@ void io::OpenUrl(Cstring url)
 }
 
 //=================================================================================================
+#ifndef CORE_ONLY
 Buffer* io::Compress(byte* data, uint size)
 {
 	uint safe_size = size + size / 1000 + 13;
@@ -487,3 +488,4 @@ Buffer* io::Compress(byte* data, uint size)
 	buf->Resize(real_size);
 	return buf;
 }
+#endif

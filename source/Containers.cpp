@@ -97,6 +97,7 @@ void ObjectPoolLeakManager::Unregister(void* ptr)
 #endif
 
 //=================================================================================================
+#ifndef CORE_ONLY
 Buffer* Buffer::Decompress(uint real_size)
 {
 	Buffer* buf = Buffer::Get();
@@ -106,3 +107,4 @@ Buffer* Buffer::Decompress(uint real_size)
 	Free();
 	return buf;
 }
+#endif

@@ -33,8 +33,11 @@ namespace io
 	void Crypt(char* inp, uint inplen, cstring key, uint keylen);
 	// open url in default web browser
 	void OpenUrl(Cstring url);
+
+#ifndef CORE_ONLY
 	// Compress data to buffer
 	Buffer* Compress(byte* data, uint size);
+#endif
 }
 
 //-----------------------------------------------------------------------------
