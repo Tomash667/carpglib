@@ -471,6 +471,17 @@ string* ToString(const wchar_t* str)
 }
 
 //=================================================================================================
+const wchar_t* ToWString(cstring str)
+{
+	assert(str);
+	size_t len;
+	wchar_t* wstr = (wchar_t*)format_buf[format_marker];
+	mbstowcs_s(&len, wstr, FORMAT_LENGTH / 2, str, (FORMAT_LENGTH - 1) / 2);
+	format_marker = (format_marker + 1) % FORMAT_STRINGS;
+	return wstr;
+}
+
+//=================================================================================================
 void RemoveEndOfLine(string& str, bool remove)
 {
 	if(remove)

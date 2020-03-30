@@ -2,7 +2,9 @@
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
-#define STRICT
+#ifndef STRICT
+#	define STRICT
+#endif
 
 #include <Windows.h>
 

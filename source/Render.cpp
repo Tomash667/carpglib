@@ -9,16 +9,16 @@
 #include "DirectX.h"
 
 Render* app::render;
-static const D3DFORMAT DISPLAY_FORMAT = D3DFMT_X8R8G8B8;
-static const D3DFORMAT BACKBUFFER_FORMAT = D3DFMT_A8R8G8B8;
-static const D3DFORMAT ZBUFFER_FORMAT = D3DFMT_D24S8;
+static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 //=================================================================================================
-Render::Render() : initialized(false), d3d(nullptr), device(nullptr), sprite(nullptr), current_target(nullptr), current_surf(nullptr), vsync(true),
-lost_device(false), res_freed(false), shaders_dir("shaders"), refresh_hz(0), shader_version(-1), used_adapter(0), multisampling(0), multisampling_quality(0)
+Render::Render() : initialized(false), current_target(nullptr), /*current_surf(nullptr),*/ vsync(true),
+lost_device(false), res_freed(false), shaders_dir("shaders"), refresh_hz(0), shader_version(-1), used_adapter(0), multisampling(0), multisampling_quality(0),
+
+factory(nullptr), adapter(nullptr), swap_chain(nullptr), device(nullptr), device_context(nullptr), render_target(nullptr), depth_stencil_view(nullptr)
 {
-	for(int i = 0; i < VDI_MAX; ++i)
-		vertex_decl[i] = nullptr;
+	/*for(int i = 0; i < VDI_MAX; ++i)
+		vertex_decl[i] = nullptr;-*/
 }
 
 //=================================================================================================
@@ -31,52 +31,44 @@ Render::~Render()
 	}
 	for(ManagedResource* res : managed_res)
 		res->OnRelease();
-	for(int i = 0; i < VDI_MAX; ++i)
-		SafeRelease(vertex_decl[i]);
+	//for(int i = 0; i < VDI_MAX; ++i)
+	//	SafeRelease(vertex_decl[i]);
+	//----------------------------
+	SafeRelease(depth_stencil_view);
+	SafeRelease(render_target);
+	SafeRelease(swap_chain);
+	SafeRelease(device_context);
+
 	if(device)
 	{
-		device->SetStreamSource(0, nullptr, 0, 0);
-		device->SetIndices(nullptr);
+		// write to output directx leaks
+#ifdef _DEBUG
+		ID3D11Debug* debug;
+		device->QueryInterface(__uuidof(ID3D11Debug), (void**)&debug);
+		if(debug)
+		{
+			debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
+			debug->Release();
+		}
+#endif
+		device->Release();
 	}
-	SafeRelease(sprite);
-	SafeRelease(device);
-	SafeRelease(d3d);
+
+	SafeRelease(adapter);
+	SafeRelease(factory);
 }
 
 //=================================================================================================
 void Render::Init()
 {
-	// create direct3d object
-	d3d = Direct3DCreate9(D3D_SDK_VERSION);
-	if(!d3d)
-		throw "Render: Failed to create direct3d object.";
+	wnd_size = app::engine->GetWindowSize();
 
-	// get adapters count
-	uint adapters = d3d->GetAdapterCount();
-	Info("Render: Adapters count: %u", adapters);
-
-	// get adapters info
-	HRESULT hr;
-	D3DADAPTER_IDENTIFIER9 adapter;
-	for(uint i = 0; i < adapters; ++i)
-	{
-		hr = d3d->GetAdapterIdentifier(i, 0, &adapter);
-		if(FAILED(hr))
-			Warn("Render: Can't get info about adapter %d (%d).", i, hr);
-		else
-		{
-			Info("Render: Adapter %d: %s, version %d.%d.%d.%d", i, adapter.Description, HIWORD(adapter.DriverVersion.HighPart),
-				LOWORD(adapter.DriverVersion.HighPart), HIWORD(adapter.DriverVersion.LowPart), LOWORD(adapter.DriverVersion.LowPart));
-		}
-	}
-	if(used_adapter > (int)adapters)
-	{
-		Warn("Render: Invalid adapter %d, defaulting to 0.", used_adapter);
-		used_adapter = 0;
-	}
-
+	CreateAdapter();
+	CreateDeviceAndSwapChain();
+	CreateSizeDependentResources();
+	
 	// check shaders version
-	D3DCAPS9 caps;
+	/*D3DCAPS9 caps;
 	hr = d3d->GetDeviceCaps(used_adapter, D3DDEVTYPE_HAL, &caps);
 	if(FAILED(hr))
 		throw Format("Render: Failed to GetDeviceCaps (%u)! Make sure that you have graphic card drivers installed.", hr);
@@ -179,29 +171,147 @@ void Render::Init()
 		throw Format("Render: Failed to create direct3dx sprite (%d).", hr);
 
 	SetDefaultRenderState();
-	CreateVertexDeclarations();
+	CreateVertexDeclarations();*/
 
 	initialized = true;
 	Info("Render: Directx device created.");
 }
 
 //=================================================================================================
-void Render::GatherParams(D3DPRESENT_PARAMETERS& d3dpp)
+void Render::CreateAdapter()
 {
-	d3dpp.Windowed = !app::engine->IsFullscreen();
-	d3dpp.BackBufferCount = 1;
-	d3dpp.BackBufferFormat = BACKBUFFER_FORMAT;
-	d3dpp.BackBufferWidth = app::engine->GetWindowSize().x;
-	d3dpp.BackBufferHeight = app::engine->GetWindowSize().y;
-	d3dpp.EnableAutoDepthStencil = TRUE;
-	d3dpp.MultiSampleType = (D3DMULTISAMPLE_TYPE)multisampling;
-	d3dpp.MultiSampleQuality = multisampling_quality;
-	d3dpp.hDeviceWindow = app::engine->GetWindowHandle();
-	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.AutoDepthStencilFormat = ZBUFFER_FORMAT;
-	d3dpp.Flags = 0;
-	d3dpp.PresentationInterval = (vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE);
-	d3dpp.FullScreen_RefreshRateInHz = (d3dpp.Windowed ? 0 : refresh_hz);
+	// create dxgi factory
+	V(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&factory));
+
+	// enumerate adapters
+	IDXGIAdapter* tmp_adapter;
+	for(int i = 0; factory->EnumAdapters(i, &tmp_adapter) != DXGI_ERROR_NOT_FOUND; ++i)
+	{
+		DXGI_ADAPTER_DESC desc;
+		V(tmp_adapter->GetDesc(&desc));
+		Info("Render: Adapter %d: %s", i, ToString(desc.Description));
+		if(used_adapter == i)
+			adapter = tmp_adapter;
+		else
+			tmp_adapter->Release();
+	}
+
+	// fallback to first adapter
+	if(!adapter)
+	{
+		Warn("Render: Invalid adapter %d, defaulting to 0.", used_adapter);
+		used_adapter = 0;
+		V(factory->EnumAdapters(0, &adapter));
+	}
+}
+
+//=================================================================================================
+void Render::CreateDeviceAndSwapChain()
+{
+	DXGI_SWAP_CHAIN_DESC swap_desc = {};
+	swap_desc.BufferCount = 1;
+	swap_desc.BufferDesc.Width = wnd_size.x;
+	swap_desc.BufferDesc.Height = wnd_size.y;
+	swap_desc.BufferDesc.Format = DISPLAY_FORMAT;
+	swap_desc.BufferDesc.RefreshRate.Numerator = 0;
+	swap_desc.BufferDesc.RefreshRate.Denominator = 1;
+	swap_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swap_desc.OutputWindow = app::engine->GetWindowHandle();
+	swap_desc.SampleDesc.Count = 1;
+	swap_desc.SampleDesc.Quality = 0;
+	swap_desc.Windowed = true;
+	swap_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	swap_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+	int flags = 0;
+#ifdef _DEBUG
+	flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+	D3D_FEATURE_LEVEL feature_levels[] = { D3D_FEATURE_LEVEL_11_0 };
+	D3D_FEATURE_LEVEL feature_level;
+	HRESULT result = D3D11CreateDeviceAndSwapChain(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags, feature_levels, countof(feature_levels),
+		D3D11_SDK_VERSION, &swap_desc, &swap_chain, &device, &feature_level, &device_context);
+	if(FAILED(result))
+		throw Format("Failed to create device and swap chain (%u).", result);
+
+	// disable builtin alt+enter
+	V(factory->MakeWindowAssociation(swap_desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES));
+}
+
+//=================================================================================================
+void Render::CreateSizeDependentResources()
+{
+	CreateRenderTarget();
+	CreateDepthStencilView();
+	device_context->OMSetRenderTargets(1, &render_target, depth_stencil_view);
+	SetViewport();
+}
+
+//=================================================================================================
+void Render::CreateRenderTarget()
+{
+	HRESULT result;
+	ID3D11Texture2D* back_buffer;
+	result = swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&back_buffer);
+	if(FAILED(result))
+		throw Format("Failed to get back buffer (%u).", result);
+
+	// Create the render target view with the back buffer pointer.
+	result = device->CreateRenderTargetView(back_buffer, NULL, &render_target);
+	if(FAILED(result))
+		throw Format("Failed to create render target view (%u).", result);
+
+	// Release pointer to the back buffer as we no longer need it.
+	back_buffer->Release();
+}
+
+//=================================================================================================
+void Render::CreateDepthStencilView()
+{
+	// create depth buffer texture
+	D3D11_TEXTURE2D_DESC tex_desc = {};
+
+	tex_desc.Width = wnd_size.x;
+	tex_desc.Height = wnd_size.y;
+	tex_desc.MipLevels = 1;
+	tex_desc.ArraySize = 1;
+	tex_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	tex_desc.SampleDesc.Count = 1;
+	tex_desc.SampleDesc.Quality = 0;
+	tex_desc.Usage = D3D11_USAGE_DEFAULT;
+	tex_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	tex_desc.CPUAccessFlags = 0;
+	tex_desc.MiscFlags = 0;
+
+	ID3D11Texture2D* depth_tex;
+	V(device->CreateTexture2D(&tex_desc, nullptr, &depth_tex));
+
+	//==================================================================
+	// create depth stencil view from texture
+	D3D11_DEPTH_STENCIL_VIEW_DESC view_desc = {};
+
+	view_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	view_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	view_desc.Texture2D.MipSlice = 0;
+
+	V(device->CreateDepthStencilView(depth_tex, &view_desc, &depth_stencil_view));
+
+	depth_tex->Release();
+}
+
+//=================================================================================================
+void Render::SetViewport()
+{
+	D3D11_VIEWPORT viewport;
+	viewport.Width = (float)wnd_size.x;
+	viewport.Height = (float)wnd_size.y;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+
+	device_context->RSSetViewports(1, &viewport);
 }
 
 //=================================================================================================
@@ -209,7 +319,7 @@ void Render::LogMultisampling()
 {
 	LocalString s = "Render: Available multisampling: ";
 
-	for(int j = 2; j <= 16; ++j)
+	/*for(int j = 2; j <= 16; ++j)
 	{
 		DWORD levels, levels2;
 		if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(used_adapter, D3DDEVTYPE_HAL, BACKBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels))
@@ -217,7 +327,7 @@ void Render::LogMultisampling()
 		{
 			s += Format("x%d(%d), ", j, min(levels, levels2));
 		}
-	}
+	}*/
 
 	if(s.at_back(1) == ':')
 		s += "none";
@@ -230,7 +340,7 @@ void Render::LogMultisampling()
 //=================================================================================================
 void Render::LogAndSelectResolution()
 {
-	struct Res
+	/*struct Res
 	{
 		int w, h, hz;
 
@@ -320,17 +430,17 @@ void Render::LogAndSelectResolution()
 		else
 			Info("Render: Defaulting refresh rate to %d Hz.", best_valid_hz);
 		refresh_hz = best_valid_hz;
-	}
+	}*/
 }
 
 //=================================================================================================
 void Render::SetDefaultRenderState()
 {
-	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+	/*V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
 	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
 	V(device->SetRenderState(D3DRS_ALPHAREF, 200));
-	V(device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL));
+	V(device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL));*/
 
 	r_alphatest = false;
 	r_alphablend = false;
@@ -341,7 +451,7 @@ void Render::SetDefaultRenderState()
 //=================================================================================================
 void Render::CreateVertexDeclarations()
 {
-	const D3DVERTEXELEMENT9 Default[] = {
+	/*const D3DVERTEXELEMENT9 Default[] = {
 		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
 		{0, 12,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_NORMAL,		0},
 		{0, 24, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0},
@@ -407,13 +517,13 @@ void Render::CreateVertexDeclarations()
 		{0,	0,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
 		D3DDECL_END()
 	};
-	V(device->CreateVertexDeclaration(Pos, &vertex_decl[VDI_POS]));
+	V(device->CreateVertexDeclaration(Pos, &vertex_decl[VDI_POS]));*/
 }
 
 //=================================================================================================
 bool Render::Reset(bool force)
 {
-	Info("Render: Reseting device.");
+	/*Info("Render: Reseting device.");
 	BeforeReset();
 
 	// gather params
@@ -438,14 +548,14 @@ bool Render::Reset(bool force)
 		}
 	}
 
-	AfterReset();
+	AfterReset();*/
 	return true;
 }
 
 //=================================================================================================
 void Render::WaitReset()
 {
-	Info("Render: Device lost at loading. Waiting for reset.");
+	/*Info("Render: Device lost at loading. Waiting for reset.");
 	BeforeReset();
 
 	app::engine->UpdateActivity(false);
@@ -487,13 +597,13 @@ void Render::WaitReset()
 		Sleep(500);
 	}
 
-	AfterReset();
+	AfterReset();*/
 }
 
 //=================================================================================================
 void Render::Draw(bool call_present)
 {
-	HRESULT hr = device->TestCooperativeLevel();
+	/*HRESULT hr = device->TestCooperativeLevel();
 	if(hr != D3D_OK)
 	{
 		lost_device = true;
@@ -528,26 +638,26 @@ void Render::Draw(bool call_present)
 			else
 				throw Format("Render: Failed to present screen (%d).", hr);
 		}
-	}
+	}*/
 }
 
 //=================================================================================================
 void Render::BeforeReset()
 {
-	if(res_freed)
+	/*if(res_freed)
 		return;
 	res_freed = true;
 	V(sprite->OnLostDevice());
 	for(ShaderHandler* shader : shaders)
 		shader->OnReset();
 	for(ManagedResource* res : managed_res)
-		res->OnReset();
+		res->OnReset();*/
 }
 
 //=================================================================================================
 void Render::AfterReset()
 {
-	SetDefaultRenderState();
+	/*SetDefaultRenderState();
 	V(sprite->OnResetDevice());
 	for(ShaderHandler* shader : shaders)
 		shader->OnReload();
@@ -555,13 +665,13 @@ void Render::AfterReset()
 		res->OnReload();
 	V(sprite->OnResetDevice());
 	lost_device = false;
-	res_freed = false;
+	res_freed = false;*/
 }
 
 //=================================================================================================
 bool Render::CheckDisplay(const Int2& size, int& hz)
 {
-	assert(size.x >= Engine::MIN_WINDOW_SIZE.x && size.x >= Engine::MIN_WINDOW_SIZE.y);
+	/*assert(size.x >= Engine::MIN_WINDOW_SIZE.x && size.x >= Engine::MIN_WINDOW_SIZE.y);
 
 	// check minimum resolution
 	if(size.x < Engine::MIN_WINDOW_SIZE.x || size.y < Engine::MIN_WINDOW_SIZE.y)
@@ -598,7 +708,9 @@ bool Render::CheckDisplay(const Int2& size, int& hz)
 		}
 
 		return false;
-	}
+	}*/
+
+	return false;
 }
 
 //=================================================================================================
@@ -630,7 +742,7 @@ void Render::ReloadShaders()
 }
 
 //=================================================================================================
-ID3DXEffect* Render::CompileShader(cstring name)
+/*ID3DXEffect* Render::CompileShader(cstring name)
 {
 	assert(name);
 
@@ -655,8 +767,8 @@ ID3DXEffect* Render::CompileShader(cstring name)
 
 //=================================================================================================
 ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
-{
-	assert(params.name && params.cache_name);
+{*/
+	/*assert(params.name && params.cache_name);
 
 	ID3DXBuffer* errors = nullptr;
 	ID3DXEffectCompiler* compiler = nullptr;
@@ -798,13 +910,14 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 	SafeRelease(effect_buffer);
 	SafeRelease(compiler);
 
-	return effect;
-}
+	return effect;*/
+//return nullptr;
+//}
 
 //=================================================================================================
 TEX Render::CreateTexture(const Int2& size, const Color* fill)
 {
-	assert(size <= app::engine->wnd_size);
+	/*assert(size <= app::engine->wnd_size);
 	TEX tex;
 	V(device->CreateTexture(size.x, size.y, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, nullptr));
 	if(fill)
@@ -812,68 +925,72 @@ TEX Render::CreateTexture(const Int2& size, const Color* fill)
 		TextureLock lock(tex);
 		lock.Fill(*fill);
 	}
-	return tex;
+	return tex;*/
+	return nullptr;
 }
 
 //=================================================================================================
 DynamicTexture* Render::CreateDynamicTexture(const Int2& size)
 {
-	assert(size <= app::engine->wnd_size);
+	/*assert(size <= app::engine->wnd_size);
 	assert(size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y));
 	DynamicTexture* tex = new DynamicTexture;
 	tex->size = size;
 	CreateDynamicTexture(tex);
 	tex->state = ResourceState::Loaded;
 	managed_res.push_back(tex);
-	return tex;
+	return tex;*/
+	return nullptr;
 }
 
 //=================================================================================================
 void Render::CreateDynamicTexture(DynamicTexture* tex)
 {
-	V(device->CreateTexture(tex->size.x, tex->size.y, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tex->tex, nullptr));
+	//V(device->CreateTexture(tex->size.x, tex->size.y, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tex->tex, nullptr));
 }
 
 //=================================================================================================
 RenderTarget* Render::CreateRenderTarget(const Int2& size)
 {
-	assert(size <= app::engine->wnd_size);
+	/*assert(size <= app::engine->wnd_size);
 	assert(size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y));
 	RenderTarget* target = new RenderTarget;
 	target->size = size;
 	CreateRenderTargetTexture(target);
 	managed_res.push_back(target);
-	return target;
+	return target;*/
+	return nullptr;
 }
 
 //=================================================================================================
 void Render::CreateRenderTargetTexture(RenderTarget* target)
 {
-	V(device->CreateTexture(target->size.x, target->size.y, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &target->tex, nullptr));
+	/*V(device->CreateTexture(target->size.x, target->size.y, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &target->tex, nullptr));
 	D3DMULTISAMPLE_TYPE type = (D3DMULTISAMPLE_TYPE)multisampling;
 	if(type != D3DMULTISAMPLE_NONE)
 		V(device->CreateRenderTarget(target->size.x, target->size.y, D3DFMT_A8R8G8B8, type, multisampling_quality, FALSE, &target->surf, nullptr));
 	else
 		target->surf = nullptr;
-	target->state = ResourceState::Loaded;
+	target->state = ResourceState::Loaded;*/
 }
 
 //=================================================================================================
 Texture* Render::CopyToTexture(RenderTarget* target)
 {
-	TEX tex = CopyToTextureRaw(target);
+	/*TEX tex = CopyToTextureRaw(target);
 	if(!tex)
 		return nullptr;
 	Texture* t = new Texture;
 	t->tex = tex;
 	t->state = ResourceState::Loaded;
-	return t;
+	return t;*/
+	return nullptr;
 }
 
 //=================================================================================================
 TEX Render::CopyToTextureRaw(RenderTarget* target, Int2 size)
 {
-	assert(target);
+	/*assert(target);
 
 	if(size == Int2::Zero)
 		size = target->GetSize();
@@ -894,7 +1011,8 @@ TEX Render::CopyToTextureRaw(RenderTarget* target, Int2 size)
 		WaitReset();
 		return nullptr;
 	}
-	return tex;
+	return tex;*/
+	return nullptr;
 }
 
 //=================================================================================================
@@ -903,7 +1021,7 @@ void Render::SetAlphaBlend(bool use_alphablend)
 	if(use_alphablend != r_alphablend)
 	{
 		r_alphablend = use_alphablend;
-		V(device->SetRenderState(D3DRS_ALPHABLENDENABLE, r_alphablend ? TRUE : FALSE));
+		//V(device->SetRenderState(D3DRS_ALPHABLENDENABLE, r_alphablend ? TRUE : FALSE));
 	}
 }
 
@@ -913,7 +1031,7 @@ void Render::SetAlphaTest(bool use_alphatest)
 	if(use_alphatest != r_alphatest)
 	{
 		r_alphatest = use_alphatest;
-		V(device->SetRenderState(D3DRS_ALPHATESTENABLE, r_alphatest ? TRUE : FALSE));
+		//V(device->SetRenderState(D3DRS_ALPHATESTENABLE, r_alphatest ? TRUE : FALSE));
 	}
 }
 
@@ -923,7 +1041,7 @@ void Render::SetNoCulling(bool use_nocull)
 	if(use_nocull != r_nocull)
 	{
 		r_nocull = use_nocull;
-		V(device->SetRenderState(D3DRS_CULLMODE, r_nocull ? D3DCULL_NONE : D3DCULL_CCW));
+		//V(device->SetRenderState(D3DRS_CULLMODE, r_nocull ? D3DCULL_NONE : D3DCULL_CCW));
 	}
 }
 
@@ -933,7 +1051,7 @@ void Render::SetNoZWrite(bool use_nozwrite)
 	if(use_nozwrite != r_nozwrite)
 	{
 		r_nozwrite = use_nozwrite;
-		V(device->SetRenderState(D3DRS_ZWRITEENABLE, r_nozwrite ? FALSE : TRUE));
+		//V(device->SetRenderState(D3DRS_ZWRITEENABLE, r_nozwrite ? FALSE : TRUE));
 	}
 }
 
@@ -951,7 +1069,7 @@ void Render::SetVsync(bool new_vsync)
 //=================================================================================================
 int Render::SetMultisampling(int type, int level)
 {
-	if(type == multisampling && (level == -1 || level == multisampling_quality))
+	/*if(type == multisampling && (level == -1 || level == multisampling_quality))
 		return 1;
 
 	if(!initialized)
@@ -980,13 +1098,14 @@ int Render::SetMultisampling(int type, int level)
 		return 2;
 	}
 	else
-		return 0;
+		return 0;*/
+	return 0;
 }
 
 //=================================================================================================
 void Render::GetResolutions(vector<Resolution>& v) const
 {
-	v.clear();
+	/*v.clear();
 	uint display_modes = d3d->GetAdapterModeCount(used_adapter, DISPLAY_FORMAT);
 	for(uint i = 0; i < display_modes; ++i)
 	{
@@ -994,13 +1113,13 @@ void Render::GetResolutions(vector<Resolution>& v) const
 		V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
 		if(d_mode.Width >= (uint)Engine::MIN_WINDOW_SIZE.x && d_mode.Height >= (uint)Engine::MIN_WINDOW_SIZE.y)
 			v.push_back({ Int2(d_mode.Width, d_mode.Height), d_mode.RefreshRate });
-	}
+	}*/
 }
 
 //=================================================================================================
 void Render::GetMultisamplingModes(vector<Int2>& v) const
 {
-	v.clear();
+	/*v.clear();
 	for(int j = 2; j <= 16; ++j)
 	{
 		DWORD levels, levels2;
@@ -1011,13 +1130,13 @@ void Render::GetMultisamplingModes(vector<Int2>& v) const
 			for(int i = 0; i < level; ++i)
 				v.push_back(Int2(j, i));
 		}
-	}
+	}*/
 }
 
 //=================================================================================================
 void Render::SetTarget(RenderTarget* target)
 {
-	if(target)
+	/*if(target)
 	{
 		assert(!current_target);
 
@@ -1059,12 +1178,12 @@ void Render::SetTarget(RenderTarget* target)
 
 		current_target = nullptr;
 		current_surf = nullptr;
-	}
+	}*/
 }
 
 //=================================================================================================
 void Render::SetTextureAddressMode(TextureAddressMode mode)
 {
-	V(device->SetSamplerState(0, D3DSAMP_ADDRESSU, (D3DTEXTUREADDRESS)mode));
-	V(device->SetSamplerState(0, D3DSAMP_ADDRESSV, (D3DTEXTUREADDRESS)mode));
+	//V(device->SetSamplerState(0, D3DSAMP_ADDRESSU, (D3DTEXTUREADDRESS)mode));
+	//V(device->SetSamplerState(0, D3DSAMP_ADDRESSV, (D3DTEXTUREADDRESS)mode));
 }

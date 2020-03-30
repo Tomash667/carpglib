@@ -27,14 +27,24 @@ struct CompileShaderParams
 	cstring cache_name;
 	string* input;
 	FileTime file_time;
-	D3DXMACRO* macros;
-	ID3DXEffectPool* pool;
+	//D3DXMACRO* macros;
+	//ID3DXEffectPool* pool;
+	FIXME;
 };
 
 //-----------------------------------------------------------------------------
 class Render
 {
 public:
+	enum TextureAddressMode
+	{
+		TEX_ADR_WRAP = 1,
+		TEX_ADR_MIRROR = 2,
+		TEX_ADR_CLAMP = 3,
+		TEX_ADR_BORDER = 4,
+		TEX_ADR_MIRRORONCE = 5
+	};
+
 	Render();
 	~Render();
 	void Init();
@@ -44,8 +54,9 @@ public:
 	bool CheckDisplay(const Int2& size, int& hz); // dla zera zwraca najlepszy hz
 	void RegisterShader(ShaderHandler* shader);
 	void ReloadShaders();
-	ID3DXEffect* CompileShader(cstring name);
-	ID3DXEffect* CompileShader(CompileShaderParams& params);
+	//ID3DXEffect* CompileShader(cstring name);
+	//ID3DXEffect* CompileShader(CompileShaderParams& params);
+	FIXME;
 	TEX CreateTexture(const Int2& size, const Color* fill = nullptr);
 	DynamicTexture* CreateDynamicTexture(const Int2& size);
 	void CreateDynamicTexture(DynamicTexture* tex);
@@ -57,8 +68,8 @@ public:
 	bool IsLostDevice() const { return lost_device; }
 	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	bool IsVsyncEnabled() const { return vsync; }
-	IDirect3DDevice9* GetDevice() const { return device; }
-	ID3DXSprite* GetSprite() const { return sprite; }
+	ID3D11Device* GetDevice() const { return device; }
+	ID3D11DeviceContext* GetDeviceContext() const { return device_context; }
 	void GetMultisampling(int& ms, int& msq) const { ms = multisampling; msq = multisampling_quality; }
 	void GetResolutions(vector<Resolution>& v) const;
 	void GetMultisamplingModes(vector<Int2>& v) const;
@@ -66,7 +77,8 @@ public:
 	int GetShaderVersion() const { return shader_version; }
 	int GetAdapter() const { return used_adapter; }
 	const string& GetShadersDir() const { return shaders_dir; }
-	IDirect3DVertexDeclaration9* GetVertexDeclaration(VertexDeclarationId id) { return vertex_decl[id]; }
+	//IDirect3DVertexDeclaration9* GetVertexDeclaration(VertexDeclarationId id) { return vertex_decl[id]; }
+	FIXME;
 	void SetAlphaBlend(bool use_alphablend);
 	void SetAlphaTest(bool use_alphatest);
 	void SetNoCulling(bool use_nocull);
@@ -79,9 +91,11 @@ public:
 	void SetTextureAddressMode(TextureAddressMode mode);
 	void SetShadersDir(cstring dir) { shaders_dir = dir; }
 	void SetAdapter(int adapter) { assert(!initialized); used_adapter = adapter; }
+	//
+	ID3D11Buffer* CreateConstantBuffer(uint size);
+	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP);
 
 private:
-	void GatherParams(D3DPRESENT_PARAMETERS& d3dpp);
 	void LogMultisampling();
 	void LogAndSelectResolution();
 	void SetDefaultRenderState();
@@ -89,14 +103,28 @@ private:
 	void BeforeReset();
 	void AfterReset();
 
-	IDirect3D9* d3d;
-	IDirect3DDevice9* device;
-	ID3DXSprite* sprite;
+	//-------------------
+	void CreateAdapter();
+	void CreateDeviceAndSwapChain();
+	void CreateSizeDependentResources();
+	void CreateRenderTarget();
+	void CreateDepthStencilView();
+	void SetViewport();
+	IDXGIFactory* factory;
+	IDXGIAdapter* adapter;
+	IDXGISwapChain* swap_chain;
+	ID3D11Device* device;
+	ID3D11DeviceContext* device_context;
+	ID3D11RenderTargetView* render_target;
+	ID3D11DepthStencilView* depth_stencil_view;
+	Int2 wnd_size;
+	//-------------------
 	vector<ShaderHandler*> shaders;
 	vector<ManagedResource*> managed_res;
-	IDirect3DVertexDeclaration9* vertex_decl[VDI_MAX];
+	//IDirect3DVertexDeclaration9* vertex_decl[VDI_MAX];
 	RenderTarget* current_target;
-	SURFACE current_surf;
+	//SURFACE current_surf;
+	FIXME;
 	string shaders_dir;
 	int used_adapter, shader_version, refresh_hz, multisampling, multisampling_quality;
 	bool initialized, vsync, lost_device, res_freed, r_alphatest, r_nozwrite, r_nocull, r_alphablend;

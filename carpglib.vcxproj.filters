@@ -295,6 +295,12 @@
     <ClInclude Include="include\ManagedResource.h">
       <Filter>entity</Filter>
     </ClInclude>
+    <ClInclude Include="include\WICTextureLoader.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\FontLoader.h">
+      <Filter>resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">
@@ -538,6 +544,12 @@
       <Filter>components</Filter>
     </ClCompile>
     <ClCompile Include="source\Pch.cpp" />
+    <ClCompile Include="source\WICTextureLoader.cpp">
+      <Filter>resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\FontLoader.cpp">
+      <Filter>resources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

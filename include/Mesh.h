@@ -146,7 +146,7 @@ struct Mesh : public Resource
 	~Mesh();
 
 	void SetupBoneMatrices();
-	void Load(StreamReader& stream, IDirect3DDevice9* device);
+	void Load(StreamReader& stream, ID3D11Device* device);
 	void LoadMetadata(StreamReader& stream);
 	void LoadHeader(StreamReader& stream);
 	void SetVertexSizeDecl();
@@ -179,8 +179,8 @@ struct Mesh : public Resource
 	Point* FindNextPoint(cstring name, Point* point);
 
 	Header head;
-	VB vb;
-	IB ib;
+	ID3D11Buffer* vb;
+	ID3D11Buffer* ib;
 	VertexDeclarationId vertex_decl;
 	uint vertex_size;
 	vector<Submesh> subs;

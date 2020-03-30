@@ -36,6 +36,7 @@
     <ClInclude Include="include\DrawBox.h" />
     <ClInclude Include="include\Engine.h" />
     <ClInclude Include="include\Common.h" />
+    <ClInclude Include="include\FontLoader.h" />
     <ClInclude Include="include\ManagedResource.h" />
     <ClInclude Include="include\Pch.h" />
     <ClInclude Include="include\Entity.h" />
@@ -109,6 +110,7 @@
     <ClInclude Include="include\TreeView.h" />
     <ClInclude Include="include\VertexData.h" />
     <ClInclude Include="include\VertexDeclaration.h" />
+    <ClInclude Include="include\WICTextureLoader.h" />
     <ClInclude Include="include\Window.h" />
     <ClInclude Include="include\WindowsIncludes.h" />
   </ItemGroup>
@@ -136,6 +138,7 @@
     <ClCompile Include="source\DialogBox.cpp" />
     <ClCompile Include="source\DrawBox.cpp" />
     <ClCompile Include="source\Engine.cpp" />
+    <ClCompile Include="source\FontLoader.cpp" />
     <ClCompile Include="source\Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -199,6 +202,7 @@
     <ClCompile Include="source\TooltipController.cpp" />
     <ClCompile Include="source\TreeView.cpp" />
     <ClCompile Include="source\VertexData.cpp" />
+    <ClCompile Include="source\WICTextureLoader.cpp" />
     <ClCompile Include="source\Window.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "WindowsIncludes.h"
 #define far
-#include <d3dx9.h>
+#include <d3d11_1.h>
 #undef DrawText
 #undef CreateFont
 #undef GetCharWidth

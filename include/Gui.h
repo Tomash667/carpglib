@@ -126,7 +126,7 @@ public:
 	void SetText(cstring ok, cstring yes, cstring no, cstring cancel);
 	void Draw(bool draw_layers, bool draw_dialogs);
 	bool AddFont(cstring filename);
-	Font* CreateFont(cstring name, int size, int weight, int outline = 0);
+	Font* GetFont(cstring name, int size, int weight = 4, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)
 	zwraca false je¿eli by³ clipping od do³u (nie kontuuj tekstu w flow)
 	Znak $ oznacza jak¹œ specjaln¹ czynnoœæ (o ile jest ustawiona flaga DTF_PARSE_SPECIAL):
@@ -158,7 +158,6 @@ public:
 	void DrawSpriteRect(Texture* t, const Rect& rect, Color color = Color::White);
 	bool HaveDialog(cstring name);
 	bool HaveDialog(DialogBox* dialog);
-	IDirect3DDevice9* GetDevice() { return device; }
 	bool AnythingVisible() const;
 	void OnResize();
 	void DrawSpriteRectPart(Texture* t, const Rect& rect, const Rect& part, Color color = Color::White);
@@ -229,15 +228,11 @@ private:
 	void Lock(bool outline = false);
 	void Flush(bool lock = false);
 	void SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc);
-	void CreateFontInternal(Font* font, ID3DXFont* dx_font, const Int2& tex_size, int outline, int max_outline);
-	bool TryCreateFontInternal(Font* font, ID3DXFont* dx_font, const Int2& tex_size, int outline, int max_outline);
 	void AddRect(const Vec2& left_top, const Vec2& right_bottom, const Vec4& color);
 
+	FontLoader* font_loader;
 	GuiShader* shader;
-	IDirect3DDevice9* device;
-	ID3DXSprite* sprite;
-	RenderTarget* rtFontTarget;
-	TEX tSet, tCurrent, tCurrent2, tPixel;
+	TEX tSet, tCurrent, tCurrent2;
 	vector<DialogBox*> created_dialogs;
 	Container* layer, *dialog_layer;
 	VParticle* v, *v2;

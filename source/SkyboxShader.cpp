@@ -6,41 +6,41 @@
 #include "DirectX.h"
 
 //=================================================================================================
-SkyboxShader::SkyboxShader() : effect(nullptr)
+SkyboxShader::SkyboxShader() : vertex_shader(nullptr), pixel_shader(nullptr), layout(nullptr), vs_globals(nullptr), sampler(nullptr)
 {
 }
 
 //=================================================================================================
 void SkyboxShader::OnInit()
 {
-	effect = app::render->CompileShader("skybox.fx");
+	D3D11_INPUT_ELEMENT_DESC desc[] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+	app::render->CreateShader("gui.hlsl", desc, countof(desc), vertex_shader, pixel_shader, layout);
+	vs_globals = app::render->CreateConstantBuffer(sizeof(Matrix));
+	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
+
+
+
+	/*effect = app::render->CompileShader("skybox.fx");
 
 	tech = effect->GetTechniqueByName("skybox");
 	assert(tech);
 
 	hMatCombined = effect->GetParameterByName(nullptr, "matCombined");
 	hTex = effect->GetParameterByName(nullptr, "tex0");
-	assert(hMatCombined && hTex);
-}
-
-//=================================================================================================
-void SkyboxShader::OnReset()
-{
-	if(effect)
-		V(effect->OnLostDevice());
-}
-
-//=================================================================================================
-void SkyboxShader::OnReload()
-{
-	if(effect)
-		V(effect->OnResetDevice());
+	assert(hMatCombined && hTex);*/
 }
 
 //=================================================================================================
 void SkyboxShader::OnRelease()
 {
-	SafeRelease(effect);
+	SafeRelease(vertex_shader);
+	SafeRelease(pixel_shader);
+	SafeRelease(layout);
+	SafeRelease(vs_globals);
+	SafeRelease(sampler);
 }
 
 //=================================================================================================

@@ -18,11 +18,12 @@ public:
 	uint SaveToFile(FileWriter& f);
 	void Resize(const Int2& new_size);
 	void FreeSurface();
-	SURFACE GetSurface();
+	//SURFACE GetSurface();
 	const Int2& GetSize() const { return size; }
 
 private:
-	SURFACE surf;
+	//SURFACE surf;
+	FIXME; // ^
 	Int2 size;
 	bool tmp_surf;
 };

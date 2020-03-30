@@ -9,13 +9,14 @@ class SkyboxShader : public ShaderHandler
 public:
 	SkyboxShader();
 	void OnInit() override;
-	void OnReset() override;
-	void OnReload() override;
 	void OnRelease() override;
+	cstring GetName() const override { return "skybox"; }
 	void Draw(Mesh& mesh, Camera& camera);
 
 private:
-	ID3DXEffect* effect;
-	D3DXHANDLE tech;
-	D3DXHANDLE hMatCombined, hTex;
+	ID3D11VertexShader* vertex_shader;
+	ID3D11PixelShader* pixel_shader;
+	ID3D11InputLayout* layout;
+	ID3D11Buffer* vs_globals;
+	ID3D11SamplerState* sampler;
 };
