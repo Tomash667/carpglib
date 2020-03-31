@@ -45,6 +45,12 @@ public:
 		TEX_ADR_MIRRORONCE = 5
 	};
 
+	enum FilterMode
+	{
+		FILTER_NONE = 0,
+		FILTER_LINEAR = 1
+	};
+
 	Render();
 	~Render();
 	void Init();
@@ -93,7 +99,9 @@ public:
 	void SetAdapter(int adapter) { assert(!initialized); used_adapter = adapter; }
 	//
 	ID3D11Buffer* CreateConstantBuffer(uint size);
-	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP);
+	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP, FilterMode mip_filter = FILTER_LINEAR);
+	void CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uint input_count, ID3D11VertexShader*& vertex_shader,
+		ID3D11PixelShader*& pixel_shader, ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr);
 
 private:
 	void LogMultisampling();

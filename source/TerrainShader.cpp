@@ -8,68 +8,58 @@
 #include "Scene.h"
 #include "DirectX.h"
 
-//=================================================================================================
-TerrainShader::TerrainShader() : device(app::render->GetDevice()), vertex_decl(nullptr), effect(nullptr)
+struct VsGlobals
 {
-	const D3DVERTEXELEMENT9 decl[] = {
-		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,	0},
-		{0, 12,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_NORMAL,	0},
-		{0, 24, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,	0},
-		{0, 32, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,	1},
-		D3DDECL_END()
-	};
-	V(device->CreateVertexDeclaration(decl, &vertex_decl));
-}
+	Matrix matCombined;
+	Matrix matWorld;
+};
+
+struct PsGlobals
+{
+	Vec4 colorAmbient;
+	Vec4 colorDiffuse;
+	Vec3 lightDir;
+	float _pad;
+	Vec4 fogColor;
+	Vec4 fogParam;
+};
 
 //=================================================================================================
-TerrainShader::~TerrainShader()
+TerrainShader::TerrainShader() : device_context(app::render->GetDeviceContext()), vertex_shader(nullptr), pixel_shader(nullptr), layout(nullptr),
+vs_globals(nullptr), ps_globals(nullptr), samplers()
 {
-	SafeRelease(vertex_decl);
 }
 
 //=================================================================================================
 void TerrainShader::OnInit()
 {
-	effect = app::render->CompileShader("terrain.fx");
-
-	tech = effect->GetTechniqueByName("terrain");
-	assert(tech);
-
-	h_mat = effect->GetParameterByName(nullptr, "matCombined");
-	h_world = effect->GetParameterByName(nullptr, "matWorld");
-	h_tex_blend = effect->GetParameterByName(nullptr, "texBlend");
-	h_tex[0] = effect->GetParameterByName(nullptr, "tex0");
-	h_tex[1] = effect->GetParameterByName(nullptr, "tex1");
-	h_tex[2] = effect->GetParameterByName(nullptr, "tex2");
-	h_tex[3] = effect->GetParameterByName(nullptr, "tex3");
-	h_tex[4] = effect->GetParameterByName(nullptr, "tex4");
-	h_color_ambient = effect->GetParameterByName(nullptr, "colorAmbient");
-	h_color_diffuse = effect->GetParameterByName(nullptr, "colorDiffuse");
-	h_light_dir = effect->GetParameterByName(nullptr, "lightDir");
-	h_fog_color = effect->GetParameterByName(nullptr, "fogColor");
-	h_fog_params = effect->GetParameterByName(nullptr, "fogParam");
-	assert(h_mat && h_world && h_tex_blend && h_tex[0] && h_tex[1] && h_tex[2] && h_tex[3] && h_tex[4]
-		&& h_color_ambient && h_color_diffuse && h_light_dir && h_fog_color && h_fog_params);
-}
-
-//=================================================================================================
-void TerrainShader::OnReset()
-{
-	if(effect)
-		V(effect->OnLostDevice());
-}
-
-//=================================================================================================
-void TerrainShader::OnReload()
-{
-	if(effect)
-		V(effect->OnResetDevice());
+	D3D11_INPUT_ELEMENT_DESC desc[] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+	app::render->CreateShader("terrain.hlsl", desc, countof(desc), vertex_shader, pixel_shader, layout);
+	vs_globals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
+	ps_globals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
+	samplers[0] = app::render->CreateSampler(Render::TEX_ADR_CLAMP, Render::FILTER_NONE);
+	samplers[1] = app::render->CreateSampler();
+	samplers[2] = app::render->CreateSampler();
+	samplers[3] = app::render->CreateSampler();
+	samplers[4] = app::render->CreateSampler();
+	samplers[5] = app::render->CreateSampler();
 }
 
 //=================================================================================================
 void TerrainShader::OnRelease()
 {
-	SafeRelease(effect);
+	SafeRelease(vertex_shader);
+	SafeRelease(pixel_shader);
+	SafeRelease(layout);
+	SafeRelease(vs_globals);
+	SafeRelease(ps_globals);
+	for(int i = 0; i < 6; ++i)
+		SafeRelease(samplers[i]);
 }
 
 //=================================================================================================
@@ -82,41 +72,48 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 	app::render->SetNoCulling(false);
 	app::render->SetNoZWrite(false);
 
-	V(effect->SetTechnique(tech));
-	V(effect->SetMatrix(h_world, (D3DXMATRIX*)&Matrix::IdentityMatrix));
-	V(effect->SetMatrix(h_mat, (D3DXMATRIX*)&camera->mat_view_proj));
-	V(effect->SetTexture(h_tex_blend, terrain->GetSplatTexture()));
+	// setup shader
+	device_context->IASetInputLayout(layout);
+	device_context->VSSetShader(vertex_shader, nullptr, 0);
+	device_context->PSSetShader(pixel_shader, nullptr, 0);
+	device_context->PSSetSamplers(0, 6, samplers);
+	uint stride = sizeof(TerrainVertex),
+		offset = 0;
+	//device_context->IASetVertexBuffers(0, 1, &mesh.vb, &stride, &offset);
+	//device_context->IASetIndexBuffer(mesh.ib, DXGI_FORMAT_R16_UINT, 0);
+	FIXME; // vb, ib ?
+
+	// vertex shader constants
+	D3D11_MAPPED_SUBRESOURCE resource;
+	V(device_context->Map(vs_globals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
+	VsGlobals& vsg = *(VsGlobals*)resource.pData;
+	vsg.matCombined = camera->mat_view_proj.Transpose();
+	vsg.matWorld = Matrix::IdentityMatrix.Transpose();
+	device_context->Unmap(vs_globals, 0);
+	device_context->VSSetConstantBuffers(0, 1, &vs_globals);
+
+	// pixel shader constants
+	V(device_context->Map(ps_globals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
+	PsGlobals& psg = *(PsGlobals*)resource.pData;
+	psg.colorAmbient = scene->GetAmbientColor();
+	psg.colorDiffuse = scene->GetLightColor();
+	psg.lightDir = scene->GetLightDir();
+	psg.fogColor = scene->GetFogColor();
+	psg.fogParam = scene->GetFogParams();
+	device_context->Unmap(vs_globals, 0);
+	device_context->PSSetConstantBuffers(0, 1, &ps_globals);
+
+	// set textures
+	ID3D11ShaderResourceView* textures[6];
+	textures[0] = terrain->GetSplatTexture();
 	TexturePtr* tex = terrain->GetTextures();
 	for(int i = 0; i < 5; ++i)
-		V(effect->SetTexture(h_tex[i], tex[i]->tex));
-	V(effect->SetVector(h_fog_color, (D3DXVECTOR4*)&scene->GetFogColor()));
-	V(effect->SetVector(h_fog_params, (D3DXVECTOR4*)&scene->GetFogParams()));
-	V(effect->SetVector(h_color_ambient, (D3DXVECTOR4*)&scene->GetAmbientColor()));
-	V(effect->SetVector(h_color_diffuse, (D3DXVECTOR4*)&scene->GetLightColor()));
-	V(effect->SetVector(h_light_dir, (D3DXVECTOR4*)&scene->GetLightDir()));
+		textures[i + 1] = tex[i];
+	device_context->PSSetShaderResources(0, 6, textures);
 
-	VB vb;
-	IB ib;
-	LPD3DXMESH mesh = terrain->GetMesh();
-	V(mesh->GetVertexBuffer(&vb));
-	V(mesh->GetIndexBuffer(&ib));
+	// draw
 	uint n_verts, part_tris;
 	terrain->GetDrawOptions(n_verts, part_tris);
-
-	V(device->SetVertexDeclaration(vertex_decl));
-	V(device->SetStreamSource(0, vb, 0, sizeof(TerrainVertex)));
-	V(device->SetIndices(ib));
-
-	uint passes;
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
 	for(uint part : parts)
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, n_verts, part_tris * part * 3, part_tris));
-
-	V(effect->EndPass());
-	V(effect->End());
-
-	vb->Release();
-	ib->Release();
+		device_context->DrawIndexed(part_tris * 3, part_tris * part * 3, 0);
 }
