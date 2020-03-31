@@ -1,14 +1,16 @@
-float4x4 matCombined;
-float4x4 matBones[32];
-float4 color;
-texture texDiffuse;
-sampler2D samplerDiffuse = sampler_state
+cbuffer vs_globals : register(b0)
 {
-	texture = <texDiffuse>;
-	MipFilter = Linear;
-	MinFilter = Linear;
-	MagFilter = Linear;
+	float4x4 matCombined;
+	float4x4 matBones[32];
 };
+
+cbuffer ps_globals : register(b0)
+{
+	float4 color;
+};
+
+Texture2D texDiffuse : register(t0);
+SamplerState samplerDiffuse;
 
 //******************************************************************************
 struct MESH_INPUT
@@ -28,11 +30,10 @@ struct ANI_INPUT
 	int4 indices : BLENDINDICES0;
 };
 
-
 //******************************************************************************
 struct MESH_OUTPUT
 {
-	float4 pos : POSITION;
+	float4 pos : SV_POSITION;
 	float2 tex : TEXCOORD0;
 };
 
@@ -53,28 +54,8 @@ void vs_ani(in ANI_INPUT In, out MESH_OUTPUT Out)
 }
 
 //******************************************************************************
-float4 ps(in MESH_OUTPUT In) : COLOR0
+float4 ps(in MESH_OUTPUT In) : SV_TARGET
 {
-	float4 tex = tex2D(samplerDiffuse, In.tex);
+	float4 tex = texDiffuse.Sample(samplerDiffuse, In.tex);
 	return float4(color.rgb, tex.w * color.w);
-}
-
-//******************************************************************************
-technique mesh
-{
-	pass pass0
-	{
-		VertexShader = compile VS_VERSION vs_mesh();
-		PixelShader = compile PS_VERSION ps();
-	}
-}
-
-//******************************************************************************
-technique ani
-{
-	pass pass0
-	{
-		VertexShader = compile VS_VERSION vs_ani();
-		PixelShader = compile PS_VERSION ps();
-	}
 }

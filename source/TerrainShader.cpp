@@ -18,8 +18,7 @@ struct PsGlobals
 {
 	Vec4 colorAmbient;
 	Vec4 colorDiffuse;
-	Vec3 lightDir;
-	float _pad;
+	Vec4 lightDir;
 	Vec4 fogColor;
 	Vec4 fogParam;
 };
@@ -79,9 +78,8 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 	device_context->PSSetSamplers(0, 6, samplers);
 	uint stride = sizeof(TerrainVertex),
 		offset = 0;
-	//device_context->IASetVertexBuffers(0, 1, &mesh.vb, &stride, &offset);
-	//device_context->IASetIndexBuffer(mesh.ib, DXGI_FORMAT_R16_UINT, 0);
-	FIXME; // vb, ib ?
+	device_context->IASetVertexBuffers(0, 1, &terrain->vb, &stride, &offset);
+	device_context->IASetIndexBuffer(terrain->ib, DXGI_FORMAT_R32_UINT, 0);
 
 	// vertex shader constants
 	D3D11_MAPPED_SUBRESOURCE resource;
@@ -108,12 +106,11 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 	textures[0] = terrain->GetSplatTexture();
 	TexturePtr* tex = terrain->GetTextures();
 	for(int i = 0; i < 5; ++i)
-		textures[i + 1] = tex[i];
+		textures[i + 1] = tex[i]->tex;
 	device_context->PSSetShaderResources(0, 6, textures);
 
 	// draw
-	uint n_verts, part_tris;
-	terrain->GetDrawOptions(n_verts, part_tris);
 	for(uint part : parts)
-		device_context->DrawIndexed(part_tris * 3, part_tris * part * 3, 0);
+		device_context->DrawIndexed(terrain->part_tris * 3, terrain->part_tris * part * 3, 0);
+	FIXME; // verify args
 }

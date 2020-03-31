@@ -13,7 +13,6 @@ public:
 	void DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<SceneNodeGroup>& groups);
 	void DrawAlphaSceneNodes(const vector<SceneNode*>& nodes);
 
-	IDirect3DDevice9* device;
 	SuperShader* super_shader;
 	SceneBatch batch;
 	Scene* scene;

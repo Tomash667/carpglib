@@ -63,7 +63,7 @@ public:
 	~Terrain();
 
 	//---------------------------
-	void Init(IDirect3DDevice9* dev, const TerrainOptions& options);
+	void Init(const TerrainOptions& options);
 	void Build(bool smooth = true);
 	void Rebuild(bool smooth = true);
 	void RebuildUv();
@@ -116,8 +116,6 @@ public:
 	}
 
 private:
-	void CreateSplatTexture();
-
 	Part* parts;
 	float* h;
 	float tile_size; // rozmiar jednego ma³ego kwadraciku terenu
@@ -128,9 +126,8 @@ private:
 	uint width, width2; // n_tiles+1
 	uint n_tris, n_verts, part_tris, part_verts, tex_size;
 	Box box;
-	IDirect3DDevice9* device;
-	VB vb;
-	IB ib;
+	ID3D11Buffer* vb;
+	ID3D11Buffer* ib;
 	TEX texSplat;
 	TexturePtr tex[5];
 	Vec3 pos;

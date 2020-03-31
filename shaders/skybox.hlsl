@@ -4,13 +4,13 @@
 // VERTEX SHADER CONSTANTS
 cbuffer vs_globals : register(b0)
 {
-	matrix mat_combined;
+	matrix matCombined;
 };
 
 //------------------------------------------------------------------------------
 // TEXTURES
-Texture2D tex_diffuse : register(t0);
-SamplerState sampler_diffuse;
+Texture2D texDiffuse : register(t0);
+SamplerState samplerDiffuse;
 
 //------------------------------------------------------------------------------
 // VERTEX SHADER INPUT
@@ -32,7 +32,7 @@ struct VS_OUTPUT
 // VERTEX SHADER
 void vs_main(VS_INPUT In, out VS_OUTPUT Out)
 {
-	Out.pos = mul(float4(In.pos, 1), mat_combined);
+	Out.pos = mul(float4(In.pos, 1), matCombined);
 	Out.tex = In.tex;
 }
 
@@ -40,5 +40,5 @@ void vs_main(VS_INPUT In, out VS_OUTPUT Out)
 // PIXEL SHADER
 float4 ps_main(VS_OUTPUT In) : SV_TARGET
 {
-	return tex_diffuse.Sample(sampler_diffuse, In.tex);
+	return texDiffuse.Sample(samplerDiffuse, In.tex);
 }
