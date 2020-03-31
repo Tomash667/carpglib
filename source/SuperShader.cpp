@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "SuperShader.h"
+/*#include "SuperShader.h"
 #include "File.h"
 #include "Render.h"
 #include "Light.h"
@@ -215,4 +215,4 @@ void SuperShader::ApplyLights(const array<Light*, 3>& lights)
 		}
 	}
 	V(GetEffect()->SetRawValue(hLights, &l, 0, sizeof(Lights)));
-}
+}*/

@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "ParticleShader.h"
+/*#include "ParticleShader.h"
 #include "ParticleSystem.h"
 #include "Render.h"
 #include "Camera.h"
@@ -310,4 +310,4 @@ void ParticleShader::ReserveVertexBuffer(uint size)
 		V(device->SetStreamSource(0, vb, 0, sizeof(VParticle)));
 		particle_count = size;
 	}
-}
+}*/

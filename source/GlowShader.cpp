@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "GlowShader.h"
+/*#include "GlowShader.h"
 #include "Render.h"
 #include "DirectX.h"
 
@@ -42,4 +42,4 @@ void GlowShader::OnReload()
 void GlowShader::OnRelease()
 {
 	SafeRelease(effect);
-}
+}*/

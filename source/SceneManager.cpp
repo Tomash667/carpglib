@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "SceneManager.h"
+/*#include "SceneManager.h"
 #include "Render.h"
 #include "Scene.h"
 #include "SceneNode.h"
@@ -356,4 +356,4 @@ void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 	}
 
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-}
+}*/

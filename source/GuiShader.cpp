@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "GuiShader.h"
+/*#include "GuiShader.h"
 #include "Render.h"
 #include "DirectX.h"
 
@@ -74,4 +74,4 @@ void GuiShader::CreateVertexBuffer()
 	IDirect3DDevice9* device = app::render->GetDevice();
 	V(device->CreateVertexBuffer(sizeof(VParticle) * 6 * 256, D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb, nullptr));
 	V(device->CreateVertexBuffer(sizeof(VParticle) * 6 * 256, D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb2, nullptr));
-}
+}*/

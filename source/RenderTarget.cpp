@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "RenderTarget.h"
+/*#include "RenderTarget.h"
 #include "Render.h"
 #include "File.h"
 #include "DirectX.h"
@@ -90,4 +90,4 @@ void RenderTarget::FreeSurface()
 		surf = nullptr;
 		tmp_surf = false;
 	}
-}
+}*/

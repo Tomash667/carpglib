@@ -9,7 +9,7 @@
 #include "Render.h"
 #include "Input.h"
 #include "ResourceManager.h"
-#include "GuiShader.h"
+//#include "GuiShader.h"
 #include "FontLoader.h"
 #include "DirectX.h"
 
@@ -50,7 +50,8 @@ void Gui::Init()
 	dialog_layer = new Container;
 	dialog_layer->focus_top = true;
 
-	app::render->RegisterShader(shader = new GuiShader);
+	//app::render->RegisterShader(shader = new GuiShader);
+	FIXME;
 
 	font_loader = new FontLoader;
 }
@@ -1536,10 +1537,11 @@ void Gui::DrawSpriteFull(Texture* t, const Color color)
 //=================================================================================================
 void Gui::DrawSpriteFullWrap(Texture* t, Color color)
 {
-	Rect rect(Int2::Zero, wnd_size);
+	/*Rect rect(Int2::Zero, wnd_size);
 	app::render->SetTextureAddressMode(TEX_ADR_WRAP);
 	DrawSpriteRectPart(t, rect, rect, color);
-	app::render->SetTextureAddressMode(TEX_ADR_CLAMP);
+	app::render->SetTextureAddressMode(TEX_ADR_CLAMP);*/
+	FIXME;
 }
 
 //=================================================================================================

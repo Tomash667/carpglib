@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "PostfxShader.h"
+/*#include "PostfxShader.h"
 #include "Render.h"
 #include "Engine.h"
 #include "DirectX.h"
@@ -110,4 +110,4 @@ void PostfxShader::CreateResources()
 			surf[i] = nullptr;
 		}
 	}
-}
+}*/

@@ -173,7 +173,7 @@ void LayoutLoader::ParseFont(const string& name)
 	if(font_name.empty() || size < 1)
 		t.Throw("Font name or size not set.");
 
-	Font* font = gui->CreateFont(font_name.c_str(), size, weight * 100, outline);
+	Font* font = gui->GetFont(font_name.c_str(), size, weight, outline);
 	fonts[n] = font;
 }
 

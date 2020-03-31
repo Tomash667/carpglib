@@ -8,7 +8,7 @@ Texture::~Texture()
 {
 	SafeRelease(tex);
 }
-
+/*
 //=================================================================================================
 void Texture::ResizeImage(Int2& new_size, Int2& img_size, Vec2& scale)
 {
@@ -94,3 +94,4 @@ void TextureLock::GenerateMipSubLevels()
 	tex->GenerateMipSubLevels();
 	tex = nullptr;
 }
+*/

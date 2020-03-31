@@ -3,7 +3,7 @@
 #include "DirectX.h"
 
 //=================================================================================================
-Font::Font() : tex(nullptr), texOutline(nullptr)
+Font::Font() : tex(nullptr), tex_outline(nullptr)
 {
 	for(int i = 0; i < 32; ++i)
 		glyph[i].ok = false;
@@ -13,7 +13,7 @@ Font::Font() : tex(nullptr), texOutline(nullptr)
 Font::~Font()
 {
 	SafeRelease(tex);
-	SafeRelease(texOutline);
+	SafeRelease(tex_outline);
 }
 
 //=================================================================================================

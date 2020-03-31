@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "GrassShader.h"
+/*#include "GrassShader.h"
 #include "Render.h"
 #include "Mesh.h"
 #include "Camera.h"
@@ -141,4 +141,4 @@ void GrassShader::End()
 	// restore vertex stream frequency
 	V(device->SetStreamSourceFreq(0, 1));
 	V(device->SetStreamSourceFreq(1, 1));
-}
+}*/

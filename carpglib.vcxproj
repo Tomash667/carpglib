@@ -252,7 +252,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external\Bullet\src;$(ProjectDir)external\CrashRpt\include;$(ProjectDir)external\DirectX\Include;$(ProjectDir)external\DirectXMath\Inc;$(ProjectDir)external\FMod\inc;$(ProjectDir)external\Visual Leak Detector\include;$(ProjectDir)external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external\Bullet\src;$(ProjectDir)external\CrashRpt\include;$(ProjectDir)external\DirectXMath\Inc;$(ProjectDir)external\FMod\inc;$(ProjectDir)external\Visual Leak Detector\include;$(ProjectDir)external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -270,7 +270,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external\Bullet\src;$(ProjectDir)external\CrashRpt\include;$(ProjectDir)external\DirectX\Include;$(ProjectDir)external\DirectXMath\Inc;$(ProjectDir)external\FMod\inc;$(ProjectDir)external\Visual Leak Detector\include;$(ProjectDir)external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external\Bullet\src;$(ProjectDir)external\CrashRpt\include;$(ProjectDir)external\DirectXMath\Inc;$(ProjectDir)external\FMod\inc;$(ProjectDir)external\Visual Leak Detector\include;$(ProjectDir)external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>

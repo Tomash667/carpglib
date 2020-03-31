@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "BasicShader.h"
+/*#include "BasicShader.h"
 #include "Render.h"
 #include "Camera.h"
 #include "DirectX.h"
@@ -117,4 +117,4 @@ void BasicShader::EndBatch()
 	V(effect->End());
 
 	verts.clear();
-}
+}*/
