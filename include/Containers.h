@@ -938,9 +938,9 @@ public:
 		}
 		T& operator [](difference_type n)
 		{
-			int pos = offset + n;
+			const int pos = offset + n;
 			assert(pos >= 0 && pos < (int)v->size());
-			return v->at(offset + n);
+			return v->at(pos);
 		}
 		bool operator == (const iterator& it) const
 		{
