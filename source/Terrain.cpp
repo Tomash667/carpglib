@@ -25,18 +25,16 @@ void CalculateNormal(Vec3& out, const Vec3& v1, const Vec3& v2, const Vec3& v3)
 }
 
 //=================================================================================================
-Terrain::Terrain() : device(nullptr), parts(nullptr), h(nullptr), mesh(nullptr), texSplat(nullptr), tex(), state(0), uv_mod(DEFAULT_UV_MOD)
+Terrain::Terrain() : device(nullptr), vb(nullptr), ib(nullptr), parts(nullptr), h(nullptr), texSplat(nullptr), tex(), state(0), uv_mod(DEFAULT_UV_MOD)
 {
 }
 
 //=================================================================================================
 Terrain::~Terrain()
 {
-	if(mesh)
-		mesh->Release();
-
-	if(texSplat)
-		texSplat->Release();
+	SafeRelease(vb);
+	SafeRelease(ib);
+	SafeRelease(texSplat);
 
 	delete[] parts;
 	// h jest przechowywany w OutsideLocation wiêc nie mo¿na tu usuwaæ
@@ -102,17 +100,20 @@ void Terrain::Build(bool smooth)
 {
 	assert(state == 1);
 
-	const uint fvf = D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2;
-	HRESULT hr = D3DXCreateMeshFVF(n_tris, n_verts, D3DXMESH_MANAGED | D3DXMESH_32BIT, fvf, device, &mesh);
+	HRESULT hr = device->CreateVertexBuffer(sizeof(TerrainVertex) * n_verts, 0, D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2, D3DPOOL_MANAGED, &vb, nullptr);
 	if(FAILED(hr))
-		throw Format("Failed to create new terrain mesh (%d)!", hr);
+		throw Format("Failed to create terrain vertex buffer (%d).", hr);
+
+	hr = device->CreateIndexBuffer(sizeof(int) * n_tris * 3, 0, D3DFMT_INDEX32, D3DPOOL_MANAGED, &ib, nullptr);
+	if(FAILED(hr))
+		throw Format("Failed to create terrain index buffer (%d).", hr);
 
 	TerrainVertex* v;
 	uint* idx;
 	uint n = 0;
 
-	V(mesh->LockVertexBuffer(0, (void**)&v));
-	V(mesh->LockIndexBuffer(0, (void**)&idx));
+	V(vb->Lock(0, 0, (void**)&v, D3DLOCK_DISCARD));
+	V(ib->Lock(0, 0, (void**)&idx, D3DLOCK_DISCARD));
 
 #define TRI(xx,zz,uu,vv) v[n++] = TerrainVertex((x+xx)*tile_size, h[x+xx+(z+zz)*width], (z+zz)*tile_size, float(uu)/uv_mod, float(vv)/uv_mod,\
 	((float)(x+xx)) / n_tiles, ((float)(z+zz)) / n_tiles)
@@ -166,14 +167,14 @@ void Terrain::Build(bool smooth)
 		}
 	}
 
-	V(mesh->UnlockIndexBuffer());
+	V(ib->Unlock());
 
 	state = 2;
 
 	if(smooth)
 		SmoothNormals(v);
 
-	V(mesh->UnlockVertexBuffer());
+	V(vb->Unlock());
 }
 
 //=================================================================================================
@@ -183,7 +184,7 @@ void Terrain::Rebuild(bool smooth)
 
 	TerrainVertex* v;
 
-	V(mesh->LockVertexBuffer(0, (void**)&v));
+	V(vb->Lock(0, 0, (void**)&v, 0));
 
 #define TRI(xx,zz) v[n++].pos.y = h[x+xx+(z+zz)*width]
 
@@ -208,7 +209,7 @@ void Terrain::Rebuild(bool smooth)
 	if(smooth)
 		SmoothNormals(v);
 
-	V(mesh->UnlockVertexBuffer());
+	V(vb->Unlock());
 }
 
 //=================================================================================================
@@ -218,7 +219,7 @@ void Terrain::RebuildUv()
 
 	TerrainVertex* v;
 
-	V(mesh->LockVertexBuffer(0, (void**)&v));
+	V(vb->Lock(0, 0, (void**)&v, 0));
 
 #define TRI(uu,vv) v[n++].tex = Vec2(float(uu)/uv_mod, float(vv)/uv_mod)
 
@@ -247,7 +248,7 @@ void Terrain::RebuildUv()
 	}
 #undef TRI
 
-	V(mesh->UnlockVertexBuffer());
+	V(vb->Unlock());
 }
 
 //=================================================================================================
@@ -402,11 +403,11 @@ void Terrain::SmoothNormals()
 	assert(state > 0);
 
 	TerrainVertex* v;
-	V(mesh->LockVertexBuffer(0, (void**)&v));
+	V(vb->Lock(0, 0, (void**)&v, D3DLOCK_DISCARD));
 
 	SmoothNormals(v);
 
-	V(mesh->UnlockVertexBuffer());
+	V(vb->Unlock());
 }
 
 //=================================================================================================
@@ -677,41 +678,6 @@ void Terrain::GetAngle(float x, float z, Vec3& angle) const
 	Vec3 v01 = v2 - v1;
 	Vec3 v02 = v3 - v1;
 	angle = v01.Cross(v02).Normalize();
-}
-
-//=================================================================================================
-float Terrain::Raytest(const Vec3& from, const Vec3& to) const
-{
-	Vec3 dir = to - from;
-	float fout;
-
-	if(!RayToBox(from, dir, box, &fout) || fout > 1.f)
-		return -1.f;
-
-	Matrix m = Matrix::Translation(pos).Inverse();
-	Vec3 rayPos = Vec3::Transform(from, m),
-		rayDir = Vec3::TransformNormal(dir, m);
-	BOOL hit;
-	DWORD face;
-	float bar1, bar2;
-
-	{
-		//START_PROFILE("Intersect");
-		V(D3DXIntersect(mesh, (D3DXVECTOR3*)&rayPos, (D3DXVECTOR3*)&rayDir, &hit, &face, &bar1, &bar2, &fout, nullptr, nullptr));
-	}
-
-	if(hit)
-	{
-		// tu by³ bug - fout zwraca odrazu wynik w przedziale (0..1) a nie tak jak myœla³em ¿e jest to dystans od startu do przeciêcia
-		//printf("from %g,%g,%g\tto %g,%g,%g\tdist %g\thit %g\n", from.x, from.y, from.z, to.x, to.y, to.z, distance(from, to), fout);
-		//fout /= distance(from, to);
-		if(fout > 1.f)
-			return -1.f;
-		else
-			return fout;
-	}
-	else
-		return -1.f;
 }
 
 //=================================================================================================

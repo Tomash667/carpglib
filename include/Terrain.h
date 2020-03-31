@@ -39,6 +39,7 @@ struct TerrainOptions
 //-----------------------------------------------------------------------------
 struct Terrain
 {
+	friend class TerrainShader;
 public:
 	//---------------------------
 	class Part
@@ -75,7 +76,6 @@ public:
 	void CalculateBox();
 	void SmoothNormals();
 	void SmoothNormals(TerrainVertex* v);
-	float Raytest(const Vec3& from, const Vec3& to) const;
 	void FillGeometry(vector<Tri>& tris, vector<Vec3>& verts);
 	void FillGeometryPart(vector<Tri>& tris, vector<Vec3>& verts, int px, int pz, const Vec3& offset = Vec3(0, 0, 0)) const;
 
@@ -95,16 +95,10 @@ public:
 	TexturePtr* GetTextures() { return tex; }
 	const Box& GetBox() const { return box; }
 	const Vec3& GetPos() const { return pos; }
-	ID3DXMesh* GetMesh() { return mesh; }
 	float* GetHeightMap() { return h; }
 	uint GetTerrainWidth() const { return width; }
 	uint GetTilesCount() const { return n_tiles; }
 	uint GetSplatSize() const { return tex_size; }
-	void GetDrawOptions(uint& verts, uint& tris)
-	{
-		verts = n_verts;
-		tris = part_tris;
-	}
 	float GetPartSize() const { return tiles_size / n_parts; }
 	float GetTileSize() const { return tile_size; }
 
@@ -134,8 +128,9 @@ private:
 	uint width, width2; // n_tiles+1
 	uint n_tris, n_verts, part_tris, part_verts, tex_size;
 	Box box;
-	ID3DXMesh* mesh;
 	IDirect3DDevice9* device;
+	VB vb;
+	IB ib;
 	TEX texSplat;
 	TexturePtr tex[5];
 	Vec3 pos;

@@ -91,7 +91,6 @@ struct _D3DXMACRO;
 struct ID3DXEffect;
 struct ID3DXEffectPool;
 struct ID3DXFont;
-struct ID3DXMesh;
 struct ID3DXSprite;
 struct IDirect3D9;
 struct IDirect3DDevice9;

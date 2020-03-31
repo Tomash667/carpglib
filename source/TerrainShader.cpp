@@ -95,28 +95,17 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 	V(effect->SetVector(h_color_diffuse, (D3DXVECTOR4*)&scene->GetLightColor()));
 	V(effect->SetVector(h_light_dir, (D3DXVECTOR4*)&scene->GetLightDir()));
 
-	VB vb;
-	IB ib;
-	LPD3DXMESH mesh = terrain->GetMesh();
-	V(mesh->GetVertexBuffer(&vb));
-	V(mesh->GetIndexBuffer(&ib));
-	uint n_verts, part_tris;
-	terrain->GetDrawOptions(n_verts, part_tris);
-
 	V(device->SetVertexDeclaration(vertex_decl));
-	V(device->SetStreamSource(0, vb, 0, sizeof(TerrainVertex)));
-	V(device->SetIndices(ib));
+	V(device->SetStreamSource(0, terrain->vb, 0, sizeof(TerrainVertex)));
+	V(device->SetIndices(terrain->ib));
 
 	uint passes;
 	V(effect->Begin(&passes, 0));
 	V(effect->BeginPass(0));
 
 	for(uint part : parts)
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, n_verts, part_tris * part * 3, part_tris));
+		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, terrain->n_verts, terrain->part_tris * part * 3, terrain->part_tris));
 
 	V(effect->EndPass());
 	V(effect->End());
-
-	vb->Release();
-	ib->Release();
 }
