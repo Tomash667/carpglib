@@ -56,7 +56,8 @@ public:
 	void Init();
 	bool Reset(bool force);
 	void WaitReset();
-	void Draw(bool call_present = true);
+	void Clear(const Vec4& color);
+	void Present();
 	bool CheckDisplay(const Int2& size, int& hz); // dla zera zwraca najlepszy hz
 	void RegisterShader(ShaderHandler* shader);
 	void ReloadShaders();

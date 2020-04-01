@@ -8,7 +8,7 @@ Texture::~Texture()
 {
 	SafeRelease(tex);
 }
-/*
+
 //=================================================================================================
 void Texture::ResizeImage(Int2& new_size, Int2& img_size, Vec2& scale)
 {
@@ -28,13 +28,17 @@ void Texture::ResizeImage(Int2& new_size, Int2& img_size, Vec2& scale)
 Int2 Texture::GetSize(TEX tex)
 {
 	assert(tex);
-	D3DSURFACE_DESC desc;
-	V(tex->GetLevelDesc(0, &desc));
-	return Int2(desc.Width, desc.Height);
+	ID3D11Texture2D* res;
+	tex->GetResource(reinterpret_cast<ID3D11Resource**>(&res));
+	D3D11_TEXTURE2D_DESC desc;
+	res->GetDesc(&desc);
+	Int2 size(desc.Width, desc.Height);
+	res->Release();
+	return size;
 }
 
 //=================================================================================================
-void DynamicTexture::OnReset()
+/*void DynamicTexture::OnReset()
 {
 	SafeRelease(tex);
 }

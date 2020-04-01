@@ -5,5 +5,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Game.cpp" />
   </ItemGroup>
 </Project>

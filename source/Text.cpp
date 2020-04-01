@@ -455,19 +455,14 @@ bool StringContainsStringI(cstring s1, cstring s2)
 }
 
 //=================================================================================================
-string* ToString(const wchar_t* str)
+cstring ToString(const wchar_t* wstr)
 {
-	string* s = StringPool.Get();
-	if(str == nullptr)
-	{
-		*s = "null";
-		return s;
-	}
-	int len = lstrlenW(str);
-	s->resize(len);
-	size_t count;
-	wcstombs_s(&count, (char*)s->c_str(), len, str, len);
-	return s;
+	assert(wstr);
+	size_t len;
+	char* str = format_buf[format_marker];
+	wcstombs_s(&len, str, FORMAT_LENGTH, wstr, FORMAT_LENGTH - 1);
+	format_marker = (format_marker + 1) % FORMAT_STRINGS;
+	return str;
 }
 
 //=================================================================================================

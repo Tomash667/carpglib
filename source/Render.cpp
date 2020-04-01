@@ -4,7 +4,6 @@
 #include "Engine.h"
 #include "ShaderHandler.h"
 #include "File.h"
-#include "App.h"
 #include "ManagedResource.h"
 #include "DirectX.h"
 
@@ -66,7 +65,7 @@ void Render::Init()
 	CreateAdapter();
 	CreateDeviceAndSwapChain();
 	CreateSizeDependentResources();
-	
+
 	// check shaders version
 	/*D3DCAPS9 caps;
 	hr = d3d->GetDeviceCaps(used_adapter, D3DDEVTYPE_HAL, &caps);
@@ -601,44 +600,16 @@ void Render::WaitReset()
 }
 
 //=================================================================================================
-void Render::Draw(bool call_present)
+void Render::Clear(const Vec4& color)
 {
-	/*HRESULT hr = device->TestCooperativeLevel();
-	if(hr != D3D_OK)
-	{
-		lost_device = true;
-		if(hr == D3DERR_DEVICELOST)
-		{
-			// device lost, can't reset yet
-			Sleep(1);
-			return;
-		}
-		else if(hr == D3DERR_DEVICENOTRESET)
-		{
-			// try reset
-			if(!Reset(false))
-			{
-				Sleep(1);
-				return;
-			}
-		}
-		else
-			throw Format("Render: Lost directx device (%d).", hr);
-	}
+	device_context->ClearRenderTargetView(render_target, (const float*)color);
+	device_context->ClearDepthStencilView(depth_stencil_view, D3D11_CLEAR_DEPTH, 1.f, 0);
+}
 
-	app::app->OnDraw();
-
-	if(call_present)
-	{
-		hr = device->Present(nullptr, nullptr, app::engine->GetWindowHandle(), nullptr);
-		if(FAILED(hr))
-		{
-			if(hr == D3DERR_DEVICELOST)
-				lost_device = true;
-			else
-				throw Format("Render: Failed to present screen (%d).", hr);
-		}
-	}*/
+//=================================================================================================
+void Render::Present()
+{
+	V(swap_chain->Present(vsync ? 1 : 0, 0));
 }
 
 //=================================================================================================

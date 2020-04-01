@@ -75,7 +75,7 @@ cstring Escape(Cstring str, char quote = '"');
 cstring Escape(Cstring str, string& out, char quote = '"');
 cstring EscapeChar(char c);
 cstring EscapeChar(char c, string& out);
-string* ToString(const wchar_t* str);
+cstring ToString(const wchar_t* str);
 const wchar_t* ToWString(cstring str);
 void Replace(string& s, cstring in_chars, cstring out_chars);
 inline bool EndsWith(std::string const& value, std::string const& ending)

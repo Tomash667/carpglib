@@ -1,9 +1,9 @@
 #include "Pch.h"
-/*#include "SceneManager.h"
+#include "SceneManager.h"
 #include "Render.h"
 #include "Scene.h"
 #include "SceneNode.h"
-#include "SuperShader.h"
+//#include "SuperShader.h"
 #include "Camera.h"
 #include "DirectX.h"
 
@@ -17,16 +17,16 @@ SceneManager::SceneManager() : use_lighting(true), use_fog(true), use_normalmap(
 //=================================================================================================
 void SceneManager::Init()
 {
-	device = app::render->GetDevice();
+	/*device = app::render->GetDevice();
 
 	super_shader = new SuperShader;
-	app::render->RegisterShader(super_shader);
+	app::render->RegisterShader(super_shader);*/
 }
 
 //=================================================================================================
 void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 {
-	assert(scene && camera && target);
+	/*assert(scene && camera && target);
 
 	this->scene = scene;
 	this->camera = camera;
@@ -50,13 +50,13 @@ void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 		DrawAlphaSceneNodes(batch.alpha_nodes);
 
 	V(device->EndScene());
-	app::render->SetTarget(nullptr);
+	app::render->SetTarget(nullptr);*/
 }
 
 //=================================================================================================
 void SceneManager::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<SceneNodeGroup>& groups)
 {
-	app::render->SetAlphaBlend(false);
+	/*app::render->SetAlphaBlend(false);
 
 	const bool use_fog = this->use_fog && use_lighting;
 
@@ -209,13 +209,13 @@ void SceneManager::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<
 
 		V(effect->EndPass());
 		V(effect->End());
-	}
+	}*/
 }
 
 //=================================================================================================
 void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 {
-	app::render->SetAlphaBlend(true);
+	/*app::render->SetAlphaBlend(true);
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
 
 	const bool use_fog = this->use_fog && use_lighting;
@@ -355,5 +355,5 @@ void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 		effect->End();
 	}
 
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-}*/
+	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));*/
+}
