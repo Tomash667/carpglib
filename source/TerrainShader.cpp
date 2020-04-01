@@ -24,8 +24,8 @@ struct PsGlobals
 };
 
 //=================================================================================================
-TerrainShader::TerrainShader() : device_context(app::render->GetDeviceContext()), vertex_shader(nullptr), pixel_shader(nullptr), layout(nullptr),
-vs_globals(nullptr), ps_globals(nullptr), samplers()
+TerrainShader::TerrainShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(nullptr), layout(nullptr),
+vsGlobals(nullptr), psGlobals(nullptr), samplers()
 {
 }
 
@@ -38,9 +38,9 @@ void TerrainShader::OnInit()
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
-	app::render->CreateShader("terrain.hlsl", desc, countof(desc), vertex_shader, pixel_shader, layout);
-	vs_globals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
-	ps_globals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
+	app::render->CreateShader("terrain.hlsl", desc, countof(desc), vertexShader, pixelShader, layout);
+	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
+	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
 	samplers[0] = app::render->CreateSampler(Render::TEX_ADR_CLAMP, Render::FILTER_NONE);
 	samplers[1] = app::render->CreateSampler();
 	samplers[2] = app::render->CreateSampler();
@@ -52,11 +52,11 @@ void TerrainShader::OnInit()
 //=================================================================================================
 void TerrainShader::OnRelease()
 {
-	SafeRelease(vertex_shader);
-	SafeRelease(pixel_shader);
+	SafeRelease(vertexShader);
+	SafeRelease(pixelShader);
 	SafeRelease(layout);
-	SafeRelease(vs_globals);
-	SafeRelease(ps_globals);
+	SafeRelease(vsGlobals);
+	SafeRelease(psGlobals);
 	for(int i = 0; i < 6; ++i)
 		SafeRelease(samplers[i]);
 }
@@ -72,34 +72,34 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 	app::render->SetNoZWrite(false);
 
 	// setup shader
-	device_context->IASetInputLayout(layout);
-	device_context->VSSetShader(vertex_shader, nullptr, 0);
-	device_context->PSSetShader(pixel_shader, nullptr, 0);
-	device_context->PSSetSamplers(0, 6, samplers);
+	deviceContext->IASetInputLayout(layout);
+	deviceContext->VSSetShader(vertexShader, nullptr, 0);
+	deviceContext->PSSetShader(pixelShader, nullptr, 0);
+	deviceContext->PSSetSamplers(0, 6, samplers);
 	uint stride = sizeof(TerrainVertex),
 		offset = 0;
-	device_context->IASetVertexBuffers(0, 1, &terrain->vb, &stride, &offset);
-	device_context->IASetIndexBuffer(terrain->ib, DXGI_FORMAT_R32_UINT, 0);
+	deviceContext->IASetVertexBuffers(0, 1, &terrain->vb, &stride, &offset);
+	deviceContext->IASetIndexBuffer(terrain->ib, DXGI_FORMAT_R32_UINT, 0);
 
 	// vertex shader constants
 	D3D11_MAPPED_SUBRESOURCE resource;
-	V(device_context->Map(vs_globals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
+	V(deviceContext->Map(vsGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
 	VsGlobals& vsg = *(VsGlobals*)resource.pData;
 	vsg.matCombined = camera->mat_view_proj.Transpose();
 	vsg.matWorld = Matrix::IdentityMatrix.Transpose();
-	device_context->Unmap(vs_globals, 0);
-	device_context->VSSetConstantBuffers(0, 1, &vs_globals);
+	deviceContext->Unmap(vsGlobals, 0);
+	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
 
 	// pixel shader constants
-	V(device_context->Map(ps_globals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
+	V(deviceContext->Map(psGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
 	PsGlobals& psg = *(PsGlobals*)resource.pData;
 	psg.colorAmbient = scene->GetAmbientColor();
 	psg.colorDiffuse = scene->GetLightColor();
 	psg.lightDir = scene->GetLightDir();
 	psg.fogColor = scene->GetFogColor();
 	psg.fogParam = scene->GetFogParams();
-	device_context->Unmap(vs_globals, 0);
-	device_context->PSSetConstantBuffers(0, 1, &ps_globals);
+	deviceContext->Unmap(vsGlobals, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
 
 	// set textures
 	ID3D11ShaderResourceView* textures[6];
@@ -107,10 +107,10 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 	TexturePtr* tex = terrain->GetTextures();
 	for(int i = 0; i < 5; ++i)
 		textures[i + 1] = tex[i]->tex;
-	device_context->PSSetShaderResources(0, 6, textures);
+	deviceContext->PSSetShaderResources(0, 6, textures);
 
 	// draw
 	for(uint part : parts)
-		device_context->DrawIndexed(terrain->part_tris * 3, terrain->part_tris * part * 3, 0);
+		deviceContext->DrawIndexed(terrain->part_tris * 3, terrain->part_tris * part * 3, 0);
 	FIXME; // verify args
 }

@@ -3,7 +3,7 @@
 #include "Render.h"
 #include "Scene.h"
 #include "SceneNode.h"
-//#include "SuperShader.h"
+#include "SuperShader.h"
 #include "Camera.h"
 #include "DirectX.h"
 
@@ -17,16 +17,16 @@ SceneManager::SceneManager() : use_lighting(true), use_fog(true), use_normalmap(
 //=================================================================================================
 void SceneManager::Init()
 {
-	/*device = app::render->GetDevice();
+	//device = app::render->GetDevice();
 
 	super_shader = new SuperShader;
-	app::render->RegisterShader(super_shader);*/
+	app::render->RegisterShader(super_shader);
 }
 
 //=================================================================================================
 void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 {
-	/*assert(scene && camera && target);
+	assert(scene && camera);
 
 	this->scene = scene;
 	this->camera = camera;
@@ -37,11 +37,10 @@ void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 	scene->ListNodes(batch);
 	batch.Process();
 
-	IDirect3DDevice9* device = app::render->GetDevice();
+	if(target)
+		app::render->SetTarget(target);
 
-	app::render->SetTarget(target);
-	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
-	V(device->BeginScene());
+	app::render->Clear(scene->clear_color);
 
 	if(!batch.node_groups.empty())
 		DrawSceneNodes(batch.nodes, batch.node_groups);
@@ -49,8 +48,8 @@ void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 	if(!batch.alpha_nodes.empty())
 		DrawAlphaSceneNodes(batch.alpha_nodes);
 
-	V(device->EndScene());
-	app::render->SetTarget(nullptr);*/
+	if(target)
+		app::render->SetTarget(nullptr);
 }
 
 //=================================================================================================
