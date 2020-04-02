@@ -20,6 +20,7 @@ NASTÊPNA WERSJA:
 struct Mesh : public Resource
 {
 	static const ResourceType Type = ResourceType::Mesh;
+	static constexpr int MAX_BONES = 32;
 
 	enum MESH_FLAGS
 	{

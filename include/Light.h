@@ -3,10 +3,14 @@
 //-----------------------------------------------------------------------------
 struct Light
 {
+	Vec4 color;
 	Vec3 pos;
 	float range;
-	Vec4 color;
+
+	static const Light EMPTY;
 };
+
+inline const Light Light::EMPTY = { Vec4::Zero, Vec3::Zero, 1 };
 
 //-----------------------------------------------------------------------------
 struct Lights

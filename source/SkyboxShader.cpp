@@ -1,9 +1,10 @@
 #include "Pch.h"
 #include "SkyboxShader.h"
-#include "Render.h"
-#include "Mesh.h"
+
 #include "Camera.h"
 #include "DirectX.h"
+#include "Mesh.h"
+#include "Render.h"
 
 //=================================================================================================
 SkyboxShader::SkyboxShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(nullptr), layout(nullptr),

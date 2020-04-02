@@ -18,6 +18,8 @@ Game::~Game()
 
 bool Game::OnInit()
 {
+	app::res_mgr->AddDir("data");
+
 	scene = new Scene;
 	camera = new Camera;
 	camera->from = Vec3(-1, 3, -4);

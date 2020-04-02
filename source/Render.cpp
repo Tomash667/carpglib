@@ -6,6 +6,7 @@
 #include "File.h"
 #include "ManagedResource.h"
 #include "DirectX.h"
+#include <d3dcompiler.h>
 
 Render* app::render;
 static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -1157,4 +1158,116 @@ void Render::SetTextureAddressMode(TextureAddressMode mode)
 {
 	//V(device->SetSamplerState(0, D3DSAMP_ADDRESSU, (D3DTEXTUREADDRESS)mode));
 	//V(device->SetSamplerState(0, D3DSAMP_ADDRESSV, (D3DTEXTUREADDRESS)mode));
+}
+
+ID3D11Buffer* Render::CreateConstantBuffer(uint size)
+{
+	// align size
+	if(size % 16 != 0)
+		size = (size / 16 + 1) * 16;
+
+	D3D11_BUFFER_DESC cbDesc;
+	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+	cbDesc.ByteWidth = size;
+	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cbDesc.MiscFlags = 0;
+	cbDesc.StructureByteStride = 0;
+
+	ID3D11Buffer* buffer;
+	HRESULT result = device->CreateBuffer(&cbDesc, NULL, &buffer);
+	if(FAILED(result))
+		throw Format("Failed to create constant buffer (size:%u; code:%u).", size, result);
+
+	return buffer;
+}
+
+ID3D11SamplerState* Render::CreateSampler(TextureAddressMode mode)
+{
+	D3D11_SAMPLER_DESC samplerDesc;
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.AddressU = (D3D11_TEXTURE_ADDRESS_MODE)mode;
+	samplerDesc.AddressV = (D3D11_TEXTURE_ADDRESS_MODE)mode;
+	samplerDesc.AddressW = (D3D11_TEXTURE_ADDRESS_MODE)mode;
+	samplerDesc.MipLODBias = 0.0f;
+	samplerDesc.MaxAnisotropy = 1;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	samplerDesc.BorderColor[0] = 0;
+	samplerDesc.BorderColor[1] = 0;
+	samplerDesc.BorderColor[2] = 0;
+	samplerDesc.BorderColor[3] = 0;
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	ID3D11SamplerState* sampler;
+	HRESULT result = device->CreateSamplerState(&samplerDesc, &sampler);
+	if(FAILED(result))
+		throw Format("Failed to create sampler state (%u).", result);
+
+	return sampler;
+}
+
+void Render::CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uint inputCount, ID3D11VertexShader*& vertexShader,
+	ID3D11PixelShader*& pixelShader, ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro)
+{
+	try
+	{
+		CPtr<ID3DBlob> vsBuf = CompileShader(filename, "VsMain", true, macro);
+		HRESULT result = device->CreateVertexShader(vsBuf->GetBufferPointer(), vsBuf->GetBufferSize(), nullptr, &vertexShader);
+		if(FAILED(result))
+			throw Format("Failed to create vertex shader (%u).", result);
+
+		CPtr<ID3DBlob> psBuf = CompileShader(filename, "PsMain", false, macro);
+		result = device->CreatePixelShader(psBuf->GetBufferPointer(), psBuf->GetBufferSize(), nullptr, &pixelShader);
+		if(FAILED(result))
+			throw Format("Failed to create pixel shader (%u).", result);
+
+		result = device->CreateInputLayout(input, inputCount, vsBuf->GetBufferPointer(), vsBuf->GetBufferSize(), &layout);
+		if(FAILED(result))
+			throw Format("Failed to create input layout (%u).", result);
+	}
+	catch(cstring err)
+	{
+		throw Format("Failed to create shader '%s': %s", filename, err);
+	}
+}
+
+//=================================================================================================
+ID3DBlob* Render::CompileShader(cstring filename, cstring entry, bool isVertex, D3D_SHADER_MACRO* macro)
+{
+	assert(filename && entry);
+
+	cstring target = isVertex ? "vs_5_0" : "ps_5_0";
+
+	uint flags = D3DCOMPILE_ENABLE_STRICTNESS;
+#ifdef _DEBUG
+	flags |= D3DCOMPILE_DEBUG;
+#endif
+
+	cstring path = Format("%s/%s", shaders_dir.c_str(), filename);
+	ID3DBlob* shader_blob = nullptr;
+	ID3DBlob* error_blob = nullptr;
+	HRESULT result = D3DCompileFromFile(ToWString(path), macro, nullptr, entry, target, flags, 0, &shader_blob, &error_blob);
+	if(FAILED(result))
+	{
+		SafeRelease(shader_blob);
+		if(error_blob)
+		{
+			cstring err = (cstring)error_blob->GetBufferPointer();
+			cstring msg = Format("Failed to compile '%s' function '%s': %s (code %u).", path, entry, err, result);
+			error_blob->Release();
+			throw msg;
+		}
+		else
+			throw Format("Failed to compile '%s' function '%s' (code %u).", path, entry, result);
+	}
+
+	if(error_blob)
+	{
+		cstring err = (cstring)error_blob->GetBufferPointer();
+		Warn("Shader '%s' warnings: %s", path, err);
+		error_blob->Release();
+	}
+
+	return shader_blob;
 }

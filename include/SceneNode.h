@@ -20,13 +20,14 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 		F_CUSTOM = 1 << 0,
 		F_ANIMATED = 1 << 1,
 		F_SPECULAR_MAP = 1 << 2,
-		F_TANGENTS = 1 << 3,
+		F_HAVE_TANGENTS = 1 << 3,
 		F_NORMAL_MAP = 1 << 4,
 		F_NO_ZWRITE = 1 << 5,
 		F_NO_CULLING = 1 << 6,
 		F_NO_LIGHTING = 1 << 7,
 		F_ALPHA_TEST = 1 << 8,
-		F_ALPHA_BLEND = 1 << 9
+		F_ALPHA_BLEND = 1 << 9,
+		F_HAVE_WEIGHTS = 1 << 10
 	};
 
 	Matrix mat;

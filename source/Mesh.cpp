@@ -281,7 +281,7 @@ void Mesh::LoadHeader(StreamReader& stream)
 		throw Format("Invalid file version '%u'.", head.version);
 	if(head.version < 20)
 		throw Format("Unsupported file version '%u'.", head.version);
-	if(head.n_bones >= 32)
+	if(head.n_bones >= MAX_BONES)
 		throw Format("Too many bones (%u).", head.n_bones);
 	if(head.n_subs == 0)
 		throw "Missing model mesh!";

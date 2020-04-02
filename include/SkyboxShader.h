@@ -8,9 +8,9 @@ class SkyboxShader : public ShaderHandler
 {
 public:
 	SkyboxShader();
+	cstring GetName() const override { return "skybox"; }
 	void OnInit() override;
 	void OnRelease() override;
-	cstring GetName() const override { return "skybox"; }
 	void Draw(Mesh& mesh, Camera& camera);
 
 private:

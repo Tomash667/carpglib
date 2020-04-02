@@ -4,16 +4,6 @@
 #include "VertexDeclaration.h"
 
 //-----------------------------------------------------------------------------
-enum TextureAddressMode
-{
-	TEX_ADR_WRAP = 1,
-	TEX_ADR_MIRROR = 2,
-	TEX_ADR_CLAMP = 3,
-	TEX_ADR_BORDER = 4,
-	TEX_ADR_MIRRORONCE = 5
-};
-
-//-----------------------------------------------------------------------------
 struct Resolution
 {
 	Int2 size;
@@ -43,12 +33,6 @@ public:
 		TEX_ADR_CLAMP = 3,
 		TEX_ADR_BORDER = 4,
 		TEX_ADR_MIRRORONCE = 5
-	};
-
-	enum FilterMode
-	{
-		FILTER_NONE = 0,
-		FILTER_LINEAR = 1
 	};
 
 	Render();
@@ -100,9 +84,9 @@ public:
 	void SetAdapter(int adapter) { assert(!initialized); used_adapter = adapter; }
 	//
 	ID3D11Buffer* CreateConstantBuffer(uint size);
-	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP, FilterMode mip_filter = FILTER_LINEAR);
-	void CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uint input_count, ID3D11VertexShader*& vertex_shader,
-		ID3D11PixelShader*& pixel_shader, ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr);
+	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP);
+	void CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uint inputCount, ID3D11VertexShader*& vertexShader,
+		ID3D11PixelShader*& pixelShader, ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr);
 
 private:
 	void LogMultisampling();
@@ -119,6 +103,7 @@ private:
 	void CreateRenderTarget();
 	void CreateDepthStencilView();
 	void SetViewport();
+	ID3DBlob* CompileShader(cstring filename, cstring entry, bool isVertex, D3D_SHADER_MACRO* macro);
 	IDXGIFactory* factory;
 	IDXGIAdapter* adapter;
 	IDXGISwapChain* swap_chain;

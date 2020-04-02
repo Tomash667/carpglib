@@ -8,6 +8,7 @@ class TerrainShader : public ShaderHandler
 {
 public:
 	TerrainShader();
+	cstring GetName() const override { return "terrain"; }
 	void OnInit() override;
 	void OnRelease() override;
 	void Draw(Scene* scene, Camera* camera, Terrain* terrain, const vector<uint>& parts);

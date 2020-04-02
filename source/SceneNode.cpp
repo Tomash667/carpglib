@@ -43,8 +43,10 @@ void SceneBatch::Add(SceneNode* node, int sub)
 	if(sub == -1)
 	{
 		assert(mesh.head.n_subs < 31);
+		if(IsSet(mesh.head.flags, Mesh::F_ANIMATED))
+			node->flags |= SceneNode::F_HAVE_WEIGHTS;
 		if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
-			node->flags |= SceneNode::F_TANGENTS;
+			node->flags |= SceneNode::F_HAVE_TANGENTS;
 		if(app::scene_mgr->use_normalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
 			node->flags |= SceneNode::F_NORMAL_MAP;
 		if(app::scene_mgr->use_specularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))

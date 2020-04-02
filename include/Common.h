@@ -89,6 +89,7 @@ typedef HWND__* HWND;
 // DirectX types
 struct _D3D_SHADER_MACRO;
 struct D3D11_INPUT_ELEMENT_DESC;
+struct ID3D10Blob;
 struct ID3D11Buffer;
 struct ID3D11DepthStencilView;
 struct ID3D11Device;
@@ -103,6 +104,7 @@ struct IDXGIAdapter;
 struct IDXGIFactory;
 struct IDXGISwapChain;
 typedef _D3D_SHADER_MACRO D3D_SHADER_MACRO;
+typedef ID3D10Blob ID3DBlob;
 typedef ID3D11ShaderResourceView* TEX;
 
 // FMod types

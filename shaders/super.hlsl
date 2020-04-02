@@ -6,7 +6,7 @@
 #	error "Mixed lighting not supported yet!"
 #endif
 
-#if defined(NORMAL_MAP) && !defined(HAVE_BINORMALS)
+#if defined(NORMAL_MAP) && !defined(HAVE_TANGENTS)
 #	error "Normal mapping require binormals!"
 #endif
 
@@ -67,7 +67,7 @@ struct VsInput
 #endif
 	float3 normal : NORMAL;
 	float2 tex : TEXCOORD0;
-#ifdef HAVE_BINORMALS
+#ifdef HAVE_TANGENTS
 	float3 tangent : TANGENT;
 	float3 binormal : BINORMAL;
 #endif

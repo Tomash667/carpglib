@@ -1,12 +1,12 @@
 #include "Pch.h"
 #include "TerrainShader.h"
-#include "Terrain.h"
+
 #include "Camera.h"
-#include "Texture.h"
-#include "Render.h"
-#include "SceneManager.h"
-#include "Scene.h"
 #include "DirectX.h"
+#include "Render.h"
+#include "Scene.h"
+#include "Terrain.h"
+#include "Texture.h"
 
 struct VsGlobals
 {
@@ -41,7 +41,7 @@ void TerrainShader::OnInit()
 	app::render->CreateShader("terrain.hlsl", desc, countof(desc), vertexShader, pixelShader, layout);
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
-	samplers[0] = app::render->CreateSampler(Render::TEX_ADR_CLAMP, Render::FILTER_NONE);
+	samplers[0] = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 	samplers[1] = app::render->CreateSampler();
 	samplers[2] = app::render->CreateSampler();
 	samplers[3] = app::render->CreateSampler();

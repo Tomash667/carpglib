@@ -25,3 +25,18 @@ inline void SafeRelease(T& x)
 		x = nullptr;
 	}
 }
+
+//-----------------------------------------------------------------------------
+namespace internal
+{
+	template<typename T>
+	struct ComAllocator : IAllocator<T>
+	{
+		T* Create() { return nullptr; }
+		void Destroy(T* item) { SafeRelease(item); }
+	};
+}
+
+template<typename T>
+using CPtr = Ptr<T, internal::ComAllocator<T>>;
+
