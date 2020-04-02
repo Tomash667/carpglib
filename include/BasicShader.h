@@ -7,26 +7,34 @@
 //-----------------------------------------------------------------------------
 class BasicShader : public ShaderHandler
 {
+	struct Shader
+	{
+		ID3D11VertexShader* vertexShader;
+		ID3D11PixelShader* pixelShader;
+		ID3D11InputLayout* layout;
+
+		Shader() : vertexShader(nullptr), pixelShader(nullptr), layout(nullptr) {}
+		void Release();
+	};
 public:
 	BasicShader();
+	cstring GetName() const override { return "basic"; }
 	void OnInit() override;
-	void OnReset() override;
-	void OnReload() override;
 	void OnRelease() override;
-	void Prepare(const Camera& camera);
+	/*void Prepare(const Camera& camera);
 	void BeginBatch();
 	void AddQuad(const Vec3(&pts)[4], const Vec4& color);
-	void EndBatch();
-
-	ID3DXEffect* effect;
-	D3DXHANDLE techSimple, techColor, techArea;
-	D3DXHANDLE hMatCombined, hColor, hPlayerPos, hRange;
+	void EndBatch();*/
 
 private:
-	IDirect3DDevice9* device;
-	VB vb;
+	ID3D11DeviceContext* deviceContext;
+	Shader shaderSimple, shaderColor, shaderArea;
+	ID3D11Buffer* vsGlobals;
+	ID3D11Buffer* psGlobals;
+
+	/*VB vb;
 	uint vb_size;
 	vector<VColor> verts;
 	Matrix mat_view_proj;
-	bool batch;
+	bool batch;*/
 };

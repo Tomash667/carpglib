@@ -26,6 +26,7 @@ template<typename T, typename T1, typename T2, typename T3>
 constexpr bool OR3_EQ(const T& var, const T1& val1, const T2& val2, const T3& val3) { return var == val1 || var == val2 || var == val3; }
 template<class T, size_t N>
 constexpr size_t countof(T(&)[N]) { return N; }
+constexpr size_t alignto(size_t size, size_t align) { return size % align == 0 ? size : (size / align + 1) * align; }
 
 //-----------------------------------------------------------------------------
 // Debug helpers
