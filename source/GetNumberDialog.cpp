@@ -52,6 +52,8 @@ void GetNumberDialog::Update(float dt)
 		if(scrollbar.change != 0 || gui->mouse_wheel != 0.f)
 		{
 			int num = atoi(textBox.GetText().c_str());
+			int newNum = num;
+
 			if(gui->mouse_wheel != 0.f)
 			{
 				int change = 1;
@@ -59,23 +61,25 @@ void GetNumberDialog::Update(float dt)
 					change = max(1, (max_value - min_value) / 20);
 				if(gui->mouse_wheel < 0.f)
 					change = -change;
-				num += change;
-				if(num < min_value)
-					num = min_value;
-				else if(num > max_value)
-					num = max_value;
+				newNum += change;
 			}
 			else
-				num += scrollbar.change;
-			textBox.SetText(Format("%d", num));
-			scrollbar.offset = float(num - min_value) / (max_value - min_value) * (scrollbar.total - scrollbar.part);
-			changed = true;
+				newNum += scrollbar.change;
+
+			newNum = Clamp(newNum, min_value, max_value);
+			if(num != newNum)
+			{
+				textBox.SetText(Format("%d", newNum));
+				scrollbar.offset = float(newNum - min_value) / (max_value - min_value) * (scrollbar.total - scrollbar.part);
+				changed = true;
+			}
 		}
 		else if(!Equal(scrollbar.offset, prev_offset))
 		{
 			textBox.SetText(Format("%d", (int)Lerp(float(min_value), float(max_value), scrollbar.offset / (scrollbar.total - scrollbar.part))));
 			changed = true;
 		}
+
 		if(moving)
 		{
 			if(!scrollbar.clicked)
@@ -91,6 +95,7 @@ void GetNumberDialog::Update(float dt)
 			textBox.focus = false;
 			textBox.Event(GuiEvent_LostFocus);
 		}
+
 		textBox.Update(dt);
 		if(!changed)
 		{
