@@ -83,10 +83,11 @@ public:
 	void SetShadersDir(cstring dir) { shaders_dir = dir; }
 	void SetAdapter(int adapter) { assert(!initialized); used_adapter = adapter; }
 	//
+	template<typename T> ID3D11Buffer* CreateConstantBuffer() { return CreateConstantBuffer(alignto(sizeof(T), 16)); }
 	ID3D11Buffer* CreateConstantBuffer(uint size);
 	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP);
-	void CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uint inputCount, ID3D11VertexShader*& vertexShader,
-		ID3D11PixelShader*& pixelShader, ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr);
+	void CreateShader(cstring filename, VertexDeclarationId vertexDecl, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader,
+		ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr, cstring vsEntry = nullptr, cstring psEntry = nullptr);
 
 private:
 	void LogMultisampling();

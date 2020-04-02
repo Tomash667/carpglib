@@ -1,55 +1,60 @@
 #include "Pch.h"
-/*#include "BasicShader.h"
-#include "Render.h"
+#include "BasicShader.h"
+
 #include "Camera.h"
 #include "DirectX.h"
+#include "Render.h"
+
+struct VsGlobals
+{
+	Matrix matCombined;
+};
+
+struct PsGlobals
+{
+	Vec4 color;
+	Vec3 playerPos;
+	float range;
+};
+
+void BasicShader::Shader::Release()
+{
+	SafeRelease(vertexShader);
+	SafeRelease(pixelShader);
+	SafeRelease(layout);
+}
 
 //=================================================================================================
-BasicShader::BasicShader() : device(app::render->GetDevice()), effect(nullptr), vb(nullptr), batch(false)
+BasicShader::BasicShader() : deviceContext(app::render->GetDeviceContext()), vsGlobals(nullptr), psGlobals(nullptr)
+	//device(app::render->GetDevice()), effect(nullptr), vb(nullptr), batch(false)
 {
 }
+
+
 
 //=================================================================================================
 void BasicShader::OnInit()
 {
-	effect = app::render->CompileShader("debug.fx");
+	app::render->CreateShader("basic.hlsl", VDI_POS, shaderSimple.vertexShader, shaderSimple.pixelShader, shaderSimple.layout, nullptr, "VsSimple", "PsSimple");
+	app::render->CreateShader("basic.hlsl", VDI_COLOR, shaderColor.vertexShader, shaderColor.pixelShader, shaderColor.layout, nullptr, "VsColor", "PsColor");
+	app::render->CreateShader("basic.hlsl", VDI_POS, shaderArea.vertexShader, shaderArea.pixelShader, shaderArea.layout, nullptr, "VsArea", "PsArea");
 
-	techSimple = effect->GetTechniqueByName("techSimple");
-	techColor = effect->GetTechniqueByName("techColor");
-	techArea = effect->GetTechniqueByName("techArea");
-	assert(techSimple && techColor && techArea);
-
-	hMatCombined = effect->GetParameterByName(nullptr, "matCombined");
-	hColor = effect->GetParameterByName(nullptr, "color");
-	hPlayerPos = effect->GetParameterByName(nullptr, "playerPos");
-	hRange = effect->GetParameterByName(nullptr, "range");
-	assert(hMatCombined && hColor && hPlayerPos && hRange);
-}
-
-//=================================================================================================
-void BasicShader::OnReset()
-{
-	if(effect)
-		V(effect->OnLostDevice());
-	SafeRelease(vb);
-}
-
-//=================================================================================================
-void BasicShader::OnReload()
-{
-	if(effect)
-		V(effect->OnResetDevice());
+	vsGlobals = app::render->CreateConstantBuffer<VsGlobals>();
+	psGlobals = app::render->CreateConstantBuffer<PsGlobals>();
 }
 
 //=================================================================================================
 void BasicShader::OnRelease()
 {
-	SafeRelease(effect);
-	SafeRelease(vb);
+	shaderSimple.Release();
+	shaderColor.Release();
+	shaderArea.Release();
+	SafeRelease(vsGlobals);
+	SafeRelease(psGlobals);
 }
 
 //=================================================================================================
-void BasicShader::Prepare(const Camera& camera)
+/*void BasicShader::Prepare(const Camera& camera)
 {
 	mat_view_proj = camera.mat_view_proj;
 

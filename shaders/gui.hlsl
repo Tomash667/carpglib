@@ -11,6 +11,10 @@ sampler sampler0 = sampler_state
 	AddressV = Clamp;
 };
 
+
+Texture2D tex : register(t0);
+SamplerState sampler;
+
 struct VERTEX_INPUT
 {
 	float3 pos : POSITION;
