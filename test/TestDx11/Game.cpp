@@ -19,11 +19,17 @@ Game::~Game()
 bool Game::OnInit()
 {
 	app::res_mgr->AddDir("data");
+	app::render->SetShadersDir("../shaders");
 
 	scene = new Scene;
+	scene->clear_color = Color::Red;
+
 	camera = new Camera;
 	camera->from = Vec3(-1, 3, -4);
 	camera->to = Vec3::Zero;
+	Matrix matView = Matrix::CreateLookAt(camera->from, camera->to);
+	Matrix matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, app::engine->GetWindowAspect(), 0.1f, 50.f);
+	camera->mat_view_proj = matView * matProj;
 
 	node = SceneNode::Get();
 	node->SetMesh(app::res_mgr->Load<Mesh>("box.qmsh"));
@@ -51,7 +57,6 @@ void Game::OnUpdate(float dt)
 
 void Game::OnDraw()
 {
-	app::render->Clear(Vec4(1, 0, 0, 1));
 	app::scene_mgr->Draw(scene, camera, nullptr);
 	app::render->Present();
 }

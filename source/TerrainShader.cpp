@@ -39,8 +39,8 @@ void TerrainShader::OnInit()
 		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	app::render->CreateShader("terrain.hlsl", desc, countof(desc), vertexShader, pixelShader, layout);
-	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
-	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
+	vsGlobals = app::render->CreateConstantBuffer<VsGlobals>();
+	psGlobals = app::render->CreateConstantBuffer<PsGlobals>();
 	samplers[0] = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 	samplers[1] = app::render->CreateSampler();
 	samplers[2] = app::render->CreateSampler();

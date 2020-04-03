@@ -60,7 +60,7 @@ public:
 	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	bool IsVsyncEnabled() const { return vsync; }
 	ID3D11Device* GetDevice() const { return device; }
-	ID3D11DeviceContext* GetDeviceContext() const { return device_context; }
+	ID3D11DeviceContext* GetDeviceContext() const { return deviceContext; }
 	void GetMultisampling(int& ms, int& msq) const { ms = multisampling; msq = multisampling_quality; }
 	void GetResolutions(vector<Resolution>& v) const;
 	void GetMultisamplingModes(vector<Int2>& v) const;
@@ -86,8 +86,8 @@ public:
 	template<typename T> ID3D11Buffer* CreateConstantBuffer() { return CreateConstantBuffer(alignto(sizeof(T), 16)); }
 	ID3D11Buffer* CreateConstantBuffer(uint size);
 	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP);
-	void CreateShader(cstring filename, VertexDeclarationId vertexDecl, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader,
-		ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr, cstring vsEntry = nullptr, cstring psEntry = nullptr);
+	void CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uint inputCount, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader,
+		ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr, cstring vsEntry = "VsMain", cstring psEntry = "PsMain");
 
 private:
 	void LogMultisampling();
@@ -109,7 +109,7 @@ private:
 	IDXGIAdapter* adapter;
 	IDXGISwapChain* swap_chain;
 	ID3D11Device* device;
-	ID3D11DeviceContext* device_context;
+	ID3D11DeviceContext* deviceContext;
 	ID3D11RenderTargetView* render_target;
 	ID3D11DepthStencilView* depth_stencil_view;
 	Int2 wnd_size;

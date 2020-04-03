@@ -15,7 +15,7 @@ static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 Render::Render() : initialized(false), current_target(nullptr), /*current_surf(nullptr),*/ vsync(true),
 lost_device(false), res_freed(false), shaders_dir("shaders"), refresh_hz(0), shader_version(-1), used_adapter(0), multisampling(0), multisampling_quality(0),
 
-factory(nullptr), adapter(nullptr), swap_chain(nullptr), device(nullptr), device_context(nullptr), render_target(nullptr), depth_stencil_view(nullptr)
+factory(nullptr), adapter(nullptr), swap_chain(nullptr), device(nullptr), deviceContext(nullptr), render_target(nullptr), depth_stencil_view(nullptr)
 {
 	/*for(int i = 0; i < VDI_MAX; ++i)
 		vertex_decl[i] = nullptr;-*/
@@ -37,7 +37,7 @@ Render::~Render()
 	SafeRelease(depth_stencil_view);
 	SafeRelease(render_target);
 	SafeRelease(swap_chain);
-	SafeRelease(device_context);
+	SafeRelease(deviceContext);
 
 	if(device)
 	{
@@ -66,6 +66,8 @@ void Render::Init()
 	CreateAdapter();
 	CreateDeviceAndSwapChain();
 	CreateSizeDependentResources();
+
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// check shaders version
 	/*D3DCAPS9 caps;
@@ -231,7 +233,7 @@ void Render::CreateDeviceAndSwapChain()
 	D3D_FEATURE_LEVEL feature_levels[] = { D3D_FEATURE_LEVEL_11_0 };
 	D3D_FEATURE_LEVEL feature_level;
 	HRESULT result = D3D11CreateDeviceAndSwapChain(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags, feature_levels, countof(feature_levels),
-		D3D11_SDK_VERSION, &swap_desc, &swap_chain, &device, &feature_level, &device_context);
+		D3D11_SDK_VERSION, &swap_desc, &swap_chain, &device, &feature_level, &deviceContext);
 	if(FAILED(result))
 		throw Format("Failed to create device and swap chain (%u).", result);
 
@@ -244,7 +246,7 @@ void Render::CreateSizeDependentResources()
 {
 	CreateRenderTarget();
 	CreateDepthStencilView();
-	device_context->OMSetRenderTargets(1, &render_target, depth_stencil_view);
+	deviceContext->OMSetRenderTargets(1, &render_target, depth_stencil_view);
 	SetViewport();
 }
 
@@ -311,7 +313,7 @@ void Render::SetViewport()
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
 
-	device_context->RSSetViewports(1, &viewport);
+	deviceContext->RSSetViewports(1, &viewport);
 }
 
 //=================================================================================================
@@ -603,8 +605,8 @@ void Render::WaitReset()
 //=================================================================================================
 void Render::Clear(const Vec4& color)
 {
-	device_context->ClearRenderTargetView(render_target, (const float*)color);
-	device_context->ClearDepthStencilView(depth_stencil_view, D3D11_CLEAR_DEPTH, 1.f, 0);
+	deviceContext->ClearRenderTargetView(render_target, (const float*)color);
+	deviceContext->ClearDepthStencilView(depth_stencil_view, D3D11_CLEAR_DEPTH, 1.f, 0);
 }
 
 //=================================================================================================
@@ -1162,9 +1164,7 @@ void Render::SetTextureAddressMode(TextureAddressMode mode)
 
 ID3D11Buffer* Render::CreateConstantBuffer(uint size)
 {
-	// align size
-	if(size % 16 != 0)
-		size = (size / 16 + 1) * 16;
+	assert(size % 16 == 0);
 
 	D3D11_BUFFER_DESC cbDesc;
 	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -1208,16 +1208,16 @@ ID3D11SamplerState* Render::CreateSampler(TextureAddressMode mode)
 }
 
 void Render::CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uint inputCount, ID3D11VertexShader*& vertexShader,
-	ID3D11PixelShader*& pixelShader, ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro)
+	ID3D11PixelShader*& pixelShader, ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro, cstring vsEntry, cstring psEntry)
 {
 	try
 	{
-		CPtr<ID3DBlob> vsBuf = CompileShader(filename, "VsMain", true, macro);
+		CPtr<ID3DBlob> vsBuf = CompileShader(filename, vsEntry, true, macro);
 		HRESULT result = device->CreateVertexShader(vsBuf->GetBufferPointer(), vsBuf->GetBufferSize(), nullptr, &vertexShader);
 		if(FAILED(result))
 			throw Format("Failed to create vertex shader (%u).", result);
 
-		CPtr<ID3DBlob> psBuf = CompileShader(filename, "PsMain", false, macro);
+		CPtr<ID3DBlob> psBuf = CompileShader(filename, psEntry, false, macro);
 		result = device->CreatePixelShader(psBuf->GetBufferPointer(), psBuf->GetBufferSize(), nullptr, &pixelShader);
 		if(FAILED(result))
 			throw Format("Failed to create pixel shader (%u).", result);
@@ -1254,12 +1254,14 @@ ID3DBlob* Render::CompileShader(cstring filename, cstring entry, bool isVertex, 
 		if(error_blob)
 		{
 			cstring err = (cstring)error_blob->GetBufferPointer();
-			cstring msg = Format("Failed to compile '%s' function '%s': %s (code %u).", path, entry, err, result);
+			cstring msg = Format("Failed to compile function %s: %s (code %u).", entry, err, result);
 			error_blob->Release();
 			throw msg;
 		}
+		else if(result == D3D11_ERROR_FILE_NOT_FOUND || result == HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND))
+			throw Format("Failed to compile function %s: file not found.", entry);
 		else
-			throw Format("Failed to compile '%s' function '%s' (code %u).", path, entry, result);
+			throw Format("Failed to compile function %s (code %u).", entry, result);
 	}
 
 	if(error_blob)

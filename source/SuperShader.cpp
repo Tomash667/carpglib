@@ -99,11 +99,11 @@ void SuperShader::OnInit()
 	samplerNormal = app::render->CreateSampler();
 	samplerSpecular = app::render->CreateSampler();
 
-	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
-	vsLocals = app::render->CreateConstantBuffer(sizeof(VsLocals));
-	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
-	psLocals = app::render->CreateConstantBuffer(sizeof(PsLocals));
-	psMaterial = app::render->CreateConstantBuffer(sizeof(PsMaterial));
+	vsGlobals = app::render->CreateConstantBuffer<VsGlobals>();
+	vsLocals = app::render->CreateConstantBuffer<VsLocals>();
+	psGlobals = app::render->CreateConstantBuffer<PsGlobals>();
+	psLocals = app::render->CreateConstantBuffer<PsLocals>();
+	psMaterial = app::render->CreateConstantBuffer<PsMaterial>();
 }
 
 //=================================================================================================
@@ -270,6 +270,7 @@ SuperShader::Shader& SuperShader::CompileShader(uint id)
 void SuperShader::Prepare(Scene* scene, Camera* camera)
 {
 	assert(scene && camera);
+	this->camera = camera;
 
 	// bind shader buffers, samplers
 	ID3D11Buffer* vsBuffers[] = { vsGlobals, vsLocals };
