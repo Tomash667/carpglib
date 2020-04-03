@@ -14,8 +14,8 @@ public:
 	void OnReset() override;
 	void OnReload() override;
 	void OnRelease() override;
-	void SaveToFile(cstring filename);
-	uint SaveToFile(FileWriter& f);
+	//void SaveToFile(cstring filename);
+	//uint SaveToFile(FileWriter& f);
 	void Resize(const Int2& new_size);
 	void FreeSurface();
 	//SURFACE GetSurface();

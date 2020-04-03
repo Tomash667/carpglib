@@ -53,6 +53,7 @@ struct TextureLock
 
 private:
 	TEX tex;
+	ID3D11Texture2D* res;
 	byte* data;
 	int pitch;
 };

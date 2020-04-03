@@ -1,12 +1,14 @@
 #include "Pch.h"
-/*#include "GuiShader.h"
+#include "GuiShader.h"
 #include "Render.h"
 #include "DirectX.h"
 
 //=================================================================================================
-GuiShader::GuiShader() : effect(nullptr), vb(nullptr), vb2(nullptr)
+GuiShader::GuiShader() {}
+FIXME;
+/*: effect(nullptr), vb(nullptr), vb2(nullptr)
 {
-}
+}*/
 
 void GuiShader::OnInit()
 {
@@ -19,7 +21,7 @@ void GuiShader::OnRelease()
 }
 
 //=================================================================================================
-void GuiShader::OnInit()
+/*void GuiShader::OnInit()
 {
 	effect = app::render->CompileShader("gui.fx");
 

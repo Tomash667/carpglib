@@ -37,6 +37,7 @@ Int2 Texture::GetSize(TEX tex)
 	return size;
 }
 
+FIXME;
 //=================================================================================================
 /*void DynamicTexture::OnReset()
 {
@@ -55,33 +56,41 @@ void DynamicTexture::OnReload()
 void DynamicTexture::OnRelease()
 {
 	delete this;
-}
+}*/
 
 //=================================================================================================
 TextureLock::TextureLock(TEX tex) : tex(tex)
 {
 	assert(tex);
-	D3DLOCKED_RECT lock;
-	V(tex->LockRect(0, &lock, nullptr, 0));
-	data = static_cast<byte*>(lock.pBits);
-	pitch = lock.Pitch;
+
+	ID3D11Texture2D* res;
+	tex->GetResource(reinterpret_cast<ID3D11Resource**>(&res));
+
+	D3D11_MAPPED_SUBRESOURCE resource;
+	app::render->GetDeviceContext()->Map(res, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+	data = static_cast<byte*>(resource.pData);
+	pitch = resource.RowPitch;
 }
 
 //=================================================================================================
 TextureLock::~TextureLock()
 {
-	if(tex)
-		V(tex->UnlockRect(0));
+	if(res)
+	{
+		app::render->GetDeviceContext()->Unmap(res, 0);
+		res->Release();
+	}
 }
 
 //=================================================================================================
 void TextureLock::Fill(Color color)
 {
-	Int2 size = Texture::GetSize(tex);
-	for(int y = 0; y < size.y; ++y)
+	D3D11_TEXTURE2D_DESC desc;
+	res->GetDesc(&desc);
+	for(uint y = 0; y < desc.Height; ++y)
 	{
 		uint* line = operator [](y);
-		for(int x = 0; x < size.x; ++x)
+		for(uint x = 0; x < desc.Width; ++x)
 		{
 			*line = color;
 			++line;
@@ -93,9 +102,10 @@ void TextureLock::Fill(Color color)
 //=================================================================================================
 void TextureLock::GenerateMipSubLevels()
 {
-	assert(tex);
-	V(tex->UnlockRect(0));
-	tex->GenerateMipSubLevels();
-	tex = nullptr;
+	assert(res);
+	ID3D11DeviceContext* deviceContext = app::render->GetDeviceContext();
+	deviceContext->Unmap(res, 0);
+	deviceContext->GenerateMips(tex);
+	res->Release();
+	res = nullptr;
 }
-*/

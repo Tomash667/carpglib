@@ -1,5 +1,5 @@
 #include "Pch.h"
-/*#include "GrassShader.h"
+#include "GrassShader.h"
 #include "Render.h"
 #include "Mesh.h"
 #include "Camera.h"
@@ -8,7 +8,19 @@
 #include "DirectX.h"
 
 //=================================================================================================
-GrassShader::GrassShader() : device(app::render->GetDevice()), vertex_decl(nullptr), effect(nullptr), vb(nullptr), vb_size(0)
+GrassShader::GrassShader() {}
+
+void GrassShader::OnInit() {
+
+}
+
+void GrassShader::OnRelease()
+{
+
+}
+
+FIXME;
+/*: device(app::render->GetDevice()), vertex_decl(nullptr), effect(nullptr), vb(nullptr), vb_size(0)
 {
 	const D3DVERTEXELEMENT9 decl[] = {
 		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,	0},

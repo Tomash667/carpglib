@@ -8,12 +8,11 @@ class GlowShader : public ShaderHandler
 {
 public:
 	GlowShader();
+	cstring GetName() const override { return "glow"; }
 	void OnInit() override;
-	void OnReset() override;
-	void OnReload() override;
 	void OnRelease() override;
 
-	ID3DXEffect* effect;
+	/*ID3DXEffect* effect;
 	D3DXHANDLE techGlowMesh, techGlowAni;
-	D3DXHANDLE hMatCombined, hMatBones, hColor, hTex;
+	D3DXHANDLE hMatCombined, hMatBones, hColor, hTex;*/
 };

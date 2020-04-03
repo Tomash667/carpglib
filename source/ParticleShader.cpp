@@ -1,5 +1,5 @@
 #include "Pch.h"
-/*#include "ParticleShader.h"
+#include "ParticleShader.h"
 #include "ParticleSystem.h"
 #include "Render.h"
 #include "Camera.h"
@@ -7,7 +7,20 @@
 #include "DirectX.h"
 
 //=================================================================================================
-ParticleShader::ParticleShader() : device(app::render->GetDevice()), effect(nullptr), vb(nullptr)
+ParticleShader::ParticleShader() {}
+FIXME;
+
+void ParticleShader::OnInit()
+{
+
+}
+
+void ParticleShader::OnRelease()
+{
+
+}
+
+/*: device(app::render->GetDevice()), effect(nullptr), vb(nullptr)
 {
 }
 

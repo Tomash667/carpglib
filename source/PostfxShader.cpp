@@ -1,11 +1,25 @@
 #include "Pch.h"
-/*#include "PostfxShader.h"
+#include "PostfxShader.h"
 #include "Render.h"
 #include "Engine.h"
 #include "DirectX.h"
 
 //=================================================================================================
-PostfxShader::PostfxShader() : effect(nullptr), vbFullscreen(nullptr), surf(), tex()
+PostfxShader::PostfxShader() {}
+
+void PostfxShader::OnInit()
+{
+
+}
+
+void PostfxShader::OnRelease()
+{
+
+}
+
+FIXME;
+
+/*: effect(nullptr), vbFullscreen(nullptr), surf(), tex()
 {
 }
 

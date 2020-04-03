@@ -1,13 +1,25 @@
 #include "Pch.h"
-/*#include "GlowShader.h"
+#include "GlowShader.h"
 #include "Render.h"
 #include "DirectX.h"
 
 //=================================================================================================
-GlowShader::GlowShader() : effect(nullptr)
+GlowShader::GlowShader()
 {
 }
 
+void GlowShader::OnInit()
+{
+
+}
+
+void GlowShader::OnRelease()
+{
+
+}
+
+FIXME;
+/*
 //=================================================================================================
 void GlowShader::OnInit()
 {

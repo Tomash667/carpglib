@@ -1459,6 +1459,32 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+struct Buf
+{
+	Buf()
+	{
+		buf = BufPool.Get();
+	}
+	~Buf()
+	{
+		BufPool.Free(buf);
+	}
+	template<typename T>
+	T* Get(uint size)
+	{
+		buf->resize(size);
+		return reinterpret_cast<T*>(buf->data());
+	}
+	void* Get()
+	{
+		return buf->data();
+	}
+
+private:
+	vector<byte>* buf;
+};
+
+//-----------------------------------------------------------------------------
 template<typename T>
 struct RemoveRandomPred
 {

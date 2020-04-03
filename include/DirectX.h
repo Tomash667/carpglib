@@ -1,6 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Render.h"
 #include "WindowsIncludes.h"
 #define far
 #include <d3d11_1.h>
@@ -40,3 +41,27 @@ namespace internal
 template<typename T>
 using CPtr = Ptr<T, internal::ComAllocator<T>>;
 
+//-----------------------------------------------------------------------------
+struct ResourceLock
+{
+	ResourceLock(ID3D11Resource* res, D3D11_MAP mode = D3D11_MAP_WRITE)
+	{
+		this->res = res;
+		D3D11_MAPPED_SUBRESOURCE sub;
+		V(app::render->GetDeviceContext()->Map(res, 0, mode, 0, &sub));
+		data = sub.pData;
+	}
+	~ResourceLock()
+	{
+		app::render->GetDeviceContext()->Unmap(res, 0);
+	}
+	template<typename T>
+	T* Get()
+	{
+		return reinterpret_cast<T*>(data);
+	}
+
+private:
+	ID3D11Resource* res;
+	void* data;
+};
