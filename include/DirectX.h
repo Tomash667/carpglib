@@ -60,6 +60,10 @@ struct ResourceLock
 	{
 		return reinterpret_cast<T*>(data);
 	}
+	void* Get()
+	{
+		return data;
+	}
 
 private:
 	ID3D11Resource* res;

@@ -162,9 +162,7 @@ public:
 	void OnResize();
 	void DrawSpriteRectPart(Texture* t, const Rect& rect, const Rect& part, Color color = Color::White);
 	void DrawSpriteTransform(Texture* t, const Matrix& mat, Color color = Color::White);
-	void DrawLine(const Vec2* lines, uint count, Color color = Color::Black, bool strip = true);
-	void LineBegin();
-	void LineEnd();
+	void DrawLine(const Vec2& from, const Vec2& to, Color color = Color::Black, float width = 1.f);
 	bool NeedCursor();
 	bool DrawText3D(Font* font, Cstring text, uint flags, Color color, const Vec3& pos, Rect* text_rect = nullptr);
 	bool To2dPoint(const Vec3& pos, Int2& pt);
@@ -221,27 +219,35 @@ public:
 	float mouse_wheel;
 
 private:
-	void DrawTextLine(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color, Vec4& color, int x, int y, const Rect* clipping,
-		HitboxContext* hc, bool parse_special, const Vec2& scale);
-	void DrawTextOutline(Font* font, cstring text, uint line_begin, uint line_end, int x, int y, const Rect* clipping, bool parse_special, const Vec2& scale);
-	int Clip(int x, int y, int w, int h, const Rect* clipping);
-	void Lock(bool outline = false);
-	void Flush(bool lock = false);
-	void SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc);
-	void AddRect(const Vec2& left_top, const Vec2& right_bottom, const Vec4& color);
+	struct DrawLineContext
+	{
+		Font* font;
+		HitboxContext* hc;
+		cstring text;
+		VParticle* v;
+		VParticle* v2;
+		uint inBuffer;
+		uint inBuffer2;
+		Vec4 defColor;
+		Vec4 currentColor;
+		Vec2 scale;
+		bool parseSpecial;
+	};
 
-	FontLoader* font_loader;
+	void DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int x, int y, const Rect* clipping);
+	void DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, int x, int y, const Rect* clipping);
+	int Clip(int x, int y, int w, int h, const Rect* clipping);
+	void SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc);
+	void AddRect(VParticle*& v, const Vec2& left_top, const Vec2& right_bottom, const Vec4& color);
+
+	FontLoader* fontLoader;
 	GuiShader* shader;
-	TEX tSet, tCurrent, tCurrent2;
 	vector<DialogBox*> created_dialogs;
 	Container* layer, *dialog_layer;
-	VParticle* v, *v2;
-	uint in_buffer, in_buffer2;
-	Vec4 color_table[6];
+	VParticle vBuf[256 * 6], vBuf2[256 * 6];
 	HitboxContext tmpHitboxContext;
 	vector<OnCharHandler*> on_char;
-	bool vb2_locked, grayscale, use_outline;
-	float outline_alpha;
+	bool grayscale;
 	Layout* master_layout;
 	layout::Gui* layout;
 	Overlay* overlay;

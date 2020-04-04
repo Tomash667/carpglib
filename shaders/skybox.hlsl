@@ -2,7 +2,7 @@
 
 //------------------------------------------------------------------------------
 // VERTEX SHADER CONSTANTS
-cbuffer vs_globals : register(b0)
+cbuffer VsGlobals : register(b0)
 {
 	matrix matCombined;
 };
@@ -30,7 +30,7 @@ struct VS_OUTPUT
 
 //------------------------------------------------------------------------------
 // VERTEX SHADER
-void vs_main(VS_INPUT In, out VS_OUTPUT Out)
+void VsMain(VS_INPUT In, out VS_OUTPUT Out)
 {
 	Out.pos = mul(float4(In.pos, 1), matCombined);
 	Out.tex = In.tex;
@@ -38,7 +38,7 @@ void vs_main(VS_INPUT In, out VS_OUTPUT Out)
 
 //------------------------------------------------------------------------------
 // PIXEL SHADER
-float4 ps_main(VS_OUTPUT In) : SV_TARGET
+float4 PsMain(VS_OUTPUT In) : SV_TARGET
 {
 	return texDiffuse.Sample(samplerDiffuse, In.tex);
 }

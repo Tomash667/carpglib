@@ -1,19 +1,15 @@
-float2 size;
-texture tex0;
-
-sampler sampler0 = sampler_state
+cbuffer VsGlobals : register(b0)
 {
-	Texture = <tex0>;
-	MipFilter = None;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	AddressU = Clamp;
-	AddressV = Clamp;
+	float2 size;
 };
 
+cbuffer PsGlobals : register(b0)
+{
+	float grayscale;
+};
 
-Texture2D tex : register(t0);
-SamplerState sampler;
+Texture2D texDiffuse : register(t0);
+SamplerState samplerDiffuse;
 
 struct VERTEX_INPUT
 {
@@ -24,12 +20,12 @@ struct VERTEX_INPUT
 
 struct VERTEX_OUTPUT
 {
-	float4 pos : POSITION;
+	float4 pos : SV_POSITION;
 	float2 tex : TEXCOORD0;
 	float4 color : COLOR;
 };
 
-void vs_main(in VERTEX_INPUT In, out VERTEX_OUTPUT Out)
+void VsMain(in VERTEX_INPUT In, out VERTEX_OUTPUT Out)
 {
 	// fix half pixel problem
 	Out.pos.x = ((In.pos.x - 0.5f) / (size.x * 0.5f)) - 1.0f;
@@ -40,47 +36,9 @@ void vs_main(in VERTEX_INPUT In, out VERTEX_OUTPUT Out)
 	Out.color = In.color;
 }
 
-float4 ps_tex(in VERTEX_OUTPUT In) : COLOR0
+float4 PsMain(in VERTEX_OUTPUT In) : SV_TARGET
 {
-	float4 c = tex2D(sampler0, In.tex);
-	return c * In.color;
-}
-
-float4 ps_color(in VERTEX_OUTPUT In) : COLOR0
-{
-	return In.color;
-}
-
-float4 ps_grayscale(in VERTEX_OUTPUT In) : COLOR0
-{
-	float4 c = tex2D(sampler0, In.tex) * In.color;
-	c.rgb = (c.r+c.g+c.b)/3.0f;
-	return c;
-}
-
-technique techTex
-{
-	pass pass0
-	{
-		VertexShader = compile VS_VERSION vs_main();
-		PixelShader = compile PS_VERSION ps_tex();
-	}
-}
-
-technique techColor
-{
-	pass pass0
-	{
-		VertexShader = compile VS_VERSION vs_main();
-		PixelShader = compile PS_VERSION ps_color();
-	}
-}
-
-technique techGrayscale
-{
-	pass pass0
-	{
-		VertexShader = compile VS_VERSION vs_main();
-		PixelShader = compile PS_VERSION ps_grayscale();
-	}
+	float4 c = texDiffuse.Sample(samplerDiffuse, In.tex) * In.color;
+	float4 gray = (c.r+c.g+c.b)/3.0f;
+	return lerp(c, gray, grayscale);
 }

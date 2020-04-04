@@ -1,79 +1,121 @@
 #include "Pch.h"
 #include "GuiShader.h"
-#include "Render.h"
+
 #include "DirectX.h"
+#include "Engine.h"
+#include "Render.h"
+#include "Texture.h"
+
+struct VsGlobals
+{
+	Vec2 size;
+};
+
+struct PsGlobals
+{
+	float grayscale;
+};
 
 //=================================================================================================
-GuiShader::GuiShader() {}
-FIXME;
-/*: effect(nullptr), vb(nullptr), vb2(nullptr)
+GuiShader::GuiShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(nullptr),
+layout(nullptr), vsGlobals(nullptr), psGlobals(nullptr), sampler(nullptr), vb(nullptr), texEmpty(nullptr), texCurrent(nullptr)
 {
-}*/
+}
 
+//=================================================================================================
 void GuiShader::OnInit()
 {
+	D3D11_INPUT_ELEMENT_DESC desc[] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+	app::render->CreateShader("gui.hlsl", desc, countof(desc), vertexShader, pixelShader, layout);
 
-}
+	vsGlobals = app::render->CreateConstantBuffer<VsGlobals>();
+	psGlobals = app::render->CreateConstantBuffer<PsGlobals>();
+	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 
-void GuiShader::OnRelease()
-{
+	texEmpty = app::render->CreateTexture(Int2(1, 1), &Color::White);
 
-}
+	// create vertex buffer
+	D3D11_BUFFER_DESC bufDesc;
+	bufDesc.Usage = D3D11_USAGE_DYNAMIC;
+	bufDesc.ByteWidth = sizeof(VParticle) * 6 * 256;
+	bufDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bufDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	bufDesc.MiscFlags = 0;
+	bufDesc.StructureByteStride = 0;
 
-//=================================================================================================
-/*void GuiShader::OnInit()
-{
-	effect = app::render->CompileShader("gui.fx");
-
-	techTex = effect->GetTechniqueByName("techTex");
-	techColor = effect->GetTechniqueByName("techColor");
-	techGrayscale = effect->GetTechniqueByName("techGrayscale");
-	assert(techTex && techColor && techGrayscale);
-
-	hSize = effect->GetParameterByName(nullptr, "size");
-	hTex = effect->GetParameterByName(nullptr, "tex0");
-	assert(hSize && hTex);
-
-	CreateVertexBuffer();
-
-	// 
-	// create pixel texture
-	V(D3DXCreateTexture(device, 1, 1, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tPixel));
-	D3DLOCKED_RECT lock;
-	V(tPixel->LockRect(0, &lock, nullptr, 0));
-	*((DWORD*)lock.pBits) = Color(255, 255, 255).value;
-	V(tPixel->UnlockRect(0));
-}
-
-//=================================================================================================
-void GuiShader::OnReset()
-{
-	if(effect)
-		V(effect->OnLostDevice());
-	SafeRelease(vb);
-	SafeRelease(vb2);
-}
-
-//=================================================================================================
-void GuiShader::OnReload()
-{
-	if(effect)
-		V(effect->OnResetDevice());
-	CreateVertexBuffer();
+	V(app::render->GetDevice()->CreateBuffer(&bufDesc, nullptr, &vb));
 }
 
 //=================================================================================================
 void GuiShader::OnRelease()
 {
-	SafeRelease(effect);
+	SafeRelease(vertexShader);
+	SafeRelease(pixelShader);
+	SafeRelease(layout);
+	SafeRelease(vsGlobals);
+	SafeRelease(psGlobals);
+	SafeRelease(sampler);
 	SafeRelease(vb);
-	SafeRelease(vb2);
 }
 
 //=================================================================================================
-void GuiShader::CreateVertexBuffer()
+void GuiShader::Prepare()
 {
-	IDirect3DDevice9* device = app::render->GetDevice();
-	V(device->CreateVertexBuffer(sizeof(VParticle) * 6 * 256, D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb, nullptr));
-	V(device->CreateVertexBuffer(sizeof(VParticle) * 6 * 256, D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb2, nullptr));
-}*/
+	app::render->SetAlphaTest(false);
+	app::render->SetAlphaBlend(true);
+	app::render->SetNoCulling(true);
+	app::render->SetNoZWrite(false);
+
+	// setup shader
+	deviceContext->VSSetShader(vertexShader, nullptr, 0);
+	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
+	deviceContext->PSSetShader(pixelShader, nullptr, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
+	deviceContext->PSSetSamplers(0, 1, &sampler);
+	deviceContext->PSSetShaderResources(0, 1, &texEmpty);
+	uint stride = sizeof(VParticle),
+		offset = 0;
+	deviceContext->IASetInputLayout(layout);
+	deviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+
+	// vertex shader constants
+	ResourceLock lock(vsGlobals, D3D11_MAP_WRITE_DISCARD);
+	lock.Get<VsGlobals>()->size = Vec2(app::engine->GetWindowSize());
+
+	SetGrayscale(0.f);
+	texCurrent = nullptr;
+}
+
+//=================================================================================================
+void GuiShader::SetGrayscale(float value)
+{
+	assert(InRange(value, 0.f, 1.f));
+	ResourceLock lock(psGlobals, D3D11_MAP_WRITE_DISCARD);
+	lock.Get<PsGlobals>()->grayscale = value;
+}
+
+//=================================================================================================
+void GuiShader::Draw(TEX tex, VParticle* v, uint quads)
+{
+	assert(v && quads >= 1 && quads <= 256);
+
+	// copy vertices
+	{
+		ResourceLock lock(vb, D3D11_MAP_WRITE_DISCARD);
+		memcpy(lock.Get(), v, sizeof(VParticle) * 6 * quads);
+	}
+
+	if(!tex)
+		tex = texEmpty;
+	if(tex != texCurrent)
+	{
+		texCurrent = tex;
+		deviceContext->PSSetShaderResources(0, 1, &tex);
+	}
+
+	deviceContext->Draw(quads * 6, 0);
+}
