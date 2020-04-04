@@ -27,6 +27,19 @@ inline void SafeRelease(T& x)
 	}
 }
 
+template<typename T, int N>
+inline void SafeRelease(T(&x)[N])
+{
+	for(int i = 0; i < N; ++i)
+	{
+		if(x[i])
+		{
+			x[i]->Release();
+			x[i] = nullptr;
+		}
+	}
+}
+
 //-----------------------------------------------------------------------------
 namespace internal
 {

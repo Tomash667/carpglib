@@ -32,11 +32,11 @@ void GuiShader::OnInit()
 	};
 	app::render->CreateShader("gui.hlsl", desc, countof(desc), vertexShader, pixelShader, layout);
 
-	vsGlobals = app::render->CreateConstantBuffer<VsGlobals>();
-	psGlobals = app::render->CreateConstantBuffer<PsGlobals>();
+	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
+	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
 	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 
-	texEmpty = app::render->CreateTexture(Int2(1, 1), &Color::White);
+	texEmpty = app::render->CreateRawTexture(Int2(1, 1), &Color::White);
 
 	// create vertex buffer
 	D3D11_BUFFER_DESC bufDesc;
@@ -67,8 +67,8 @@ void GuiShader::Prepare()
 {
 	app::render->SetAlphaTest(false);
 	app::render->SetAlphaBlend(true);
+	app::render->SetDepthState(Render::DEPTH_NO);
 	app::render->SetNoCulling(true);
-	app::render->SetNoZWrite(false);
 
 	// setup shader
 	deviceContext->VSSetShader(vertexShader, nullptr, 0);

@@ -26,7 +26,7 @@ void SkyboxShader::OnInit()
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	app::render->CreateShader("skybox.hlsl", desc, countof(desc), vertexShader, pixelShader, layout);
-	vsGlobals = app::render->CreateConstantBuffer<VsGlobals>();
+	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
 	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 }
 
@@ -47,8 +47,8 @@ void SkyboxShader::Draw(Mesh& mesh, Camera& camera)
 
 	app::render->SetAlphaTest(false);
 	app::render->SetAlphaBlend(false);
+	app::render->SetDepthState(Render::DEPTH_NO);
 	app::render->SetNoCulling(false);
-	app::render->SetNoZWrite(true);
 
 	// setup shader
 	deviceContext->IASetInputLayout(layout);

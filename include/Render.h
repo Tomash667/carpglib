@@ -1,31 +1,42 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "VertexDeclaration.h"
-
-//-----------------------------------------------------------------------------
 struct Resolution
 {
 	Int2 size;
 	uint hz;
-};
 
-//-----------------------------------------------------------------------------
-struct CompileShaderParams
-{
-	cstring name;
-	cstring cache_name;
-	string* input;
-	FileTime file_time;
-	//D3DXMACRO* macros;
-	//ID3DXEffectPool* pool;
-	FIXME;
+	bool operator < (const Resolution& r) const
+	{
+		if(size.x > r.size.x)
+			return false;
+		else if(size.x < r.size.x)
+			return true;
+		else if(size.y > r.size.y)
+			return false;
+		else if(size.y < r.size.y)
+			return true;
+		else if(hz > r.hz)
+			return false;
+		else if(hz < r.hz)
+			return true;
+		else
+			return false;
+	}
 };
 
 //-----------------------------------------------------------------------------
 class Render
 {
 public:
+	enum DepthState
+	{
+		DEPTH_YES,
+		DEPTH_READONLY,
+		DEPTH_NO,
+		DEPTH_MAX
+	};
+
 	enum TextureAddressMode
 	{
 		TEX_ADR_WRAP = 1,
@@ -38,64 +49,49 @@ public:
 	Render();
 	~Render();
 	void Init();
-	bool Reset(bool force);
-	void WaitReset();
+
+	bool CheckDisplay(const Int2& size, uint& hz); // for hz=0 return best hz available
 	void Clear(const Vec4& color);
+	void CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uint inputCount, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader,
+		ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr, cstring vsEntry = "VsMain", cstring psEntry = "PsMain");
+	Texture* CopyToTexture(RenderTarget* target);
+	TEX CopyToTextureRaw(RenderTarget* target);
+	ID3D11Buffer* CreateConstantBuffer(uint size);
+	TEX CreateRawTexture(const Int2& size, const Color* fill = nullptr);
+	RenderTarget* CreateRenderTarget(const Int2& size);
+	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP);
+	Texture* CreateTexture(const Int2& size);
 	void Present();
-	bool CheckDisplay(const Int2& size, int& hz); // dla zera zwraca najlepszy hz
 	void RegisterShader(ShaderHandler* shader);
 	void ReloadShaders();
-	//ID3DXEffect* CompileShader(cstring name);
-	//ID3DXEffect* CompileShader(CompileShaderParams& params);
-	FIXME;
-	TEX CreateTexture(const Int2& size, const Color* fill = nullptr);
-	DynamicTexture* CreateDynamicTexture(const Int2& size);
-	void CreateDynamicTexture(DynamicTexture* tex);
-	RenderTarget* CreateRenderTarget(const Int2& size);
-	void CreateRenderTargetTexture(RenderTarget* target);
-	Texture* CopyToTexture(RenderTarget* target);
-	TEX CopyToTextureRaw(RenderTarget* target, Int2 size = Int2::Zero);
-	void AddManagedResource(ManagedResource* res) { managed_res.push_back(res); }
-	bool IsLostDevice() const { return lost_device; }
+
 	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	bool IsVsyncEnabled() const { return vsync; }
+
+	int GetAdapter() const { return usedAdapter; }
 	ID3D11Device* GetDevice() const { return device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return deviceContext; }
 	void GetMultisampling(int& ms, int& msq) const { ms = multisampling; msq = multisampling_quality; }
-	void GetResolutions(vector<Resolution>& v) const;
 	void GetMultisamplingModes(vector<Int2>& v) const;
-	int GetRefreshRate() const { return refresh_hz; }
-	int GetShaderVersion() const { return shader_version; }
-	int GetAdapter() const { return used_adapter; }
+	uint GetRefreshRate() const { return refreshHz; }
+	const vector<Resolution>& GetResolutions() const { return resolutions; }
 	const string& GetShadersDir() const { return shaders_dir; }
-	//IDirect3DVertexDeclaration9* GetVertexDeclaration(VertexDeclarationId id) { return vertex_decl[id]; }
-	FIXME;
-	void SetAlphaBlend(bool use_alphablend);
+
+	void SetAdapter(int adapter) { assert(!initialized); usedAdapter = adapter; }
+	void SetAlphaBlend(bool useAlphaBlend);
 	void SetAlphaTest(bool use_alphatest);
-	void SetNoCulling(bool use_nocull);
-	void SetNoZWrite(bool use_nozwrite);
-	void SetVsync(bool vsync);
+	void SetDepthState(DepthState depthState);
+	void SetRefreshRateInternal(uint refreshHz) { this->refreshHz = refreshHz; }
 	int SetMultisampling(int type, int quality);
-	void SetRefreshRateInternal(int refresh_hz) { this->refresh_hz = refresh_hz; }
-	void SetShaderVersion(int shader_version) { this->shader_version = shader_version; }
+	void SetNoCulling(bool use_nocull);
+	void SetShadersDir(cstring dir) { shaders_dir = dir; }
 	void SetTarget(RenderTarget* target);
 	void SetTextureAddressMode(TextureAddressMode mode);
-	void SetShadersDir(cstring dir) { shaders_dir = dir; }
-	void SetAdapter(int adapter) { assert(!initialized); used_adapter = adapter; }
-	//
-	template<typename T> ID3D11Buffer* CreateConstantBuffer() { return CreateConstantBuffer(alignto(sizeof(T), 16)); }
-	ID3D11Buffer* CreateConstantBuffer(uint size);
-	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP);
-	void CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uint inputCount, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader,
-		ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr, cstring vsEntry = "VsMain", cstring psEntry = "PsMain");
+	void SetVsync(bool vsync) { this->vsync = vsync; }
 
 private:
 	void LogMultisampling();
 	void LogAndSelectResolution();
-	void SetDefaultRenderState();
-	void CreateVertexDeclarations();
-	void BeforeReset();
-	void AfterReset();
 
 	//-------------------
 	void CreateAdapter();
@@ -104,23 +100,31 @@ private:
 	void CreateRenderTarget();
 	void CreateDepthStencilView();
 	void SetViewport();
+	void CreateBlendStates();
+	void CreateDepthStates();
+	void CreateRasterStates();
 	ID3DBlob* CompileShader(cstring filename, cstring entry, bool isVertex, D3D_SHADER_MACRO* macro);
 	IDXGIFactory* factory;
 	IDXGIAdapter* adapter;
-	IDXGISwapChain* swap_chain;
+	IDXGISwapChain* swapChain;
 	ID3D11Device* device;
 	ID3D11DeviceContext* deviceContext;
-	ID3D11RenderTargetView* render_target;
-	ID3D11DepthStencilView* depth_stencil_view;
-	Int2 wnd_size;
+	ID3D11RenderTargetView* renderTarget;
+	ID3D11DepthStencilView* depthStencilView;
+	ID3D11BlendState* blendStates[2];
+	ID3D11DepthStencilState* depthStates[DEPTH_MAX];
+	ID3D11RasterizerState* rasterStates[2];
+	Int2 wndSize;
 	//-------------------
 	vector<ShaderHandler*> shaders;
-	vector<ManagedResource*> managed_res;
-	//IDirect3DVertexDeclaration9* vertex_decl[VDI_MAX];
+	vector<Resolution> resolutions;
 	RenderTarget* current_target;
 	//SURFACE current_surf;
 	FIXME;
 	string shaders_dir;
-	int used_adapter, shader_version, refresh_hz, multisampling, multisampling_quality;
-	bool initialized, vsync, lost_device, res_freed, r_alphatest, r_nozwrite, r_nocull, r_alphablend;
+	uint refreshHz;
+	int usedAdapter, multisampling, multisampling_quality;
+	DepthState depthState;
+	bool useAlphaBlend, useNoCull;
+	bool initialized, vsync, r_alphatest;
 };

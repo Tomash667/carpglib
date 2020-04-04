@@ -46,7 +46,7 @@ struct PsMaterial
 
 //=================================================================================================
 SuperShader::SuperShader() : deviceContext(app::render->GetDeviceContext()), samplerDiffuse(nullptr), samplerNormal(nullptr), samplerSpecular(nullptr),
-vsGlobals(nullptr), vsLocals(nullptr), psGlobals(nullptr), psLocals(nullptr), psMaterial(nullptr)
+vsGlobals(nullptr), vsLocals(nullptr), psGlobals(nullptr), psLocals(nullptr), psMaterial(nullptr), texEmptyNormalMap(nullptr), texEmptySpecularMap(nullptr)
 {
 }
 
@@ -99,11 +99,14 @@ void SuperShader::OnInit()
 	samplerNormal = app::render->CreateSampler();
 	samplerSpecular = app::render->CreateSampler();
 
-	vsGlobals = app::render->CreateConstantBuffer<VsGlobals>();
-	vsLocals = app::render->CreateConstantBuffer<VsLocals>();
-	psGlobals = app::render->CreateConstantBuffer<PsGlobals>();
-	psLocals = app::render->CreateConstantBuffer<PsLocals>();
-	psMaterial = app::render->CreateConstantBuffer<PsMaterial>();
+	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
+	vsLocals = app::render->CreateConstantBuffer(sizeof(VsLocals));
+	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
+	psLocals = app::render->CreateConstantBuffer(sizeof(PsLocals));
+	psMaterial = app::render->CreateConstantBuffer(sizeof(PsMaterial));
+
+	texEmptyNormalMap = app::render->CreateRawTexture(Int2(1, 1), &Color(128, 128, 255));
+	texEmptySpecularMap = app::render->CreateRawTexture(Int2(1, 1), &Color::None);
 }
 
 //=================================================================================================
@@ -125,6 +128,8 @@ void SuperShader::OnRelease()
 	SafeRelease(psGlobals);
 	SafeRelease(psLocals);
 	SafeRelease(psMaterial);
+	SafeRelease(texEmptyNormalMap);
+	SafeRelease(texEmptySpecularMap);
 }
 
 //=================================================================================================

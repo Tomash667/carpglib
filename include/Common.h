@@ -5,10 +5,8 @@
 // Engine types
 struct Billboard;
 struct Camera;
-struct DynamicTexture;
 struct Light;
 struct Lights;
-struct ManagedResource;
 struct MeshInstance;
 struct ParticleEmitter;
 struct PostEffect;
@@ -89,13 +87,16 @@ typedef HWND__* HWND;
 // DirectX types
 struct _D3D_SHADER_MACRO;
 struct D3D11_INPUT_ELEMENT_DESC;
+struct ID3D11BlendState;
 struct ID3D10Blob;
 struct ID3D11Buffer;
+struct ID3D11DepthStencilState;
 struct ID3D11DepthStencilView;
 struct ID3D11Device;
 struct ID3D11DeviceContext;
 struct ID3D11InputLayout;
 struct ID3D11PixelShader;
+struct ID3D11RasterizerState;
 struct ID3D11RenderTargetView;
 struct ID3D11SamplerState;
 struct ID3D11ShaderResourceView;

@@ -83,7 +83,7 @@ void Terrain::Init(const TerrainOptions& o)
 		}
 	}
 
-	texSplat = app::render->CreateTexture(Int2(tex_size));
+	texSplat = app::render->CreateRawTexture(Int2(tex_size));
 
 	state = 1;
 }
@@ -100,7 +100,7 @@ void Terrain::Build(bool smooth)
 	v_desc.Usage = D3D11_USAGE_DYNAMIC;
 	v_desc.ByteWidth = sizeof(TerrainVertex) * n_verts;
 	v_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	v_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+	v_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	v_desc.MiscFlags = 0;
 	v_desc.StructureByteStride = 0;
 
@@ -142,8 +142,9 @@ void Terrain::Build(bool smooth)
 #undef TRI
 
 	// fill indices
-	vector<byte>* buf = BufPool.Get();
-	uint* idx = (uint*)buf->data();
+	Buf buf;
+	uint size = sizeof(int) * n_tris * 3;
+	uint* idx = buf.Get<uint>(size);
 	for(uint z = 0; z < n_parts; ++z)
 	{
 		for(uint x = 0; x < n_parts; ++x)
@@ -175,11 +176,10 @@ void Terrain::Build(bool smooth)
 	v_desc.MiscFlags = 0;
 	v_desc.StructureByteStride = 0;
 
-	D3D11_SUBRESOURCE_DATA v_data;
-	v_data.pSysMem = buf->data();
+	D3D11_SUBRESOURCE_DATA v_data = {};
+	v_data.pSysMem = buf.Get();
 
-	V(device->CreateBuffer(&v_desc, nullptr, &ib));
-	BufPool.Free(buf);
+	V(device->CreateBuffer(&v_desc, &v_data, &ib));
 
 	// smooth mesh
 	state = 2;
@@ -194,7 +194,7 @@ void Terrain::Rebuild(bool smooth)
 	assert(state == 2);
 
 	D3D11_MAPPED_SUBRESOURCE res;
-	V(app::render->GetDeviceContext()->Map(vb, 0, D3D11_MAP_READ_WRITE, 0, &res));
+	V(app::render->GetDeviceContext()->Map(vb, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &res));
 	TerrainVertex* v = reinterpret_cast<TerrainVertex*>(res.pData);
 
 #define TRI(xx,zz) v[n++].pos.y = h[x+xx+(z+zz)*width]

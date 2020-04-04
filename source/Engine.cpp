@@ -62,7 +62,8 @@ void Engine::ChangeMode()
 		SetWindowLong(hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
 		SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOZORDER | SWP_NOSIZE);
 
-		app::render->Reset(true);
+		FIXME;
+		//app::render->Reset(true);
 
 		SetWindowPos(hwnd, HWND_NOTOPMOST, (GetSystemMetrics(SM_CXSCREEN) - real_size.x) / 2, (GetSystemMetrics(SM_CYSCREEN) - real_size.y) / 2,
 			real_size.x, real_size.y, SWP_SHOWWINDOW | SWP_DRAWFRAME);
@@ -73,7 +74,8 @@ void Engine::ChangeMode()
 		SetWindowLong(hwnd, GWL_STYLE, WS_POPUPWINDOW);
 		SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOZORDER | SWP_NOSIZE);
 
-		app::render->Reset(true);
+		FIXME;
+		//app::render->Reset(true);
 
 		SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, real_size.x, real_size.y, SWP_NOMOVE | SWP_SHOWWINDOW);
 	}
@@ -101,7 +103,7 @@ bool Engine::ChangeMode(bool new_fullscreen)
 
 //=================================================================================================
 // Change resolution and display mode
-bool Engine::ChangeMode(Int2 size, bool new_fullscreen, int hz)
+bool Engine::ChangeMode(Int2 size, bool new_fullscreen, uint hz)
 {
 	if(size == Int2::Zero)
 		size = wnd_size;

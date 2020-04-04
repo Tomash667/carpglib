@@ -2,7 +2,6 @@
 
 //-----------------------------------------------------------------------------
 #include "Resource.h"
-#include "ManagedResource.h"
 
 //-----------------------------------------------------------------------------
 struct Texture : public Resource
@@ -16,17 +15,6 @@ struct Texture : public Resource
 	void ResizeImage(Int2& new_size, Int2& img_size, Vec2& scale);
 	Int2 GetSize() const { return GetSize(tex); }
 	static Int2 GetSize(TEX tex);
-};
-
-//-----------------------------------------------------------------------------
-struct DynamicTexture : public Texture, public ManagedResource
-{
-	void OnReset() override;
-	void OnReload() override;
-	void OnRelease() override;
-
-	Int2 size;
-	delegate<void()> reload;
 };
 
 //-----------------------------------------------------------------------------

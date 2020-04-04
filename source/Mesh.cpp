@@ -66,7 +66,7 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 	v_desc.MiscFlags = 0;
 	v_desc.StructureByteStride = 0;
 
-	D3D11_SUBRESOURCE_DATA v_data;
+	D3D11_SUBRESOURCE_DATA v_data = {};
 	v_data.pSysMem = buf->data();
 
 	HRESULT result = device->CreateBuffer(&v_desc, &v_data, &vb);

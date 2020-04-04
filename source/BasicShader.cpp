@@ -48,8 +48,8 @@ void BasicShader::OnInit()
 	app::render->CreateShader("basic.hlsl", descColor, countof(descColor), shaderColor.vertexShader, shaderColor.pixelShader, shaderColor.layout, nullptr, "VsColor", "PsColor");
 	app::render->CreateShader("basic.hlsl", descPos, countof(descPos), shaderArea.vertexShader, shaderArea.pixelShader, shaderArea.layout, nullptr, "VsArea", "PsArea");
 
-	vsGlobals = app::render->CreateConstantBuffer<VsGlobals>();
-	psGlobals = app::render->CreateConstantBuffer<PsGlobals>();
+	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
+	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
 }
 
 //=================================================================================================

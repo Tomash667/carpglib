@@ -37,33 +37,11 @@ Int2 Texture::GetSize(TEX tex)
 	return size;
 }
 
-FIXME;
-//=================================================================================================
-/*void DynamicTexture::OnReset()
-{
-	SafeRelease(tex);
-}
-
-//=================================================================================================
-void DynamicTexture::OnReload()
-{
-	app::render->CreateDynamicTexture(this);
-	if(reload)
-		reload();
-}
-
-//=================================================================================================
-void DynamicTexture::OnRelease()
-{
-	delete this;
-}*/
-
 //=================================================================================================
 TextureLock::TextureLock(TEX tex) : tex(tex)
 {
 	assert(tex);
 
-	ID3D11Texture2D* res;
 	tex->GetResource(reinterpret_cast<ID3D11Resource**>(&res));
 
 	D3D11_MAPPED_SUBRESOURCE resource;

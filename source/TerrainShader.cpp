@@ -39,8 +39,8 @@ void TerrainShader::OnInit()
 		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	app::render->CreateShader("terrain.hlsl", desc, countof(desc), vertexShader, pixelShader, layout);
-	vsGlobals = app::render->CreateConstantBuffer<VsGlobals>();
-	psGlobals = app::render->CreateConstantBuffer<PsGlobals>();
+	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
+	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
 	samplers[0] = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 	samplers[1] = app::render->CreateSampler();
 	samplers[2] = app::render->CreateSampler();
@@ -68,8 +68,8 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 
 	app::render->SetAlphaTest(false);
 	app::render->SetAlphaBlend(false);
+	app::render->SetDepthState(Render::DEPTH_YES);
 	app::render->SetNoCulling(false);
-	app::render->SetNoZWrite(false);
 
 	// setup shader
 	deviceContext->IASetInputLayout(layout);
@@ -98,7 +98,7 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 	psg.lightDir = scene->GetLightDir();
 	psg.fogColor = scene->GetFogColor();
 	psg.fogParam = scene->GetFogParams();
-	deviceContext->Unmap(vsGlobals, 0);
+	deviceContext->Unmap(psGlobals, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
 
 	// set textures

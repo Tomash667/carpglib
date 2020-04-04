@@ -292,9 +292,6 @@
     <ClInclude Include="include\Pch.h" />
     <ClInclude Include="include\Common.h" />
     <ClInclude Include="include\CarpgLib.h" />
-    <ClInclude Include="include\ManagedResource.h">
-      <Filter>entity</Filter>
-    </ClInclude>
     <ClInclude Include="include\WICTextureLoader.h">
       <Filter>resources</Filter>
     </ClInclude>

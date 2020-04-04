@@ -2,7 +2,7 @@
 
 //------------------------------------------------------------------------------
 // VERTEX SHADER CONSTANTS
-cbuffer vs_globals : register(b0)
+cbuffer VsGlobals : register(b0)
 {
 	matrix matCombined;
 	matrix matWorld;
@@ -10,7 +10,7 @@ cbuffer vs_globals : register(b0)
 
 //------------------------------------------------------------------------------
 // PIXEL SHADER CONSTANTS
-cbuffer ps_globals : register(b0)
+cbuffer PsGlobals : register(b0)
 {
 	float4 colorAmbient;
 	float4 colorDiffuse;
@@ -57,7 +57,7 @@ struct TERRAIN_OUTPUT
 
 //------------------------------------------------------------------------------
 // VERTEX SHADER
-TERRAIN_OUTPUT vs_terrain(in TERRAIN_INPUT In)
+TERRAIN_OUTPUT VsMain(in TERRAIN_INPUT In)
 {
 	TERRAIN_OUTPUT Out;
 	Out.pos = mul(float4(In.pos,1), matCombined);
@@ -70,7 +70,7 @@ TERRAIN_OUTPUT vs_terrain(in TERRAIN_INPUT In)
 
 //------------------------------------------------------------------------------
 // PIXEL SHADER
-float4 ps_terrain(in TERRAIN_OUTPUT In) : SV_TARGET
+float4 PsMain(in TERRAIN_OUTPUT In) : SV_TARGET
 {
 	float4 a = texBlend.Sample(samplerBlend, In.texBlend);
 	float4 c0 = tex0.Sample(sampler0, In.tex);

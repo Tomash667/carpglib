@@ -4,16 +4,13 @@
 #include "Texture.h"
 
 //-----------------------------------------------------------------------------
-class RenderTarget : public Texture, public ManagedResource
+class RenderTarget : public Texture
 {
 	friend class Render;
 
 	RenderTarget() : tmp_surf(false) {}
 	~RenderTarget() {}
 public:
-	void OnReset() override;
-	void OnReload() override;
-	void OnRelease() override;
 	//void SaveToFile(cstring filename);
 	//uint SaveToFile(FileWriter& f);
 	void Resize(const Int2& new_size);
