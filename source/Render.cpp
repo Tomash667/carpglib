@@ -1,24 +1,22 @@
 #include "Pch.h"
 #include "Render.h"
-#include "RenderTarget.h"
-#include "Engine.h"
-#include "ShaderHandler.h"
-#include "File.h"
+
 #include "DirectX.h"
+#include "Engine.h"
+#include "File.h"
+#include "RenderTarget.h"
+#include "ShaderHandler.h"
+
 #include <d3dcompiler.h>
 
 Render* app::render;
 static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 //=================================================================================================
-Render::Render() : initialized(false), current_target(nullptr), /*current_surf(nullptr),*/ vsync(true),
-shaders_dir("shaders"), refreshHz(0), usedAdapter(0), multisampling(0), multisampling_quality(0),
-
+Render::Render() : initialized(false), vsync(true), shaders_dir("shaders"), refreshHz(0), usedAdapter(0), multisampling(0), multisamplingQuality(0),
 factory(nullptr), adapter(nullptr), swapChain(nullptr), device(nullptr), deviceContext(nullptr), renderTarget(nullptr), depthStencilView(nullptr),
 blendStates(), depthStates(), rasterStates(), useAlphaBlend(false), depthState(DEPTH_YES), useNoCull(false), r_alphatest(false)
 {
-	/*for(int i = 0; i < VDI_MAX; ++i)
-		vertex_decl[i] = nullptr;-*/
 }
 
 //=================================================================================================
@@ -29,6 +27,7 @@ Render::~Render()
 		shader->OnRelease();
 		delete shader;
 	}
+	DeleteElements(renderTargets);
 
 	SafeRelease(depthStencilView);
 	SafeRelease(renderTarget);
@@ -72,46 +71,7 @@ void Render::Init()
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// check shaders version
-	/*D3DCAPS9 caps;
-	hr = d3d->GetDeviceCaps(usedAdapter, D3DDEVTYPE_HAL, &caps);
-	if(FAILED(hr))
-		throw Format("Render: Failed to GetDeviceCaps (%u)! Make sure that you have graphic card drivers installed.", hr);
-	else if(D3DVS_VERSION(2, 0) > caps.VertexShaderVersion || D3DPS_VERSION(2, 0) > caps.PixelShaderVersion)
-	{
-		throw Format("Render: Too old graphic card! This game require vertex and pixel shader in version 2.0+. "
-			"Your card support:\nVertex shader: %d.%d\nPixel shader: %d.%d",
-			D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MINOR(caps.VertexShaderVersion),
-			D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion), D3DSHADER_VERSION_MINOR(caps.PixelShaderVersion));
-	}
-	else
-	{
-		Info("Supported shader version vertex: %d.%d, pixel: %d.%d.",
-			D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MINOR(caps.VertexShaderVersion),
-			D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion), D3DSHADER_VERSION_MINOR(caps.PixelShaderVersion));
-
-		int version = min(D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion));
-		if(shader_version == -1 || shader_version > version || shader_version < 2)
-			shader_version = version;
-
-		Info("Using shader version %d.", shader_version);
-	}
-
-	// check texture types
-	bool fullscreen = app::engine->IsFullscreen();
-	hr = d3d->CheckDeviceType(usedAdapter, D3DDEVTYPE_HAL, DISPLAY_FORMAT, BACKBUFFER_FORMAT, fullscreen ? FALSE : TRUE);
-	if(FAILED(hr))
-		throw Format("Render: Unsupported backbuffer type %s for display %s! (%d)", STRING(BACKBUFFER_FORMAT), STRING(DISPLAY_FORMAT), hr);
-
-	hr = d3d->CheckDeviceFormat(usedAdapter, D3DDEVTYPE_HAL, DISPLAY_FORMAT, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, ZBUFFER_FORMAT);
-	if(FAILED(hr))
-		throw Format("Render: Unsupported depth buffer type %s for display %s! (%d)", STRING(ZBUFFER_FORMAT), STRING(DISPLAY_FORMAT), hr);
-
-	hr = d3d->CheckDepthStencilMatch(usedAdapter, D3DDEVTYPE_HAL, DISPLAY_FORMAT, D3DFMT_A8R8G8B8, ZBUFFER_FORMAT);
-	if(FAILED(hr))
-		throw Format("Render: Unsupported render target D3DFMT_A8R8G8B8 with display %s and depth buffer %s! (%d)",
-		STRING(DISPLAY_FORMAT), STRING(BACKBUFFER_FORMAT), hr);
-
+	/*
 	// check multisampling
 	DWORD levels, levels2;
 	if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(usedAdapter, D3DDEVTYPE_HAL, D3DFMT_A8R8G8B8, fullscreen ? FALSE : TRUE,
@@ -120,10 +80,10 @@ void Render::Init()
 		(D3DMULTISAMPLE_TYPE)multisampling, &levels2)))
 	{
 		levels = min(levels, levels2);
-		if(multisampling_quality < 0 || multisampling_quality >= (int)levels)
+		if(multisamplingQuality < 0 || multisamplingQuality >= (int)levels)
 		{
 			Warn("Render: Unavailable multisampling quality, changed to 0.");
-			multisampling_quality = 0;
+			multisamplingQuality = 0;
 		}
 	}
 	else
@@ -131,52 +91,12 @@ void Render::Init()
 		Warn("Render: Your graphic card don't support multisampling x%d. Maybe it's only available in fullscreen mode. "
 			"Multisampling was turned off.", multisampling);
 		multisampling = 0;
-		multisampling_quality = 0;
+		multisamplingQuality = 0;
 	}
 
 	LogMultisampling();
 	LogAndSelectResolution();
-
-	// gather params
-	D3DPRESENT_PARAMETERS d3dpp = { 0 };
-	GatherParams(d3dpp);
-
-	// available modes
-	const DWORD mode[] = {
-		D3DCREATE_HARDWARE_VERTEXPROCESSING,
-		D3DCREATE_MIXED_VERTEXPROCESSING,
-		D3DCREATE_SOFTWARE_VERTEXPROCESSING
-	};
-	const cstring mode_str[] = {
-		"hardware",
-		"mixed",
-		"software"
-	};
-
-	// try to create device in one of modes
-	for(uint i = 0; i < 3; ++i)
-	{
-		DWORD sel_mode = mode[i];
-		hr = d3d->CreateDevice(usedAdapter, D3DDEVTYPE_HAL, d3dpp.hDeviceWindow, sel_mode, &d3dpp, &device);
-
-		if(SUCCEEDED(hr))
-		{
-			Info("Render: Created direct3d device in %s mode.", mode_str[i]);
-			break;
-		}
-	}
-
-	// failed to create device
-	if(FAILED(hr))
-		throw Format("Render: Failed to create direct3d device (%d).", hr);
-
-	// create sprite
-	hr = D3DXCreateSprite(device, &sprite);
-	if(FAILED(hr))
-		throw Format("Render: Failed to create direct3dx sprite (%d).", hr);
-
-	SetDefaultRenderState();
-	CreateVertexDeclarations();*/
+;*/
 
 	initialized = true;
 	Info("Render: Directx device created.");
@@ -292,7 +212,6 @@ void Render::CreateDepthStencilView()
 	ID3D11Texture2D* depth_tex;
 	V(device->CreateTexture2D(&tex_desc, nullptr, &depth_tex));
 
-	//==================================================================
 	// create depth stencil view from texture
 	D3D11_DEPTH_STENCIL_VIEW_DESC view_desc = {};
 
@@ -370,7 +289,7 @@ void Render::CreateDepthStates()
 	desc.DepthEnable = true;
 	desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-	V(device->CreateDepthStencilState(&desc, &depthStates[DEPTH_READONLY]));
+	V(device->CreateDepthStencilState(&desc, &depthStates[DEPTH_READ]));
 }
 
 //=================================================================================================
@@ -504,6 +423,7 @@ void Render::Present()
 //=================================================================================================
 bool Render::CheckDisplay(const Int2& size, uint& hz)
 {
+	FIXME;
 	/*assert(size.x >= Engine::MIN_WINDOW_SIZE.x && size.x >= Engine::MIN_WINDOW_SIZE.y);
 
 	// check minimum resolution
@@ -575,179 +495,6 @@ void Render::ReloadShaders()
 }
 
 //=================================================================================================
-/*ID3DXEffect* Render::CompileShader(cstring name)
-{
-	assert(name);
-
-	CompileShaderParams params = { name };
-
-	// add c to extension
-	LocalString str = (shader_version == 3 ? "3_" : "2_");
-	str += name;
-	str += 'c';
-	params.cache_name = str;
-
-	// set shader version
-	D3DXMACRO macros[3] = {
-		"VS_VERSION", shader_version == 3 ? "vs_3_0" : "vs_2_0",
-		"PS_VERSION", shader_version == 3 ? "ps_3_0" : "ps_2_0",
-		nullptr, nullptr
-	};
-	params.macros = macros;
-
-	return CompileShader(params);
-}
-
-//=================================================================================================
-ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
-{*/
-	/*assert(params.name && params.cache_name);
-
-	ID3DXBuffer* errors = nullptr;
-	ID3DXEffectCompiler* compiler = nullptr;
-	cstring filename = Format("%s/%s", shaders_dir.c_str(), params.name);
-	cstring cache_path = Format("cache/%s", params.cache_name);
-	HRESULT hr;
-
-	const DWORD flags =
-#ifdef _DEBUG
-		D3DXSHADER_DEBUG | D3DXSHADER_OPTIMIZATION_LEVEL1;
-#else
-		D3DXSHADER_OPTIMIZATION_LEVEL3;
-#endif
-
-	// open file and get date if not from string
-	FileReader file;
-	if(!params.input)
-	{
-		if(!file.Open(filename))
-			throw Format("Render: Failed to load shader '%s' (%d).", params.name, GetLastError());
-		params.file_time = file.GetTime();
-	}
-
-	// check if in cache
-	{
-		FileReader cache_file(cache_path);
-		if(cache_file && params.file_time == cache_file.GetTime())
-		{
-			// same last modify time, use cache
-			cache_file.ReadToString(g_tmp_string);
-			ID3DXEffect* effect = nullptr;
-			hr = D3DXCreateEffect(device, g_tmp_string.c_str(), g_tmp_string.size(), params.macros, nullptr, flags, params.pool, &effect, &errors);
-			if(FAILED(hr))
-			{
-				Error("Render: Failed to create effect from cache '%s' (%d).\n%s", params.cache_name, hr,
-					errors ? (cstring)errors->GetBufferPointer() : "No errors information.");
-				SafeRelease(errors);
-				SafeRelease(effect);
-			}
-			else
-			{
-				SafeRelease(errors);
-				return effect;
-			}
-		}
-	}
-
-	// load from file
-	if(!params.input)
-	{
-		file.ReadToString(g_tmp_string);
-		params.input = &g_tmp_string;
-	}
-	hr = D3DXCreateEffectCompiler(params.input->c_str(), params.input->size(), params.macros, nullptr, flags, &compiler, &errors);
-	if(FAILED(hr))
-	{
-		cstring str;
-		if(errors)
-			str = (cstring)errors->GetBufferPointer();
-		else
-		{
-			switch(hr)
-			{
-			case D3DXERR_INVALIDDATA:
-				str = "Invalid data.";
-				break;
-			case D3DERR_INVALIDCALL:
-				str = "Invalid call.";
-				break;
-			case E_OUTOFMEMORY:
-				str = "Out of memory.";
-				break;
-			case ERROR_MOD_NOT_FOUND:
-			case 0x8007007e:
-				str = "Can't find module (missing d3dcompiler_43.dll?).";
-				break;
-			default:
-				str = "Unknown error.";
-				break;
-			}
-		}
-
-		cstring msg = Format("Render: Failed to compile shader '%s' (%d).\n%s", params.name, hr, str);
-
-		SafeRelease(errors);
-
-		assert(0);
-		throw msg;
-	}
-	SafeRelease(errors);
-
-	// compile shader
-	ID3DXBuffer* effect_buffer = nullptr;
-	hr = compiler->CompileEffect(flags, &effect_buffer, &errors);
-	if(FAILED(hr))
-	{
-		cstring msg = Format("Render: Failed to compile effect '%s' (%d).\n%s", params.name, hr,
-			errors ? (cstring)errors->GetBufferPointer() : "No errors information.");
-
-		SafeRelease(errors);
-		SafeRelease(effect_buffer);
-		SafeRelease(compiler);
-
-		assert(0);
-		throw msg;
-	}
-	SafeRelease(errors);
-
-	// save to cache
-	io::CreateDirectory("cache");
-	FileWriter f(cache_path);
-	if(f)
-	{
-		f.Write(effect_buffer->GetBufferPointer(), effect_buffer->GetBufferSize());
-		f.SetTime(params.file_time);
-	}
-	else
-		Warn("Render: Failed to save effect '%s' to cache (%d).", params.cache_name, GetLastError());
-
-	// create effect from effect buffer
-	ID3DXEffect* effect = nullptr;
-	hr = D3DXCreateEffect(device, effect_buffer->GetBufferPointer(), effect_buffer->GetBufferSize(),
-		params.macros, nullptr, flags, params.pool, &effect, &errors);
-	if(FAILED(hr))
-	{
-		cstring msg = Format("Render: Failed to create effect '%s' (%d).\n%s", params.name, hr,
-			errors ? (cstring)errors->GetBufferPointer() : "No errors information.");
-
-		SafeRelease(errors);
-		SafeRelease(effect_buffer);
-		SafeRelease(compiler);
-
-		assert(0);
-		throw msg;
-	}
-
-	// free directx stuff
-	SafeRelease(errors);
-	SafeRelease(effect_buffer);
-	SafeRelease(compiler);
-
-	return effect;*/
-//return nullptr;
-//}
-
-//=================================================================================================
 TEX Render::CreateRawTexture(const Int2& size, const Color* fill)
 {
 	D3D11_TEXTURE2D_DESC desc = {};
@@ -806,6 +553,7 @@ RenderTarget* Render::CreateRenderTarget(const Int2& size)
 	RenderTarget* target = new RenderTarget;
 	target->size = size;
 	target->tex = CreateRawTexture(size);
+	renderTargets.push_back(target);
 	return target;
 }
 
@@ -814,10 +562,10 @@ Texture* Render::CopyToTexture(RenderTarget* target)
 {
 	assert(target);
 
-	Texture* t = new Texture;
-	t->tex = CopyToTextureRaw(target);
-	t->state = ResourceState::Loaded;
-	return t;
+	Texture* tex = new Texture;
+	tex->tex = CopyToTextureRaw(target);
+	tex->state = ResourceState::Loaded;
+	return tex;
 }
 
 //=================================================================================================
@@ -881,6 +629,7 @@ void Render::SetAlphaTest(bool use_alphatest)
 	{
 		r_alphatest = use_alphatest;
 		//V(device->SetRenderState(D3DRS_ALPHATESTENABLE, r_alphatest ? TRUE : FALSE));
+		FIXME;
 	}
 }
 
@@ -909,13 +658,14 @@ void Render::SetNoCulling(bool use_nocull)
 //=================================================================================================
 int Render::SetMultisampling(int type, int level)
 {
-	/*if(type == multisampling && (level == -1 || level == multisampling_quality))
+	FIXME;
+	/*if(type == multisampling && (level == -1 || level == multisamplingQuality))
 		return 1;
 
 	if(!initialized)
 	{
 		multisampling = type;
-		multisampling_quality = level;
+		multisamplingQuality = level;
 		return 2;
 	}
 
@@ -931,7 +681,7 @@ int Render::SetMultisampling(int type, int level)
 			return 0;
 
 		multisampling = type;
-		multisampling_quality = level;
+		multisamplingQuality = level;
 
 		Reset(true);
 
@@ -945,6 +695,7 @@ int Render::SetMultisampling(int type, int level)
 //=================================================================================================
 void Render::GetMultisamplingModes(vector<Int2>& v) const
 {
+	FIXME;
 	/*v.clear();
 	for(int j = 2; j <= 16; ++j)
 	{
@@ -962,6 +713,7 @@ void Render::GetMultisamplingModes(vector<Int2>& v) const
 //=================================================================================================
 void Render::SetTarget(RenderTarget* target)
 {
+	FIXME;
 	/*if(target)
 	{
 		assert(!current_target);
@@ -1010,11 +762,13 @@ void Render::SetTarget(RenderTarget* target)
 //=================================================================================================
 void Render::SetTextureAddressMode(TextureAddressMode mode)
 {
+	FIXME;
 	//V(device->SetSamplerState(0, D3DSAMP_ADDRESSU, (D3DTEXTUREADDRESS)mode));
 	//V(device->SetSamplerState(0, D3DSAMP_ADDRESSV, (D3DTEXTUREADDRESS)mode));
 }
 
-ID3D11Buffer* Render::CreateConstantBuffer(uint size)
+//=================================================================================================
+ID3D11Buffer* Render::CreateConstantBuffer(uint size, cstring name)
 {
 	size = alignto(size, 16);
 
@@ -1031,10 +785,16 @@ ID3D11Buffer* Render::CreateConstantBuffer(uint size)
 	if(FAILED(result))
 		throw Format("Failed to create constant buffer (size:%u; code:%u).", size, result);
 
+#ifdef _DEBUG
+	if(name)
+		buffer->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
+#endif
+
 	return buffer;
 }
 
-ID3D11SamplerState* Render::CreateSampler(TextureAddressMode mode)
+//=================================================================================================
+ID3D11SamplerState* Render::CreateSampler(TextureAddressMode mode, bool disableMipmap)
 {
 	D3D11_SAMPLER_DESC samplerDesc;
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -1049,7 +809,7 @@ ID3D11SamplerState* Render::CreateSampler(TextureAddressMode mode)
 	samplerDesc.BorderColor[2] = 0;
 	samplerDesc.BorderColor[3] = 0;
 	samplerDesc.MinLOD = 0;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	samplerDesc.MaxLOD = disableMipmap ? 0 : D3D11_FLOAT32_MAX;
 
 	ID3D11SamplerState* sampler;
 	HRESULT result = device->CreateSamplerState(&samplerDesc, &sampler);
@@ -1059,6 +819,7 @@ ID3D11SamplerState* Render::CreateSampler(TextureAddressMode mode)
 	return sampler;
 }
 
+//=================================================================================================
 void Render::CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uint inputCount, ID3D11VertexShader*& vertexShader,
 	ID3D11PixelShader*& pixelShader, ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro, cstring vsEntry, cstring psEntry)
 {
@@ -1077,6 +838,17 @@ void Render::CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uin
 		result = device->CreateInputLayout(input, inputCount, vsBuf->GetBufferPointer(), vsBuf->GetBufferSize(), &layout);
 		if(FAILED(result))
 			throw Format("Failed to create input layout (%u).", result);
+
+#ifdef _DEBUG
+		cstring name = Format("%s/%s", filename, vsEntry);
+		vertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
+
+		name = Format("%s/%s", filename, psEntry);
+		pixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
+
+		name = Format("%s/layout", filename);
+		layout->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
+#endif
 	}
 	catch(cstring err)
 	{

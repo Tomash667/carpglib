@@ -38,8 +38,6 @@ public:
 	ID3DXEffect* GetEffect() const { return shaders.front().e; }*/
 	void ApplyLights(const array<Light*, 3>& lights);
 
-	//TEX tex_empty_normal_map, tex_empty_specular_map;
-
 	void Prepare(Scene* scene, Camera* camera);
 	void SetShader(uint id);
 	void Draw(SceneNode* node);

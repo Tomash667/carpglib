@@ -32,9 +32,9 @@ void GuiShader::OnInit()
 	};
 	app::render->CreateShader("gui.hlsl", desc, countof(desc), vertexShader, pixelShader, layout);
 
-	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
-	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
-	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
+	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "GuiVsGlobals");
+	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "GuiPsGlobals");
+	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP, true);
 
 	texEmpty = app::render->CreateRawTexture(Int2(1, 1), &Color::White);
 
@@ -48,6 +48,9 @@ void GuiShader::OnInit()
 	bufDesc.StructureByteStride = 0;
 
 	V(app::render->GetDevice()->CreateBuffer(&bufDesc, nullptr, &vb));
+#ifdef _DEBUG
+	vb->SetPrivateData(WKPDID_D3DDebugObjectName, strlen("GuiVb"), "GuiVb");
+#endif
 }
 
 //=================================================================================================
@@ -60,6 +63,7 @@ void GuiShader::OnRelease()
 	SafeRelease(psGlobals);
 	SafeRelease(sampler);
 	SafeRelease(vb);
+	SafeRelease(texEmpty);
 }
 
 //=================================================================================================

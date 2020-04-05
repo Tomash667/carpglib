@@ -26,7 +26,7 @@ void SkyboxShader::OnInit()
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	app::render->CreateShader("skybox.hlsl", desc, countof(desc), vertexShader, pixelShader, layout);
-	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
+	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "SkyboxVsGlobals");
 	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 }
 

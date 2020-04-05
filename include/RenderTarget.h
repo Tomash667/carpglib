@@ -9,7 +9,6 @@ class RenderTarget : public Texture
 	friend class Render;
 
 	RenderTarget() : tmp_surf(false) {}
-	~RenderTarget() {}
 public:
 	//void SaveToFile(cstring filename);
 	//uint SaveToFile(FileWriter& f);

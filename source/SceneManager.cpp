@@ -55,6 +55,22 @@ void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 }
 
 //=================================================================================================
+void SceneManager::DrawSceneNodes(SceneBatch& batch)
+{
+	super_shader->Prepare(scene, camera);
+
+	DrawSceneNodes(batch.nodes, batch.node_groups);
+}
+
+//=================================================================================================
+void SceneManager::DrawAlphaSceneNodes(SceneBatch& batch)
+{
+	super_shader->Prepare(scene, camera);
+
+	DrawAlphaSceneNodes(batch.alpha_nodes);
+}
+
+//=================================================================================================
 void SceneManager::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<SceneNodeGroup>& groups)
 {
 	app::render->SetAlphaBlend(false);
@@ -94,6 +110,7 @@ void SceneManager::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<
 //=================================================================================================
 void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 {
+	FIXME;
 	/*app::render->SetAlphaBlend(true);
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
 

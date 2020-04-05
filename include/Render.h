@@ -31,9 +31,9 @@ class Render
 public:
 	enum DepthState
 	{
-		DEPTH_YES,
-		DEPTH_READONLY,
 		DEPTH_NO,
+		DEPTH_READ,
+		DEPTH_YES,
 		DEPTH_MAX
 	};
 
@@ -52,14 +52,14 @@ public:
 
 	bool CheckDisplay(const Int2& size, uint& hz); // for hz=0 return best hz available
 	void Clear(const Vec4& color);
-	void CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uint inputCount, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader,
-		ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr, cstring vsEntry = "VsMain", cstring psEntry = "PsMain");
 	Texture* CopyToTexture(RenderTarget* target);
 	TEX CopyToTextureRaw(RenderTarget* target);
-	ID3D11Buffer* CreateConstantBuffer(uint size);
+	void CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uint inputCount, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader,
+		ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr, cstring vsEntry = "VsMain", cstring psEntry = "PsMain");
+	ID3D11Buffer* CreateConstantBuffer(uint size, cstring name = nullptr);
 	TEX CreateRawTexture(const Int2& size, const Color* fill = nullptr);
 	RenderTarget* CreateRenderTarget(const Int2& size);
-	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP);
+	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP, bool disableMipmap = false);
 	Texture* CreateTexture(const Int2& size);
 	void Present();
 	void RegisterShader(ShaderHandler* shader);
@@ -71,7 +71,7 @@ public:
 	int GetAdapter() const { return usedAdapter; }
 	ID3D11Device* GetDevice() const { return device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return deviceContext; }
-	void GetMultisampling(int& ms, int& msq) const { ms = multisampling; msq = multisampling_quality; }
+	void GetMultisampling(int& ms, int& msq) const { ms = multisampling; msq = multisamplingQuality; }
 	void GetMultisamplingModes(vector<Int2>& v) const;
 	uint GetRefreshRate() const { return refreshHz; }
 	const vector<Resolution>& GetResolutions() const { return resolutions; }
@@ -90,10 +90,6 @@ public:
 	void SetVsync(bool vsync) { this->vsync = vsync; }
 
 private:
-	void LogMultisampling();
-	void LogAndSelectResolution();
-
-	//-------------------
 	void CreateAdapter();
 	void CreateDeviceAndSwapChain();
 	void CreateSizeDependentResources();
@@ -103,7 +99,10 @@ private:
 	void CreateBlendStates();
 	void CreateDepthStates();
 	void CreateRasterStates();
+	void LogAndSelectResolution();
+	void LogMultisampling();
 	ID3DBlob* CompileShader(cstring filename, cstring entry, bool isVertex, D3D_SHADER_MACRO* macro);
+
 	IDXGIFactory* factory;
 	IDXGIAdapter* adapter;
 	IDXGISwapChain* swapChain;
@@ -115,15 +114,12 @@ private:
 	ID3D11DepthStencilState* depthStates[DEPTH_MAX];
 	ID3D11RasterizerState* rasterStates[2];
 	Int2 wndSize;
-	//-------------------
 	vector<ShaderHandler*> shaders;
+	vector<RenderTarget*> renderTargets;
 	vector<Resolution> resolutions;
-	RenderTarget* current_target;
-	//SURFACE current_surf;
-	FIXME;
 	string shaders_dir;
 	uint refreshHz;
-	int usedAdapter, multisampling, multisampling_quality;
+	int usedAdapter, multisampling, multisamplingQuality;
 	DepthState depthState;
 	bool useAlphaBlend, useNoCull;
 	bool initialized, vsync, r_alphatest;

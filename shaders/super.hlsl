@@ -54,9 +54,9 @@ cbuffer PsMaterial : register(b2)
 Texture2D texDiffuse : register(t0);
 Texture2D texNormal : register(t1);
 Texture2D texSpecular : register(t2);
-SamplerState samplerDiffuse;
-SamplerState samplerNormal;
-SamplerState samplerSpecular;
+SamplerState samplerDiffuse : register(s0);
+SamplerState samplerNormal : register(s1);
+SamplerState samplerSpecular : register(s2);
 
 struct VsInput
 {

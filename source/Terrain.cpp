@@ -105,6 +105,9 @@ void Terrain::Build(bool smooth)
 	v_desc.StructureByteStride = 0;
 
 	V(device->CreateBuffer(&v_desc, nullptr, &vb));
+#ifdef _DEBUG
+	vb->SetPrivateData(WKPDID_D3DDebugObjectName, strlen("TerrainVb"), "TerrainVb");
+#endif
 
 	// build mesh
 	D3D11_MAPPED_SUBRESOURCE res;
@@ -180,6 +183,9 @@ void Terrain::Build(bool smooth)
 	v_data.pSysMem = buf.Get();
 
 	V(device->CreateBuffer(&v_desc, &v_data, &ib));
+#ifdef _DEBUG
+	ib->SetPrivateData(WKPDID_D3DDebugObjectName, strlen("TerrainIb"), "TerrainIb");
+#endif
 
 	// smooth mesh
 	state = 2;

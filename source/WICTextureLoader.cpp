@@ -678,7 +678,7 @@ HRESULT DirectX::CreateWICTextureFromMemory(ID3D11Device* d3dDevice,
 	size_t maxsize)
 {
 	return CreateWICTextureFromMemoryEx(d3dDevice, nullptr, wicData, wicDataSize, maxsize,
-		D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_DEFAULT,
+		D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_IGNORE_SRGB,
 		texture, textureView);
 }
 
@@ -692,7 +692,7 @@ HRESULT DirectX::CreateWICTextureFromMemory(ID3D11Device* d3dDevice,
 	size_t maxsize)
 {
 	return CreateWICTextureFromMemoryEx(d3dDevice, d3dContext, wicData, wicDataSize, maxsize,
-		D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_DEFAULT,
+		D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_IGNORE_SRGB,
 		texture, textureView);
 }
 
@@ -799,7 +799,7 @@ HRESULT DirectX::CreateWICTextureFromFile(ID3D11Device* d3dDevice,
 	size_t maxsize)
 {
 	return CreateWICTextureFromFileEx(d3dDevice, nullptr, fileName, maxsize,
-		D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_DEFAULT,
+		D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_IGNORE_SRGB,
 		texture, textureView);
 }
 
@@ -812,7 +812,7 @@ HRESULT DirectX::CreateWICTextureFromFile(ID3D11Device* d3dDevice,
 	size_t maxsize)
 {
 	return CreateWICTextureFromFileEx(d3dDevice, d3dContext, fileName, maxsize,
-		D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_DEFAULT,
+		D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_IGNORE_SRGB,
 		texture, textureView);
 }
 

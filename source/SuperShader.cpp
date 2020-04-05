@@ -53,57 +53,15 @@ vsGlobals(nullptr), vsLocals(nullptr), psGlobals(nullptr), psLocals(nullptr), ps
 //=================================================================================================
 void SuperShader::OnInit()
 {
-	/*if(!pool)
-	{
-		V(D3DXCreateEffectPool(&pool));
-
-		tex_empty_normal_map = app::render->CreateTexture(Int2(1, 1), &Color(128, 128, 255));
-		tex_empty_specular_map = app::render->CreateTexture(Int2(1, 1), &Color::None);
-	}
-
-	cstring path = Format("%s/super.fx", app::render->GetShadersDir().c_str());
-	FileReader f(path);
-	if(!f)
-		throw Format("Failed to open file '%s'.", path);
-	FileTime file_time = f.GetTime();
-	if(file_time != edit_time)
-	{
-		f.ReadToString(code);
-		edit_time = file_time;
-	}
-
-	Info("Setting up super shader parameters.");
-	GetShader(0);
-	ID3DXEffect* e = shaders[0].e;
-	hMatCombined = e->GetParameterByName(nullptr, "matCombined");
-	hMatWorld = e->GetParameterByName(nullptr, "matWorld");
-	hMatBones = e->GetParameterByName(nullptr, "matBones");
-	hTint = e->GetParameterByName(nullptr, "tint");
-	hAmbientColor = e->GetParameterByName(nullptr, "ambientColor");
-	hFogColor = e->GetParameterByName(nullptr, "fogColor");
-	hFogParams = e->GetParameterByName(nullptr, "fogParams");
-	hLightDir = e->GetParameterByName(nullptr, "lightDir");
-	hLightColor = e->GetParameterByName(nullptr, "lightColor");
-	hLights = e->GetParameterByName(nullptr, "lights");
-	hSpecularColor = e->GetParameterByName(nullptr, "specularColor");
-	hSpecularIntensity = e->GetParameterByName(nullptr, "specularIntensity");
-	hSpecularHardness = e->GetParameterByName(nullptr, "specularHardness");
-	hCameraPos = e->GetParameterByName(nullptr, "cameraPos");
-	hTexDiffuse = e->GetParameterByName(nullptr, "texDiffuse");
-	hTexNormal = e->GetParameterByName(nullptr, "texNormal");
-	hTexSpecular = e->GetParameterByName(nullptr, "texSpecular");
-	assert(hMatCombined && hMatWorld && hMatBones && hTint && hAmbientColor && hFogColor && hFogParams && hLightDir && hLightColor && hLights && hSpecularColor
-		&& hSpecularIntensity && hSpecularHardness && hCameraPos && hTexDiffuse && hTexNormal && hTexSpecular);*/
-
 	samplerDiffuse = app::render->CreateSampler();
 	samplerNormal = app::render->CreateSampler();
 	samplerSpecular = app::render->CreateSampler();
 
-	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
-	vsLocals = app::render->CreateConstantBuffer(sizeof(VsLocals));
-	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
-	psLocals = app::render->CreateConstantBuffer(sizeof(PsLocals));
-	psMaterial = app::render->CreateConstantBuffer(sizeof(PsMaterial));
+	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "SuperVsGlobals");
+	vsLocals = app::render->CreateConstantBuffer(sizeof(VsLocals), "SuperVsLocals");
+	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "SuperPsGlobals");
+	psLocals = app::render->CreateConstantBuffer(sizeof(PsLocals), "SuperPsLocals");
+	psMaterial = app::render->CreateConstantBuffer(sizeof(PsMaterial), "SuperPsMaterial");
 
 	texEmptyNormalMap = app::render->CreateRawTexture(Int2(1, 1), &Color(128, 128, 255));
 	texEmptySpecularMap = app::render->CreateRawTexture(Int2(1, 1), &Color::None);
