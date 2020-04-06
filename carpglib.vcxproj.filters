@@ -298,6 +298,9 @@
     <ClInclude Include="include\FontLoader.h">
       <Filter>resources</Filter>
     </ClInclude>
+    <ClInclude Include="include\ScreenGrab.h">
+      <Filter>components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">
@@ -546,6 +549,12 @@
     </ClCompile>
     <ClCompile Include="source\FontLoader.cpp">
       <Filter>resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ScreenGrab.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\VertexDeclaration.cpp">
+      <Filter>const</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

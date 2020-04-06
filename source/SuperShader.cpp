@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "SuperShader.h"
 
-//#include "File.h"
 #include "Camera.h"
 #include "DirectX.h"
 #include "Light.h"
@@ -128,27 +127,6 @@ SuperShader::Shader& SuperShader::GetShader(uint id)
 }
 
 //=================================================================================================
-/*void SuperShader::ApplyLights(const array<Light*, 3>& lights)
-{
-	Lights l;
-	for(uint i = 0; i < 3; ++i)
-	{
-		if(lights[i])
-		{
-			l.ld[i].pos = lights[i]->pos;
-			l.ld[i].range = lights[i]->range;
-			l.ld[i].color = lights[i]->color;
-		}
-		else
-		{
-			l.ld[i].pos = Vec3::Zero;
-			l.ld[i].range = 1;
-			l.ld[i].color = Vec4::Zero;
-		}
-	}
-	V(GetEffect()->SetRawValue(hLights, &l, 0, sizeof(Lights)));
-}*/
-
 SuperShader::Shader& SuperShader::CompileShader(uint id)
 {
 	Info("Compiling super shader %u.", id);
@@ -230,6 +208,7 @@ SuperShader::Shader& SuperShader::CompileShader(uint id)
 	return shaders.back();
 }
 
+//=================================================================================================
 void SuperShader::Prepare(Scene* scene, Camera* camera)
 {
 	assert(scene && camera);
@@ -263,6 +242,7 @@ void SuperShader::Prepare(Scene* scene, Camera* camera)
 	deviceContext->Unmap(psGlobals, 0);
 }
 
+//=================================================================================================
 void SuperShader::SetShader(uint id)
 {
 	Shader& shader = GetShader(id);
@@ -278,6 +258,7 @@ void SuperShader::SetShader(uint id)
 	prevMesh = nullptr;
 }
 
+//=================================================================================================
 void SuperShader::Draw(SceneNode* node)
 {
 	assert(node);
@@ -339,6 +320,7 @@ void SuperShader::Draw(SceneNode* node)
 	}
 }
 
+//=================================================================================================
 void SuperShader::DrawSubmesh(Mesh::Submesh& sub)
 {
 	// apply vertex shader constants per material

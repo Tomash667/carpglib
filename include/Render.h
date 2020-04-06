@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "VertexDeclaration.h"
+
+//-----------------------------------------------------------------------------
 struct Resolution
 {
 	Int2 size;
@@ -71,6 +74,7 @@ public:
 	int GetAdapter() const { return usedAdapter; }
 	ID3D11Device* GetDevice() const { return device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return deviceContext; }
+	ID3D11InputLayout* GetInputLayout(VertexDeclarationId decl);
 	void GetMultisampling(int& ms, int& msq) const { ms = multisampling; msq = multisamplingQuality; }
 	void GetMultisamplingModes(vector<Int2>& v) const;
 	uint GetRefreshRate() const { return refreshHz; }
@@ -102,6 +106,7 @@ private:
 	void LogAndSelectResolution();
 	void LogMultisampling();
 	ID3DBlob* CompileShader(cstring filename, cstring entry, bool isVertex, D3D_SHADER_MACRO* macro);
+	ID3D11InputLayout* CreateInputLayout(VertexDeclarationId decl);
 
 	IDXGIFactory* factory;
 	IDXGIAdapter* adapter;
@@ -113,6 +118,7 @@ private:
 	ID3D11BlendState* blendStates[2];
 	ID3D11DepthStencilState* depthStates[DEPTH_MAX];
 	ID3D11RasterizerState* rasterStates[2];
+	ID3D11InputLayout* inputLayouts[VDI_MAX];
 	Int2 wndSize;
 	vector<ShaderHandler*> shaders;
 	vector<RenderTarget*> renderTargets;

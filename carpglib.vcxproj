@@ -89,6 +89,7 @@
     <ClInclude Include="include\Scene.h" />
     <ClInclude Include="include\SceneManager.h" />
     <ClInclude Include="include\SceneNode.h" />
+    <ClInclude Include="include\ScreenGrab.h" />
     <ClInclude Include="include\Scrollbar.h" />
     <ClInclude Include="include\ShaderHandler.h" />
     <ClInclude Include="include\SkyboxShader.h" />
@@ -184,6 +185,7 @@
     <ClCompile Include="source\Scene.cpp" />
     <ClCompile Include="source\SceneManager.cpp" />
     <ClCompile Include="source\SceneNode.cpp" />
+    <ClCompile Include="source\ScreenGrab.cpp" />
     <ClCompile Include="source\Scrollbar.cpp" />
     <ClCompile Include="source\SkyboxShader.cpp" />
     <ClCompile Include="source\Slider.cpp" />
@@ -201,6 +203,7 @@
     <ClCompile Include="source\TooltipController.cpp" />
     <ClCompile Include="source\TreeView.cpp" />
     <ClCompile Include="source\VertexData.cpp" />
+    <ClCompile Include="source\VertexDeclaration.cpp" />
     <ClCompile Include="source\WICTextureLoader.cpp" />
     <ClCompile Include="source\Window.cpp" />
   </ItemGroup>

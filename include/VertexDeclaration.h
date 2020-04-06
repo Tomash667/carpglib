@@ -15,6 +15,16 @@ enum VertexDeclarationId
 };
 
 //-----------------------------------------------------------------------------
+struct VertexDeclaration
+{
+	cstring name;
+	D3D11_INPUT_ELEMENT_DESC desc[];
+	uint count;
+
+	static VertexDeclaration decl[VDI_MAX];
+};
+
+//-----------------------------------------------------------------------------
 struct VDefault
 {
 	Vec3 pos;

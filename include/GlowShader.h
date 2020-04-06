@@ -12,7 +12,13 @@ public:
 	void OnInit() override;
 	void OnRelease() override;
 
-	/*ID3DXEffect* effect;
-	D3DXHANDLE techGlowMesh, techGlowAni;
-	D3DXHANDLE hMatCombined, hMatBones, hColor, hTex;*/
+private:
+	ID3D11VertexShader* vertexShaderMesh;
+	ID3D11VertexShader* vertexShaderAni;
+	ID3D11PixelShader* pixelShader;
+	ID3D11InputLayout* layoutMesh;
+	ID3D11InputLayout* layoutAni;
+	ID3D11SamplerState* sampler;
+	ID3D11Buffer* vsLocals;
+	ID3D11Buffer* psLocals;
 };

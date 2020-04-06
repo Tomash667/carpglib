@@ -123,8 +123,6 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 		font->tex_outline = CreateFontTexture(font, tex_size, outline, padding, winapi_font);
 	DeleteObject(winapi_font);
 
-	font->tex->S
-
 	// make tab size of 4 spaces
 	Font::Glyph& tab = font->glyph['\t'];
 	Font::Glyph& space = font->glyph[' '];
@@ -207,8 +205,6 @@ TEX FontLoader::CreateFontTexture(Font* font, const Int2& tex_size, int outline,
 
 	V(surface->ReleaseDC(nullptr));
 	surface->Release();
-
-	tex->Sa
 
 	// create texture view
 	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};

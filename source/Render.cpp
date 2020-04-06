@@ -15,7 +15,7 @@ static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 //=================================================================================================
 Render::Render() : initialized(false), vsync(true), shaders_dir("shaders"), refreshHz(0), usedAdapter(0), multisampling(0), multisamplingQuality(0),
 factory(nullptr), adapter(nullptr), swapChain(nullptr), device(nullptr), deviceContext(nullptr), renderTarget(nullptr), depthStencilView(nullptr),
-blendStates(), depthStates(), rasterStates(), useAlphaBlend(false), depthState(DEPTH_YES), useNoCull(false), r_alphatest(false)
+blendStates(), depthStates(), rasterStates(), inputLayouts(), useAlphaBlend(false), depthState(DEPTH_YES), useNoCull(false), r_alphatest(false)
 {
 }
 
@@ -36,6 +36,7 @@ Render::~Render()
 	SafeRelease(blendStates);
 	SafeRelease(depthStates);
 	SafeRelease(rasterStates);
+	SafeRelease(inputLayouts);
 
 	if(device)
 	{
@@ -896,4 +897,17 @@ ID3DBlob* Render::CompileShader(cstring filename, cstring entry, bool isVertex, 
 	}
 
 	return shader_blob;
+}
+
+ID3D11InputLayout* Render::GetInputLayout(VertexDeclarationId decl)
+{
+	ID3D11InputLayout*& layout = inputLayouts[decl];
+	if(!layout)
+		layout = CreateInputLayout(decl);
+	return layout;
+}
+
+ID3D11InputLayout* Render::CreateInputLayout(VertexDeclarationId decl)
+{
+
 }

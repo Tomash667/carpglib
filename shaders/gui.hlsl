@@ -9,7 +9,7 @@ cbuffer PsGlobals : register(b0)
 };
 
 Texture2D texDiffuse : register(t0);
-SamplerState samplerDiffuse;
+SamplerState samplerDiffuse : register(s0);
 
 struct VERTEX_INPUT
 {
