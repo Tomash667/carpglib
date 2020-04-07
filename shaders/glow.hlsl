@@ -1,10 +1,10 @@
-cbuffer VsLocals : register(b0)
+cbuffer VsGlobals : register(b0)
 {
 	float4x4 matCombined;
 	float4x4 matBones[32];
 };
 
-cbuffer PsLocals : register(b0)
+cbuffer PsGlobals : register(b0)
 {
 	float4 color;
 };

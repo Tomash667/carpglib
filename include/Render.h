@@ -1,9 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "VertexDeclaration.h"
-
-//-----------------------------------------------------------------------------
 struct Resolution
 {
 	Int2 size;
@@ -37,6 +34,7 @@ public:
 		DEPTH_NO,
 		DEPTH_READ,
 		DEPTH_YES,
+		DEPTH_USE_STENCIL,
 		DEPTH_MAX
 	};
 
@@ -57,13 +55,16 @@ public:
 	void Clear(const Vec4& color);
 	Texture* CopyToTexture(RenderTarget* target);
 	TEX CopyToTextureRaw(RenderTarget* target);
-	void CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uint inputCount, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader,
-		ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr, cstring vsEntry = "VsMain", cstring psEntry = "PsMain");
 	ID3D11Buffer* CreateConstantBuffer(uint size, cstring name = nullptr);
+	ID3D11InputLayout* CreateInputLayout(VertexDeclarationId decl, ID3DBlob* vsBlob, cstring name);
+	ID3D11PixelShader* CreatePixelShader(cstring filename, cstring entry = "PsMain");
 	TEX CreateRawTexture(const Int2& size, const Color* fill = nullptr);
 	RenderTarget* CreateRenderTarget(const Int2& size);
 	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP, bool disableMipmap = false);
+	void CreateShader(cstring filename, VertexDeclarationId decl, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader,
+		ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr, cstring vsEntry = "VsMain", cstring psEntry = "PsMain");
 	Texture* CreateTexture(const Int2& size);
+	ID3D11VertexShader* CreateVertexShader(cstring filename, cstring entry = "VsMain", ID3DBlob** vsBlob = nullptr);
 	void Present();
 	void RegisterShader(ShaderHandler* shader);
 	void ReloadShaders();
@@ -74,7 +75,6 @@ public:
 	int GetAdapter() const { return usedAdapter; }
 	ID3D11Device* GetDevice() const { return device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return deviceContext; }
-	ID3D11InputLayout* GetInputLayout(VertexDeclarationId decl);
 	void GetMultisampling(int& ms, int& msq) const { ms = multisampling; msq = multisamplingQuality; }
 	void GetMultisamplingModes(vector<Int2>& v) const;
 	uint GetRefreshRate() const { return refreshHz; }
@@ -106,7 +106,6 @@ private:
 	void LogAndSelectResolution();
 	void LogMultisampling();
 	ID3DBlob* CompileShader(cstring filename, cstring entry, bool isVertex, D3D_SHADER_MACRO* macro);
-	ID3D11InputLayout* CreateInputLayout(VertexDeclarationId decl);
 
 	IDXGIFactory* factory;
 	IDXGIAdapter* adapter;
@@ -118,7 +117,6 @@ private:
 	ID3D11BlendState* blendStates[2];
 	ID3D11DepthStencilState* depthStates[DEPTH_MAX];
 	ID3D11RasterizerState* rasterStates[2];
-	ID3D11InputLayout* inputLayouts[VDI_MAX];
 	Int2 wndSize;
 	vector<ShaderHandler*> shaders;
 	vector<RenderTarget*> renderTargets;

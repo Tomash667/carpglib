@@ -35,21 +35,12 @@ BasicShader::BasicShader() : deviceContext(app::render->GetDeviceContext()), vsG
 //=================================================================================================
 void BasicShader::OnInit()
 {
-	D3D11_INPUT_ELEMENT_DESC descPos[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-
-	D3D11_INPUT_ELEMENT_DESC descColor[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-
-	app::render->CreateShader("basic.hlsl", descPos, countof(descPos), shaderSimple.vertexShader, shaderSimple.pixelShader, shaderSimple.layout, nullptr, "VsSimple", "PsSimple");
+	/*app::render->CreateShader("basic.hlsl", descPos, countof(descPos), shaderSimple.vertexShader, shaderSimple.pixelShader, shaderSimple.layout, nullptr, "VsSimple", "PsSimple");
 	app::render->CreateShader("basic.hlsl", descColor, countof(descColor), shaderColor.vertexShader, shaderColor.pixelShader, shaderColor.layout, nullptr, "VsColor", "PsColor");
 	app::render->CreateShader("basic.hlsl", descPos, countof(descPos), shaderArea.vertexShader, shaderArea.pixelShader, shaderArea.layout, nullptr, "VsArea", "PsArea");
 
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "BasicVsGlobals");
-	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "BasicPsGlobals");
+	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "BasicPsGlobals");*/
 }
 
 //=================================================================================================

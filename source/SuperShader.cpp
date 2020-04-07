@@ -132,19 +132,20 @@ SuperShader::Shader& SuperShader::CompileShader(uint id)
 	Info("Compiling super shader %u.", id);
 
 	// setup layout
-	vector<D3D11_INPUT_ELEMENT_DESC> layoutDesc;
-	layoutDesc.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+	VertexDeclarationId vertDecl;
 	if(IsSet(id, HAVE_WEIGHT))
 	{
-		layoutDesc.push_back({ "BLENDWEIGHT", 0, DXGI_FORMAT_R32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-		layoutDesc.push_back({ "BLENDINDICES", 0, DXGI_FORMAT_R8G8B8A8_UINT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+		if(IsSet(id, HAVE_TANGENTS))
+			vertDecl = VDI_ANIMATED_TANGENT;
+		else
+			vertDecl = VDI_ANIMATED;
 	}
-	layoutDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-	layoutDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-	if(IsSet(id, HAVE_TANGENTS))
+	else
 	{
-		layoutDesc.push_back({ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-		layoutDesc.push_back({ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+		if(IsSet(id, HAVE_TANGENTS))
+			vertDecl = VDI_TANGENT;
+		else
+			vertDecl = VDI_DEFAULT;
 	}
 
 	// setup macros
@@ -203,7 +204,7 @@ SuperShader::Shader& SuperShader::CompileShader(uint id)
 	// compile
 	Shader shader;
 	shader.id = id;
-	app::render->CreateShader("super.hlsl", layoutDesc.data(), layoutDesc.size(), shader.vertexShader, shader.pixelShader, shader.layout, macros);
+	app::render->CreateShader("super.hlsl", vertDecl, shader.vertexShader, shader.pixelShader, shader.layout, macros);
 	shaders.push_back(shader);
 	return shaders.back();
 }

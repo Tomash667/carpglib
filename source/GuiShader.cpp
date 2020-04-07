@@ -25,12 +25,7 @@ layout(nullptr), vsGlobals(nullptr), psGlobals(nullptr), sampler(nullptr), vb(nu
 //=================================================================================================
 void GuiShader::OnInit()
 {
-	D3D11_INPUT_ELEMENT_DESC desc[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-	app::render->CreateShader("gui.hlsl", desc, countof(desc), vertexShader, pixelShader, layout);
+	app::render->CreateShader("gui.hlsl", VDI_PARTICLE, vertexShader, pixelShader, layout);
 
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "GuiVsGlobals");
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "GuiPsGlobals");
