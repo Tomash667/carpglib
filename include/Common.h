@@ -2,6 +2,9 @@
 
 #include "FileFormat.h"
 
+// Enums
+enum VertexDeclarationId;
+
 // Engine types
 struct Billboard;
 struct Camera;

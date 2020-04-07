@@ -6,6 +6,7 @@
 #include "File.h"
 #include "RenderTarget.h"
 #include "ShaderHandler.h"
+#include "VertexDeclaration.h"
 
 #include <d3dcompiler.h>
 
@@ -15,7 +16,7 @@ static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 //=================================================================================================
 Render::Render() : initialized(false), vsync(true), shaders_dir("shaders"), refreshHz(0), usedAdapter(0), multisampling(0), multisamplingQuality(0),
 factory(nullptr), adapter(nullptr), swapChain(nullptr), device(nullptr), deviceContext(nullptr), renderTarget(nullptr), depthStencilView(nullptr),
-blendStates(), depthStates(), rasterStates(), inputLayouts(), useAlphaBlend(false), depthState(DEPTH_YES), useNoCull(false), r_alphatest(false)
+blendStates(), depthStates(), rasterStates(), useAlphaBlend(false), depthState(DEPTH_YES), useNoCull(false), r_alphatest(false)
 {
 }
 
@@ -36,7 +37,6 @@ Render::~Render()
 	SafeRelease(blendStates);
 	SafeRelease(depthStates);
 	SafeRelease(rasterStates);
-	SafeRelease(inputLayouts);
 
 	if(device)
 	{
@@ -291,6 +291,18 @@ void Render::CreateDepthStates()
 	desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 	V(device->CreateDepthStencilState(&desc, &depthStates[DEPTH_READ]));
+
+	// create stencil enabled depth stencil state
+	desc.StencilEnable = true;
+	desc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+	desc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+	desc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
+	desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	desc.BackFace = desc.FrontFace;
+
+	V(device->CreateDepthStencilState(&desc, &depthStates[DEPTH_USE_STENCIL]));
 }
 
 //=================================================================================================
@@ -641,7 +653,7 @@ void Render::SetDepthState(DepthState depthState)
 	if(this->depthState != depthState)
 	{
 		this->depthState = depthState;
-		deviceContext->OMSetDepthStencilState(depthStates[depthState], 0);
+		deviceContext->OMSetDepthStencilState(depthStates[depthState], 1);
 	}
 }
 
@@ -821,9 +833,12 @@ ID3D11SamplerState* Render::CreateSampler(TextureAddressMode mode, bool disableM
 }
 
 //=================================================================================================
-void Render::CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uint inputCount, ID3D11VertexShader*& vertexShader,
+void Render::CreateShader(cstring filename, VertexDeclarationId decl, ID3D11VertexShader*& vertexShader,
 	ID3D11PixelShader*& pixelShader, ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro, cstring vsEntry, cstring psEntry)
 {
+
+	VertexDeclaration& vertDecl = VertexDeclaration::decl[(int)decl];
+
 	try
 	{
 		CPtr<ID3DBlob> vsBuf = CompileShader(filename, vsEntry, true, macro);
@@ -836,7 +851,7 @@ void Render::CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uin
 		if(FAILED(result))
 			throw Format("Failed to create pixel shader (%u).", result);
 
-		result = device->CreateInputLayout(input, inputCount, vsBuf->GetBufferPointer(), vsBuf->GetBufferSize(), &layout);
+		result = device->CreateInputLayout(vertDecl.desc, vertDecl.count, vsBuf->GetBufferPointer(), vsBuf->GetBufferSize(), &layout);
 		if(FAILED(result))
 			throw Format("Failed to create input layout (%u).", result);
 
@@ -854,6 +869,59 @@ void Render::CreateShader(cstring filename, D3D11_INPUT_ELEMENT_DESC* input, uin
 	catch(cstring err)
 	{
 		throw Format("Failed to create shader '%s': %s", filename, err);
+	}
+}
+
+//=================================================================================================
+ID3D11VertexShader* Render::CreateVertexShader(cstring filename, cstring entry, ID3DBlob** vsBlob)
+{
+	try
+	{
+		ID3D11VertexShader* vertexShader;
+
+		CPtr<ID3DBlob> vsBuf = CompileShader(filename, entry, true, nullptr);
+		HRESULT result = device->CreateVertexShader(vsBuf->GetBufferPointer(), vsBuf->GetBufferSize(), nullptr, &vertexShader);
+		if(FAILED(result))
+			throw Format("Error %u.", result);
+
+#ifdef _DEBUG
+		cstring name = Format("%s/%s", filename, entry);
+		vertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
+#endif
+
+		if(vsBlob)
+			*vsBlob = vsBuf.Pin();
+
+		return vertexShader;
+	}
+	catch(cstring err)
+	{
+		throw Format("Failed to create vertex shader '%s': %s", filename, err);
+	}
+}
+
+//=================================================================================================
+ID3D11PixelShader* Render::CreatePixelShader(cstring filename, cstring entry)
+{
+	try
+	{
+		ID3D11PixelShader* pixelShader;
+
+		CPtr<ID3DBlob> psBuf = CompileShader(filename, entry, false, nullptr);
+		HRESULT result = device->CreatePixelShader(psBuf->GetBufferPointer(), psBuf->GetBufferSize(), nullptr, &pixelShader);
+		if(FAILED(result))
+			throw Format("Error %u.", result);
+
+#ifdef _DEBUG
+		cstring name = Format("%s/%s", filename, entry);
+		pixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
+#endif
+
+		return pixelShader;
+	}
+	catch(cstring err)
+	{
+		throw Format("Failed to create pixel shader '%s': %s", filename, err);
 	}
 }
 
@@ -899,15 +967,20 @@ ID3DBlob* Render::CompileShader(cstring filename, cstring entry, bool isVertex, 
 	return shader_blob;
 }
 
-ID3D11InputLayout* Render::GetInputLayout(VertexDeclarationId decl)
+//=================================================================================================
+ID3D11InputLayout* Render::CreateInputLayout(VertexDeclarationId decl, ID3DBlob* vsBlob, cstring name)
 {
-	ID3D11InputLayout*& layout = inputLayouts[decl];
-	if(!layout)
-		layout = CreateInputLayout(decl);
-	return layout;
-}
+	ID3D11InputLayout* inputLayout;
+	VertexDeclaration& vertDecl = VertexDeclaration::decl[(int)decl];
 
-ID3D11InputLayout* Render::CreateInputLayout(VertexDeclarationId decl)
-{
+	HRESULT result = device->CreateInputLayout(vertDecl.desc, vertDecl.count, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &inputLayout);
+	if(FAILED(result))
+		throw Format("Failed to create input layout (%u).", result);
 
+#ifdef _DEBUG
+	if(name)
+		inputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
+#endif
+
+	return inputLayout;
 }

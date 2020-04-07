@@ -3,10 +3,10 @@
 //-----------------------------------------------------------------------------
 enum VertexDeclarationId
 {
-	VDI_DEFAULT, // Pos Tex Normal
-	VDI_ANIMATED, // Pos Weights Indices Tex Normal
-	VDI_TANGENT, // Pos Tex Normal Tangent Binormal
-	VDI_ANIMATED_TANGENT, // Pos Weights Indices Tex Normal Tangent Binormal
+	VDI_DEFAULT, // Pos Normal Tex
+	VDI_ANIMATED, // Pos Weights Indices Normal Tex
+	VDI_TANGENT, // Pos Normal Tex Tangent Binormal
+	VDI_ANIMATED_TANGENT, // Pos Weights Indices Normal Tex Tangent Binormal
 	VDI_TEX, // Pos Tex
 	VDI_COLOR, // Pos Color
 	VDI_PARTICLE, // Pos Tex Color

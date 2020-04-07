@@ -45,7 +45,7 @@ Terrain::~Terrain()
 }
 
 //=================================================================================================
-void Terrain::Init(const TerrainOptions& o)
+void Terrain::Init(const Options& o)
 {
 	assert(state == 0);
 	assert(o.tile_size > 0.f && o.n_parts > 0 && o.tiles_per_part > 0 && IsPow2(o.tex_size));
