@@ -1,11 +1,15 @@
 #include "Pch.h"
 #include "FontLoader.h"
+
+#include "DirectX.h"
 #include "Font.h"
 #include "Render.h"
 #include "Texture.h"
-#include <objidl.h>
+
 #include <gdiplus.h>
-#include "DirectX.h"
+#include <objidl.h>
+
+//Gdiplus::PrivateFontCollection privateFonts;
 
 //=================================================================================================
 FontLoader::FontLoader() : device(app::render->GetDevice()), gdi_initialized(false)
@@ -45,6 +49,8 @@ void FontLoader::InitGdi()
 
 	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, &output);
 	gdi_initialized = true;
+
+	//privateFonts.AddFontFile(ToWString("data/fonts/Florence-Regular.otf"));
 }
 
 //=================================================================================================
@@ -89,7 +95,7 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 	ReleaseDC(nullptr, hdc);
 
 	// calculate texture size
-	const int padding = outline + 1;
+	const int padding = outline ? outline + 2 : 1;
 	Int2 tex_size(padding * 2, padding * 2 + font->height);
 	for(int i = 32; i <= 255; ++i)
 	{
@@ -118,6 +124,7 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 
 	// create textures
 	font->outline = outline;
+	font->outline_shift = Vec2(float(outline) / tex_size.x, float(outline) / tex_size.y);
 	font->tex = CreateFontTexture(font, tex_size, 0, padding, winapi_font);
 	if(outline > 0)
 		font->tex_outline = CreateFontTexture(font, tex_size, outline, padding, winapi_font);
@@ -128,6 +135,12 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 	Font::Glyph& space = font->glyph[' '];
 	tab.width = space.width * 4;;
 	tab.uv = space.uv;
+
+	// save textures to file
+	app::render->SaveToFile(font->tex, Format("%s-%d.png", name, size), ImageFormat::PNG);
+	if(outline > 0)
+		app::render->SaveToFile(font->tex_outline, Format("%s-%d-outline.png", name, size), ImageFormat::PNG);
+	FIXME;
 
 	return font.Pin();
 }
@@ -189,14 +202,14 @@ TEX FontLoader::CreateFontTexture(Font* font, const Int2& tex_size, int outline,
 			{
 				const float a = float(j) * PI / 4;
 				point.X = float(offset.x + outline * sin(a));
-				point.Y = float(offset.y + outline * cos(a));
+				point.Y = float(offset.y + 1 + outline * cos(a));
 				graphics.DrawString(wc, 1, &gdi_font, point, format, &brush);
 			}
 		}
 		else
 		{
 			point.X = (float)offset.x;
-			point.Y = (float)offset.y;
+			point.Y = (float)(offset.y + 1);
 			graphics.DrawString(wc, 1, &gdi_font, point, format, &brush);
 		}
 
