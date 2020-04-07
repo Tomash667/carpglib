@@ -6,7 +6,7 @@
 #include "Render.h"
 
 //-----------------------------------------------------------------------------
-void CalculateNormal(TerrainVertex& v1, TerrainVertex& v2, TerrainVertex& v3)
+void CalculateNormal(VTerrain& v1, VTerrain& v2, VTerrain& v3)
 {
 	Vec3 v01 = v2.pos - v1.pos;
 	Vec3 v02 = v3.pos - v1.pos;
@@ -98,7 +98,7 @@ void Terrain::Build(bool smooth)
 	// create vertex buffer
 	D3D11_BUFFER_DESC v_desc;
 	v_desc.Usage = D3D11_USAGE_DYNAMIC;
-	v_desc.ByteWidth = sizeof(TerrainVertex) * n_verts;
+	v_desc.ByteWidth = sizeof(VTerrain) * n_verts;
 	v_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	v_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	v_desc.MiscFlags = 0;
@@ -112,9 +112,9 @@ void Terrain::Build(bool smooth)
 	// build mesh
 	D3D11_MAPPED_SUBRESOURCE res;
 	V(app::render->GetDeviceContext()->Map(vb, 0, D3D11_MAP_WRITE_DISCARD, 0, &res));
-	TerrainVertex* v = reinterpret_cast<TerrainVertex*>(res.pData);
+	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
 
-#define TRI(xx,zz,uu,vv) v[n++] = TerrainVertex((x+xx)*tile_size, h[x+xx+(z+zz)*width], (z+zz)*tile_size, float(uu)/uv_mod, float(vv)/uv_mod,\
+#define TRI(xx,zz,uu,vv) v[n++] = VTerrain((x+xx)*tile_size, h[x+xx+(z+zz)*width], (z+zz)*tile_size, float(uu)/uv_mod, float(vv)/uv_mod,\
 	((float)(x+xx)) / n_tiles, ((float)(z+zz)) / n_tiles)
 
 	uint n = 0;
@@ -201,7 +201,7 @@ void Terrain::Rebuild(bool smooth)
 
 	D3D11_MAPPED_SUBRESOURCE res;
 	V(app::render->GetDeviceContext()->Map(vb, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &res));
-	TerrainVertex* v = reinterpret_cast<TerrainVertex*>(res.pData);
+	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
 
 #define TRI(xx,zz) v[n++].pos.y = h[x+xx+(z+zz)*width]
 
@@ -236,7 +236,7 @@ void Terrain::RebuildUv()
 
 	D3D11_MAPPED_SUBRESOURCE res;
 	V(app::render->GetDeviceContext()->Map(vb, 0, D3D11_MAP_READ_WRITE, 0, &res));
-	TerrainVertex* v = reinterpret_cast<TerrainVertex*>(res.pData);
+	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
 
 #define TRI(uu,vv) v[n++].tex = Vec2(float(uu)/uv_mod, float(vv)/uv_mod)
 
@@ -421,7 +421,7 @@ void Terrain::SmoothNormals()
 
 	D3D11_MAPPED_SUBRESOURCE res;
 	V(app::render->GetDeviceContext()->Map(vb, 0, D3D11_MAP_READ_WRITE, 0, &res));
-	TerrainVertex* v = reinterpret_cast<TerrainVertex*>(res.pData);
+	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
 
 	SmoothNormals(v);
 
@@ -429,7 +429,7 @@ void Terrain::SmoothNormals()
 }
 
 //=================================================================================================
-void Terrain::SmoothNormals(TerrainVertex* v)
+void Terrain::SmoothNormals(VTerrain* v)
 {
 	assert(state > 0);
 	assert(v);
