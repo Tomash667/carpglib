@@ -6,13 +6,8 @@
 #include "Render.h"
 #include "Texture.h"
 
-#include <gdiplus.h>
-#include <objidl.h>
-
-//Gdiplus::PrivateFontCollection privateFonts;
-
 //=================================================================================================
-FontLoader::FontLoader() : device(app::render->GetDevice()), gdi_initialized(false)
+FontLoader::FontLoader() : device(app::render->GetDevice())
 {
 }
 
@@ -20,8 +15,6 @@ FontLoader::FontLoader() : device(app::render->GetDevice()), gdi_initialized(fal
 Font* FontLoader::Load(cstring name, int size, int weight, int outline)
 {
 	assert(name && size > 0 && InRange(weight, 1, 9) && outline >= 0);
-
-	InitGdi();
 
 	try
 	{
@@ -34,35 +27,15 @@ Font* FontLoader::Load(cstring name, int size, int weight, int outline)
 }
 
 //=================================================================================================
-void FontLoader::InitGdi()
-{
-	if(gdi_initialized)
-		return;
-
-	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-	gdiplusStartupInput.GdiplusVersion = 1;
-	gdiplusStartupInput.DebugEventCallback = nullptr;
-	gdiplusStartupInput.SuppressBackgroundThread = TRUE;
-	gdiplusStartupInput.SuppressExternalCodecs = TRUE;
-	ULONG_PTR gdiplusToken = 0;
-	Gdiplus::GdiplusStartupOutput output;
-
-	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, &output);
-	gdi_initialized = true;
-
-	//privateFonts.AddFontFile(ToWString("data/fonts/Florence-Regular.otf"));
-}
-
-//=================================================================================================
 Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 {
 	HDC hdc = GetDC(nullptr);
 	int logic_size = -MulDiv(size, 96, 72);
 
 	// create winapi font
-	HFONT winapi_font = CreateFontA(logic_size, 0, 0, 0, weight * 100, false, false, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+	HFONT winapiFont = CreateFontA(logic_size, 0, 0, 0, weight * 100, false, false, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
 		CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, name);
-	if(!winapi_font)
+	if(!winapiFont)
 	{
 		DWORD error = GetLastError();
 		ReleaseDC(nullptr, hdc);
@@ -71,14 +44,14 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 
 	// get glyphs weights, font height
 	int glyph_w[256];
-	SelectObject(hdc, (HGDIOBJ)winapi_font);
+	SelectObject(hdc, (HGDIOBJ)winapiFont);
 	if(GetCharWidth32(hdc, 0, 255, glyph_w) == 0)
 	{
 		ABC abc[256];
 		if(GetCharABCWidths(hdc, 0, 255, abc) == 0)
 		{
 			DWORD error = GetLastError();
-			DeleteObject(winapi_font);
+			DeleteObject(winapiFont);
 			ReleaseDC(nullptr, hdc);
 			throw Format("Failed to get font glyphs (%u).", error);
 		}
@@ -96,15 +69,15 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 
 	// calculate texture size
 	const int padding = outline ? outline + 2 : 1;
-	Int2 tex_size(padding * 2, padding * 2 + font->height);
+	Int2 texSize(padding * 2, padding * 2 + font->height);
 	for(int i = 32; i <= 255; ++i)
 	{
 		int width = glyph_w[i];
 		if(width)
-			tex_size.x += width + padding;
+			texSize.x += width + padding;
 	}
-	tex_size.x = NextPow2(tex_size.x);
-	tex_size.y = NextPow2(tex_size.y);
+	texSize.x = NextPow2(texSize.x);
+	texSize.y = NextPow2(texSize.y);
 
 	// setup glyphs
 	Int2 offset(padding, padding);
@@ -116,19 +89,19 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 		glyph.width = glyph_w[i];
 		if(glyph.width)
 		{
-			glyph.uv.v1 = Vec2(float(offset.x) / tex_size.x, float(offset.y) / tex_size.y);
-			glyph.uv.v2 = glyph.uv.v1 + Vec2(float(glyph.width) / tex_size.x, float(font->height) / tex_size.y);
+			glyph.uv.v1 = Vec2(float(offset.x) / texSize.x, float(offset.y) / texSize.y);
+			glyph.uv.v2 = glyph.uv.v1 + Vec2(float(glyph.width) / texSize.x, float(font->height) / texSize.y);
 			offset.x += glyph.width + padding;
 		}
 	}
 
 	// create textures
 	font->outline = outline;
-	font->outline_shift = Vec2(float(outline) / tex_size.x, float(outline) / tex_size.y);
-	font->tex = CreateFontTexture(font, tex_size, 0, padding, winapi_font);
+	font->outline_shift = Vec2(float(outline) / texSize.x, float(outline) / texSize.y);
+	font->tex = CreateFontTexture(font, texSize, 0, padding, winapiFont);
 	if(outline > 0)
-		font->tex_outline = CreateFontTexture(font, tex_size, outline, padding, winapi_font);
-	DeleteObject(winapi_font);
+		font->tex_outline = CreateFontTexture(font, texSize, outline, padding, winapiFont);
+	DeleteObject(winapiFont);
 
 	// make tab size of 4 spaces
 	Font::Glyph& tab = font->glyph['\t'];
@@ -137,21 +110,20 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 	tab.uv = space.uv;
 
 	// save textures to file
-	app::render->SaveToFile(font->tex, Format("%s-%d.png", name, size), ImageFormat::PNG);
+	/*app::render->SaveToFile(font->tex, Format("%s-%d.png", name, size), ImageFormat::PNG);
 	if(outline > 0)
-		app::render->SaveToFile(font->tex_outline, Format("%s-%d-outline.png", name, size), ImageFormat::PNG);
-	FIXME;
+		app::render->SaveToFile(font->tex_outline, Format("%s-%d-outline.png", name, size), ImageFormat::PNG);*/
 
 	return font.Pin();
 }
 
 //=================================================================================================
-TEX FontLoader::CreateFontTexture(Font* font, const Int2& tex_size, int outline, int padding, void* winapi_font)
+TEX FontLoader::CreateFontTexture(Font* font, const Int2& texSize, int outline, int padding, void* winapiFont)
 {
 	// create font
 	D3D11_TEXTURE2D_DESC desc = { 0 };
-	desc.Width = tex_size.x;
-	desc.Height = tex_size.y;
+	desc.Width = texSize.x;
+	desc.Height = texSize.y;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -165,23 +137,34 @@ TEX FontLoader::CreateFontTexture(Font* font, const Int2& tex_size, int outline,
 	HRESULT result = device->CreateTexture2D(&desc, nullptr, &tex);
 	if(FAILED(result))
 	{
-		DeleteObject(winapi_font);
-		throw Format("Failed to create texture (%ux%u, result %u).", tex_size.x, tex_size.y, result);
+		DeleteObject(winapiFont);
+		throw Format("Failed to create texture (%ux%u, result %u).", texSize.x, texSize.y, result);
 	}
-
-	// render to texture
+	
+	// get texture bitmap
 	IDXGISurface1* surface;
 	V(tex->QueryInterface(__uuidof(IDXGISurface1), (void**)&surface));
 	HDC hdc;
 	V(surface->GetDC(TRUE, &hdc));
 
-	Gdiplus::Graphics graphics(hdc);
-	graphics.SetTextRenderingHint(Gdiplus::TextRenderingHint::TextRenderingHintAntiAlias);
-	Gdiplus::SolidBrush brush(Gdiplus::Color(255, 255, 255, 255));
-	Gdiplus::Font gdi_font(hdc, (HFONT)winapi_font);
-	Gdiplus::PointF point;
-	const Gdiplus::StringFormat* format = Gdiplus::StringFormat::GenericTypographic();
+	// create new bitmap
+	HDC hdc2 = CreateCompatibleDC(hdc);
+	BITMAPINFO bmpInfo = {};
+	bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFO);
+	bmpInfo.bmiHeader.biWidth = texSize.x;
+	bmpInfo.bmiHeader.biHeight = -texSize.y;
+	bmpInfo.bmiHeader.biPlanes = 1;
+	bmpInfo.bmiHeader.biBitCount = 32;
+	Color* bits;
+	HBITMAP bmp = CreateDIBSection(hdc2, &bmpInfo, DIB_RGB_COLORS, (void**)&bits, 0, 0);
+	SelectObject(hdc2, bmp);
 
+	HFONT hfont = (HFONT)winapiFont;
+	SelectObject(hdc2, hfont);
+	SetBkMode(hdc2, 1);
+	SetTextColor(hdc2, RGB(255, 255, 255));
+
+	// draw glyphs on bitmap
 	Int2 offset(padding, padding);
 	wchar_t wc[4];
 	char c[2];
@@ -201,30 +184,53 @@ TEX FontLoader::CreateFontTexture(Font* font, const Int2& tex_size, int outline,
 			for(int j = 0; j < 8; ++j)
 			{
 				const float a = float(j) * PI / 4;
-				point.X = float(offset.x + outline * sin(a));
-				point.Y = float(offset.y + 1 + outline * cos(a));
-				graphics.DrawString(wc, 1, &gdi_font, point, format, &brush);
+				int x = int(offset.x + outline * sin(a));
+				int y = int(offset.y + outline * cos(a));
+				TextOutA(hdc2, x, y, c, 1);
 			}
 		}
 		else
-		{
-			point.X = (float)offset.x;
-			point.Y = (float)(offset.y + 1);
-			graphics.DrawString(wc, 1, &gdi_font, point, format, &brush);
-		}
+			TextOutA(hdc2, offset.x, offset.y, c, 1);
 
 		offset.x += glyph.width + padding;
 	}
+
+	// adjust alpha
+	for(int y = 0; y < texSize.y; ++y)
+	{
+		for(int x = 0; x < texSize.x; ++x)
+		{
+			Color& c = bits[x + y * texSize.x];
+			int alpha;
+			if(c.r == 255)
+				alpha = 255;
+			else if(c.r < 50)
+				alpha = 0;
+			else
+				alpha = (int)(0.004f * c.r * c.r + 0.0035f * c.r - 6.f);
+			c.a = alpha;
+		}
+	}
+
+	// copy to directx bitmap
+	BLENDFUNCTION f;
+	f.BlendOp = 0;
+	f.BlendFlags = 0;
+	f.AlphaFormat = 0;
+	f.SourceConstantAlpha = 255;
+
+	AlphaBlend(hdc, 0, 0, texSize.x, texSize.y, hdc2, 0, 0, texSize.x, texSize.y, f);
+	DeleteObject(bmp);
+	DeleteObject(hdc2);
 
 	V(surface->ReleaseDC(nullptr));
 	surface->Release();
 
 	// create texture view
 	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
-	SRVDesc.Format = desc.Format;
-
 	SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	SRVDesc.Texture2D.MipLevels = 1;
+	SRVDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 
 	TEX view;
 	V(device->CreateShaderResourceView(tex, &SRVDesc, &view));
