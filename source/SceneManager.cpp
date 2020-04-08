@@ -98,7 +98,7 @@ void SceneManager::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<
 			use_lighting && scene->use_light_dir));
 
 		app::render->SetDepthState(IsSet(group.flags, SceneNode::F_NO_ZWRITE) ? Render::DEPTH_READ : Render::DEPTH_YES);
-		app::render->SetNoCulling(IsSet(group.flags, SceneNode::F_NO_CULLING));
+		app::render->SetRasterState(IsSet(group.flags, SceneNode::F_NO_CULLING) ? Render::RASTER_NO_CULLING : Render::RASTER_NORMAL);
 
 		// for each node in group
 		for(auto it = nodes.begin() + group.start, end = nodes.begin() + group.end + 1; it != end; ++it)

@@ -3,15 +3,6 @@
 #include "Key.h"
 
 //-----------------------------------------------------------------------------
-// stan klawisza
-enum InputState
-{
-	IS_UP,			// 00
-	IS_RELEASED,	// 01
-	IS_DOWN,		// 10
-	IS_PRESSED		// 11
-};
-
 enum ShortcutKey
 {
 	KEY_SHIFT = 1 << 0,
@@ -20,10 +11,18 @@ enum ShortcutKey
 };
 
 //-----------------------------------------------------------------------------
-// stan klawiatury
+// Input handling (keyboard & mouse)
 class Input
 {
 public:
+	enum State
+	{
+		IS_UP,			// 00
+		IS_RELEASED,	// 01
+		IS_DOWN,		// 10
+		IS_PRESSED		// 11
+	};
+
 	typedef bool (Input::*Func)(Key);
 	typedef bool (Input::*FuncC)(Key) const;
 	typedef delegate<void(Key)> Callback;
@@ -33,7 +32,7 @@ public:
 	~Input();
 
 	// proste sprawdzanie czy klawisz zosta³ wciœniêty, wyciœniêty, jest wciœniêty, jest wyciœniêty
-	InputState GetState(Key key) const { return (InputState)keystate[(int)key]; }
+	State GetState(Key key) const { return (State)keystate[(int)key]; }
 	bool Pressed(Key key) const { return GetState(key) == IS_PRESSED; }
 	bool Released(Key key) const { return GetState(key) == IS_RELEASED; }
 	bool Down(Key key) const { return GetState(key) >= IS_DOWN; }
@@ -85,7 +84,7 @@ public:
 	bool DownPressed(Key k1, Key k2) const { return ((Down(k1) && Pressed(k2)) || (Down(k2) && Pressed(k1))); }
 
 	// zwraca który z podanych klawiszy ma taki stan
-	Key ReturnState2(Key k1, Key k2, InputState state) const
+	Key ReturnState2(Key k1, Key k2, State state) const
 	{
 		if(GetState(k1) == state)
 			return k1;
@@ -96,7 +95,7 @@ public:
 	}
 
 	// ustawia stan klawisza
-	void SetState(Key key, InputState istate) { keystate[(int)key] = (byte)istate; }
+	void SetState(Key key, State istate) { keystate[(int)key] = (byte)istate; }
 
 	void Update();
 	void UpdateShortcuts();

@@ -16,7 +16,7 @@ static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 //=================================================================================================
 Render::Render() : initialized(false), vsync(true), shaders_dir("shaders"), refreshHz(0), usedAdapter(0), multisampling(0), multisamplingQuality(0),
 factory(nullptr), adapter(nullptr), swapChain(nullptr), device(nullptr), deviceContext(nullptr), renderTarget(nullptr), depthStencilView(nullptr),
-blendStates(), depthStates(), rasterStates(), useAlphaBlend(false), depthState(DEPTH_YES), useNoCull(false)
+blendStates(), depthStates(), rasterStates(), useAlphaBlend(false), depthState(DEPTH_YES), rasterState(RASTER_NORMAL)
 {
 }
 
@@ -308,7 +308,21 @@ void Render::CreateDepthStates()
 //=================================================================================================
 void Render::CreateRasterStates()
 {
-	FIXME;
+	// get normal raster state
+	deviceContext->RSGetState(&rasterStates[RASTER_NORMAL]);
+
+	// create disabled culling raster state
+	D3D11_RASTERIZER_DESC desc = {};
+	desc.FillMode = D3D11_FILL_SOLID;
+	desc.CullMode = D3D11_CULL_NONE;
+	desc.DepthClipEnable = true;
+
+	V(device->CreateRasterizerState(&desc, &rasterStates[RASTER_NO_CULLING]));
+
+	// create wireframe raster state
+	desc.FillMode = D3D11_FILL_WIREFRAME;
+
+	V(device->CreateRasterizerState(&desc, &rasterStates[RASTER_WIREFRAME]));
 }
 
 //=================================================================================================
@@ -647,14 +661,14 @@ void Render::SetDepthState(DepthState depthState)
 }
 
 //=================================================================================================
-void Render::SetNoCulling(bool use_nocull)
+void Render::SetRasterState(RasterState rasterState)
 {
-	//if(use_nocull != r_nocull)
+	assert(rasterState >= 0 && rasterState < RASTER_MAX);
+	if(this->rasterState != rasterState)
 	{
-		//r_nocull = use_nocull;
-		//V(device->SetRenderState(D3DRS_CULLMODE, r_nocull ? D3DCULL_NONE : D3DCULL_CCW));
+		this->rasterState = rasterState;
+		deviceContext->RSSetState(rasterStates[rasterState]);
 	}
-	FIXME;
 }
 
 //=================================================================================================
@@ -759,14 +773,6 @@ void Render::SetTarget(RenderTarget* target)
 		current_target = nullptr;
 		current_surf = nullptr;
 	}*/
-}
-
-//=================================================================================================
-void Render::SetTextureAddressMode(TextureAddressMode mode)
-{
-	FIXME;
-	//V(device->SetSamplerState(0, D3DSAMP_ADDRESSU, (D3DTEXTUREADDRESS)mode));
-	//V(device->SetSamplerState(0, D3DSAMP_ADDRESSV, (D3DTEXTUREADDRESS)mode));
 }
 
 //=================================================================================================

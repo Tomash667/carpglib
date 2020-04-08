@@ -64,7 +64,7 @@ void GlowShader::Begin()
 	// ustaw flagi renderowania
 	app::render->SetAlphaBlend(false);
 	app::render->SetDepthState(Render::DEPTH_USE_STENCIL);
-	app::render->SetNoCulling(false);
+	app::render->SetRasterState(Render::RASTER_NORMAL);
 
 	// ustaw render target
 	/*SURFACE render_surface;

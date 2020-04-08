@@ -38,6 +38,14 @@ public:
 		DEPTH_MAX
 	};
 
+	enum RasterState
+	{
+		RASTER_NORMAL,
+		RASTER_NO_CULLING,
+		RASTER_WIREFRAME,
+		RASTER_MAX
+	};
+
 	enum TextureAddressMode
 	{
 		TEX_ADR_WRAP = 1,
@@ -84,12 +92,11 @@ public:
 	void SetAdapter(int adapter) { assert(!initialized); usedAdapter = adapter; }
 	void SetAlphaBlend(bool useAlphaBlend);
 	void SetDepthState(DepthState depthState);
+	void SetRasterState(RasterState rasterState);
 	void SetRefreshRateInternal(uint refreshHz) { this->refreshHz = refreshHz; }
 	int SetMultisampling(int type, int quality);
-	void SetNoCulling(bool use_nocull);
 	void SetShadersDir(cstring dir) { shaders_dir = dir; }
 	void SetTarget(RenderTarget* target);
-	void SetTextureAddressMode(TextureAddressMode mode);
 	void SetVsync(bool vsync) { this->vsync = vsync; }
 
 private:
@@ -115,7 +122,7 @@ private:
 	ID3D11DepthStencilView* depthStencilView;
 	ID3D11BlendState* blendStates[2];
 	ID3D11DepthStencilState* depthStates[DEPTH_MAX];
-	ID3D11RasterizerState* rasterStates[2];
+	ID3D11RasterizerState* rasterStates[RASTER_MAX];
 	Int2 wndSize;
 	vector<ShaderHandler*> shaders;
 	vector<RenderTarget*> renderTargets;
@@ -124,5 +131,6 @@ private:
 	uint refreshHz;
 	int usedAdapter, multisampling, multisamplingQuality;
 	DepthState depthState;
-	bool initialized, vsync, useAlphaBlend, useNoCull;
+	RasterState rasterState;
+	bool initialized, vsync, useAlphaBlend;
 };
