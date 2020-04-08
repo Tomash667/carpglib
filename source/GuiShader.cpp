@@ -17,8 +17,8 @@ struct PsGlobals
 };
 
 //=================================================================================================
-GuiShader::GuiShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(nullptr),
-layout(nullptr), vsGlobals(nullptr), psGlobals(nullptr), sampler(nullptr), vb(nullptr), texEmpty(nullptr), texCurrent(nullptr)
+GuiShader::GuiShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(nullptr), layout(nullptr), vsGlobals(nullptr),
+psGlobals(nullptr), samplerNormal(nullptr), samplerWrap(nullptr), vb(nullptr), texEmpty(nullptr), texCurrent(nullptr)
 {
 }
 
@@ -29,7 +29,8 @@ void GuiShader::OnInit()
 
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "GuiVsGlobals");
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "GuiPsGlobals");
-	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP, true);
+	samplerNormal = app::render->CreateSampler(Render::TEX_ADR_CLAMP, true);
+	samplerWrap = app::render->CreateSampler(Render::TEX_ADR_WRAP, true);
 
 	texEmpty = app::render->CreateRawTexture(Int2(1, 1), &Color::White);
 
@@ -56,7 +57,8 @@ void GuiShader::OnRelease()
 	SafeRelease(layout);
 	SafeRelease(vsGlobals);
 	SafeRelease(psGlobals);
-	SafeRelease(sampler);
+	SafeRelease(samplerNormal);
+	SafeRelease(samplerWrap);
 	SafeRelease(vb);
 	SafeRelease(texEmpty);
 }
@@ -64,17 +66,16 @@ void GuiShader::OnRelease()
 //=================================================================================================
 void GuiShader::Prepare()
 {
-	app::render->SetAlphaTest(false);
 	app::render->SetAlphaBlend(true);
 	app::render->SetDepthState(Render::DEPTH_NO);
-	app::render->SetNoCulling(true);
+	app::render->SetRasterState(Render::RASTER_NO_CULLING);
 
 	// setup shader
 	deviceContext->VSSetShader(vertexShader, nullptr, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
-	deviceContext->PSSetSamplers(0, 1, &sampler);
+	deviceContext->PSSetSamplers(0, 1, &samplerNormal);
 	deviceContext->PSSetShaderResources(0, 1, &texEmpty);
 	uint stride = sizeof(VParticle),
 		offset = 0;
@@ -95,6 +96,13 @@ void GuiShader::SetGrayscale(float value)
 	assert(InRange(value, 0.f, 1.f));
 	ResourceLock lock(psGlobals, D3D11_MAP_WRITE_DISCARD);
 	lock.Get<PsGlobals>()->grayscale = value;
+}
+
+//=================================================================================================
+void GuiShader::SetWrap(bool useWrap)
+{
+	ID3D11SamplerState* sampler = useWrap ? samplerWrap : samplerNormal;
+	deviceContext->PSSetSamplers(0, 1, &sampler);
 }
 
 //=================================================================================================

@@ -14,6 +14,7 @@ public:
 	void OnRelease() override;
 	void Prepare();
 	void SetGrayscale(float value);
+	void SetWrap(bool useWrap);
 	void Draw(TEX tex, VParticle* v, uint quads);
 
 private:
@@ -23,7 +24,8 @@ private:
 	ID3D11InputLayout* layout;
 	ID3D11Buffer* vsGlobals;
 	ID3D11Buffer* psGlobals;
-	ID3D11SamplerState* sampler;
+	ID3D11SamplerState* samplerNormal;
+	ID3D11SamplerState* samplerWrap;
 	ID3D11Buffer* vb;
 	TEX texEmpty;
 	TEX texCurrent;

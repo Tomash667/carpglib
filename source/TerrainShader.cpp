@@ -60,10 +60,9 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 {
 	assert(scene && camera && terrain);
 
-	app::render->SetAlphaTest(false);
 	app::render->SetAlphaBlend(false);
 	app::render->SetDepthState(Render::DEPTH_YES);
-	app::render->SetNoCulling(false);
+	app::render->SetRasterState(Render::RASTER_NORMAL);
 
 	// setup shader
 	deviceContext->IASetInputLayout(layout);

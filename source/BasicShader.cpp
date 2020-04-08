@@ -59,7 +59,6 @@ void BasicShader::OnRelease()
 	mat_view_proj = camera.mat_view_proj;
 
 	app::render->SetAlphaBlend(true);
-	app::render->SetAlphaTest(false);
 	app::render->SetNoZWrite(false);
 	app::render->SetNoCulling(true);
 	V(device->SetVertexDeclaration(app::render->GetVertexDeclaration(VDI_COLOR)));

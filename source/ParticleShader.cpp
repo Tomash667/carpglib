@@ -89,7 +89,6 @@ void ParticleShader::Begin(Camera& camera)
 	mat_view_inv = camera.mat_view_inv;
 	cam_pos = camera.from;
 
-	app::render->SetAlphaTest(false);
 	app::render->SetAlphaBlend(true);
 	app::render->SetNoCulling(true);
 	app::render->SetNoZWrite(true);

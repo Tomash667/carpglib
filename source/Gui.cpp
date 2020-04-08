@@ -1440,11 +1440,10 @@ void Gui::DrawSpriteFull(Texture* t, const Color color)
 //=================================================================================================
 void Gui::DrawSpriteFullWrap(Texture* t, Color color)
 {
-	/*Rect rect(Int2::Zero, wnd_size);
-	app::render->SetTextureAddressMode(TEX_ADR_WRAP);
+	Rect rect(Int2::Zero, wnd_size);
+	shader->SetWrap(true);
 	DrawSpriteRectPart(t, rect, rect, color);
-	app::render->SetTextureAddressMode(TEX_ADR_CLAMP);*/
-	FIXME;
+	shader->SetWrap(false);
 }
 
 //=================================================================================================

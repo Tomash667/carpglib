@@ -40,10 +40,9 @@ void SkyboxShader::Draw(Mesh& mesh, Camera& camera)
 {
 	assert(mesh.vertex_decl == VDI_DEFAULT);
 
-	app::render->SetAlphaTest(false);
 	app::render->SetAlphaBlend(false);
 	app::render->SetDepthState(Render::DEPTH_NO);
-	app::render->SetNoCulling(false);
+	app::render->SetRasterState(Render::RASTER_NORMAL);
 
 	// setup shader
 	deviceContext->IASetInputLayout(layout);

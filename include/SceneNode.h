@@ -25,9 +25,8 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 		F_NO_ZWRITE = 1 << 5,
 		F_NO_CULLING = 1 << 6,
 		F_NO_LIGHTING = 1 << 7,
-		F_ALPHA_TEST = 1 << 8,
-		F_ALPHA_BLEND = 1 << 9,
-		F_HAVE_WEIGHTS = 1 << 10
+		F_ALPHA_BLEND = 1 << 8,
+		F_HAVE_WEIGHTS = 1 << 9
 	};
 
 	Matrix mat;

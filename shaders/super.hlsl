@@ -140,6 +140,8 @@ float4 PsMain(VsOutput In) : SV_TARGET
 	float4 tex = texDiffuse.Sample(samplerDiffuse, In.tex) * tint;
 	float4 color = ambientColor;
 	
+	clip(tex.w - 0.75f);
+	
 #ifdef NORMAL_MAP
 	float3 bump = texNormal.Sample(samplerNormal, In.tex).xyz * 2.f - 1.f;
 	float3 normal = normalize(bump.x * In.tangent + (-bump.y) * In.binormal + bump.z * In.normal);
