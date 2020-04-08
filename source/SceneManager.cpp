@@ -99,7 +99,6 @@ void SceneManager::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<
 
 		app::render->SetDepthState(IsSet(group.flags, SceneNode::F_NO_ZWRITE) ? Render::DEPTH_READ : Render::DEPTH_YES);
 		app::render->SetNoCulling(IsSet(group.flags, SceneNode::F_NO_CULLING));
-		app::render->SetAlphaTest(IsSet(group.flags, SceneNode::F_ALPHA_TEST));
 
 		// for each node in group
 		for(auto it = nodes.begin() + group.start, end = nodes.begin() + group.end + 1; it != end; ++it)
@@ -170,7 +169,6 @@ void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 
 			app::render->SetNoZWrite(IsSet(node->flags, SceneNode::F_NO_ZWRITE));
 			app::render->SetNoCulling(IsSet(node->flags, SceneNode::F_NO_CULLING));
-			app::render->SetAlphaTest(IsSet(node->flags, SceneNode::F_ALPHA_TEST));
 
 			effect = super_shader->GetShader(id);
 			D3DXHANDLE tech;

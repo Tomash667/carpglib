@@ -83,7 +83,6 @@ public:
 
 	void SetAdapter(int adapter) { assert(!initialized); usedAdapter = adapter; }
 	void SetAlphaBlend(bool useAlphaBlend);
-	void SetAlphaTest(bool use_alphatest);
 	void SetDepthState(DepthState depthState);
 	void SetRefreshRateInternal(uint refreshHz) { this->refreshHz = refreshHz; }
 	int SetMultisampling(int type, int quality);
@@ -125,6 +124,5 @@ private:
 	uint refreshHz;
 	int usedAdapter, multisampling, multisamplingQuality;
 	DepthState depthState;
-	bool useAlphaBlend, useNoCull;
-	bool initialized, vsync, r_alphatest;
+	bool initialized, vsync, useAlphaBlend, useNoCull;
 };

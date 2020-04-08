@@ -64,7 +64,6 @@ void GuiShader::OnRelease()
 //=================================================================================================
 void GuiShader::Prepare()
 {
-	app::render->SetAlphaTest(false);
 	app::render->SetAlphaBlend(true);
 	app::render->SetDepthState(Render::DEPTH_NO);
 	app::render->SetNoCulling(true);

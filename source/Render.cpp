@@ -16,7 +16,7 @@ static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 //=================================================================================================
 Render::Render() : initialized(false), vsync(true), shaders_dir("shaders"), refreshHz(0), usedAdapter(0), multisampling(0), multisamplingQuality(0),
 factory(nullptr), adapter(nullptr), swapChain(nullptr), device(nullptr), deviceContext(nullptr), renderTarget(nullptr), depthStencilView(nullptr),
-blendStates(), depthStates(), rasterStates(), useAlphaBlend(false), depthState(DEPTH_YES), useNoCull(false), r_alphatest(false)
+blendStates(), depthStates(), rasterStates(), useAlphaBlend(false), depthState(DEPTH_YES), useNoCull(false)
 {
 }
 
@@ -632,17 +632,6 @@ void Render::SetAlphaBlend(bool useAlphaBlend)
 	{
 		this->useAlphaBlend = useAlphaBlend;
 		deviceContext->OMSetBlendState(blendStates[useAlphaBlend ? 1 : 0], nullptr, 0xFFFFFFFF);
-	}
-}
-
-//=================================================================================================
-void Render::SetAlphaTest(bool use_alphatest)
-{
-	if(use_alphatest != r_alphatest)
-	{
-		r_alphatest = use_alphatest;
-		//V(device->SetRenderState(D3DRS_ALPHATESTENABLE, r_alphatest ? TRUE : FALSE));
-		FIXME;
 	}
 }
 
