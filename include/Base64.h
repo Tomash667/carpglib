@@ -1,13 +1,11 @@
 // https://github.com/tkislan/base64
 #pragma once
 
-#include <string>
-
-const char kBase64Alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-"abcdefghijklmnopqrstuvwxyz"
-"0123456789+/";
-
-class Base64 {
+class Base64
+{
+	static const char kBase64Alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz"
+		"0123456789+/";
 public:
 	static bool Encode(const std::string &in, std::string *out) {
 		int i = 0, j = 0;
