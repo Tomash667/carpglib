@@ -32,12 +32,6 @@ vsGlobals(nullptr), psGlobals(nullptr), samplers()
 //=================================================================================================
 void TerrainShader::OnInit()
 {
-	D3D11_INPUT_ELEMENT_DESC desc[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
 	app::render->CreateShader("terrain.hlsl", VDI_TERRAIN, vertexShader, pixelShader, layout);
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "TerrainVsGlobals");
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "TerrainPsGlobals");
@@ -75,7 +69,7 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 	deviceContext->VSSetShader(vertexShader, nullptr, 0);
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
 	deviceContext->PSSetSamplers(0, 6, samplers);
-	uint stride = sizeof(TerrainVertex),
+	uint stride = sizeof(VTerrain),
 		offset = 0;
 	deviceContext->IASetVertexBuffers(0, 1, &terrain->vb, &stride, &offset);
 	deviceContext->IASetIndexBuffer(terrain->ib, DXGI_FORMAT_R32_UINT, 0);
@@ -111,5 +105,4 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 	// draw
 	for(uint part : parts)
 		deviceContext->DrawIndexed(terrain->part_tris * 3, terrain->part_tris * part * 3, 0);
-	FIXME; // verify args
 }

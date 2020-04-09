@@ -26,8 +26,8 @@ struct ANI_INPUT
 	float3 pos : POSITION;
 	float2 tex : TEXCOORD0;
 	float3 normal : NORMAL;
-	half weight : BLENDWEIGHT0;
-	int4 indices : BLENDINDICES0;
+	float weight : BLENDWEIGHT0;
+	uint4 indices : BLENDINDICES0;
 };
 
 //******************************************************************************
@@ -47,8 +47,8 @@ void VsMesh(in MESH_INPUT In, out MESH_OUTPUT Out)
 //******************************************************************************
 void VsAni(in ANI_INPUT In, out MESH_OUTPUT Out)
 {
-	float3 pos = mul(float4(In.pos,1), matBones[In.indices[0]]) * In.weight;
-	pos += mul(float4(In.pos,1), matBones[In.indices[1]]) * (1-In.weight);
+	float3 pos = mul(float4(In.pos,1), matBones[In.indices[0]]).xyz * In.weight;
+	pos += mul(float4(In.pos,1), matBones[In.indices[1]]).xyz * (1-In.weight);
 	Out.pos = mul(float4(pos,1), matCombined);
 	Out.tex = In.tex;
 }

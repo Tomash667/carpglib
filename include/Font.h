@@ -29,7 +29,6 @@ struct Font : public Resource
 	{
 		Box2d uv;
 		int width;
-		bool ok;
 	};
 
 	struct Line
@@ -45,14 +44,7 @@ struct Font : public Resource
 	Font();
 	~Font();
 	// zwraca szerokoœæ znaku
-	int GetCharWidth(char c) const
-	{
-		const Glyph& g = glyph[byte(c)];
-		if(g.ok)
-			return g.width;
-		else
-			return 0;
-	}
+	int GetCharWidth(char c) const { return glyph[byte(c)].width; }
 	// oblicza szerokoœæ pojedyñczej linijki tekstu
 	int LineWidth(cstring str, bool parse_special = false) const;
 	// oblicza wysokoœæ i szerokoœæ bloku tekstu

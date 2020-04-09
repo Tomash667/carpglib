@@ -5,10 +5,12 @@
 #include "Engine.h"
 #include "File.h"
 #include "RenderTarget.h"
+#include "ScreenGrab.h"
 #include "ShaderHandler.h"
 #include "VertexDeclaration.h"
 
 #include <d3dcompiler.h>
+#include <wincodec.h>
 
 Render* app::render;
 static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -978,4 +980,38 @@ ID3D11InputLayout* Render::CreateInputLayout(VertexDeclarationId decl, ID3DBlob*
 #endif
 
 	return inputLayout;
+}
+
+//=================================================================================================
+void Render::SaveToFile(TEX tex, cstring path, ImageFormat format)
+{
+	ID3D11Texture2D* res;
+	tex->GetResource(reinterpret_cast<ID3D11Resource**>(&res));
+
+	GUID formatGuid;
+	switch(format)
+	{
+	case ImageFormat::BMP:
+		formatGuid = GUID_ContainerFormatBmp;
+		break;
+	case ImageFormat::JPG:
+		formatGuid = GUID_ContainerFormatJpeg;
+		break;
+	case ImageFormat::TIF:
+		formatGuid = GUID_ContainerFormatTiff;
+		break;
+	case ImageFormat::GIF:
+		formatGuid = GUID_ContainerFormatGif;
+		break;
+	case ImageFormat::PNG:
+		formatGuid = GUID_ContainerFormatPng;
+		break;
+	case ImageFormat::DDS:
+		formatGuid = GUID_ContainerFormatDds;
+		break;
+	}
+
+	V(SaveWICTextureToFile(deviceContext, res, formatGuid, ToWString(path)));
+
+	res->Release();
 }

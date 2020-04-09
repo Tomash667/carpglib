@@ -76,6 +76,7 @@ public:
 	void Present();
 	void RegisterShader(ShaderHandler* shader);
 	void ReloadShaders();
+	void SaveToFile(TEX tex, cstring path, ImageFormat format);
 
 	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	bool IsVsyncEnabled() const { return vsync; }

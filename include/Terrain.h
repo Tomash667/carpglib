@@ -4,43 +4,28 @@
 #include "VertexDeclaration.h"
 
 //-----------------------------------------------------------------------------
-struct Tri
-{
-	int a, b, c;
-
-	Tri() {}
-	Tri(int a, int b, int c) : a(a), b(b), c(c) {}
-};
-
-//-----------------------------------------------------------------------------
-struct TerrainVertex
-{
-	TerrainVertex() {}
-	TerrainVertex(float x, float y, float z, float u, float v, float u2, float v2) : pos(x, y, z), tex(u, v), tex2(u2, v2) {}
-
-	Vec3 pos;
-	Vec3 normal;
-	Vec2 tex;
-	Vec2 tex2;
-};
-
-//-----------------------------------------------------------------------------
-void CalculateNormal(TerrainVertex& v1, TerrainVertex& v2, TerrainVertex& v3);
-
-//-----------------------------------------------------------------------------
-struct TerrainOptions
-{
-	float tile_size;
-	uint n_parts;
-	uint tiles_per_part;
-	uint tex_size;
-};
-
-//-----------------------------------------------------------------------------
 struct Terrain
 {
 	friend class TerrainShader;
 public:
+	//---------------------------
+	struct Options
+	{
+		float tile_size;
+		uint n_parts;
+		uint tiles_per_part;
+		uint tex_size;
+	};
+
+	//---------------------------
+	struct Tri
+	{
+		int a, b, c;
+
+		Tri() {}
+		Tri(int a, int b, int c) : a(a), b(b), c(c) {}
+	};
+
 	//---------------------------
 	class Part
 	{
@@ -63,7 +48,7 @@ public:
 	~Terrain();
 
 	//---------------------------
-	void Init(const TerrainOptions& options);
+	void Init(const Options& options);
 	void Build(bool smooth = true);
 	void Rebuild(bool smooth = true);
 	void RebuildUv();
@@ -75,7 +60,7 @@ public:
 	void Randomize();
 	void CalculateBox();
 	void SmoothNormals();
-	void SmoothNormals(TerrainVertex* v);
+	void SmoothNormals(VTerrain* v);
 	void FillGeometry(vector<Tri>& tris, vector<Vec3>& verts);
 	void FillGeometryPart(vector<Tri>& tris, vector<Vec3>& verts, int px, int pz, const Vec3& offset = Vec3(0, 0, 0)) const;
 

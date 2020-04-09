@@ -62,7 +62,7 @@ struct VsInput
 {
     float3 pos : POSITION;
 #ifdef HAVE_WEIGHT
-	half weight : BLENDWEIGHT0;
+	float weight : BLENDWEIGHT0;
 	uint4 indices : BLENDINDICES0;
 #endif
 	float3 normal : NORMAL;

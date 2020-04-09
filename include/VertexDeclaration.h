@@ -38,7 +38,7 @@ struct VAnimated
 {
 	Vec3 pos;
 	float weights;
-	uint indices;
+	byte indices[4];
 	Vec3 normal;
 	Vec2 tex;
 };
@@ -62,7 +62,7 @@ struct VAnimatedTangent
 {
 	Vec3 pos;
 	float weights;
-	uint indices;
+	byte indices[4];
 	Vec3 normal;
 	Vec2 tex;
 	Vec3 tangent;
@@ -102,4 +102,16 @@ struct VParticle
 struct VPos
 {
 	Vec3 pos;
+};
+
+//-----------------------------------------------------------------------------
+struct VTerrain
+{
+	VTerrain() {}
+	VTerrain(float x, float y, float z, float u, float v, float u2, float v2) : pos(x, y, z), tex(u, v), tex2(u2, v2) {}
+
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
+	Vec2 tex2;
 };
