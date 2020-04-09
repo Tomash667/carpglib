@@ -1,151 +1,130 @@
 #include "Pch.h"
 #include "ParticleShader.h"
+
+#include "Camera.h"
+#include "DirectX.h"
 #include "ParticleSystem.h"
 #include "Render.h"
-#include "Camera.h"
-#include "Texture.h"
-#include "DirectX.h"
+
+//
+//#include "Texture.h"
+
+struct VsGlobals
+{
+	Matrix matCombined;
+};
 
 //=================================================================================================
-ParticleShader::ParticleShader() {}
-FIXME;
-
-void ParticleShader::OnInit()
+ParticleShader::ParticleShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(nullptr), layout(nullptr),
+vsGlobals(nullptr), sampler(nullptr), vb(nullptr), particleCount(0)
 {
-
 }
 
+//=================================================================================================
+void ParticleShader::OnInit()
+{
+	app::render->CreateShader("particle.hlsl", VDI_PARTICLE, vertexShader, pixelShader, layout);
+	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
+	sampler = app::render->CreateSampler();
+
+	vBillboard[0].pos = Vec3(-1, -1, 0);
+	vBillboard[0].tex = Vec2(0, 0);
+	vBillboard[0].color = Vec4(1.f, 1.f, 1.f, 1.f);
+	vBillboard[1].pos = Vec3(-1, 1, 0);
+	vBillboard[1].tex = Vec2(0, 1);
+	vBillboard[1].color = Vec4(1.f, 1.f, 1.f, 1.f);
+	vBillboard[2].pos = Vec3(1, -1, 0);
+	vBillboard[2].tex = Vec2(1, 0);
+	vBillboard[2].color = Vec4(1.f, 1.f, 1.f, 1.f);
+	vBillboard[3] = vBillboard[2];
+	vBillboard[4] = vBillboard[1];
+	vBillboard[5].pos = Vec3(1, 1, 0);
+	vBillboard[5].tex = Vec2(1, 1);
+	vBillboard[5].color = Vec4(1.f, 1.f, 1.f, 1.f);
+
+	billboardExt[0] = Vec3(-1, -1, 0);
+	billboardExt[1] = Vec3(-1, 1, 0);
+	billboardExt[2] = Vec3(1, -1, 0);
+	billboardExt[3] = Vec3(1, -1, 0);
+	billboardExt[4] = Vec3(-1, 1, 0);
+	billboardExt[5] = Vec3(1, 1, 0);
+}
+
+//=================================================================================================
 void ParticleShader::OnRelease()
 {
-
+	SafeRelease(vertexShader);
+	SafeRelease(pixelShader);
+	SafeRelease(layout);
+	SafeRelease(vsGlobals);
+	SafeRelease(sampler);
+	SafeRelease(vb);
 }
 
-/*: device(app::render->GetDevice()), effect(nullptr), vb(nullptr)
-{
-}
-
+/*
 //=================================================================================================
 void ParticleShader::OnInit()
 {
-	effect = app::render->CompileShader("particle.fx");
-
-	tech = effect->GetTechniqueByName("particle");
-	assert(tech);
-
-	hMatCombined = effect->GetParameterByName(nullptr, "matCombined");
-	hTex = effect->GetParameterByName(nullptr, "tex0");
-	assert(hMatCombined && hTex);
-
 	if(!tex_empty)
 	{
 		tex_empty = app::render->CreateTexture(Int2(1, 1), &Color::White);
 
-		billboard_v[0].pos = Vec3(-1, -1, 0);
-		billboard_v[0].tex = Vec2(0, 0);
-		billboard_v[0].color = Vec4(1.f, 1.f, 1.f, 1.f);
-		billboard_v[1].pos = Vec3(-1, 1, 0);
-		billboard_v[1].tex = Vec2(0, 1);
-		billboard_v[1].color = Vec4(1.f, 1.f, 1.f, 1.f);
-		billboard_v[2].pos = Vec3(1, -1, 0);
-		billboard_v[2].tex = Vec2(1, 0);
-		billboard_v[2].color = Vec4(1.f, 1.f, 1.f, 1.f);
-		billboard_v[3].pos = Vec3(1, 1, 0);
-		billboard_v[3].tex = Vec2(1, 1);
-		billboard_v[3].color = Vec4(1.f, 1.f, 1.f, 1.f);
 
-		billboard_ext[0] = Vec3(-1, -1, 0);
-		billboard_ext[1] = Vec3(-1, 1, 0);
-		billboard_ext[2] = Vec3(1, -1, 0);
-		billboard_ext[3] = Vec3(1, 1, 0);
 	}
-}
+}*/
 
 //=================================================================================================
-void ParticleShader::OnReset()
+void ParticleShader::Prepare(Camera& camera)
 {
-	if(effect)
-		V(effect->OnLostDevice());
-	SafeRelease(vb);
-}
+	matViewInv = camera.mat_view_inv;
+	camPos = camera.from;
 
-//=================================================================================================
-void ParticleShader::OnReload()
-{
-	if(effect)
-		V(effect->OnResetDevice());
-}
+	app::render->SetDepthState(Render::DEPTH_READ);
+	app::render->SetRasterState(Render::RASTER_NO_CULLING);
 
-//=================================================================================================
-void ParticleShader::OnRelease()
-{
-	SafeRelease(effect);
-	SafeRelease(vb);
-}
+	//last_tex = (Texture*)0xFEFEFEFE;
 
-//=================================================================================================
-void ParticleShader::Begin(Camera& camera)
-{
-	mat_view_proj = camera.mat_view_proj;
-	mat_view_inv = camera.mat_view_inv;
-	cam_pos = camera.from;
+	//--------------
 
-	app::render->SetAlphaBlend(true);
-	app::render->SetNoCulling(true);
-	app::render->SetNoZWrite(true);
+	// setup shader
+	deviceContext->VSSetShader(vertexShader, nullptr, 0);
+	deviceContext->PSSetShader(pixelShader, nullptr, 0);
+	deviceContext->PSSetSamplers(0, 1, &sampler);
+	deviceContext->IASetInputLayout(layout);
+	ReserveVertexBuffer(1);
 
-	V(device->SetVertexDeclaration(app::render->GetVertexDeclaration(VDI_PARTICLE)));
-	if(vb)
-		V(device->SetStreamSource(0, vb, 0, sizeof(VParticle)));
-
-	uint passes;
-	V(effect->SetTechnique(tech));
-	V(effect->SetMatrix(hMatCombined, (D3DXMATRIX*)&mat_view_proj));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	last_mode = 0;
-	last_tex = (Texture*)0xFEFEFEFE;
-}
-
-//=================================================================================================
-void ParticleShader::End()
-{
-	V(effect->EndPass());
-	V(effect->End());
-	if(last_mode != 0)
-	{
-		V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-		V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-		V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-	}
+	// vertex shader constants
+	D3D11_MAPPED_SUBRESOURCE resource;
+	V(deviceContext->Map(vsGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
+	VsGlobals& vsg = *(VsGlobals*)resource.pData;
+	vsg.matCombined = camera.mat_view_proj.Transpose();
+	deviceContext->Unmap(vsGlobals, 0);
+	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
 }
 
 //=================================================================================================
 void ParticleShader::DrawBillboards(const vector<Billboard>& billboards)
 {
-	app::render->SetNoZWrite(false);
+	app::render->SetBlendState(Render::BLEND_ADD);
 
 	for(vector<Billboard>::const_iterator it = billboards.begin(), end = billboards.end(); it != end; ++it)
 	{
-		mat_view_inv._41 = it->pos.x;
-		mat_view_inv._42 = it->pos.y;
-		mat_view_inv._43 = it->pos.z;
-		Matrix m1 = Matrix::Scale(it->size) * mat_view_inv;
+		matViewInv._41 = it->pos.x;
+		matViewInv._42 = it->pos.y;
+		matViewInv._43 = it->pos.z;
+		Matrix m1 = Matrix::Scale(it->size) * matViewInv;
 
-		for(int i = 0; i < 4; ++i)
-			billboard_v[i].pos = Vec3::Transform(billboard_ext[i], m1);
+		for(int i = 0; i < 6; ++i)
+			vBillboard[i].pos = Vec3::Transform(billboardExt[i], m1);
 
 		if(last_tex != it->tex)
 		{
 			last_tex = it->tex;
 			V(effect->SetTexture(hTex, last_tex->tex));
-			V(effect->CommitChanges());
 		}
 
-		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, billboard_v, sizeof(VParticle)));
+		deviceContext->Draw(6, 0);
 	}
-
-	app::render->SetNoZWrite(true);
 }
 
 //=================================================================================================
@@ -166,10 +145,10 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 			if(!p.exists)
 				continue;
 
-			mat_view_inv._41 = p.pos.x;
-			mat_view_inv._42 = p.pos.y;
-			mat_view_inv._43 = p.pos.z;
-			Matrix m1 = Matrix::Scale(pe.GetScale(p)) * mat_view_inv;
+			matViewInv._41 = p.pos.x;
+			matViewInv._42 = p.pos.y;
+			matViewInv._43 = p.pos.z;
+			Matrix m1 = Matrix::Scale(pe.GetScale(p)) * matViewInv;
 
 			const Vec4 color(1.f, 1.f, 1.f, pe.GetAlpha(p));
 
@@ -198,31 +177,7 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 		V(vb->Unlock());
 
 		// set blending
-		if(last_mode != pe.mode)
-		{
-			last_mode = pe.mode;
-			switch(pe.mode)
-			{
-			case 0:
-				V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-				V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-				V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-				break;
-			case 1:
-				V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-				V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-				V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
-				break;
-			case 2:
-				V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT));
-				V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-				V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
-				break;
-			default:
-				assert(0);
-				break;
-			}
-		}
+		app::render->SetBlendState(pe.mode + 1);
 
 		// set texture
 		if(last_tex != pe.tex)
@@ -240,13 +195,7 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 //=================================================================================================
 void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 {
-	if(last_mode != 1)
-	{
-		last_mode = 1;
-		V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-		V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-		V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
-	}
+	app::render->SetBlendState(Render::BLEND_ADD_ONE);
 
 	for(vector<TrailParticleEmitter*>::const_iterator it = tpes.begin(), end = tpes.end(); it != end; ++it)
 	{
@@ -312,14 +261,31 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 }
 
 //=================================================================================================
-void ParticleShader::ReserveVertexBuffer(uint size)
+void ParticleShader::ReserveVertexBuffer(uint count)
 {
-	if(!vb || particle_count < size)
+	if(!vb || particleCount < count)
 	{
 		if(vb)
 			vb->Release();
-		V(device->CreateVertexBuffer(sizeof(VParticle) * size * 6, D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vb, nullptr));
-		V(device->SetStreamSource(0, vb, 0, sizeof(VParticle)));
-		particle_count = size;
+
+		// create vertex buffer
+		D3D11_BUFFER_DESC bufDesc;
+		bufDesc.Usage = D3D11_USAGE_DYNAMIC;
+		bufDesc.ByteWidth = sizeof(VParticle) * 6 * count;
+		bufDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bufDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		bufDesc.MiscFlags = 0;
+		bufDesc.StructureByteStride = 0;
+
+		V(app::render->GetDevice()->CreateBuffer(&bufDesc, nullptr, &vb));
+#ifdef _DEBUG
+		vb->SetPrivateData(WKPDID_D3DDebugObjectName, strlen("ParticleVb"), "ParticleVb");
+#endif
+
+		uint stride = sizeof(VParticle),
+			offset = 0;
+		deviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+
+		particleCount = count;
 	}
-}*/
+}

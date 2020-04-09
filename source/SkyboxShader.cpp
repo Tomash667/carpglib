@@ -40,17 +40,17 @@ void SkyboxShader::Draw(Mesh& mesh, Camera& camera)
 {
 	assert(mesh.vertex_decl == VDI_DEFAULT);
 
-	app::render->SetAlphaBlend(false);
+	app::render->SetBlendState(Render::BLEND_NO);
 	app::render->SetDepthState(Render::DEPTH_NO);
 	app::render->SetRasterState(Render::RASTER_NORMAL);
 
 	// setup shader
-	deviceContext->IASetInputLayout(layout);
 	deviceContext->VSSetShader(vertexShader, nullptr, 0);
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
 	deviceContext->PSSetSamplers(0, 1, &sampler);
 	uint stride = sizeof(VDefault),
 		offset = 0;
+	deviceContext->IASetInputLayout(layout);
 	deviceContext->IASetVertexBuffers(0, 1, &mesh.vb, &stride, &offset);
 	deviceContext->IASetIndexBuffer(mesh.ib, DXGI_FORMAT_R16_UINT, 0);
 

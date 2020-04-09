@@ -18,7 +18,7 @@ static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 //=================================================================================================
 Render::Render() : initialized(false), vsync(true), shaders_dir("shaders"), refreshHz(0), usedAdapter(0), multisampling(0), multisamplingQuality(0),
 factory(nullptr), adapter(nullptr), swapChain(nullptr), device(nullptr), deviceContext(nullptr), renderTarget(nullptr), depthStencilView(nullptr),
-blendStates(), depthStates(), rasterStates(), useAlphaBlend(false), depthState(DEPTH_YES), rasterState(RASTER_NORMAL)
+blendStates(), depthStates(), rasterStates(), blendState(BLEND_NO), depthState(DEPTH_YES), rasterState(RASTER_NORMAL)
 {
 }
 
@@ -245,9 +245,9 @@ void Render::SetViewport()
 void Render::CreateBlendStates()
 {
 	// get disabled blend state
-	deviceContext->OMGetBlendState(&blendStates[0], nullptr, nullptr);
+	deviceContext->OMGetBlendState(&blendStates[BLEND_NO], nullptr, nullptr);
 
-	// create enabled blend state
+	// create additive blend state
 	D3D11_BLEND_DESC desc = {};
 	desc.RenderTarget[0].BlendEnable = true;
 	desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
@@ -257,7 +257,16 @@ void Render::CreateBlendStates()
 	desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 	desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 	desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	V(device->CreateBlendState(&desc, &blendStates[1]));
+	V(device->CreateBlendState(&desc, &blendStates[BLEND_ADD]));
+
+	// create additive one blend state
+	desc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	V(device->CreateBlendState(&desc, &blendStates[BLEND_ADD_ONE]));
+
+	// create reverse subtract blend state
+	desc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_REV_SUBTRACT;
+	V(device->CreateBlendState(&desc, &blendStates[BLEND_REV_SUBTRACT]));
 }
 
 //=================================================================================================
@@ -642,12 +651,13 @@ TEX Render::CopyToTextureRaw(RenderTarget* target)
 }
 
 //=================================================================================================
-void Render::SetAlphaBlend(bool useAlphaBlend)
+void Render::SetBlendState(BlendState blendState)
 {
-	if(useAlphaBlend != this->useAlphaBlend)
+	assert(blendState >= 0 && blendState < BLEND_MAX);
+	if(this->blendState != blendState)
 	{
-		this->useAlphaBlend = useAlphaBlend;
-		deviceContext->OMSetBlendState(blendStates[useAlphaBlend ? 1 : 0], nullptr, 0xFFFFFFFF);
+		this->blendState = blendState;
+		deviceContext->OMSetBlendState(blendStates[blendState], nullptr, 0xFFFFFFFF);
 	}
 }
 

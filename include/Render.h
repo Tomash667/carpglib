@@ -29,6 +29,15 @@ struct Resolution
 class Render
 {
 public:
+	enum BlendState
+	{
+		BLEND_NO,
+		BLEND_ADD,
+		BLEND_ADD_ONE,
+		BLEND_REV_SUBTRACT,
+		BLEND_MAX
+	};
+
 	enum DepthState
 	{
 		DEPTH_NO,
@@ -91,7 +100,7 @@ public:
 	const string& GetShadersDir() const { return shaders_dir; }
 
 	void SetAdapter(int adapter) { assert(!initialized); usedAdapter = adapter; }
-	void SetAlphaBlend(bool useAlphaBlend);
+	void SetBlendState(BlendState blendState);
 	void SetDepthState(DepthState depthState);
 	void SetRasterState(RasterState rasterState);
 	void SetRefreshRateInternal(uint refreshHz) { this->refreshHz = refreshHz; }
@@ -121,7 +130,7 @@ private:
 	ID3D11DeviceContext* deviceContext;
 	ID3D11RenderTargetView* renderTarget;
 	ID3D11DepthStencilView* depthStencilView;
-	ID3D11BlendState* blendStates[2];
+	ID3D11BlendState* blendStates[BLEND_MAX];
 	ID3D11DepthStencilState* depthStates[DEPTH_MAX];
 	ID3D11RasterizerState* rasterStates[RASTER_MAX];
 	Int2 wndSize;
@@ -131,7 +140,8 @@ private:
 	string shaders_dir;
 	uint refreshHz;
 	int usedAdapter, multisampling, multisamplingQuality;
+	BlendState blendState;
 	DepthState depthState;
 	RasterState rasterState;
-	bool initialized, vsync, useAlphaBlend;
+	bool initialized, vsync;
 };

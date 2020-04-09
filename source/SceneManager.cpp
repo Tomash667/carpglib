@@ -73,7 +73,7 @@ void SceneManager::DrawAlphaSceneNodes(SceneBatch& batch)
 //=================================================================================================
 void SceneManager::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<SceneNodeGroup>& groups)
 {
-	app::render->SetAlphaBlend(false);
+	app::render->SetBlendState(Render::BLEND_NO);
 
 	const bool use_fog = this->use_fog && use_lighting;
 
@@ -104,8 +104,7 @@ void SceneManager::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<
 //=================================================================================================
 void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 {
-	app::render->SetAlphaBlend(true);
-	//V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
+	app::render->SetBlendState(Render::BLEND_ADD_ONE);
 
 	const bool use_fog = this->use_fog && use_lighting;
 
@@ -134,7 +133,4 @@ void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 
 		super_shader->Draw(node);
 	}
-
-	//V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-	FIXME;
 }

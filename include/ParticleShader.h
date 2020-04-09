@@ -12,27 +12,29 @@ public:
 	cstring GetName() const override { return "particle"; }
 	void OnInit() override;
 	void OnRelease() override;
-	/*void Begin(Camera& camera);
-	void End();
+	void Prepare(Camera& camera);
 	void DrawBillboards(const vector<Billboard>& billboards);
 	void DrawParticles(const vector<ParticleEmitter*>& pes);
-	void DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes);*/
-
-	/*ID3DXEffect* effect;
-	D3DXHANDLE tech;
-	D3DXHANDLE hMatCombined, hTex;*/
+	void DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes);
 
 private:
-	void ReserveVertexBuffer(uint size);
+	void ReserveVertexBuffer(uint count);
 
-	//IDirect3DDevice9* device;
-	//VB vb;
-	VParticle billboard_v[4];
-	Vec3 billboard_ext[4];
-	Matrix mat_view_proj, mat_view_inv;
+	VParticle vBillboard[6];
+	Vec3 billboardExt[6];
 	TEX tex_empty;
-	Vec3 cam_pos;
-	uint particle_count;
+	uint particleCount;
 	Texture* last_tex;
 	int last_mode;
+
+	ID3D11DeviceContext* deviceContext;
+	ID3D11VertexShader* vertexShader;
+	ID3D11PixelShader* pixelShader;
+	ID3D11InputLayout* layout;
+	ID3D11Buffer* vsGlobals;
+	ID3D11SamplerState* sampler;
+	ID3D11Buffer* vb;
+
+	Matrix matViewInv;
+	Vec3 camPos;
 };

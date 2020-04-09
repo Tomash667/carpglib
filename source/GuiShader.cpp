@@ -66,7 +66,7 @@ void GuiShader::OnRelease()
 //=================================================================================================
 void GuiShader::Prepare()
 {
-	app::render->SetAlphaBlend(true);
+	app::render->SetBlendState(Render::BLEND_ADD);
 	app::render->SetDepthState(Render::DEPTH_NO);
 	app::render->SetRasterState(Render::RASTER_NO_CULLING);
 

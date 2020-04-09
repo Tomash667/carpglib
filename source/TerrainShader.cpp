@@ -60,7 +60,7 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 {
 	assert(scene && camera && terrain);
 
-	app::render->SetAlphaBlend(false);
+	app::render->SetBlendState(Render::BLEND_NO);
 	app::render->SetDepthState(Render::DEPTH_YES);
 	app::render->SetRasterState(Render::RASTER_NORMAL);
 
