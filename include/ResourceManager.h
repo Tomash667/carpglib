@@ -93,6 +93,7 @@ class ResourceManager
 	bool HaveTasks() const { return !tasks.empty(); }
 	int GetLoadTasksCount() const { return to_load; }
 	bool IsLoadScreen() const { return mode != Mode::Instant; }
+	uint VerifyResources();
 
 	// Return resource or null if missing
 	template<typename T>

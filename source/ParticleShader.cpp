@@ -105,7 +105,7 @@ void ParticleShader::Prepare(Camera& camera)
 //=================================================================================================
 void ParticleShader::DrawBillboards(const vector<Billboard>& billboards)
 {
-	app::render->SetBlendState(Render::BLEND_ADD);
+	/*app::render->SetBlendState(Render::BLEND_ADD);
 
 	for(vector<Billboard>::const_iterator it = billboards.begin(), end = billboards.end(); it != end; ++it)
 	{
@@ -124,13 +124,13 @@ void ParticleShader::DrawBillboards(const vector<Billboard>& billboards)
 		}
 
 		deviceContext->Draw(6, 0);
-	}
+	}*/
 }
 
 //=================================================================================================
 void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 {
-	for(vector<ParticleEmitter*>::const_iterator it = pes.begin(), end = pes.end(); it != end; ++it)
+	/*for(vector<ParticleEmitter*>::const_iterator it = pes.begin(), end = pes.end(); it != end; ++it)
 	{
 		const ParticleEmitter& pe = **it;
 
@@ -189,7 +189,7 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 
 		// draw
 		V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, pe.alive * 2));
-	}
+	}*/
 }
 
 //=================================================================================================
@@ -197,7 +197,7 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 {
 	app::render->SetBlendState(Render::BLEND_ADD_ONE);
 
-	for(vector<TrailParticleEmitter*>::const_iterator it = tpes.begin(), end = tpes.end(); it != end; ++it)
+	/*for(vector<TrailParticleEmitter*>::const_iterator it = tpes.begin(), end = tpes.end(); it != end; ++it)
 	{
 		const TrailParticleEmitter& tp = **it;
 
@@ -257,7 +257,7 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 
 		// draw
 		V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, count * 2));
-	}
+	}*/
 }
 
 //=================================================================================================

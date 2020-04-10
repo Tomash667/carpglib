@@ -639,3 +639,29 @@ void ResourceManager::LoadTexture(Texture* tex)
 	if(FAILED(hr))
 		throw Format("Failed to load texture '%s' (%u).", tex->GetPath(), hr);
 }
+
+//=================================================================================================
+uint ResourceManager::VerifyResources()
+{
+	uint errors = 0;
+
+	for(Resource* res : resources)
+	{
+		if(res->type != ResourceType::Texture)
+			continue;
+
+		res->EnsureIsLoaded();
+
+		Texture* tex = (Texture*)res;
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC desc;
+		tex->tex->GetDesc(&desc);
+		if(Any(desc.Format, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R16_FLOAT, DXGI_FORMAT_R16_UNORM, DXGI_FORMAT_R8_UNORM))
+		{
+			Error("Grayscale texture: %s", tex->filename);
+			++errors;
+		}
+	}
+
+	return errors;
+}
