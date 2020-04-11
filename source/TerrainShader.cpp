@@ -96,7 +96,7 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 
 	// set textures
 	ID3D11ShaderResourceView* textures[6];
-	textures[0] = terrain->GetSplatTexture();
+	textures[0] = terrain->GetSplatTexture().tex;
 	TexturePtr* tex = terrain->GetTextures();
 	for(int i = 0; i < 5; ++i)
 		textures[i + 1] = tex[i]->tex;

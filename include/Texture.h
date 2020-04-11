@@ -30,18 +30,18 @@ struct TexOverride
 };
 
 //-----------------------------------------------------------------------------
-struct TextureLock
+struct DynamicTexture : public Texture
 {
-	TextureLock(TEX tex);
-	TextureLock(Texture* tex) : TextureLock(tex->tex) {}
-	~TextureLock();
+	friend class Render;
+
+	~DynamicTexture();
+	void Lock();
+	void Unlock(bool generateMipmaps = false);
 	uint* operator [] (uint row) { return (uint*)(data + pitch * row); }
-	void Fill(Color color);
-	void GenerateMipSubLevels();
 
 private:
-	TEX tex;
-	ID3D11Texture2D* res;
+	ID3D11Texture2D* texResource;
+	ID3D11Texture2D* texStaging;
 	byte* data;
 	int pitch;
 };

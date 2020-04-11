@@ -73,14 +73,14 @@ public:
 	Texture* CopyToTexture(RenderTarget* target);
 	TEX CopyToTextureRaw(RenderTarget* target);
 	ID3D11Buffer* CreateConstantBuffer(uint size, cstring name = nullptr);
+	DynamicTexture* CreateDynamicTexture(const Int2& size);
+	TEX CreateImmutableTexture(const Int2& size, const Color* fill);
 	ID3D11InputLayout* CreateInputLayout(VertexDeclarationId decl, ID3DBlob* vsBlob, cstring name);
 	ID3D11PixelShader* CreatePixelShader(cstring filename, cstring entry = "PsMain");
-	TEX CreateRawTexture(const Int2& size, const Color* fill = nullptr, bool allowMipmaps = false);
 	RenderTarget* CreateRenderTarget(const Int2& size);
 	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP, bool disableMipmap = false);
 	void CreateShader(cstring filename, VertexDeclarationId decl, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader,
 		ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr, cstring vsEntry = "VsMain", cstring psEntry = "PsMain");
-	Texture* CreateTexture(const Int2& size);
 	ID3D11VertexShader* CreateVertexShader(cstring filename, cstring entry = "VsMain", ID3DBlob** vsBlob = nullptr);
 	void Present();
 	void RegisterShader(ShaderHandler* shader);

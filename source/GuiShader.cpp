@@ -32,7 +32,7 @@ void GuiShader::OnInit()
 	samplerNormal = app::render->CreateSampler(Render::TEX_ADR_CLAMP, true);
 	samplerWrap = app::render->CreateSampler(Render::TEX_ADR_WRAP, true);
 
-	texEmpty = app::render->CreateRawTexture(Int2(1, 1), &Color::White);
+	texEmpty = app::render->CreateImmutableTexture(Int2(1, 1), &Color::White);
 
 	// create vertex buffer
 	D3D11_BUFFER_DESC bufDesc;

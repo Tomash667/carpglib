@@ -76,7 +76,7 @@ public:
 	void SetH(Vec3& v) const { v.y = GetH(v.x, v.z); }
 	void GetAngle(float x, float z, Vec3& angle) const;
 	uint GetPartsCount() const { return n_parts2; }
-	TEX GetSplatTexture() { return texSplat; }
+	DynamicTexture& GetSplatTexture() { return *texSplat; }
 	TexturePtr* GetTextures() { return tex; }
 	const Box& GetBox() const { return box; }
 	const Vec3& GetPos() const { return pos; }
@@ -113,7 +113,7 @@ private:
 	Box box;
 	ID3D11Buffer* vb;
 	ID3D11Buffer* ib;
-	TEX texSplat;
+	DynamicTexture* texSplat;
 	TexturePtr tex[5];
 	Vec3 pos;
 	int state;

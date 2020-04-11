@@ -24,7 +24,7 @@ void ParticleShader::OnInit()
 	app::render->CreateShader("particle.hlsl", VDI_PARTICLE, vertexShader, pixelShader, layout);
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
 	sampler = app::render->CreateSampler();
-	texEmpty = app::render->CreateRawTexture(Int2(1, 1), &Color::White);
+	texEmpty = app::render->CreateImmutableTexture(Int2(1, 1), &Color::White);
 
 	vBillboard[0].pos = Vec3(-1, -1, 0);
 	vBillboard[0].tex = Vec2(0, 0);

@@ -62,8 +62,8 @@ void SuperShader::OnInit()
 	psLocals = app::render->CreateConstantBuffer(sizeof(PsLocals), "SuperPsLocals");
 	psMaterial = app::render->CreateConstantBuffer(sizeof(PsMaterial), "SuperPsMaterial");
 
-	texEmptyNormalMap = app::render->CreateRawTexture(Int2(1, 1), &Color(128, 128, 255));
-	texEmptySpecularMap = app::render->CreateRawTexture(Int2(1, 1), &Color::None);
+	texEmptyNormalMap = app::render->CreateImmutableTexture(Int2(1, 1), &Color(128, 128, 255));
+	texEmptySpecularMap = app::render->CreateImmutableTexture(Int2(1, 1), &Color::None);
 }
 
 //=================================================================================================
@@ -341,5 +341,5 @@ void SuperShader::DrawSubmesh(Mesh::Submesh& sub)
 		deviceContext->PSSetShaderResources(2, 1, sub.tex_specular ? &sub.tex_specular->tex : &texEmptySpecularMap);
 
 	// actual drawing
-	deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, sub.min_ind);
+	deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, 0);
 }

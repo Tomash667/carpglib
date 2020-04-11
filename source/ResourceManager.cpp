@@ -626,14 +626,14 @@ void ResourceManager::LoadTexture(Texture* tex)
 	HRESULT hr;
 	if(tex->IsFile())
 	{
-		hr = CreateWICTextureFromFileEx(app::render->GetDevice(), ToWString(tex->path.c_str()), 0u, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0,
-			WIC_LOADER_IGNORE_SRGB, nullptr, &tex->tex);
+		hr = CreateWICTextureFromFileEx(app::render->GetDevice(), app::render->GetDeviceContext(), ToWString(tex->path.c_str()), 0u,
+			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_IGNORE_SRGB, nullptr, &tex->tex);
 	}
 	else
 	{
 		BufferHandle&& buf = tex->GetBuffer();
-		hr = CreateWICTextureFromMemoryEx(app::render->GetDevice(), static_cast<byte*>(buf->Data()), buf->Size(), 0u, D3D11_USAGE_DEFAULT,
-			D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_IGNORE_SRGB, nullptr, &tex->tex);
+		hr = CreateWICTextureFromMemoryEx(app::render->GetDevice(), app::render->GetDeviceContext(), static_cast<byte*>(buf->Data()), buf->Size(), 0u,
+			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_IGNORE_SRGB, nullptr, &tex->tex);
 	}
 
 	if(FAILED(hr))

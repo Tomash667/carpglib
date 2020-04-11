@@ -38,7 +38,7 @@ Int2 Texture::GetSize(TEX tex)
 }
 
 //=================================================================================================
-TextureLock::TextureLock(TEX tex) : tex(tex)
+/*TextureLock::TextureLock(TEX tex) : tex(tex)
 {
 	assert(tex);
 
@@ -49,9 +49,10 @@ TextureLock::TextureLock(TEX tex) : tex(tex)
 	data = static_cast<byte*>(resource.pData);
 	pitch = resource.RowPitch;
 }
-
+*/
+FIXME;
 //=================================================================================================
-TextureLock::~TextureLock()
+/*xtureLock::~TextureLock()
 {
 	if(res)
 	{
@@ -86,4 +87,31 @@ void TextureLock::GenerateMipSubLevels()
 	deviceContext->GenerateMips(tex);
 	res->Release();
 	res = nullptr;
+}*/
+
+//=================================================================================================
+DynamicTexture::~DynamicTexture()
+{
+	SafeRelease(tex);
+	SafeRelease(texResource);
+	SafeRelease(texStaging);
+}
+
+//=================================================================================================
+void DynamicTexture::Lock()
+{
+	D3D11_MAPPED_SUBRESOURCE subresource;
+	V(app::render->GetDeviceContext()->Map(texStaging, 0, D3D11_MAP_READ_WRITE, 0, &subresource));
+	data = static_cast<byte*>(subresource.pData);
+	pitch = subresource.RowPitch;
+}
+
+//=================================================================================================
+void DynamicTexture::Unlock(bool generateMipmaps)
+{
+	ID3D11DeviceContext* deviceContext = app::render->GetDeviceContext();
+	deviceContext->Unmap(texStaging, 0);
+	deviceContext->CopyResource(texResource, texStaging);
+	if(generateMipmaps)
+		deviceContext->GenerateMips(tex);
 }

@@ -533,7 +533,43 @@ void Render::ReloadShaders()
 }
 
 //=================================================================================================
-TEX Render::CreateRawTexture(const Int2& size, const Color* fill, bool allowMipmaps)
+DynamicTexture* Render::CreateDynamicTexture(const Int2& size)
+{
+	DynamicTexture* tex = new DynamicTexture;
+	tex->state = ResourceState::Loaded;
+
+	// create texture
+	D3D11_TEXTURE2D_DESC desc = {};
+	desc.Width = size.x;
+	desc.Height = size.y;
+	desc.MipLevels = 1;
+	desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.SampleDesc.Count = 1;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	V(device->CreateTexture2D(&desc, nullptr, &tex->texResource));
+
+	// create staging texture
+	desc.BindFlags = 0;
+	desc.MiscFlags = 0;
+	desc.Usage = D3D11_USAGE_STAGING;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+	V(device->CreateTexture2D(&desc, nullptr, &tex->texStaging));
+
+	// create srv
+	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
+	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	viewDesc.Texture2D.MipLevels = 1;
+	V(device->CreateShaderResourceView(tex->texResource, &viewDesc, &tex->tex));
+
+	return tex;
+}
+
+//=================================================================================================
+TEX Render::CreateImmutableTexture(const Int2& size, const Color* fill)
 {
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.Width = size.x;
@@ -543,29 +579,14 @@ TEX Render::CreateRawTexture(const Int2& size, const Color* fill, bool allowMipm
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.SampleDesc.Count = 1;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	if(allowMipmaps)
-	{
-		desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
-		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
-	}
+	desc.Usage = D3D11_USAGE_IMMUTABLE;
+
+	D3D11_SUBRESOURCE_DATA initData = {};
+	initData.pSysMem = fill;
+	initData.SysMemPitch = sizeof(Color) * size.x;
 
 	ID3D11Texture2D* tex;
-	if(fill)
-	{
-		desc.Usage = D3D11_USAGE_IMMUTABLE;
-
-		D3D11_SUBRESOURCE_DATA initData = {};
-		initData.pSysMem = fill;
-		initData.SysMemPitch = sizeof(Color) * size.x;
-		V(device->CreateTexture2D(&desc, &initData, &tex));
-	}
-	else
-	{
-		desc.Usage = D3D11_USAGE_DYNAMIC;
-		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-
-		V(device->CreateTexture2D(&desc, nullptr, &tex));
-	}
+	V(device->CreateTexture2D(&desc, &initData, &tex));
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
 	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -580,22 +601,37 @@ TEX Render::CreateRawTexture(const Int2& size, const Color* fill, bool allowMipm
 }
 
 //=================================================================================================
-Texture* Render::CreateTexture(const Int2& size)
-{
-	Texture* tex = new Texture;
-	tex->tex = CreateRawTexture(size);
-	tex->state = ResourceState::Loaded;
-	return tex;
-}
-
-//=================================================================================================
 RenderTarget* Render::CreateRenderTarget(const Int2& size)
 {
 	assert(size <= wndSize);
 	assert(size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y));
 	RenderTarget* target = new RenderTarget;
-	target->size = size;
-	target->tex = CreateRawTexture(size);
+	//target->size = size;
+	//target->tex = CreateRawTexture(size);
+
+	// create texture
+	D3D11_TEXTURE2D_DESC desc = {};
+	desc.Width = size.x;
+	desc.Height = size.y;
+	desc.MipLevels = 1;
+	desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.SampleDesc.Count = 1;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+
+	ID3D11Texture2D* texResource;
+	V(device->CreateTexture2D(&desc, nullptr, &texResource));
+
+	// create srv
+	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
+	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	viewDesc.Texture2D.MipLevels = 1;
+	V(device->CreateShaderResourceView(texResource, &viewDesc, &target->tex));
+
+	texResource->Release();
 	renderTargets.push_back(target);
 	return target;
 }
@@ -820,19 +856,20 @@ ID3D11Buffer* Render::CreateConstantBuffer(uint size, cstring name)
 ID3D11SamplerState* Render::CreateSampler(TextureAddressMode mode, bool disableMipmap)
 {
 	D3D11_SAMPLER_DESC samplerDesc;
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	FIXME;
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;// D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.AddressU = (D3D11_TEXTURE_ADDRESS_MODE)mode;
 	samplerDesc.AddressV = (D3D11_TEXTURE_ADDRESS_MODE)mode;
 	samplerDesc.AddressW = (D3D11_TEXTURE_ADDRESS_MODE)mode;
 	samplerDesc.MipLODBias = 0.0f;
 	samplerDesc.MaxAnisotropy = 1;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	samplerDesc.BorderColor[0] = 0;
 	samplerDesc.BorderColor[1] = 0;
 	samplerDesc.BorderColor[2] = 0;
 	samplerDesc.BorderColor[3] = 0;
-	samplerDesc.MinLOD = 0;
-	samplerDesc.MaxLOD = disableMipmap ? 0 : D3D11_FLOAT32_MAX;
+	samplerDesc.MinLOD = -FLT_MAX;
+	samplerDesc.MaxLOD = disableMipmap ? 0 : FLT_MAX;
 
 	ID3D11SamplerState* sampler;
 	HRESULT result = device->CreateSamplerState(&samplerDesc, &sampler);

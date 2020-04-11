@@ -20,6 +20,6 @@ public:
 private:
 	//SURFACE surf;
 	FIXME; // ^
-	Int2 size;
+	Int2 size; // ? required
 	bool tmp_surf;
 };

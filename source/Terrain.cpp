@@ -36,7 +36,7 @@ Terrain::~Terrain()
 {
 	SafeRelease(vb);
 	SafeRelease(ib);
-	SafeRelease(texSplat);
+	delete texSplat;
 
 	delete[] parts;
 	// h jest przechowywany w OutsideLocation wiêc nie mo¿na tu usuwaæ
@@ -83,7 +83,7 @@ void Terrain::Init(const Options& o)
 		}
 	}
 
-	texSplat = app::render->CreateRawTexture(Int2(tex_size), nullptr, true);
+	texSplat = app::render->CreateDynamicTexture(Int2(tex_size));
 
 	state = 1;
 }
