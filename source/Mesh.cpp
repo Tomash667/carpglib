@@ -75,9 +75,7 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 		BufPool.Free(buf);
 		throw Format("Failed to create vertex buffer (%u).", result);
 	}
-#ifdef _DEBUG
-	vb->SetPrivateData(WKPDID_D3DDebugObjectName, strlen("MeshVb"), "MeshVb");
-#endif
+	SetDebugName(vb, Format("VB:%s", path.c_str()));
 
 	// ----- triangles
 	// ensure size
@@ -103,9 +101,7 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 	BufPool.Free(buf);
 	if(FAILED(result))
 		throw Format("Failed to create index buffer (%u).", result);
-#ifdef _DEBUG
-	ib->SetPrivateData(WKPDID_D3DDebugObjectName, strlen("MeshIb"), "MeshIb");
-#endif
+	SetDebugName(ib, Format("IB:%s", path.c_str()));
 
 	// ----- submeshes
 	size = Submesh::MIN_SIZE * head.n_subs;

@@ -7,42 +7,47 @@
 #include "SceneManager.h"
 #include "DirectX.h"
 
-//=================================================================================================
-GrassShader::GrassShader() {}
-
-void GrassShader::OnInit() {
-
-}
-
-void GrassShader::OnRelease()
+struct VsGlobals
 {
+	Matrix matViewProj;
+};
 
-}
-
-FIXME;
-/*: device(app::render->GetDevice()), vertex_decl(nullptr), effect(nullptr), vb(nullptr), vb_size(0)
+struct PsGlobals
 {
-	const D3DVERTEXELEMENT9 decl[] = {
-		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,	0},
-		{0, 12,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_NORMAL,	0},
-		{0, 24, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,	0},
-		{1, 0,	D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,	1},
-		{1, 16,	D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,	2},
-		{1, 32,	D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,	3},
-		{1, 48,	D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,	4},
-		D3DDECL_END()
-	};
-	V(device->CreateVertexDeclaration(decl, &vertex_decl));
-}
+	Vec4 fogColor;
+	Vec4 fogParam;
+	Vec3 ambientColor;
+};
 
 //=================================================================================================
-GrassShader::~GrassShader()
+GrassShader::GrassShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(nullptr), layout(nullptr),
+vsGlobals(nullptr), psGlobals(nullptr), sampler(nullptr)
 {
-	SafeRelease(vertex_decl);
 }
 
 //=================================================================================================
 void GrassShader::OnInit()
+{
+	FIXME;
+	//app::render->CreateShader("grass.hlsl", VDI_GRASS, vertexShader, pixelShader, layout);
+	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
+	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
+	sampler = app::render->CreateSampler();
+}
+
+//=================================================================================================
+void GrassShader::OnRelease()
+{
+	SafeRelease(vertexShader);
+	SafeRelease(pixelShader);
+	SafeRelease(layout);
+	SafeRelease(vsGlobals);
+	SafeRelease(psGlobals);
+	SafeRelease(sampler);
+}
+
+//=================================================================================================
+/*void GrassShader::OnInit()
 {
 	effect = app::render->CompileShader("grass.fx");
 
@@ -154,3 +159,4 @@ void GrassShader::End()
 	V(device->SetStreamSourceFreq(0, 1));
 	V(device->SetStreamSourceFreq(1, 1));
 }*/
+FIXME;

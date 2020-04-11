@@ -70,6 +70,18 @@ const D3D11_INPUT_ELEMENT_DESC descTerrain[] =
 	{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 };
 
+const D3D11_INPUT_ELEMENT_DESC descGrass[] =
+{
+	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	/*{1, 0,	D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,	1},
+	{1, 16,	D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,	2},
+	{1, 32,	D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,	3},
+	{1, 48,	D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,	4},*/
+	FIXME
+};
+
 VertexDeclaration VertexDeclaration::decl[] =
 {
 	{ "default", descDefault, countof(descDefault) },
@@ -80,5 +92,6 @@ VertexDeclaration VertexDeclaration::decl[] =
 	{ "color", descColor, countof(descColor) },
 	{ "particle", descParticle, countof(descParticle) },
 	{ "pos", descPos, countof(descPos) },
-	{ "terrain", descTerrain, countof(descTerrain) }
+	{ "terrain", descTerrain, countof(descTerrain) },
+	{ "grass", descGrass, countof(descGrass) }
 };

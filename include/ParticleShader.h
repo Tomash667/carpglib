@@ -20,13 +20,6 @@ public:
 private:
 	void ReserveVertexBuffer(uint count);
 
-	VParticle vBillboard[6];
-	Vec3 billboardExt[6];
-	TEX tex_empty;
-	uint particleCount;
-	Texture* last_tex;
-	int last_mode;
-
 	ID3D11DeviceContext* deviceContext;
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
@@ -34,7 +27,12 @@ private:
 	ID3D11Buffer* vsGlobals;
 	ID3D11SamplerState* sampler;
 	ID3D11Buffer* vb;
+	TEX texEmpty;
 
+	VParticle vBillboard[6];
+	Vec3 billboardExt[6];
 	Matrix matViewInv;
 	Vec3 camPos;
+	Texture* lastTex;
+	uint particleCount;
 };

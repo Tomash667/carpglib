@@ -11,7 +11,8 @@ enum VertexDeclarationId
 	VDI_COLOR, // Pos Color
 	VDI_PARTICLE, // Pos Tex Color
 	VDI_POS, // Pos
-	VDI_TERRAIN, // Pos Normal Tex Tex2
+	VDI_TERRAIN, // Pos Normal Tex[2]
+	VDI_GRASS, // Pos Normal Tex Matrix
 	VDI_MAX
 };
 

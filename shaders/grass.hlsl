@@ -1,9 +1,9 @@
-cbuffer vs_globals : register(b0)
+cbuffer VsGlobals : register(b0)
 {
 	matrix matViewProj;
 };
 
-cbuffer ps_globals : register(b0)
+cbuffer PsGlobals : register(b0)
 {
 	// mg-a
 	float4 fogColor;
@@ -13,7 +13,7 @@ cbuffer ps_globals : register(b0)
 };
 
 Texture2D texDiffuse : register(t0);
-SamplerState samplerDiffuse;
+SamplerState samplerDiffuse : register(s0);
 
 //------------------------------------------------------------------------------
 // WEJ¦CIE DO VERTEX SHADERA
@@ -39,7 +39,7 @@ struct MESH_OUTPUT
 
 //------------------------------------------------------------------------------
 // VERTEX SHADER
-void vs_grass(in MESH_INPUT In, out MESH_OUTPUT Out)
+void VsMain(in MESH_INPUT In, out MESH_OUTPUT Out)
 {
 	float4x4 matWorld;
 	matWorld._m00_m01_m02_m03 = In.mat1.xyzw;
@@ -53,7 +53,7 @@ void vs_grass(in MESH_INPUT In, out MESH_OUTPUT Out)
 
 //------------------------------------------------------------------------------
 // PIXEL SHADER
-float4 ps_grass(in MESH_OUTPUT In) : SV_TARGET
+float4 PsMain(in MESH_OUTPUT In) : SV_TARGET
 {
 	float4 tex = texDiffuse.Sample(samplerDiffuse, In.tex);
 	float fog = saturate((In.posViewZ-fogParam.x)/fogParam.z);

@@ -5,9 +5,7 @@
 #include "DirectX.h"
 #include "ParticleSystem.h"
 #include "Render.h"
-
-//
-//#include "Texture.h"
+#include "Texture.h"
 
 struct VsGlobals
 {
@@ -16,7 +14,7 @@ struct VsGlobals
 
 //=================================================================================================
 ParticleShader::ParticleShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(nullptr), layout(nullptr),
-vsGlobals(nullptr), sampler(nullptr), vb(nullptr), particleCount(0)
+vsGlobals(nullptr), sampler(nullptr), vb(nullptr), texEmpty(nullptr), particleCount(0)
 {
 }
 
@@ -26,6 +24,7 @@ void ParticleShader::OnInit()
 	app::render->CreateShader("particle.hlsl", VDI_PARTICLE, vertexShader, pixelShader, layout);
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
 	sampler = app::render->CreateSampler();
+	texEmpty = app::render->CreateRawTexture(Int2(1, 1), &Color::White);
 
 	vBillboard[0].pos = Vec3(-1, -1, 0);
 	vBillboard[0].tex = Vec2(0, 0);
@@ -59,19 +58,8 @@ void ParticleShader::OnRelease()
 	SafeRelease(vsGlobals);
 	SafeRelease(sampler);
 	SafeRelease(vb);
+	SafeRelease(texEmpty);
 }
-
-/*
-//=================================================================================================
-void ParticleShader::OnInit()
-{
-	if(!tex_empty)
-	{
-		tex_empty = app::render->CreateTexture(Int2(1, 1), &Color::White);
-
-
-	}
-}*/
 
 //=================================================================================================
 void ParticleShader::Prepare(Camera& camera)
@@ -81,10 +69,6 @@ void ParticleShader::Prepare(Camera& camera)
 
 	app::render->SetDepthState(Render::DEPTH_READ);
 	app::render->SetRasterState(Render::RASTER_NO_CULLING);
-
-	//last_tex = (Texture*)0xFEFEFEFE;
-
-	//--------------
 
 	// setup shader
 	deviceContext->VSSetShader(vertexShader, nullptr, 0);
@@ -100,12 +84,14 @@ void ParticleShader::Prepare(Camera& camera)
 	vsg.matCombined = camera.mat_view_proj.Transpose();
 	deviceContext->Unmap(vsGlobals, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
+
+	lastTex = (Texture*)0xFEFEFEFE;
 }
 
 //=================================================================================================
 void ParticleShader::DrawBillboards(const vector<Billboard>& billboards)
 {
-	/*app::render->SetBlendState(Render::BLEND_ADD);
+	app::render->SetBlendState(Render::BLEND_ADD);
 
 	for(vector<Billboard>::const_iterator it = billboards.begin(), end = billboards.end(); it != end; ++it)
 	{
@@ -117,79 +103,85 @@ void ParticleShader::DrawBillboards(const vector<Billboard>& billboards)
 		for(int i = 0; i < 6; ++i)
 			vBillboard[i].pos = Vec3::Transform(billboardExt[i], m1);
 
-		if(last_tex != it->tex)
+		// fill vertex buffer
 		{
-			last_tex = it->tex;
-			V(effect->SetTexture(hTex, last_tex->tex));
+			ResourceLock lock(vb, D3D11_MAP_WRITE_DISCARD);
+			memcpy(lock.Get(), vBillboard, sizeof(VParticle) * 6);
+		}
+
+		if(lastTex != it->tex)
+		{
+			lastTex = it->tex;
+			deviceContext->PSSetShaderResources(0, 1, &it->tex->tex);
 		}
 
 		deviceContext->Draw(6, 0);
-	}*/
+	}
 }
 
 //=================================================================================================
 void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 {
-	/*for(vector<ParticleEmitter*>::const_iterator it = pes.begin(), end = pes.end(); it != end; ++it)
+	for(vector<ParticleEmitter*>::const_iterator it = pes.begin(), end = pes.end(); it != end; ++it)
 	{
 		const ParticleEmitter& pe = **it;
 
 		ReserveVertexBuffer(pe.alive);
 
 		// fill vertex buffer
-		VParticle* v;
-		V(vb->Lock(0, sizeof(VParticle) * pe.alive * 6, (void**)&v, D3DLOCK_DISCARD));
-		int idx = 0;
-		for(const ParticleEmitter::Particle& p : pe.particles)
 		{
-			if(!p.exists)
-				continue;
+			ResourceLock lock(vb, D3D11_MAP_WRITE_DISCARD);
+			VParticle* v = lock.Get<VParticle>();
+			int idx = 0;
+			for(const ParticleEmitter::Particle& p : pe.particles)
+			{
+				if(!p.exists)
+					continue;
 
-			matViewInv._41 = p.pos.x;
-			matViewInv._42 = p.pos.y;
-			matViewInv._43 = p.pos.z;
-			Matrix m1 = Matrix::Scale(pe.GetScale(p)) * matViewInv;
+				matViewInv._41 = p.pos.x;
+				matViewInv._42 = p.pos.y;
+				matViewInv._43 = p.pos.z;
+				Matrix m1 = Matrix::Scale(pe.GetScale(p)) * matViewInv;
 
-			const Vec4 color(1.f, 1.f, 1.f, pe.GetAlpha(p));
+				const Vec4 color(1.f, 1.f, 1.f, pe.GetAlpha(p));
 
-			v[idx].pos = Vec3::Transform(Vec3(-1, -1, 0), m1);
-			v[idx].tex = Vec2(0, 0);
-			v[idx].color = color;
+				v[idx].pos = Vec3::Transform(Vec3(-1, -1, 0), m1);
+				v[idx].tex = Vec2(0, 0);
+				v[idx].color = color;
 
-			v[idx + 1].pos = Vec3::Transform(Vec3(-1, 1, 0), m1);
-			v[idx + 1].tex = Vec2(0, 1);
-			v[idx + 1].color = color;
+				v[idx + 1].pos = Vec3::Transform(Vec3(-1, 1, 0), m1);
+				v[idx + 1].tex = Vec2(0, 1);
+				v[idx + 1].color = color;
 
-			v[idx + 2].pos = Vec3::Transform(Vec3(1, -1, 0), m1);
-			v[idx + 2].tex = Vec2(1, 0);
-			v[idx + 2].color = color;
+				v[idx + 2].pos = Vec3::Transform(Vec3(1, -1, 0), m1);
+				v[idx + 2].tex = Vec2(1, 0);
+				v[idx + 2].color = color;
 
-			v[idx + 3] = v[idx + 1];
+				v[idx + 3] = v[idx + 1];
 
-			v[idx + 4].pos = Vec3::Transform(Vec3(1, 1, 0), m1);
-			v[idx + 4].tex = Vec2(1, 1);
-			v[idx + 4].color = color;
+				v[idx + 4].pos = Vec3::Transform(Vec3(1, 1, 0), m1);
+				v[idx + 4].tex = Vec2(1, 1);
+				v[idx + 4].color = color;
 
-			v[idx + 5] = v[idx + 2];
+				v[idx + 5] = v[idx + 2];
 
-			idx += 6;
+				idx += 6;
+			}
 		}
-		V(vb->Unlock());
 
 		// set blending
-		app::render->SetBlendState(pe.mode + 1);
+		app::render->SetBlendState((Render::BlendState)(pe.mode + 1));
 
 		// set texture
-		if(last_tex != pe.tex)
+		if(lastTex != pe.tex)
 		{
-			last_tex = pe.tex;
-			V(effect->SetTexture(hTex, last_tex->tex));
-			V(effect->CommitChanges());
+			lastTex = pe.tex;
+			deviceContext->PSSetShaderResources(0, 1, &pe.tex->tex);
 		}
 
 		// draw
-		V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, pe.alive * 2));
-	}*/
+		deviceContext->Draw(pe.alive * 6, 0);
+	}
 }
 
 //=================================================================================================
@@ -197,7 +189,7 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 {
 	app::render->SetBlendState(Render::BLEND_ADD_ONE);
 
-	/*for(vector<TrailParticleEmitter*>::const_iterator it = tpes.begin(), end = tpes.end(); it != end; ++it)
+	for(vector<TrailParticleEmitter*>::const_iterator it = tpes.begin(), end = tpes.end(); it != end; ++it)
 	{
 		const TrailParticleEmitter& tp = **it;
 
@@ -208,56 +200,56 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 		ReserveVertexBuffer(count);
 
 		// fill vertex buffer
-		int id = tp.first;
-		const TrailParticleEmitter::Particle* prev = &tp.parts[id];
-		const float width = tp.width / 2;
-		id = prev->next;
-		VParticle* v;
-		V(vb->Lock(0, sizeof(VParticle) * count * 6, (void**)&v, D3DLOCK_DISCARD));
-		int idx = 0;
-		while(id != -1)
 		{
-			const TrailParticleEmitter::Particle& p = tp.parts[id];
-
-			Vec3 line_dir = p.pt - prev->pt;
-			Vec3 quad_normal = cam_pos - (p.pt + prev->pt) / 2;
-			Vec3 extrude_dir = line_dir.Cross(quad_normal).Normalize();
-
-			v[idx].pos = prev->pt + extrude_dir * width;
-			v[idx + 1].pos = prev->pt - extrude_dir * width;
-			v[idx + 2].pos = p.pt + extrude_dir * width;
-			v[idx + 3].pos = p.pt - extrude_dir * width;
-
-			v[idx].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - prev->t / tp.fade);
-			v[idx + 1].color = v[idx].color;
-			v[idx + 2].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - p.t / tp.fade);
-			v[idx + 3].color = v[idx + 2].color;
-
-			v[idx].tex = Vec2(0, 0);
-			v[idx + 1].tex = Vec2(0, 1);
-			v[idx + 2].tex = Vec2(1, 0);
-			v[idx + 3].tex = Vec2(1, 1);
-
-			v[idx + 4] = v[idx + 1];
-			v[idx + 5] = v[idx + 2];
-
-			prev = &p;
+			int id = tp.first;
+			const TrailParticleEmitter::Particle* prev = &tp.parts[id];
+			const float width = tp.width / 2;
 			id = prev->next;
-			idx += 6;
+			ResourceLock lock(vb, D3D11_MAP_WRITE_DISCARD);
+			VParticle* v = lock.Get<VParticle>();
+			int idx = 0;
+			while(id != -1)
+			{
+				const TrailParticleEmitter::Particle& p = tp.parts[id];
+
+				Vec3 line_dir = p.pt - prev->pt;
+				Vec3 quad_normal = camPos - (p.pt + prev->pt) / 2;
+				Vec3 extrude_dir = line_dir.Cross(quad_normal).Normalize();
+
+				v[idx].pos = prev->pt + extrude_dir * width;
+				v[idx + 1].pos = prev->pt - extrude_dir * width;
+				v[idx + 2].pos = p.pt + extrude_dir * width;
+				v[idx + 3].pos = p.pt - extrude_dir * width;
+
+				v[idx].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - prev->t / tp.fade);
+				v[idx + 1].color = v[idx].color;
+				v[idx + 2].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - p.t / tp.fade);
+				v[idx + 3].color = v[idx + 2].color;
+
+				v[idx].tex = Vec2(0, 0);
+				v[idx + 1].tex = Vec2(0, 1);
+				v[idx + 2].tex = Vec2(1, 0);
+				v[idx + 3].tex = Vec2(1, 1);
+
+				v[idx + 4] = v[idx + 1];
+				v[idx + 5] = v[idx + 2];
+
+				prev = &p;
+				id = prev->next;
+				idx += 6;
+			}
 		}
-		V(vb->Unlock());
 
 		// set texture
-		if(tp.tex != last_tex)
+		if(tp.tex != lastTex)
 		{
-			last_tex = tp.tex;
-			V(effect->SetTexture(hTex, last_tex ? last_tex->tex : tex_empty));
-			V(effect->CommitChanges());
+			lastTex = tp.tex;
+			deviceContext->PSSetShaderResources(0, 1, &(lastTex ? lastTex->tex : texEmpty));
 		}
 
 		// draw
-		V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, count * 2));
-	}*/
+		deviceContext->Draw(count * 6, 0);
+	}
 }
 
 //=================================================================================================
@@ -278,9 +270,7 @@ void ParticleShader::ReserveVertexBuffer(uint count)
 		bufDesc.StructureByteStride = 0;
 
 		V(app::render->GetDevice()->CreateBuffer(&bufDesc, nullptr, &vb));
-#ifdef _DEBUG
-		vb->SetPrivateData(WKPDID_D3DDebugObjectName, strlen("ParticleVb"), "ParticleVb");
-#endif
+		SetDebugName(vb, "ParticleVb");
 
 		uint stride = sizeof(VParticle),
 			offset = 0;

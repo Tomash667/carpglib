@@ -44,9 +44,7 @@ void GuiShader::OnInit()
 	bufDesc.StructureByteStride = 0;
 
 	V(app::render->GetDevice()->CreateBuffer(&bufDesc, nullptr, &vb));
-#ifdef _DEBUG
-	vb->SetPrivateData(WKPDID_D3DDebugObjectName, strlen("GuiVb"), "GuiVb");
-#endif
+	SetDebugName(vb, "GuiVb");
 }
 
 //=================================================================================================

@@ -83,7 +83,7 @@ void Terrain::Init(const Options& o)
 		}
 	}
 
-	texSplat = app::render->CreateRawTexture(Int2(tex_size));
+	texSplat = app::render->CreateRawTexture(Int2(tex_size), nullptr, true);
 
 	state = 1;
 }
@@ -105,9 +105,7 @@ void Terrain::Build(bool smooth)
 	v_desc.StructureByteStride = 0;
 
 	V(device->CreateBuffer(&v_desc, nullptr, &vb));
-#ifdef _DEBUG
-	vb->SetPrivateData(WKPDID_D3DDebugObjectName, strlen("TerrainVb"), "TerrainVb");
-#endif
+	SetDebugName(vb, "TerrainVb");
 
 	// build mesh
 	D3D11_MAPPED_SUBRESOURCE res;
@@ -183,9 +181,7 @@ void Terrain::Build(bool smooth)
 	v_data.pSysMem = buf.Get();
 
 	V(device->CreateBuffer(&v_desc, &v_data, &ib));
-#ifdef _DEBUG
-	ib->SetPrivateData(WKPDID_D3DDebugObjectName, strlen("TerrainIb"), "TerrainIb");
-#endif
+	SetDebugName(ib, "TerrainIb");
 
 	// smooth mesh
 	state = 2;

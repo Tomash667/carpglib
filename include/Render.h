@@ -75,7 +75,7 @@ public:
 	ID3D11Buffer* CreateConstantBuffer(uint size, cstring name = nullptr);
 	ID3D11InputLayout* CreateInputLayout(VertexDeclarationId decl, ID3DBlob* vsBlob, cstring name);
 	ID3D11PixelShader* CreatePixelShader(cstring filename, cstring entry = "PsMain");
-	TEX CreateRawTexture(const Int2& size, const Color* fill = nullptr);
+	TEX CreateRawTexture(const Int2& size, const Color* fill = nullptr, bool allowMipmaps = false);
 	RenderTarget* CreateRenderTarget(const Int2& size);
 	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP, bool disableMipmap = false);
 	void CreateShader(cstring filename, VertexDeclarationId decl, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader,

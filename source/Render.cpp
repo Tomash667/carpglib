@@ -533,7 +533,7 @@ void Render::ReloadShaders()
 }
 
 //=================================================================================================
-TEX Render::CreateRawTexture(const Int2& size, const Color* fill)
+TEX Render::CreateRawTexture(const Int2& size, const Color* fill, bool allowMipmaps)
 {
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.Width = size.x;
@@ -543,6 +543,11 @@ TEX Render::CreateRawTexture(const Int2& size, const Color* fill)
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.SampleDesc.Count = 1;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	if(allowMipmaps)
+	{
+		desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	}
 
 	ID3D11Texture2D* tex;
 	if(fill)
@@ -805,10 +810,8 @@ ID3D11Buffer* Render::CreateConstantBuffer(uint size, cstring name)
 	if(FAILED(result))
 		throw Format("Failed to create constant buffer (size:%u; code:%u).", size, result);
 
-#ifdef _DEBUG
 	if(name)
-		buffer->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
-#endif
+		SetDebugName(buffer, name);
 
 	return buffer;
 }
@@ -862,16 +865,9 @@ void Render::CreateShader(cstring filename, VertexDeclarationId decl, ID3D11Vert
 		if(FAILED(result))
 			throw Format("Failed to create input layout (%u).", result);
 
-#ifdef _DEBUG
-		cstring name = Format("%s/%s", filename, vsEntry);
-		vertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
-
-		name = Format("%s/%s", filename, psEntry);
-		pixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
-
-		name = Format("%s/layout", filename);
-		layout->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
-#endif
+		SetDebugName(vertexShader, Format("%s/%s", filename, vsEntry));
+		SetDebugName(pixelShader, Format("%s/%s", filename, psEntry));
+		SetDebugName(layout, Format("%s/layout", filename));
 	}
 	catch(cstring err)
 	{
@@ -891,10 +887,7 @@ ID3D11VertexShader* Render::CreateVertexShader(cstring filename, cstring entry, 
 		if(FAILED(result))
 			throw Format("Error %u.", result);
 
-#ifdef _DEBUG
-		cstring name = Format("%s/%s", filename, entry);
-		vertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
-#endif
+		SetDebugName(vertexShader, Format("%s/%s", filename, entry));
 
 		if(vsBlob)
 			*vsBlob = vsBuf.Pin();
@@ -919,10 +912,7 @@ ID3D11PixelShader* Render::CreatePixelShader(cstring filename, cstring entry)
 		if(FAILED(result))
 			throw Format("Error %u.", result);
 
-#ifdef _DEBUG
-		cstring name = Format("%s/%s", filename, entry);
-		pixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
-#endif
+		SetDebugName(pixelShader, Format("%s/%s", filename, entry));
 
 		return pixelShader;
 	}
@@ -977,19 +967,17 @@ ID3DBlob* Render::CompileShader(cstring filename, cstring entry, bool isVertex, 
 //=================================================================================================
 ID3D11InputLayout* Render::CreateInputLayout(VertexDeclarationId decl, ID3DBlob* vsBlob, cstring name)
 {
-	ID3D11InputLayout* inputLayout;
+	ID3D11InputLayout* layout ;
 	VertexDeclaration& vertDecl = VertexDeclaration::decl[(int)decl];
 
-	HRESULT result = device->CreateInputLayout(vertDecl.desc, vertDecl.count, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &inputLayout);
+	HRESULT result = device->CreateInputLayout(vertDecl.desc, vertDecl.count, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &layout );
 	if(FAILED(result))
 		throw Format("Failed to create input layout (%u).", result);
 
-#ifdef _DEBUG
 	if(name)
-		inputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name), name);
-#endif
+		SetDebugName(layout, name);
 
-	return inputLayout;
+	return layout ;
 }
 
 //=================================================================================================
