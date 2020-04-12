@@ -74,6 +74,8 @@ void ParticleShader::Prepare(Camera& camera)
 	deviceContext->VSSetShader(vertexShader, nullptr, 0);
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
 	deviceContext->PSSetSamplers(0, 1, &sampler);
+	uint stride = sizeof(VParticle), offset = 0;
+	deviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
 	deviceContext->IASetInputLayout(layout);
 	ReserveVertexBuffer(1);
 

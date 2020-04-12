@@ -4,6 +4,17 @@
 #include "ShaderHandler.h"
 
 //-----------------------------------------------------------------------------
+enum PostEffectId
+{
+	POSTFX_EMPTY,
+	POSTFX_MONOCHROME,
+	POSTFX_DREAM,
+	POSTFX_BLUR_X,
+	POSTFX_BLUR_Y,
+	POSTFX_MAX
+};
+
+//-----------------------------------------------------------------------------
 struct PostEffect
 {
 	int id;
@@ -31,4 +42,10 @@ public:
 
 private:
 	void CreateResources();
+
+	ID3D11DeviceContext* deviceContext;
+	ID3D11VertexShader* vertexShader;
+	ID3D11PixelShader* pixelShader[POSTFX_MAX];
+	ID3D11InputLayout* layout;
+	ID3D11SamplerState* sampler;
 };

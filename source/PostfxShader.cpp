@@ -1,23 +1,39 @@
 #include "Pch.h"
 #include "PostfxShader.h"
-#include "Render.h"
-#include "Engine.h"
+
 #include "DirectX.h"
+#include "Engine.h"
+#include "Render.h"
+#include "VertexDeclaration.h"
 
 //=================================================================================================
-PostfxShader::PostfxShader() {}
+PostfxShader::PostfxShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(), layout(nullptr), sampler(nullptr)
+{
+}
 
+//=================================================================================================
 void PostfxShader::OnInit()
 {
-
+	ID3DBlob* vsBlob;
+	vertexShader = app::render->CreateVertexShader("postfx.hlsl", "VsEmpty", &vsBlob);
+	pixelShader[POSTFX_EMPTY] = app::render->CreatePixelShader("postfx.hlsl", "PsEmpty");
+	pixelShader[POSTFX_MONOCHROME] = app::render->CreatePixelShader("postfx.hlsl", "PsMonochrome");
+	pixelShader[POSTFX_DREAM] = app::render->CreatePixelShader("postfx.hlsl", "PsDream");
+	pixelShader[POSTFX_BLUR_X] = app::render->CreatePixelShader("postfx.hlsl", "PsBlurX");
+	pixelShader[POSTFX_BLUR_Y] = app::render->CreatePixelShader("postfx.hlsl", "PsBlurY");
+	layout = app::render->CreateInputLayout(VDI_TEX, vsBlob, "PostfxLayout");
+	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
+	vsBlob->Release();
 }
 
+//=================================================================================================
 void PostfxShader::OnRelease()
 {
-
+	SafeRelease(vertexShader);
+	SafeRelease(pixelShader);
+	SafeRelease(layout);
+	SafeRelease(sampler);
 }
-
-FIXME;
 
 /*: effect(nullptr), vbFullscreen(nullptr), surf(), tex()
 {

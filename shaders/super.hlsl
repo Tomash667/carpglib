@@ -107,15 +107,15 @@ void VsMain(VsInput In, out VsOutput Out)
 #ifdef ANIMATED
 	float3 normal = mul(float4(In.normal,1), matBones[In.indices[0]]).xyz * In.weight;
 	normal += mul(float4(In.normal,1), matBones[In.indices[1]]).xyz * (1-In.weight);
-	Out.normal = mul(float4(normal,1), matWorld).xyz;
+	Out.normal = mul(normal, (float3x3)matWorld).xyz;
 #else
-	Out.normal = mul(float4(In.normal,1), matWorld).xyz;
+	Out.normal = mul(In.normal, (float3x3)matWorld).xyz;
 #endif
 
 	// tangent/binormal
 #ifdef NORMAL_MAP
-	Out.tangent = normalize(mul(float4(In.tangent,1), matWorld).xyz);
-	Out.binormal = normalize(mul(float4(In.binormal,1), matWorld).xyz);
+	Out.tangent = normalize(mul(In.tangent, (float3x3)matWorld).xyz);
+	Out.binormal = normalize(mul(In.binormal, (float3x3)matWorld).xyz);
 #endif
 	
 	// tex
@@ -137,10 +137,10 @@ void VsMain(VsInput In, out VsOutput Out)
 
 float4 PsMain(VsOutput In) : SV_TARGET
 {
-	float4 tex = texDiffuse.Sample(samplerDiffuse, In.tex) * tint;
-	float4 color = ambientColor;
-	
+	float4 tex = texDiffuse.Sample(samplerDiffuse, In.tex);
 	clip(tex.w - 0.75f);
+	tex *= tint;
+	float4 color = ambientColor;
 	
 #ifdef NORMAL_MAP
 	float3 bump = texNormal.Sample(samplerNormal, In.tex).xyz * 2.f - 1.f;

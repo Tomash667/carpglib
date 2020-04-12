@@ -1041,11 +1041,11 @@ public:
 	LocalVector3()
 	{
 		buf = BufPool.Get();
+		buf->clear();
 	}
 
 	~LocalVector3()
 	{
-		buf->clear();
 		BufPool.Free(buf);
 	}
 

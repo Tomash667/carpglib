@@ -40,7 +40,7 @@ public:
 private:
 	Shader& GetShader(uint id);
 	Shader& CompileShader(uint id);
-	void DrawSubmesh(Mesh::Submesh& sub);
+	void DrawSubmesh(SceneNode* node, uint index);
 
 	ID3D11DeviceContext* deviceContext;
 	vector<Shader> shaders;

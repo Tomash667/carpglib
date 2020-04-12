@@ -311,19 +311,21 @@ void SuperShader::Draw(SceneNode* node)
 		for(int i = 0; i < mesh.head.n_subs; ++i)
 		{
 			if(IsSet(node->subs, 1 << i))
-				DrawSubmesh(mesh.subs[i]);
+				DrawSubmesh(node, i);
 		}
 	}
 	else
 	{
 		int index = (node->subs & ~SceneNode::SPLIT_INDEX);
-		DrawSubmesh(mesh.subs[index]);
+		DrawSubmesh(node, index);
 	}
 }
 
 //=================================================================================================
-void SuperShader::DrawSubmesh(Mesh::Submesh& sub)
+void SuperShader::DrawSubmesh(SceneNode* node, uint index)
 {
+	Mesh::Submesh& sub = node->mesh->subs[index];
+
 	// apply vertex shader constants per material
 	D3D11_MAPPED_SUBRESOURCE resource;
 	V(deviceContext->Map(psMaterial, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
@@ -334,11 +336,32 @@ void SuperShader::DrawSubmesh(Mesh::Submesh& sub)
 	deviceContext->Unmap(psMaterial, 0);
 
 	// apply textures
-	deviceContext->PSSetShaderResources(0, 1, &sub.tex->tex);
+	TEX tex;
+	if(node->tex_override && node->tex_override[index].diffuse)
+		tex = node->tex_override[index].diffuse->tex;
+	else
+		tex = sub.tex->tex;
+	deviceContext->PSSetShaderResources(0, 1, &tex);
 	if(applyNormalMap)
-		deviceContext->PSSetShaderResources(1, 1, sub.tex_normal ? &sub.tex_normal->tex : &texEmptyNormalMap);
+	{
+		if(node->tex_override && node->tex_override[index].normal)
+			tex = node->tex_override[index].normal->tex;
+		else if(sub.tex_normal)
+			tex = sub.tex_normal->tex;
+		else
+			tex = texEmptyNormalMap;
+		deviceContext->PSSetShaderResources(1, 1, &tex);
+	}
 	if(applySpecularMap)
-		deviceContext->PSSetShaderResources(2, 1, sub.tex_specular ? &sub.tex_specular->tex : &texEmptySpecularMap);
+	{
+		if(node->tex_override && node->tex_override[index].specular)
+			tex = node->tex_override[index].specular->tex;
+		else if(sub.tex_specular)
+			tex = sub.tex_specular->tex;
+		else
+			tex = texEmptySpecularMap;
+		deviceContext->PSSetShaderResources(2, 1, &tex);
+	}
 
 	// actual drawing
 	deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, 0);

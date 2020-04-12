@@ -1904,7 +1904,7 @@ void Gui::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* 
 		Vec4 col = Color(color);
 		VParticle* v = vBuf;
 		gui_rect.Populate(v, col);
-		shader->Draw(nullptr, v, 1);
+		shader->Draw(nullptr, vBuf, 1);
 	}
 }
 

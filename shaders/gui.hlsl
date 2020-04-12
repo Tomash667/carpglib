@@ -38,6 +38,6 @@ void VsMain(in VERTEX_INPUT In, out VERTEX_OUTPUT Out)
 float4 PsMain(in VERTEX_OUTPUT In) : SV_TARGET
 {
 	float4 c = texDiffuse.Sample(samplerDiffuse, In.tex) * In.color;
-	float4 gray = (c.r+c.g+c.b)/3.0f;
-	return lerp(c, gray, grayscale);
+	float gray = (c.r+c.g+c.b)/3.0f;
+	return lerp(c, float4(gray, gray, gray, c.a), grayscale);
 }
