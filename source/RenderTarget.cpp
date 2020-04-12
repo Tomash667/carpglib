@@ -1,11 +1,30 @@
 #include "Pch.h"
-/*#include "RenderTarget.h"
-#include "Render.h"
-#include "File.h"
+#include "RenderTarget.h"
+/*#include "Render.h"
+#include "File.h"*/
 #include "DirectX.h"
+#include "ScreenGrab.h"
+
+FIXME; // move to Texture?
+
+RenderTarget::~RenderTarget()
+{
+	SafeRelease(renderTarget);
+	SafeRelease(depthStencilView);
+}
+
+/*void RenderTarget::SaveToFile(cstring filename)
+{
+	app::render->SaveToFile(tex, filename, ImageFormat::PNG);
+}
+
+uint RenderTarget::SaveToFile(FileWriter& f)
+{
+
+}*/
 
 //=================================================================================================
-void RenderTarget::OnReset()
+/*void RenderTarget::OnReset()
 {
 	SafeRelease(tex);
 	SafeRelease(surf);

@@ -1,12 +1,13 @@
 #include "Pch.h"
 #include "ResourceManager.h"
+
+#include "DirectX.h"
 #include "Engine.h"
 #include "Mesh.h"
-#include "SoundManager.h"
 #include "Pak.h"
 #include "Render.h"
+#include "SoundManager.h"
 #include "WICTextureLoader.h"
-#include "DirectX.h"
 
 ResourceManager* app::res_mgr;
 
@@ -638,6 +639,31 @@ void ResourceManager::LoadTexture(Texture* tex)
 
 	if(FAILED(hr))
 		throw Format("Failed to load texture '%s' (%u).", tex->GetPath(), hr);
+}
+
+
+//=================================================================================================
+TEX ResourceManager::LoadRawTexture(cstring path)
+{
+	assert(path);
+	TEX tex;
+	HRESULT hr = CreateWICTextureFromFileEx(app::render->GetDevice(), app::render->GetDeviceContext(), ToWString(path), 0u,
+		D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_IGNORE_SRGB, nullptr, &tex);
+	if(FAILED(hr))
+		throw Format("Failed to load texture '%s' (%u).", path, hr);
+	return tex;
+}
+
+//=================================================================================================
+TEX ResourceManager::LoadRawTexture(Buffer* buf)
+{
+	assert(buf);
+	TEX tex;
+	HRESULT hr = CreateWICTextureFromMemoryEx(app::render->GetDevice(), app::render->GetDeviceContext(), static_cast<byte*>(buf->Data()), buf->Size(), 0u,
+		D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_IGNORE_SRGB, nullptr, &tex);
+	if(FAILED(hr))
+		throw Format("Failed to load in-memory texture (%u).", hr);
+	return tex;
 }
 
 //=================================================================================================

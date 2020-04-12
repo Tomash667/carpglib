@@ -38,4 +38,13 @@ namespace DirectX
         _In_opt_ const GUID* targetFormat = nullptr,
         _In_opt_ std::function<void __cdecl(IPropertyBag2*)> setCustomProps = nullptr,
         _In_ bool forceSRGB = false) noexcept;
+
+    HRESULT __cdecl SaveWICTextureToFileInMemory(
+        _In_ ID3D11DeviceContext* pContext,
+        _In_ ID3D11Resource* pSource,
+        _In_ REFGUID guidContainerFormat,
+        _In_ HGLOBAL hGlobal,
+        _In_opt_ const GUID* targetFormat = nullptr,
+        _In_opt_ std::function<void __cdecl(IPropertyBag2*)> setCustomProps = nullptr,
+        _In_ bool forceSRGB = false) noexcept;
 }

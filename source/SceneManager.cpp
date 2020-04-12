@@ -1,11 +1,12 @@
 #include "Pch.h"
 #include "SceneManager.h"
+
+#include "Camera.h"
+#include "DirectX.h"
 #include "Render.h"
 #include "Scene.h"
 #include "SceneNode.h"
 #include "SuperShader.h"
-#include "Camera.h"
-#include "DirectX.h"
 
 SceneManager* app::scene_mgr;
 
@@ -17,8 +18,6 @@ SceneManager::SceneManager() : use_lighting(true), use_fog(true), use_normalmap(
 //=================================================================================================
 void SceneManager::Init()
 {
-	//device = app::render->GetDevice();
-
 	super_shader = new SuperShader;
 	app::render->RegisterShader(super_shader);
 }

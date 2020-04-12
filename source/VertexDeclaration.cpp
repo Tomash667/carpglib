@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "VertexDeclaration.h"
+
 #include "DirectX.h"
 
 const D3D11_INPUT_ELEMENT_DESC descDefault[] =

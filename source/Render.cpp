@@ -18,7 +18,7 @@ static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 //=================================================================================================
 Render::Render() : initialized(false), vsync(true), shaders_dir("shaders"), refreshHz(0), usedAdapter(0), multisampling(0), multisamplingQuality(0),
 factory(nullptr), adapter(nullptr), swapChain(nullptr), device(nullptr), deviceContext(nullptr), renderTarget(nullptr), depthStencilView(nullptr),
-blendStates(), depthStates(), rasterStates(), blendState(BLEND_NO), depthState(DEPTH_YES), rasterState(RASTER_NORMAL)
+blendStates(), depthStates(), rasterStates(), blendState(BLEND_NO), depthState(DEPTH_YES), rasterState(RASTER_NORMAL), currentTarget(nullptr)
 {
 }
 
@@ -171,9 +171,9 @@ void Render::CreateDeviceAndSwapChain()
 void Render::CreateSizeDependentResources()
 {
 	CreateRenderTarget();
-	CreateDepthStencilView();
+	depthStencilView = CreateDepthStencilView(wndSize);
 	deviceContext->OMSetRenderTargets(1, &renderTarget, depthStencilView);
-	SetViewport();
+	SetViewport(wndSize);
 }
 
 //=================================================================================================
@@ -186,7 +186,7 @@ void Render::CreateRenderTarget()
 		throw Format("Failed to get back buffer (%u).", result);
 
 	// Create the render target view with the back buffer pointer.
-	result = device->CreateRenderTargetView(back_buffer, NULL, &renderTarget);
+	result = device->CreateRenderTargetView(back_buffer, nullptr, &renderTarget);
 	if(FAILED(result))
 		throw Format("Failed to create render target view (%u).", result);
 
@@ -195,44 +195,44 @@ void Render::CreateRenderTarget()
 }
 
 //=================================================================================================
-void Render::CreateDepthStencilView()
+ID3D11DepthStencilView* Render::CreateDepthStencilView(const Int2& size)
 {
-	// create depth buffer texture
-	D3D11_TEXTURE2D_DESC tex_desc = {};
+	// create depth texture
+	D3D11_TEXTURE2D_DESC desc = {};
+	desc.Width = size.x;
+	desc.Height = size.y;
+	desc.MipLevels = 1;
+	desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
 
-	tex_desc.Width = wndSize.x;
-	tex_desc.Height = wndSize.y;
-	tex_desc.MipLevels = 1;
-	tex_desc.ArraySize = 1;
-	tex_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	tex_desc.SampleDesc.Count = 1;
-	tex_desc.SampleDesc.Quality = 0;
-	tex_desc.Usage = D3D11_USAGE_DEFAULT;
-	tex_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	tex_desc.CPUAccessFlags = 0;
-	tex_desc.MiscFlags = 0;
-
-	ID3D11Texture2D* depth_tex;
-	V(device->CreateTexture2D(&tex_desc, nullptr, &depth_tex));
+	ID3D11Texture2D* tex;
+	V(device->CreateTexture2D(&desc, nullptr, &tex));
 
 	// create depth stencil view from texture
-	D3D11_DEPTH_STENCIL_VIEW_DESC view_desc = {};
+	D3D11_DEPTH_STENCIL_VIEW_DESC viewDesc = {};
+	viewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	viewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	viewDesc.Texture2D.MipSlice = 0;
 
-	view_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	view_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	view_desc.Texture2D.MipSlice = 0;
+	ID3D11DepthStencilView* view;
+	V(device->CreateDepthStencilView(tex, &viewDesc, &view));
 
-	V(device->CreateDepthStencilView(depth_tex, &view_desc, &depthStencilView));
-
-	depth_tex->Release();
+	tex->Release();
+	return view;
 }
 
 //=================================================================================================
-void Render::SetViewport()
+void Render::SetViewport(const Int2& size)
 {
 	D3D11_VIEWPORT viewport;
-	viewport.Width = (float)wndSize.x;
-	viewport.Height = (float)wndSize.y;
+	viewport.Width = (float)size.x;
+	viewport.Height = (float)size.y;
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0.0f;
@@ -448,13 +448,22 @@ void Render::LogAndSelectResolution()
 //=================================================================================================
 void Render::Clear(const Vec4& color)
 {
-	deviceContext->ClearRenderTargetView(renderTarget, (const float*)color);
-	deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.f, 0);
+	if(currentTarget)
+	{
+		deviceContext->ClearRenderTargetView(currentTarget->renderTarget, (const float*)color);
+		deviceContext->ClearDepthStencilView(currentTarget->depthStencilView, D3D11_CLEAR_DEPTH, 1.f, 0);
+	}
+	else
+	{
+		deviceContext->ClearRenderTargetView(renderTarget, (const float*)color);
+		deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.f, 0);
+	}
 }
 
 //=================================================================================================
 void Render::Present()
 {
+	assert(!currentTarget);
 	V(swapChain->Present(vsync ? 1 : 0, 0));
 }
 
@@ -606,8 +615,8 @@ RenderTarget* Render::CreateRenderTarget(const Int2& size)
 	assert(size <= wndSize);
 	assert(size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y));
 	RenderTarget* target = new RenderTarget;
-	//target->size = size;
-	//target->tex = CreateRawTexture(size);
+	target->size = size;
+	target->state = ResourceState::Loaded;
 
 	// create texture
 	D3D11_TEXTURE2D_DESC desc = {};
@@ -624,12 +633,18 @@ RenderTarget* Render::CreateRenderTarget(const Int2& size)
 	ID3D11Texture2D* texResource;
 	V(device->CreateTexture2D(&desc, nullptr, &texResource));
 
+	// create render target view
+	V(device->CreateRenderTargetView(texResource, nullptr, &target->renderTarget));
+
 	// create srv
 	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
 	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	viewDesc.Texture2D.MipLevels = 1;
 	V(device->CreateShaderResourceView(texResource, &viewDesc, &target->tex));
+
+	// create depth stencil view
+	target->depthStencilView = CreateDepthStencilView(size);
 
 	texResource->Release();
 	renderTargets.push_back(target);
@@ -782,38 +797,41 @@ void Render::GetMultisamplingModes(vector<Int2>& v) const
 //=================================================================================================
 void Render::SetTarget(RenderTarget* target)
 {
-	FIXME;
-	/*if(target)
+	if(target)
 	{
-		assert(!current_target);
+		assert(!currentTarget);
 
-		if(target->surf)
+		/*if(target->surf)
 			V(device->SetRenderTarget(0, target->surf));
 		else
 		{
 			V(target->tex->GetSurfaceLevel(0, &current_surf));
 			V(device->SetRenderTarget(0, current_surf));
-		}
+		}*/
+		FIXME;
 
-		current_target = target;
+		deviceContext->OMSetRenderTargets(1, &target->renderTarget, target->depthStencilView);
+		SetViewport(target->size);
+
+		currentTarget = target;
 	}
 	else
 	{
-		assert(current_target);
+		assert(currentTarget);
 
-		if(current_target->tmp_surf)
+		/*if(currentTarget->tmp_surf)
 		{
-			current_target->surf->Release();
-			current_target->surf = nullptr;
-			current_target->tmp_surf = false;
+			currentTarget->surf->Release();
+			currentTarget->surf = nullptr;
+			currentTarget->tmp_surf = false;
 		}
 		else
 		{
 			// copy to surface if using multisampling
-			if(current_target->surf)
+			if(currentTarget->surf)
 			{
-				V(current_target->tex->GetSurfaceLevel(0, &current_surf));
-				V(device->StretchRect(current_target->surf, nullptr, current_surf, nullptr, D3DTEXF_NONE));
+				V(currentTarget->tex->GetSurfaceLevel(0, &current_surf));
+				V(device->StretchRect(currentTarget->surf, nullptr, current_surf, nullptr, D3DTEXF_NONE));
 			}
 			current_surf->Release();
 		}
@@ -823,9 +841,15 @@ void Render::SetTarget(RenderTarget* target)
 		V(device->SetRenderTarget(0, current_surf));
 		current_surf->Release();
 
-		current_target = nullptr;
-		current_surf = nullptr;
-	}*/
+		currentTarget = nullptr;
+		current_surf = nullptr;*/
+		FIXME;
+
+		deviceContext->OMSetRenderTargets(1, &renderTarget, depthStencilView);
+		SetViewport(wndSize);
+
+		currentTarget = nullptr;
+	}
 }
 
 //=================================================================================================
@@ -842,7 +866,7 @@ ID3D11Buffer* Render::CreateConstantBuffer(uint size, cstring name)
 	cbDesc.StructureByteStride = 0;
 
 	ID3D11Buffer* buffer;
-	HRESULT result = device->CreateBuffer(&cbDesc, NULL, &buffer);
+	HRESULT result = device->CreateBuffer(&cbDesc, nullptr, &buffer);
 	if(FAILED(result))
 		throw Format("Failed to create constant buffer (size:%u; code:%u).", size, result);
 
@@ -1018,35 +1042,55 @@ ID3D11InputLayout* Render::CreateInputLayout(VertexDeclarationId decl, ID3DBlob*
 }
 
 //=================================================================================================
+const GUID& ImageFormatToGuid(ImageFormat format)
+{
+	switch(format)
+	{
+	case ImageFormat::BMP:
+		return GUID_ContainerFormatBmp;
+	case ImageFormat::JPG:
+		return GUID_ContainerFormatJpeg;
+	case ImageFormat::TIF:
+		return GUID_ContainerFormatTiff;
+	case ImageFormat::GIF:
+		return GUID_ContainerFormatGif;
+	case ImageFormat::PNG:
+		return GUID_ContainerFormatPng;
+	case ImageFormat::DDS:
+		return GUID_ContainerFormatDds;
+	default:
+		assert(0);
+		return GUID_ContainerFormatJpeg;
+	}
+}
+
+//=================================================================================================
 void Render::SaveToFile(TEX tex, cstring path, ImageFormat format)
 {
 	ID3D11Texture2D* res;
 	tex->GetResource(reinterpret_cast<ID3D11Resource**>(&res));
 
-	GUID formatGuid;
-	switch(format)
-	{
-	case ImageFormat::BMP:
-		formatGuid = GUID_ContainerFormatBmp;
-		break;
-	case ImageFormat::JPG:
-		formatGuid = GUID_ContainerFormatJpeg;
-		break;
-	case ImageFormat::TIF:
-		formatGuid = GUID_ContainerFormatTiff;
-		break;
-	case ImageFormat::GIF:
-		formatGuid = GUID_ContainerFormatGif;
-		break;
-	case ImageFormat::PNG:
-		formatGuid = GUID_ContainerFormatPng;
-		break;
-	case ImageFormat::DDS:
-		formatGuid = GUID_ContainerFormatDds;
-		break;
-	}
-
-	V(SaveWICTextureToFile(deviceContext, res, formatGuid, ToWString(path)));
+	V(SaveWICTextureToFile(deviceContext, res, ImageFormatToGuid(format), ToWString(path)));
 
 	res->Release();
+}
+
+//=================================================================================================
+uint Render::SaveToFile(TEX tex, FileWriter& file, ImageFormat format)
+{
+	ID3D11Texture2D* res;
+	tex->GetResource(reinterpret_cast<ID3D11Resource**>(&res));
+
+	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, 0);
+	V(SaveWICTextureToFileInMemory(deviceContext, res, ImageFormatToGuid(format), hGlobal));
+
+	void* ptr = GlobalLock(hGlobal);
+	uint size = GlobalSize(hGlobal);
+
+	file << size;
+	file.Write(ptr, size);
+
+	GlobalUnlock(hGlobal);
+	GlobalFree(hGlobal);
+	return size;
 }

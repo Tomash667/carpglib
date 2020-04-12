@@ -85,7 +85,8 @@ public:
 	void Present();
 	void RegisterShader(ShaderHandler* shader);
 	void ReloadShaders();
-	void SaveToFile(TEX tex, cstring path, ImageFormat format);
+	void SaveToFile(TEX tex, cstring path, ImageFormat format = ImageFormat::JPG);
+	uint SaveToFile(TEX tex, FileWriter& file, ImageFormat format = ImageFormat::JPG);
 
 	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	bool IsVsyncEnabled() const { return vsync; }
@@ -114,8 +115,8 @@ private:
 	void CreateDeviceAndSwapChain();
 	void CreateSizeDependentResources();
 	void CreateRenderTarget();
-	void CreateDepthStencilView();
-	void SetViewport();
+	ID3D11DepthStencilView* CreateDepthStencilView(const Int2& size);
+	void SetViewport(const Int2& size);
 	void CreateBlendStates();
 	void CreateDepthStates();
 	void CreateRasterStates();
@@ -137,6 +138,7 @@ private:
 	vector<ShaderHandler*> shaders;
 	vector<RenderTarget*> renderTargets;
 	vector<Resolution> resolutions;
+	RenderTarget* currentTarget;
 	string shaders_dir;
 	uint refreshHz;
 	int usedAdapter, multisampling, multisamplingQuality;

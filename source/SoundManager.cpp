@@ -1,7 +1,9 @@
 #include "Pch.h"
 #include "SoundManager.h"
+
 #include "ResourceManager.h"
 #include "WindowsIncludes.h"
+
 #include <fmod.hpp>
 
 SoundManager* app::sound_mgr;

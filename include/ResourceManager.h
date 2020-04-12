@@ -143,6 +143,8 @@ class ResourceManager
 	}
 	void LoadInstant(Resource* res);
 	void LoadMeshMetadata(Mesh* mesh);
+	TEX LoadRawTexture(cstring path);
+	TEX LoadRawTexture(Buffer* buf);
 
 private:
 	struct TaskDetail
