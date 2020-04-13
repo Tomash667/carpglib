@@ -1083,6 +1083,7 @@ uint Render::SaveToFile(TEX tex, FileWriter& file, ImageFormat format)
 
 	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, 0);
 	V(SaveWICTextureToFileInMemory(deviceContext, res, ImageFormatToGuid(format), hGlobal));
+	res->Release();
 
 	void* ptr = GlobalLock(hGlobal);
 	uint size = GlobalSize(hGlobal);

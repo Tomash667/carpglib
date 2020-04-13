@@ -21,6 +21,7 @@ public:
 	cstring GetName() const override { return "basic"; }
 	void OnInit() override;
 	void OnRelease() override;
+	void DrawDebugNodes(const vector<DebugSceneNode*>& nodes);
 	/*void Prepare(const Camera& camera);
 	void BeginBatch();
 	void AddQuad(const Vec3(&pts)[4], const Vec4& color);

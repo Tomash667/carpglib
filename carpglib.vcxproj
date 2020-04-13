@@ -121,6 +121,7 @@
     <ClCompile Include="source\App.cpp" />
     <ClCompile Include="source\BoxToBox.cpp" />
     <ClCompile Include="source\Bresenham.cpp" />
+    <ClCompile Include="source\BuiltinMesh.cpp" />
     <ClCompile Include="source\Button.cpp" />
     <ClCompile Include="source\CheckBox.cpp" />
     <ClCompile Include="source\CheckBoxGroup.cpp" />

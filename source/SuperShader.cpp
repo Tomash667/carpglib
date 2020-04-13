@@ -260,6 +260,56 @@ void SuperShader::SetShader(uint id)
 }
 
 //=================================================================================================
+void SuperShader::SetTexture(const TexOverride* texOverride, Mesh* mesh, uint index)
+{
+	TEX tex;
+	if(texOverride && texOverride[index].diffuse)
+		tex = texOverride[index].diffuse->tex;
+	else
+		tex = mesh->subs[index].tex->tex;
+	deviceContext->PSSetShaderResources(0, 1, &tex);
+
+	if(applyNormalMap)
+	{
+		if(texOverride && texOverride[index].normal)
+			tex = texOverride[index].normal->tex;
+		else if(mesh && mesh->subs[index].tex_normal)
+			tex = mesh->subs[index].tex_normal->tex;
+		else
+			tex = texEmptyNormalMap;
+		deviceContext->PSSetShaderResources(1, 1, &tex);
+	}
+
+	if(applySpecularMap)
+	{
+		if(texOverride && texOverride[index].specular)
+			tex = texOverride[index].specular->tex;
+		else if(mesh && mesh->subs[index].tex_specular)
+			tex = mesh->subs[index].tex_specular->tex;
+		else
+			tex = texEmptySpecularMap;
+		deviceContext->PSSetShaderResources(2, 1, &tex);
+	}
+}
+
+
+void SuperShader::SetCustomMesh(ID3D11Buffer* vb, ID3D11Buffer* ib, uint vertexSize)
+{
+	uint stride = vertexSize, offset = 0;
+	deviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+	deviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R16_UINT, 0);
+
+	// apply vertex shader constants per material (default values)
+	D3D11_MAPPED_SUBRESOURCE resource;
+	V(deviceContext->Map(psMaterial, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
+	PsMaterial& psm = *(PsMaterial*)resource.pData;
+	psm.specularColor = Vec3::One;
+	psm.specularHardness = 10.f;
+	psm.specularIntensity = 0.2f;
+	deviceContext->Unmap(psMaterial, 0);
+}
+
+//=================================================================================================
 void SuperShader::Draw(SceneNode* node)
 {
 	assert(node);
@@ -335,34 +385,40 @@ void SuperShader::DrawSubmesh(SceneNode* node, uint index)
 	psm.specularIntensity = sub.specular_intensity;
 	deviceContext->Unmap(psMaterial, 0);
 
-	// apply textures
-	TEX tex;
-	if(node->tex_override && node->tex_override[index].diffuse)
-		tex = node->tex_override[index].diffuse->tex;
-	else
-		tex = sub.tex->tex;
-	deviceContext->PSSetShaderResources(0, 1, &tex);
-	if(applyNormalMap)
-	{
-		if(node->tex_override && node->tex_override[index].normal)
-			tex = node->tex_override[index].normal->tex;
-		else if(sub.tex_normal)
-			tex = sub.tex_normal->tex;
-		else
-			tex = texEmptyNormalMap;
-		deviceContext->PSSetShaderResources(1, 1, &tex);
-	}
-	if(applySpecularMap)
-	{
-		if(node->tex_override && node->tex_override[index].specular)
-			tex = node->tex_override[index].specular->tex;
-		else if(sub.tex_specular)
-			tex = sub.tex_specular->tex;
-		else
-			tex = texEmptySpecularMap;
-		deviceContext->PSSetShaderResources(2, 1, &tex);
-	}
+	// set texture OwO
+	SetTexture(node->tex_override, node->mesh, index);
 
 	// actual drawing
 	deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, 0);
+}
+
+//=================================================================================================
+void SuperShader::DrawCustom(const Matrix& matWorld, const Matrix& matCombined, const std::array<Light*, 3>& lights, uint startIndex, uint indexCount)
+{
+	// set vertex shader constants per mesh data
+	D3D11_MAPPED_SUBRESOURCE resource;
+	V(deviceContext->Map(vsLocals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
+	VsLocals& vsl = *(VsLocals*)resource.pData;
+	vsl.matCombined = matCombined.Transpose();
+	vsl.matWorld = matWorld.Transpose();
+	deviceContext->Unmap(vsLocals, 0);
+
+	// set pixel shader constants per mesh data
+	V(deviceContext->Map(psLocals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
+	PsLocals& psl = *(PsLocals*)resource.pData;
+	psl.tint = Vec4::One;
+	if(applyLights)
+	{
+		for(uint i = 0; i < Lights::COUNT; ++i)
+		{
+			if(lights[i])
+				psl.lights.ld[i] = *lights[i];
+			else
+				psl.lights.ld[i] = Light::EMPTY;
+		}
+	}
+	deviceContext->Unmap(psLocals, 0);
+
+	// actual drawing
+	deviceContext->DrawIndexed(indexCount, startIndex, 0);
 }

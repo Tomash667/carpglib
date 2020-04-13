@@ -556,6 +556,9 @@
     <ClCompile Include="source\VertexDeclaration.cpp">
       <Filter>const</Filter>
     </ClCompile>
+    <ClCompile Include="source\BuiltinMesh.cpp">
+      <Filter>resources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

@@ -63,3 +63,20 @@ struct SceneBatch
 	void Add(SceneNode* node, int sub = -1);
 	void Process();
 };
+
+//-----------------------------------------------------------------------------
+struct DebugSceneNode : public ObjectPoolProxy<DebugSceneNode>
+{
+	enum Type
+	{
+		Box,
+		Cylinder,
+		Sphere,
+		Capsule,
+		TriMesh,
+		MaxType
+	} type;
+	Color color;
+	Matrix mat;
+	void* mesh_ptr;
+};

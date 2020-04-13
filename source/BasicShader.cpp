@@ -122,3 +122,40 @@ void BasicShader::EndBatch()
 
 	verts.clear();
 }*/
+
+void BasicShader::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
+{
+	app::render->SetBlendState(Render::BLEND_NO);
+	app::render->SetDepthState(Render::DEPTH_NO);
+	app::render->SetRasterState(Render::RASTER_WIREFRAME);
+
+	/*for(vector<DebugSceneNode*>::const_iterator it = nodes.begin(), end = nodes.end(); it != end; ++it)
+	{
+		const DebugSceneNode& node = **it;
+
+		V(effect->SetVector(basic_shader->hColor, (D3DXVECTOR4*)&colors[node.group]));
+		V(effect->SetMatrix(basic_shader->hMatCombined, (D3DXMATRIX*)&node.mat));
+
+		if(node.type == DebugSceneNode::TriMesh)
+		{
+			// currently only dungeon mesh is supported here
+			assert(reinterpret_cast<btTriangleIndexVertexArray*>(node.mesh_ptr) == game_level->dungeon_shape_data);
+			V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_POS)));
+			V(effect->CommitChanges());
+
+			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, game_level->dungeon_shape_pos.size(), game_level->dungeon_shape_index.size() / 3, game_level->dungeon_shape_index.data(),
+				D3DFMT_INDEX32, game_level->dungeon_shape_pos.data(), sizeof(Vec3)));
+		}
+		else
+		{
+			Mesh* mesh = meshes[node.type];
+			V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh->vertex_decl)));
+			V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
+			V(device->SetIndices(mesh->ib));
+			V(effect->CommitChanges());
+
+			for(int i = 0; i < mesh->head.n_subs; ++i)
+				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
+		}
+	}*/
+}
