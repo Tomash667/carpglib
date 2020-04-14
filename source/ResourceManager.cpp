@@ -11,6 +11,15 @@
 
 ResourceManager* app::res_mgr;
 
+extern byte box_qmsh[];
+extern byte sphere_qmsh[];
+extern byte capsule_qmsh[];
+extern byte cylinder_qmsh[];
+extern uint box_qmsh_len;
+extern uint sphere_qmsh_len;
+extern uint capsule_qmsh_len;
+extern uint cylinder_qmsh_len;
+
 //=================================================================================================
 ResourceManager::ResourceManager() : mode(Mode::Instant)
 {
@@ -37,6 +46,11 @@ ResourceManager::~ResourceManager()
 void ResourceManager::Init()
 {
 	RegisterExtensions();
+
+	LoadBuiltinMesh("box.qmsh", box_qmsh, box_qmsh_len);
+	LoadBuiltinMesh("sphere.qmsh", sphere_qmsh, sphere_qmsh_len);
+	LoadBuiltinMesh("capsule.qmsh", capsule_qmsh, capsule_qmsh_len);
+	LoadBuiltinMesh("cylinder.qmsh", cylinder_qmsh, cylinder_qmsh_len);
 }
 
 //=================================================================================================
@@ -641,7 +655,6 @@ void ResourceManager::LoadTexture(Texture* tex)
 		throw Format("Failed to load texture '%s' (%u).", tex->GetPath(), hr);
 }
 
-
 //=================================================================================================
 TEX ResourceManager::LoadRawTexture(cstring path)
 {
@@ -664,6 +677,11 @@ TEX ResourceManager::LoadRawTexture(Buffer* buf)
 	if(FAILED(hr))
 		throw Format("Failed to load in-memory texture (%u).", hr);
 	return tex;
+}
+
+void ResourceManager::LoadBuiltinMesh(cstring name, byte* data, uint size)
+{
+
 }
 
 //=================================================================================================
