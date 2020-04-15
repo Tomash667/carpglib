@@ -679,9 +679,29 @@ TEX ResourceManager::LoadRawTexture(Buffer* buf)
 	return tex;
 }
 
+//=================================================================================================
 void ResourceManager::LoadBuiltinMesh(cstring name, byte* data, uint size)
 {
+	Buffer* buf = Buffer::Get();
+	buf->Clear();
+	buf->Append(data, size);
 
+	Mesh* mesh = new Mesh;
+	mesh->type = ResourceType::Mesh;
+	mesh->path = name;
+	mesh->filename = mesh->path.c_str();
+	mesh->state = ResourceState::Loaded;
+
+	try
+	{
+		MemoryReader f(buf);
+		mesh->Load(f, app::render->GetDevice());
+		resources.insert(mesh);
+	}
+	catch(cstring err)
+	{
+		throw Format("ResourceManager: Failed to load builtin mesh '%s'. %s", name, err);
+	}
 }
 
 //=================================================================================================

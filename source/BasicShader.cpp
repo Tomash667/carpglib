@@ -2,8 +2,11 @@
 #include "BasicShader.h"
 
 #include "Camera.h"
+#include "DebugNode.h"
 #include "DirectX.h"
+#include "Mesh.h"
 #include "Render.h"
+#include "ResourceManager.h"
 
 struct VsGlobals
 {
@@ -26,21 +29,24 @@ void BasicShader::Shader::Release()
 
 //=================================================================================================
 BasicShader::BasicShader() : deviceContext(app::render->GetDeviceContext()), vsGlobals(nullptr), psGlobals(nullptr)
-	//device(app::render->GetDevice()), effect(nullptr), vb(nullptr), batch(false)
+	//vb(nullptr), batch(false)
 {
 }
-
-
 
 //=================================================================================================
 void BasicShader::OnInit()
 {
-	/*app::render->CreateShader("basic.hlsl", descPos, countof(descPos), shaderSimple.vertexShader, shaderSimple.pixelShader, shaderSimple.layout, nullptr, "VsSimple", "PsSimple");
-	app::render->CreateShader("basic.hlsl", descColor, countof(descColor), shaderColor.vertexShader, shaderColor.pixelShader, shaderColor.layout, nullptr, "VsColor", "PsColor");
-	app::render->CreateShader("basic.hlsl", descPos, countof(descPos), shaderArea.vertexShader, shaderArea.pixelShader, shaderArea.layout, nullptr, "VsArea", "PsArea");
+	app::render->CreateShader("basic.hlsl", VDI_POS, shaderSimple.vertexShader, shaderSimple.pixelShader, shaderSimple.layout, nullptr, "VsSimple", "PsSimple");
+	app::render->CreateShader("basic.hlsl", VDI_COLOR, shaderColor.vertexShader, shaderColor.pixelShader, shaderColor.layout, nullptr, "VsColor", "PsColor");
+	app::render->CreateShader("basic.hlsl", VDI_POS, shaderArea.vertexShader, shaderArea.pixelShader, shaderArea.layout, nullptr, "VsArea", "PsArea");
 
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "BasicVsGlobals");
-	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "BasicPsGlobals");*/
+	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "BasicPsGlobals");
+
+	meshes[(int)DebugNode::Box] = app::res_mgr->Get<Mesh>("box.qmsh");
+	meshes[(int)DebugNode::Sphere] = app::res_mgr->Get<Mesh>("sphere.qmsh");
+	meshes[(int)DebugNode::Capsule] = app::res_mgr->Get<Mesh>("capsule.qmsh");
+	meshes[(int)DebugNode::Cylinder] = app::res_mgr->Get<Mesh>("cylinder.qmsh");
 }
 
 //=================================================================================================
@@ -123,39 +129,67 @@ void BasicShader::EndBatch()
 	verts.clear();
 }*/
 
-void BasicShader::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
+void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 {
 	app::render->SetBlendState(Render::BLEND_NO);
 	app::render->SetDepthState(Render::DEPTH_NO);
 	app::render->SetRasterState(Render::RASTER_WIREFRAME);
 
-	/*for(vector<DebugSceneNode*>::const_iterator it = nodes.begin(), end = nodes.end(); it != end; ++it)
+	// setup shader
+	deviceContext->VSSetShader(shaderSimple.vertexShader, nullptr, 0);
+	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
+	deviceContext->PSSetShader(shaderSimple.pixelShader, nullptr, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
+	deviceContext->IASetInputLayout(shaderSimple.layout);
+
+	Color prevColor = Color::None;
+	DebugNode::Mesh prevMesh = DebugNode::None;
+
+	for(vector<DebugNode*>::const_iterator it = nodes.begin(), end = nodes.end(); it != end; ++it)
 	{
-		const DebugSceneNode& node = **it;
+		const DebugNode& node = **it;
 
-		V(effect->SetVector(basic_shader->hColor, (D3DXVECTOR4*)&colors[node.group]));
-		V(effect->SetMatrix(basic_shader->hMatCombined, (D3DXMATRIX*)&node.mat));
+		// set color
+		if(node.color != prevColor)
+		{
+			prevColor = node.color;
+			D3D11_MAPPED_SUBRESOURCE resource;
+			V(deviceContext->Map(psGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
+			PsGlobals& psg = *(PsGlobals*)resource.pData;
+			psg.color = node.color;
+			deviceContext->Unmap(psGlobals, 0);
+		}
 
-		if(node.type == DebugSceneNode::TriMesh)
+		// set matrix
+		D3D11_MAPPED_SUBRESOURCE resource;
+		V(deviceContext->Map(vsGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
+		VsGlobals& vsg = *(VsGlobals*)resource.pData;
+		vsg.matCombined = node.mat.Transpose();
+		deviceContext->Unmap(vsGlobals, 0);
+
+		if(node.mesh == DebugNode::TriMesh)
 		{
 			// currently only dungeon mesh is supported here
-			assert(reinterpret_cast<btTriangleIndexVertexArray*>(node.mesh_ptr) == game_level->dungeon_shape_data);
+			/*assert(reinterpret_cast<btTriangleIndexVertexArray*>(node.mesh_ptr) == game_level->dungeon_shape_data);
 			V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_POS)));
 			V(effect->CommitChanges());
 
 			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, game_level->dungeon_shape_pos.size(), game_level->dungeon_shape_index.size() / 3, game_level->dungeon_shape_index.data(),
-				D3DFMT_INDEX32, game_level->dungeon_shape_pos.data(), sizeof(Vec3)));
+				D3DFMT_INDEX32, game_level->dungeon_shape_pos.data(), sizeof(Vec3)));*/
+			FIXME;
 		}
 		else
 		{
-			Mesh* mesh = meshes[node.type];
-			V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh->vertex_decl)));
-			V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
-			V(device->SetIndices(mesh->ib));
-			V(effect->CommitChanges());
+			Mesh& mesh = *meshes[node.mesh];
+			if(node.mesh != prevMesh)
+			{
+				uint stride = sizeof(VPos), offset = 0;
+				deviceContext->IASetVertexBuffers(0, 1, &mesh.vb, &stride, &offset);
+				deviceContext->IASetIndexBuffer(mesh.ib, DXGI_FORMAT_R16_UINT, 0);
+			}
 
-			for(int i = 0; i < mesh->head.n_subs; ++i)
-				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
+			for(Mesh::Submesh& sub : mesh.subs)
+				deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, 0);
 		}
-	}*/
+	}
 }

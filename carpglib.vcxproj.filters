@@ -301,6 +301,9 @@
     <ClInclude Include="include\ScreenGrab.h">
       <Filter>components</Filter>
     </ClInclude>
+    <ClInclude Include="include\DebugNode.h">
+      <Filter>entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">

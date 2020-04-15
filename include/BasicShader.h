@@ -21,7 +21,7 @@ public:
 	cstring GetName() const override { return "basic"; }
 	void OnInit() override;
 	void OnRelease() override;
-	void DrawDebugNodes(const vector<DebugSceneNode*>& nodes);
+	void DrawDebugNodes(const vector<DebugNode*>& nodes);
 	/*void Prepare(const Camera& camera);
 	void BeginBatch();
 	void AddQuad(const Vec3(&pts)[4], const Vec4& color);
@@ -32,6 +32,7 @@ private:
 	Shader shaderSimple, shaderColor, shaderArea;
 	ID3D11Buffer* vsGlobals;
 	ID3D11Buffer* psGlobals;
+	MeshPtr meshes[4];
 
 	/*VB vb;
 	uint vb_size;

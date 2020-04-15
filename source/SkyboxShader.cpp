@@ -66,6 +66,6 @@ void SkyboxShader::Draw(Mesh& mesh, Camera& camera)
 	for(Mesh::Submesh& sub : mesh.subs)
 	{
 		deviceContext->PSSetShaderResources(0, 1, &sub.tex->tex);
-		deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, sub.min_ind);
+		deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, 0);
 	}
 }
