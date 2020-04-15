@@ -175,6 +175,7 @@ private:
 	void LoadVertexData(VertexData* vd);
 	void LoadSoundOrMusic(Sound* sound);
 	void LoadTexture(Texture* tex);
+	void LoadBuiltinMesh(cstring name, byte* data, uint size);
 
 	Mode mode;
 	ResourceContainer resources;
