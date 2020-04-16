@@ -19,6 +19,7 @@ struct Scene;
 struct SceneBatch;
 struct SceneNode;
 struct SceneNodeGroup;
+struct SimpleMesh;
 struct TaskData;
 struct Terrain;
 struct TrailParticleEmitter;

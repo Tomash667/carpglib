@@ -14,5 +14,5 @@ struct DebugNode : public ObjectPoolProxy<DebugNode>
 	} mesh;
 	Color color;
 	Matrix mat;
-	void* mesh_ptr;
+	SimpleMesh* trimesh;
 };

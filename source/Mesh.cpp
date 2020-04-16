@@ -58,18 +58,18 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 	stream.Read(buf->data(), size);
 
 	// create vertex buffer
-	D3D11_BUFFER_DESC v_desc;
-	v_desc.Usage = D3D11_USAGE_DEFAULT;
-	v_desc.ByteWidth = size;
-	v_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	v_desc.CPUAccessFlags = 0;
-	v_desc.MiscFlags = 0;
-	v_desc.StructureByteStride = 0;
+	D3D11_BUFFER_DESC desc;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.ByteWidth = size;
+	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
 
-	D3D11_SUBRESOURCE_DATA v_data = {};
-	v_data.pSysMem = buf->data();
+	D3D11_SUBRESOURCE_DATA data = {};
+	data.pSysMem = buf->data();
 
-	HRESULT result = device->CreateBuffer(&v_desc, &v_data, &vb);
+	HRESULT result = device->CreateBuffer(&desc, &data, &vb);
 	if(FAILED(result))
 	{
 		BufPool.Free(buf);
@@ -88,16 +88,16 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 	stream.Read(buf->data(), size);
 
 	// create index buffer
-	v_desc.Usage = D3D11_USAGE_DEFAULT;
-	v_desc.ByteWidth = size;
-	v_desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	v_desc.CPUAccessFlags = 0;
-	v_desc.MiscFlags = 0;
-	v_desc.StructureByteStride = 0;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.ByteWidth = size;
+	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
 
-	v_data.pSysMem = buf->data();
+	data.pSysMem = buf->data();
 
-	result = device->CreateBuffer(&v_desc, &v_data, &ib);
+	result = device->CreateBuffer(&desc, &data, &ib);
 	BufPool.Free(buf);
 	if(FAILED(result))
 		throw Format("Failed to create index buffer (%u).", result);
@@ -631,4 +631,53 @@ Mesh::Point* Mesh::FindNextPoint(cstring name, Point* point)
 
 	assert(0);
 	return nullptr;
+}
+
+
+SimpleMesh::~SimpleMesh()
+{
+	SafeRelease(vb);
+	SafeRelease(ib);
+}
+
+void SimpleMesh::Build()
+{
+	if(vb)
+		return;
+
+	// create vertex buffer
+	D3D11_BUFFER_DESC desc;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.ByteWidth = sizeof(Vec3) * vertices.size();
+	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA data = {};
+	data.pSysMem = vertices.data();
+
+	V(app::render->GetDevice()->CreateBuffer(&desc, &data, &vb));
+	SetDebugName(vb, "SimpleMeshVb");
+
+	// create index buffer
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.ByteWidth = sizeof(word) * indices.size();
+	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+
+	data.pSysMem = indices.data();
+
+	V(app::render->GetDevice()->CreateBuffer(&desc, &data, &ib));
+	SetDebugName(ib, "SimpleMeshIb");
+}
+
+void SimpleMesh::Clear()
+{
+	SafeRelease(vb);
+	SafeRelease(ib);
+	vertices.clear();
+	indices.clear();
 }
