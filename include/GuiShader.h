@@ -15,7 +15,7 @@ public:
 	void Prepare();
 	void SetGrayscale(float value);
 	void SetWrap(bool useWrap);
-	void Draw(TEX tex, VParticle* v, uint quads);
+	void Draw(TEX tex, VGui* v, uint quads);
 
 private:
 	ID3D11DeviceContext* deviceContext;

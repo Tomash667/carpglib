@@ -169,14 +169,13 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 
 		if(node.mesh == DebugNode::TriMesh)
 		{
-			// currently only dungeon mesh is supported here
-			/*assert(reinterpret_cast<btTriangleIndexVertexArray*>(node.mesh_ptr) == game_level->dungeon_shape_data);
-			V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_POS)));
-			V(effect->CommitChanges());
+			node.trimesh->Build();
 
-			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, game_level->dungeon_shape_pos.size(), game_level->dungeon_shape_index.size() / 3, game_level->dungeon_shape_index.data(),
-				D3DFMT_INDEX32, game_level->dungeon_shape_pos.data(), sizeof(Vec3)));*/
-			FIXME;
+			uint stride = sizeof(VPos), offset = 0;
+			deviceContext->IASetVertexBuffers(0, 1, &node.trimesh->vb, &stride, &offset);
+			deviceContext->IASetIndexBuffer(node.trimesh->ib, DXGI_FORMAT_R16_UINT, 0);
+
+			deviceContext->DrawIndexed(node.trimesh->indices.size(), 0, 0);
 		}
 		else
 		{

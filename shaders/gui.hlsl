@@ -13,7 +13,7 @@ SamplerState samplerDiffuse : register(s0);
 
 struct VERTEX_INPUT
 {
-	float3 pos : POSITION;
+	float2 pos : POSITION;
 	float2 tex : TEXCOORD0;
 	float4 color : COLOR;
 };

@@ -224,8 +224,8 @@ private:
 		Font* font;
 		HitboxContext* hc;
 		cstring text;
-		VParticle* v;
-		VParticle* v2;
+		VGui* v;
+		VGui* v2;
 		uint inBuffer;
 		uint inBuffer2;
 		Vec4 defColor;
@@ -238,13 +238,13 @@ private:
 	void DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, int x, int y, const Rect* clipping);
 	int Clip(int x, int y, int w, int h, const Rect* clipping);
 	void SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc);
-	void AddRect(VParticle*& v, const Vec2& left_top, const Vec2& right_bottom, const Vec4& color);
+	void AddRect(VGui*& v, const Vec2& left_top, const Vec2& right_bottom, const Vec4& color);
 
 	FontLoader* fontLoader;
 	GuiShader* shader;
 	vector<DialogBox*> created_dialogs;
 	Container* layer, *dialog_layer;
-	VParticle vBuf[256 * 6], vBuf2[256 * 6];
+	VGui vBuf[256 * 6], vBuf2[256 * 6];
 	HitboxContext tmpHitboxContext;
 	vector<OnCharHandler*> on_char;
 	bool grayscale;

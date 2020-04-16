@@ -25,7 +25,7 @@ psGlobals(nullptr), samplerNormal(nullptr), samplerWrap(nullptr), vb(nullptr), t
 //=================================================================================================
 void GuiShader::OnInit()
 {
-	app::render->CreateShader("gui.hlsl", VDI_PARTICLE, vertexShader, pixelShader, layout);
+	app::render->CreateShader("gui.hlsl", VDI_GUI, vertexShader, pixelShader, layout);
 
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "GuiVsGlobals");
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "GuiPsGlobals");
@@ -37,7 +37,7 @@ void GuiShader::OnInit()
 	// create vertex buffer
 	D3D11_BUFFER_DESC bufDesc;
 	bufDesc.Usage = D3D11_USAGE_DYNAMIC;
-	bufDesc.ByteWidth = sizeof(VParticle) * 6 * 256;
+	bufDesc.ByteWidth = sizeof(VGui) * 6 * 256;
 	bufDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bufDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	bufDesc.MiscFlags = 0;
@@ -75,7 +75,7 @@ void GuiShader::Prepare()
 	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
 	deviceContext->PSSetSamplers(0, 1, &samplerNormal);
 	deviceContext->PSSetShaderResources(0, 1, &texEmpty);
-	uint stride = sizeof(VParticle),
+	uint stride = sizeof(VGui),
 		offset = 0;
 	deviceContext->IASetInputLayout(layout);
 	deviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
@@ -104,14 +104,14 @@ void GuiShader::SetWrap(bool useWrap)
 }
 
 //=================================================================================================
-void GuiShader::Draw(TEX tex, VParticle* v, uint quads)
+void GuiShader::Draw(TEX tex, VGui* v, uint quads)
 {
 	assert(v && quads >= 1 && quads <= 256);
 
 	// copy vertices
 	{
 		ResourceLock lock(vb, D3D11_MAP_WRITE_DISCARD);
-		memcpy(lock.Get(), v, sizeof(VParticle) * 6 * quads);
+		memcpy(lock.Get(), v, sizeof(VGui) * 6 * quads);
 	}
 
 	if(!tex)

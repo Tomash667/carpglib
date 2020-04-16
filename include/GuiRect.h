@@ -128,34 +128,34 @@ public:
 		return 1; // require clip
 	}
 
-	void Populate(VParticle*& v, const Vec4& col)
+	void Populate(VGui*& v, const Vec4& col)
 	{
-		v->pos = Vec3(m_left, m_top, 0);
+		v->pos = Vec2(m_left, m_top);
 		v->color = col;
 		v->tex = Vec2(m_u, m_v);
 		++v;
 
-		v->pos = Vec3(m_right, m_top, 0);
+		v->pos = Vec2(m_right, m_top);
 		v->color = col;
 		v->tex = Vec2(m_u2, m_v);
 		++v;
 
-		v->pos = Vec3(m_left, m_bottom, 0);
+		v->pos = Vec2(m_left, m_bottom);
 		v->color = col;
 		v->tex = Vec2(m_u, m_v2);
 		++v;
 
-		v->pos = Vec3(m_left, m_bottom, 0);
+		v->pos = Vec2(m_left, m_bottom);
 		v->color = col;
 		v->tex = Vec2(m_u, m_v2);
 		++v;
 
-		v->pos = Vec3(m_right, m_top, 0);
+		v->pos = Vec2(m_right, m_top);
 		v->color = col;
 		v->tex = Vec2(m_u2, m_v);
 		++v;
 
-		v->pos = Vec3(m_right, m_bottom, 0);
+		v->pos = Vec2(m_right, m_bottom);
 		v->color = col;
 		v->tex = Vec2(m_u2, m_v2);
 		++v;

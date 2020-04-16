@@ -13,6 +13,7 @@ enum VertexDeclarationId
 	VDI_POS, // Pos
 	VDI_TERRAIN, // Pos Normal Tex[2]
 	VDI_GRASS, // Pos Normal Tex Matrix
+	VDI_GUI, // Pos2d Tex Color
 	VDI_MAX
 };
 
@@ -115,4 +116,12 @@ struct VTerrain
 	Vec3 normal;
 	Vec2 tex;
 	Vec2 tex2;
+};
+
+//-----------------------------------------------------------------------------
+struct VGui
+{
+	Vec2 pos;
+	Vec2 tex;
+	Vec4 color;
 };

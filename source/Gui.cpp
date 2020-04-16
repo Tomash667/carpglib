@@ -439,32 +439,32 @@ void Gui::DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int
 		if(clip_result == 0)
 		{
 			// dodaj znak do bufora
-			ctx.v->pos = Vec3(float(x), float(y), 0);
+			ctx.v->pos = Vec2(float(x), float(y));
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = g.uv.LeftTop();
 			++ctx.v;
 
-			ctx.v->pos = Vec3(float(x + glyph_size.x), float(y), 0);
+			ctx.v->pos = Vec2(float(x + glyph_size.x), float(y));
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = g.uv.RightTop();
 			++ctx.v;
 
-			ctx.v->pos = Vec3(float(x), float(y + glyph_size.y), 0);
+			ctx.v->pos = Vec2(float(x), float(y + glyph_size.y));
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = g.uv.LeftBottom();
 			++ctx.v;
 
-			ctx.v->pos = Vec3(float(x + glyph_size.x), float(y), 0);
+			ctx.v->pos = Vec2(float(x + glyph_size.x), float(y));
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = g.uv.RightTop();
 			++ctx.v;
 
-			ctx.v->pos = Vec3(float(x + glyph_size.x), float(y + glyph_size.y), 0);
+			ctx.v->pos = Vec2(float(x + glyph_size.x), float(y + glyph_size.y));
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = g.uv.RightBottom();
 			++ctx.v;
 
-			ctx.v->pos = Vec3(float(x), float(y + glyph_size.y), 0);
+			ctx.v->pos = Vec2(float(x), float(y + glyph_size.y));
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = g.uv.LeftBottom();
 			++ctx.v;
@@ -497,32 +497,32 @@ void Gui::DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int
 			clip_uv.v2 += Vec2(uv_size.x * s.x, uv_size.y * s.y);
 
 			// dodaj znak do bufora
-			ctx.v->pos = clip_pos.LeftTop().XY();
+			ctx.v->pos = clip_pos.LeftTop();
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = clip_uv.LeftTop();
 			++ctx.v;
 
-			ctx.v->pos = clip_pos.RightTop().XY();
+			ctx.v->pos = clip_pos.RightTop();
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = clip_uv.RightTop();
 			++ctx.v;
 
-			ctx.v->pos = clip_pos.LeftBottom().XY();
+			ctx.v->pos = clip_pos.LeftBottom();
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = clip_uv.LeftBottom();
 			++ctx.v;
 
-			ctx.v->pos = clip_pos.RightTop().XY();
+			ctx.v->pos = clip_pos.RightTop();
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = clip_uv.RightTop();
 			++ctx.v;
 
-			ctx.v->pos = clip_pos.RightBottom().XY();
+			ctx.v->pos = clip_pos.RightBottom();
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = clip_uv.RightBottom();
 			++ctx.v;
 
-			ctx.v->pos = clip_pos.LeftBottom().XY();
+			ctx.v->pos = clip_pos.LeftBottom();
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = clip_uv.LeftBottom();
 			++ctx.v;
@@ -638,32 +638,32 @@ void Gui::DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, 
 		if(clip_result == 0)
 		{
 			// dodaj znak do bufora
-			ctx.v2->pos = Vec3(float(x) - outline, float(y) - outline, 0);
+			ctx.v2->pos = Vec2(float(x) - outline, float(y) - outline);
 			ctx.v2->color = col;
 			ctx.v2->tex = uv.LeftTop();
 			++ctx.v2;
 
-			ctx.v2->pos = Vec3(float(x + g.width) + outline, float(y) - outline, 0);
+			ctx.v2->pos = Vec2(float(x + g.width) + outline, float(y) - outline);
 			ctx.v2->color = col;
 			ctx.v2->tex = uv.RightTop();
 			++ctx.v2;
 
-			ctx.v2->pos = Vec3(float(x) - outline, float(y + ctx.font->height) + outline, 0);
+			ctx.v2->pos = Vec2(float(x) - outline, float(y + ctx.font->height) + outline);
 			ctx.v2->color = col;
 			ctx.v2->tex = uv.LeftBottom();
 			++ctx.v2;
 
-			ctx.v2->pos = Vec3(float(x + g.width) + outline, float(y) - outline, 0);
+			ctx.v2->pos = Vec2(float(x + g.width) + outline, float(y) - outline);
 			ctx.v2->color = col;
 			ctx.v2->tex = uv.RightTop();
 			++ctx.v2;
 
-			ctx.v2->pos = Vec3(float(x + g.width) + outline, float(y + ctx.font->height) + outline, 0);
+			ctx.v2->pos = Vec2(float(x + g.width) + outline, float(y + ctx.font->height) + outline);
 			ctx.v2->color = col;
 			ctx.v2->tex = uv.RightBottom();
 			++ctx.v2;
 
-			ctx.v2->pos = Vec3(float(x) - outline, float(y + ctx.font->height) + outline, 0);
+			ctx.v2->pos = Vec2(float(x) - outline, float(y + ctx.font->height) + outline);
 			ctx.v2->color = col;
 			ctx.v2->tex = uv.LeftBottom();
 			++ctx.v2;
@@ -688,32 +688,32 @@ void Gui::DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, 
 			clip_uv.v2 += Vec2(uv_size.x * s.x, uv_size.y * s.y);
 
 			// dodaj znak do bufora
-			ctx.v2->pos = clip_pos.LeftTop().XY();
+			ctx.v2->pos = clip_pos.LeftTop();
 			ctx.v2->color = col;
 			ctx.v2->tex = clip_uv.LeftTop();
 			++ctx.v2;
 
-			ctx.v2->pos = clip_pos.RightTop().XY();
+			ctx.v2->pos = clip_pos.RightTop();
 			ctx.v2->color = col;
 			ctx.v2->tex = clip_uv.RightTop();
 			++ctx.v2;
 
-			ctx.v2->pos = clip_pos.LeftBottom().XY();
+			ctx.v2->pos = clip_pos.LeftBottom();
 			ctx.v2->color = col;
 			ctx.v2->tex = clip_uv.LeftBottom();
 			++ctx.v2;
 
-			ctx.v2->pos = clip_pos.RightTop().XY();
+			ctx.v2->pos = clip_pos.RightTop();
 			ctx.v2->color = col;
 			ctx.v2->tex = clip_uv.RightTop();
 			++ctx.v2;
 
-			ctx.v2->pos = clip_pos.RightBottom().XY();
+			ctx.v2->pos = clip_pos.RightBottom();
 			ctx.v2->color = col;
 			ctx.v2->tex = clip_uv.RightBottom();
 			++ctx.v2;
 
-			ctx.v2->pos = clip_pos.LeftBottom().XY();
+			ctx.v2->pos = clip_pos.LeftBottom();
 			ctx.v2->color = col;
 			ctx.v2->tex = clip_uv.LeftBottom();
 			++ctx.v2;
@@ -801,7 +801,7 @@ void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Colo
 		return;
 	}
 
-	VParticle* v = vBuf;
+	VGui* v = vBuf;
 	Vec4 col = Color(color);
 
 	/*
@@ -972,37 +972,37 @@ void Gui::DrawSprite(Texture* t, const Int2& pos, Color color, const Rect* clipp
 	if(clip_result > 0 && clip_result < 5)
 		return;
 
-	VParticle* v = vBuf;
+	VGui* v = vBuf;
 	Vec4 col = Color(color);
 
 	if(clip_result == 0)
 	{
-		v->pos = Vec3(float(pos.x), float(pos.y), 0);
+		v->pos = Vec2(float(pos.x), float(pos.y));
 		v->color = col;
 		v->tex = Vec2(0, 0);
 		++v;
 
-		v->pos = Vec3(float(pos.x + size.x), float(pos.y), 0);
+		v->pos = Vec2(float(pos.x + size.x), float(pos.y));
 		v->color = col;
 		v->tex = Vec2(1, 0);
 		++v;
 
-		v->pos = Vec3(float(pos.x), float(pos.y + size.y), 0);
+		v->pos = Vec2(float(pos.x), float(pos.y + size.y));
 		v->color = col;
 		v->tex = Vec2(0, 1);
 		++v;
 
-		v->pos = Vec3(float(pos.x), float(pos.y + size.y), 0);
+		v->pos = Vec2(float(pos.x), float(pos.y + size.y));
 		v->color = col;
 		v->tex = Vec2(0, 1);
 		++v;
 
-		v->pos = Vec3(float(pos.x + size.x), float(pos.y), 0);
+		v->pos = Vec2(float(pos.x + size.x), float(pos.y));
 		v->color = col;
 		v->tex = Vec2(1, 0);
 		++v;
 
-		v->pos = Vec3(float(pos.x + size.x), float(pos.y + size.y), 0);
+		v->pos = Vec2(float(pos.x + size.x), float(pos.y + size.y));
 		v->color = col;
 		v->tex = Vec2(1, 1);
 		++v;
@@ -1021,32 +1021,32 @@ void Gui::DrawSprite(Texture* t, const Int2& pos, Color color, const Rect* clipp
 		Box2d clip_uv(Vec2(shift.x, shift.y));
 		clip_uv.v2 += Vec2(s.x, s.y);
 
-		v->pos = clip_pos.LeftTop().XY();
+		v->pos = clip_pos.LeftTop();
 		v->color = col;
 		v->tex = clip_uv.LeftTop();
 		++v;
 
-		v->pos = clip_pos.RightTop().XY();
+		v->pos = clip_pos.RightTop();
 		v->color = col;
 		v->tex = clip_uv.RightTop();
 		++v;
 
-		v->pos = clip_pos.LeftBottom().XY();
+		v->pos = clip_pos.LeftBottom();
 		v->color = col;
 		v->tex = clip_uv.LeftBottom();
 		++v;
 
-		v->pos = clip_pos.LeftBottom().XY();
+		v->pos = clip_pos.LeftBottom();
 		v->color = col;
 		v->tex = clip_uv.LeftBottom();
 		++v;
 
-		v->pos = clip_pos.RightTop().XY();
+		v->pos = clip_pos.RightTop();
 		v->color = col;
 		v->tex = clip_uv.RightTop();
 		++v;
 
-		v->pos = clip_pos.RightBottom().XY();
+		v->pos = clip_pos.RightBottom();
 		v->color = col;
 		v->tex = clip_uv.RightBottom();
 		++v;
@@ -1401,35 +1401,35 @@ void Gui::DrawSpriteFull(Texture* t, const Color color)
 {
 	assert(t && t->IsLoaded());
 
-	VParticle* v = vBuf;
+	VGui* v = vBuf;
 	Vec4 col = Color(color);
 
-	v->pos = Vec3(0, 0, 0);
+	v->pos = Vec2(0, 0);
 	v->color = col;
 	v->tex = Vec2(0, 0);
 	++v;
 
-	v->pos = Vec3(float(wnd_size.x), 0, 0);
+	v->pos = Vec2(float(wnd_size.x), 0);
 	v->color = col;
 	v->tex = Vec2(1, 0);
 	++v;
 
-	v->pos = Vec3(0, float(wnd_size.y), 0);
+	v->pos = Vec2(0, float(wnd_size.y));
 	v->color = col;
 	v->tex = Vec2(0, 1);
 	++v;
 
-	v->pos = Vec3(0, float(wnd_size.y), 0);
+	v->pos = Vec2(0, float(wnd_size.y));
 	v->color = col;
 	v->tex = Vec2(0, 1);
 	++v;
 
-	v->pos = Vec3(float(wnd_size.x), 0, 0);
+	v->pos = Vec2(float(wnd_size.x), 0);
 	v->color = col;
 	v->tex = Vec2(1, 0);
 	++v;
 
-	v->pos = Vec3(float(wnd_size.x), float(wnd_size.y), 0);
+	v->pos = Vec2(float(wnd_size.x), float(wnd_size.y));
 	v->color = col;
 	v->tex = Vec2(1, 1);
 	++v;
@@ -1487,35 +1487,35 @@ void Gui::DrawSpriteRect(Texture* t, const Rect& rect, Color color)
 {
 	assert(t && t->IsLoaded());
 
-	VParticle* v = vBuf;
+	VGui* v = vBuf;
 	Vec4 col = Color(color);
 
-	v->pos = Vec3(float(rect.Left()), float(rect.Top()), 0);
+	v->pos = Vec2(float(rect.Left()), float(rect.Top()));
 	v->color = col;
 	v->tex = Vec2(0, 0);
 	++v;
 
-	v->pos = Vec3(float(rect.Right()), float(rect.Top()), 0);
+	v->pos = Vec2(float(rect.Right()), float(rect.Top()));
 	v->color = col;
 	v->tex = Vec2(1, 0);
 	++v;
 
-	v->pos = Vec3(float(rect.Left()), float(rect.Bottom()), 0);
+	v->pos = Vec2(float(rect.Left()), float(rect.Bottom()));
 	v->color = col;
 	v->tex = Vec2(0, 1);
 	++v;
 
-	v->pos = Vec3(float(rect.Left()), float(rect.Bottom()), 0);
+	v->pos = Vec2(float(rect.Left()), float(rect.Bottom()));
 	v->color = col;
 	v->tex = Vec2(0, 1);
 	++v;
 
-	v->pos = Vec3(float(rect.Right()), float(rect.Top()), 0);
+	v->pos = Vec2(float(rect.Right()), float(rect.Top()));
 	v->color = col;
 	v->tex = Vec2(1, 0);
 	++v;
 
-	v->pos = Vec3(float(rect.Right()), float(rect.Bottom()), 0);
+	v->pos = Vec2(float(rect.Right()), float(rect.Bottom()));
 	v->color = col;
 	v->tex = Vec2(1, 1);
 	++v;
@@ -1570,37 +1570,37 @@ void Gui::DrawSpriteRectPart(Texture* t, const Rect& rect, const Rect& part, Col
 {
 	assert(t && t->IsLoaded());
 
-	VParticle* v = vBuf;
+	VGui* v = vBuf;
 	Int2 size = t->GetSize();
 	Vec4 col = Color(color);
 	Box2d uv(float(part.Left()) / size.x, float(part.Top()) / size.y, float(part.Right()) / size.x, float(part.Bottom()) / size.y);
 
-	v->pos = Vec3(float(rect.Left()), float(rect.Top()), 0);
+	v->pos = Vec2(float(rect.Left()), float(rect.Top()));
 	v->color = col;
 	v->tex = uv.LeftTop();
 	++v;
 
-	v->pos = Vec3(float(rect.Right()), float(rect.Top()), 0);
+	v->pos = Vec2(float(rect.Right()), float(rect.Top()));
 	v->color = col;
 	v->tex = uv.RightTop();
 	++v;
 
-	v->pos = Vec3(float(rect.Left()), float(rect.Bottom()), 0);
+	v->pos = Vec2(float(rect.Left()), float(rect.Bottom()));
 	v->color = col;
 	v->tex = uv.LeftBottom();
 	++v;
 
-	v->pos = Vec3(float(rect.Left()), float(rect.Bottom()), 0);
+	v->pos = Vec2(float(rect.Left()), float(rect.Bottom()));
 	v->color = col;
 	v->tex = uv.LeftBottom();
 	++v;
 
-	v->pos = Vec3(float(rect.Right()), float(rect.Top()), 0);
+	v->pos = Vec2(float(rect.Right()), float(rect.Top()));
 	v->color = col;
 	v->tex = uv.RightTop();
 	++v;
 
-	v->pos = Vec3(float(rect.Right()), float(rect.Bottom()), 0);
+	v->pos = Vec2(float(rect.Right()), float(rect.Bottom()));
 	v->color = col;
 	v->tex = uv.RightBottom();
 	++v;
@@ -1614,7 +1614,7 @@ void Gui::DrawSpriteTransform(Texture* t, const Matrix& mat, Color color)
 	assert(t && t->IsLoaded());
 
 	Int2 size = t->GetSize();
-	VParticle* v = vBuf;
+	VGui* v = vBuf;
 	Vec4 col = Color(color);
 
 	Vec2 leftTop(0, 0),
@@ -1627,32 +1627,32 @@ void Gui::DrawSpriteTransform(Texture* t, const Matrix& mat, Color color)
 	leftBottom = Vec2::Transform(leftBottom, mat);
 	rightBottom = Vec2::Transform(rightBottom, mat);
 
-	v->pos = leftTop.XY();
+	v->pos = leftTop;
 	v->color = col;
 	v->tex = Vec2(0, 0);
 	++v;
 
-	v->pos = rightTop.XY();
+	v->pos = rightTop;
 	v->color = col;
 	v->tex = Vec2(1, 0);
 	++v;
 
-	v->pos = leftBottom.XY();
+	v->pos = leftBottom;
 	v->color = col;
 	v->tex = Vec2(0, 1);
 	++v;
 
-	v->pos = leftBottom.XY();
+	v->pos = leftBottom;
 	v->color = col;
 	v->tex = Vec2(0, 1);
 	++v;
 
-	v->pos = rightTop.XY();
+	v->pos = rightTop;
 	v->color = col;
 	v->tex = Vec2(1, 0);
 	++v;
 
-	v->pos = rightBottom.XY();
+	v->pos = rightBottom;
 	v->color = col;
 	v->tex = Vec2(1, 1);
 	++v;
@@ -1663,7 +1663,43 @@ void Gui::DrawSpriteTransform(Texture* t, const Matrix& mat, Color color)
 //=================================================================================================
 void Gui::DrawLine(const Vec2& from, const Vec2& to, Color color, float width)
 {
-	FIXME; // TODO
+	VGui* v = vBuf;
+	const Vec4 col = color;
+
+	const Vec2 dirY = (to - from).Normalized() * (width * 0.5f);
+	const Vec2 dirX = Vec2(dirY.y, -dirY.x);
+
+	v->pos = from - dirY - dirX;
+	v->color = col;
+	v->tex = Vec2(0, 0);
+	++v;
+
+	v->pos = to + dirY - dirX;
+	v->color = col;
+	v->tex = Vec2(0, 1);
+	++v;
+
+	v->pos = from - dirY + dirX;
+	v->color = col;
+	v->tex = Vec2(1, 0);
+	++v;
+
+	v->pos = from - dirY + dirX;
+	v->color = col;
+	v->tex = Vec2(1, 0);
+	++v;
+
+	v->pos = to + dirY - dirX;
+	v->color = col;
+	v->tex = Vec2(0, 1);
+	++v;
+
+	v->pos = to + dirY + dirX;
+	v->color = col;
+	v->tex = Vec2(1, 1);
+	++v;
+
+	shader->Draw(nullptr, vBuf, 1);
 }
 
 //=================================================================================================
@@ -1747,7 +1783,7 @@ void Gui::DrawSpriteTransformPart(Texture* t, const Matrix& mat, const Rect& par
 {
 	assert(t && t->IsLoaded());
 
-	VParticle* v = vBuf;
+	VGui* v = vBuf;
 	Int2 size = t->GetSize();
 	Box2d uv(float(part.Left()) / size.x, float(part.Top() / size.y), float(part.Right()) / size.x, float(part.Bottom()) / size.y);
 	Vec4 col = Color(color);
@@ -1762,32 +1798,32 @@ void Gui::DrawSpriteTransformPart(Texture* t, const Matrix& mat, const Rect& par
 	leftBottom = Vec2::Transform(leftBottom, mat);
 	rightBottom = Vec2::Transform(rightBottom, mat);
 
-	v->pos = leftTop.XY();
+	v->pos = leftTop;
 	v->color = col;
 	v->tex = uv.LeftTop();
 	++v;
 
-	v->pos = rightTop.XY();
+	v->pos = rightTop;
 	v->color = col;
 	v->tex = uv.RightTop();
 	++v;
 
-	v->pos = leftBottom.XY();
+	v->pos = leftBottom;
 	v->color = col;
 	v->tex = uv.LeftBottom();
 	++v;
 
-	v->pos = leftBottom.XY();
+	v->pos = leftBottom;
 	v->color = col;
 	v->tex = uv.LeftBottom();
 	++v;
 
-	v->pos = rightTop.XY();
+	v->pos = rightTop;
 	v->color = col;
 	v->tex = uv.RightTop();
 	++v;
 
-	v->pos = rightBottom.XY();
+	v->pos = rightBottom;
 	v->color = col;
 	v->tex = uv.RightBottom();
 	++v;
@@ -1864,7 +1900,7 @@ void Gui::DrawSprite2(Texture* t, const Matrix& mat, const Rect* part, const Rec
 		return;
 
 	// fill vertex buffer
-	VParticle* v = vBuf;
+	VGui* v = vBuf;
 	rect.Populate(v, color);
 	shader->Draw(t->tex, vBuf, 1);
 }
@@ -1902,7 +1938,7 @@ void Gui::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* 
 	if(!clip_rect || gui_rect.Clip(*clip_rect))
 	{
 		Vec4 col = Color(color);
-		VParticle* v = vBuf;
+		VGui* v = vBuf;
 		gui_rect.Populate(v, col);
 		shader->Draw(nullptr, vBuf, 1);
 	}
@@ -1928,7 +1964,7 @@ void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d
 		if(area_layout.mode == AreaLayout::Mode::Image && area_layout.background_color != Color::None)
 		{
 			assert(!clip_rect);
-			VParticle* v = vBuf;
+			VGui* v = vBuf;
 			AddRect(v, rect.LeftTop(), rect.RightBottom(), Color(area_layout.background_color));
 			shader->Draw(nullptr, vBuf, 1);
 		}
@@ -1952,7 +1988,7 @@ void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d
 				return;
 		}
 
-		VParticle* v = vBuf;
+		VGui* v = vBuf;
 		gui_rect.Populate(v, color);
 		shader->Draw(tex, vBuf, 1);
 
@@ -1973,34 +2009,34 @@ void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d
 }
 
 //=================================================================================================
-void Gui::AddRect(VParticle*& v, const Vec2& left_top, const Vec2& right_bottom, const Vec4& color)
+void Gui::AddRect(VGui*& v, const Vec2& left_top, const Vec2& right_bottom, const Vec4& color)
 {
-	v->pos = Vec3(left_top.x, left_top.y, 0);
+	v->pos = Vec2(left_top.x, left_top.y);
 	v->tex = Vec2(0, 0);
 	v->color = color;
 	++v;
 
-	v->pos = Vec3(right_bottom.x, left_top.y, 0);
+	v->pos = Vec2(right_bottom.x, left_top.y);
 	v->tex = Vec2(1, 0);
 	v->color = color;
 	++v;
 
-	v->pos = Vec3(right_bottom.x, right_bottom.y, 0);
+	v->pos = Vec2(right_bottom.x, right_bottom.y);
 	v->tex = Vec2(1, 1);
 	v->color = color;
 	++v;
 
-	v->pos = Vec3(right_bottom.x, right_bottom.y, 0);
+	v->pos = Vec2(right_bottom.x, right_bottom.y);
 	v->tex = Vec2(1, 1);
 	v->color = color;
 	++v;
 
-	v->pos = Vec3(left_top.x, right_bottom.y, 0);
+	v->pos = Vec2(left_top.x, right_bottom.y);
 	v->tex = Vec2(0, 1);
 	v->color = color;
 	++v;
 
-	v->pos = Vec3(left_top.x, left_top.y, 0);
+	v->pos = Vec2(left_top.x, left_top.y);
 	v->tex = Vec2(0, 0);
 	v->color = color;
 	++v;
