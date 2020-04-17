@@ -192,3 +192,42 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 		}
 	}
 }
+
+void BasicShader::PrepareArea(const Camera& camera, const Vec3& playerPos)
+{
+	app::render->SetBlendState(Render::BLEND_NO);
+	app::render->SetDepthState(Render::DEPTH_READ);
+	app::render->SetRasterState(Render::RASTER_NO_CULLING);
+
+	// setup shader
+	deviceContext->VSSetShader(shaderArea.vertexShader, nullptr, 0);
+	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
+	deviceContext->PSSetShader(shaderArea.pixelShader, nullptr, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
+	deviceContext->IASetInputLayout(shaderArea.layout);
+
+	// set matrix
+	D3D11_MAPPED_SUBRESOURCE resource;
+	V(deviceContext->Map(vsGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
+	VsGlobals& vsg = *(VsGlobals*)resource.pData;
+	vsg.matCombined = camera.mat_view_proj.Transpose();
+	deviceContext->Unmap(vsGlobals, 0);
+
+	this->playerPos = playerPos;
+}
+
+void BasicShader::SetAreaParams(Color color, float range)
+{
+	D3D11_MAPPED_SUBRESOURCE resource;
+	V(deviceContext->Map(psGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
+	PsGlobals& psg = *(PsGlobals*)resource.pData;
+	psg.color = color;
+	psg.playerPos = playerPos;
+	psg.range = range;
+	deviceContext->Unmap(psGlobals, 0);
+}
+
+void BasicShader::DrawArea()
+{
+
+}

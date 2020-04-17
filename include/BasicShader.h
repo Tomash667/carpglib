@@ -21,7 +21,15 @@ public:
 	cstring GetName() const override { return "basic"; }
 	void OnInit() override;
 	void OnRelease() override;
+
+	// drawing debug nodes
 	void DrawDebugNodes(const vector<DebugNode*>& nodes);
+
+	// drawing areas
+	void PrepareArea(const Camera& camera, const Vec3& playerPos);
+	void SetAreaParams(Color color, float range);
+	void DrawArea(const Vec3(&pts)[4]);
+	void DrawArea(const vector<Vec3>& vertices, const vector<word>& indices);
 	/*void Prepare(const Camera& camera);
 	void BeginBatch();
 	void AddQuad(const Vec3(&pts)[4], const Vec4& color);
@@ -33,6 +41,10 @@ private:
 	ID3D11Buffer* vsGlobals;
 	ID3D11Buffer* psGlobals;
 	MeshPtr meshes[4];
+	ID3D11Buffer* vb;
+	ID3D11Buffer* ib;
+
+	Vec3 playerPos;
 
 	/*VB vb;
 	uint vb_size;
