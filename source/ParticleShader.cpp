@@ -59,6 +59,7 @@ void ParticleShader::OnRelease()
 	SafeRelease(sampler);
 	SafeRelease(vb);
 	SafeRelease(texEmpty);
+	particleCount = 0;
 }
 
 //=================================================================================================

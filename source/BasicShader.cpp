@@ -28,8 +28,8 @@ void BasicShader::Shader::Release()
 }
 
 //=================================================================================================
-BasicShader::BasicShader() : deviceContext(app::render->GetDeviceContext()), vsGlobals(nullptr), psGlobals(nullptr)
-	//vb(nullptr), batch(false)
+BasicShader::BasicShader() : deviceContext(app::render->GetDeviceContext()), vsGlobals(nullptr), psGlobals(nullptr), vb(nullptr), ib(nullptr),
+vbSize(0), ibSize(0)
 {
 }
 
@@ -57,6 +57,10 @@ void BasicShader::OnRelease()
 	shaderArea.Release();
 	SafeRelease(vsGlobals);
 	SafeRelease(psGlobals);
+	SafeRelease(vb);
+	SafeRelease(ib);
+	vbSize = 0;
+	ibSize = 0;
 }
 
 //=================================================================================================
@@ -129,6 +133,7 @@ void BasicShader::EndBatch()
 	verts.clear();
 }*/
 
+//=================================================================================================
 void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 {
 	app::render->SetBlendState(Render::BLEND_NO);
@@ -193,9 +198,10 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 	}
 }
 
+//=================================================================================================
 void BasicShader::PrepareArea(const Camera& camera, const Vec3& playerPos)
 {
-	app::render->SetBlendState(Render::BLEND_NO);
+	app::render->SetBlendState(Render::BLEND_ADD);
 	app::render->SetDepthState(Render::DEPTH_READ);
 	app::render->SetRasterState(Render::RASTER_NO_CULLING);
 
@@ -204,7 +210,10 @@ void BasicShader::PrepareArea(const Camera& camera, const Vec3& playerPos)
 	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
 	deviceContext->PSSetShader(shaderArea.pixelShader, nullptr, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
+	uint size = sizeof(Vec3), offset = 0;
 	deviceContext->IASetInputLayout(shaderArea.layout);
+	deviceContext->IASetVertexBuffers(0, 1, &vb, &size, &offset);
+	deviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R16_UINT, 0);
 
 	// set matrix
 	D3D11_MAPPED_SUBRESOURCE resource;
@@ -216,6 +225,7 @@ void BasicShader::PrepareArea(const Camera& camera, const Vec3& playerPos)
 	this->playerPos = playerPos;
 }
 
+//=================================================================================================
 void BasicShader::SetAreaParams(Color color, float range)
 {
 	D3D11_MAPPED_SUBRESOURCE resource;
@@ -227,7 +237,88 @@ void BasicShader::SetAreaParams(Color color, float range)
 	deviceContext->Unmap(psGlobals, 0);
 }
 
-void BasicShader::DrawArea()
+//=================================================================================================
+void BasicShader::ReserveVertexBuffer(uint vertexCount)
 {
+	if(vertexCount <= vbSize)
+		return;
 
+	SafeRelease(vb);
+	vbSize = vertexCount;
+
+	D3D11_BUFFER_DESC desc = {};
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.ByteWidth = sizeof(VPos) * vertexCount;
+	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	V(app::render->GetDevice()->CreateBuffer(&desc, nullptr, &vb));
+	SetDebugName(vb, "BasicVb");
+
+	uint size = sizeof(Vec3), offset = 0;
+	deviceContext->IASetVertexBuffers(0, 1, &vb, &size, &offset);
+}
+
+//=================================================================================================
+void BasicShader::ReserveIndexBuffer(uint indexCount)
+{
+	if(indexCount <= ibSize)
+		return;
+
+	SafeRelease(ib);
+	ibSize = indexCount;
+
+	D3D11_BUFFER_DESC desc = {};
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.ByteWidth = sizeof(word) * indexCount;
+	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	V(app::render->GetDevice()->CreateBuffer(&desc, nullptr, &ib));
+	SetDebugName(ib, "BasicIb");
+
+	deviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R16_UINT, 0);
+}
+
+//=================================================================================================
+void BasicShader::DrawArea(const Vec3(&pts)[4])
+{
+	// copy vertices
+	{
+		ReserveVertexBuffer(4);
+		ResourceLock lock(vb, D3D11_MAP_WRITE_DISCARD);
+		memcpy(lock.Get(), &pts, sizeof(Vec3) * 4);
+	}
+
+	// copy indices
+	{
+		ReserveIndexBuffer(6);
+		ResourceLock lock(ib, D3D11_MAP_WRITE_DISCARD);
+		const word indices[] = { 0, 1, 2, 1, 2, 3 };
+		memcpy(lock.Get(), indices, sizeof(word) * 6);
+	}
+
+	// draw
+	deviceContext->DrawIndexed(6, 0, 0);
+}
+
+//=================================================================================================
+void BasicShader::DrawArea(const vector<Vec3>& vertices, const vector<word>& indices)
+{
+	// copy vertices
+	{
+		ReserveVertexBuffer(vertices.size());
+		ResourceLock lock(vb, D3D11_MAP_WRITE_DISCARD);
+		memcpy(lock.Get(), vertices.data(), sizeof(Vec3) * vertices.size());
+	}
+
+	// copy indices
+	{
+		ReserveIndexBuffer(indices.size());
+		ResourceLock lock(ib, D3D11_MAP_WRITE_DISCARD);
+		memcpy(lock.Get(), indices.data(), sizeof(word) * indices.size());
+	}
+
+	// draw
+	deviceContext->DrawIndexed(indices.size(), 0, 0);
 }

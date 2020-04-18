@@ -36,6 +36,9 @@ public:
 	void EndBatch();*/
 
 private:
+	void ReserveVertexBuffer(uint vertexCount);
+	void ReserveIndexBuffer(uint indexCount);
+
 	ID3D11DeviceContext* deviceContext;
 	Shader shaderSimple, shaderColor, shaderArea;
 	ID3D11Buffer* vsGlobals;
@@ -43,7 +46,7 @@ private:
 	MeshPtr meshes[4];
 	ID3D11Buffer* vb;
 	ID3D11Buffer* ib;
-
+	uint vbSize, ibSize;
 	Vec3 playerPos;
 
 	/*VB vb;
