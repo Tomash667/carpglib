@@ -13,11 +13,16 @@ struct VsGlobals
 	Matrix matCombined;
 };
 
-struct PsGlobals
+struct PsGlobalsMesh
 {
 	Vec4 color;
+};
+
+struct PsGlobalsColor
+{
 	Vec3 playerPos;
 	float range;
+	float falloff;
 };
 
 void BasicShader::Shader::Release()
@@ -28,20 +33,20 @@ void BasicShader::Shader::Release()
 }
 
 //=================================================================================================
-BasicShader::BasicShader() : deviceContext(app::render->GetDeviceContext()), vsGlobals(nullptr), psGlobals(nullptr), vb(nullptr), ib(nullptr),
-vbSize(0), ibSize(0)
+BasicShader::BasicShader() : deviceContext(app::render->GetDeviceContext()), vsGlobals(nullptr), psGlobalsMesh(nullptr), psGlobalsColor(nullptr),
+vb(nullptr), ib(nullptr), vbSize(0), ibSize(0)
 {
 }
 
 //=================================================================================================
 void BasicShader::OnInit()
 {
-	app::render->CreateShader("basic.hlsl", VDI_POS, shaderSimple.vertexShader, shaderSimple.pixelShader, shaderSimple.layout, nullptr, "VsSimple", "PsSimple");
+	app::render->CreateShader("basic.hlsl", VDI_POS, shaderMesh.vertexShader, shaderMesh.pixelShader, shaderMesh.layout, nullptr, "VsMesh", "PsMesh");
 	app::render->CreateShader("basic.hlsl", VDI_COLOR, shaderColor.vertexShader, shaderColor.pixelShader, shaderColor.layout, nullptr, "VsColor", "PsColor");
-	app::render->CreateShader("basic.hlsl", VDI_POS, shaderArea.vertexShader, shaderArea.pixelShader, shaderArea.layout, nullptr, "VsArea", "PsArea");
 
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "BasicVsGlobals");
-	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "BasicPsGlobals");
+	psGlobalsMesh = app::render->CreateConstantBuffer(sizeof(PsGlobalsMesh), "BasicPsGlobalsMesh");
+	psGlobalsColor = app::render->CreateConstantBuffer(sizeof(PsGlobalsColor), "BasicPsGlobalsColor");
 
 	meshes[(int)DebugNode::Box] = app::res_mgr->Get<Mesh>("box.qmsh");
 	meshes[(int)DebugNode::Sphere] = app::res_mgr->Get<Mesh>("sphere.qmsh");
@@ -52,86 +57,16 @@ void BasicShader::OnInit()
 //=================================================================================================
 void BasicShader::OnRelease()
 {
-	shaderSimple.Release();
+	shaderMesh.Release();
 	shaderColor.Release();
-	shaderArea.Release();
 	SafeRelease(vsGlobals);
-	SafeRelease(psGlobals);
+	SafeRelease(psGlobalsMesh);
+	SafeRelease(psGlobalsColor);
 	SafeRelease(vb);
 	SafeRelease(ib);
 	vbSize = 0;
 	ibSize = 0;
 }
-
-//=================================================================================================
-/*void BasicShader::Prepare(const Camera& camera)
-{
-	mat_view_proj = camera.mat_view_proj;
-
-	app::render->SetAlphaBlend(true);
-	app::render->SetNoZWrite(false);
-	app::render->SetNoCulling(true);
-	V(device->SetVertexDeclaration(app::render->GetVertexDeclaration(VDI_COLOR)));
-	if(vb)
-		V(device->SetStreamSource(0, vb, 0, sizeof(VColor)));
-}
-
-//=================================================================================================
-void BasicShader::BeginBatch()
-{
-	assert(!batch);
-	batch = true;
-}
-
-//=================================================================================================
-void BasicShader::AddQuad(const Vec3(&pts)[4], const Vec4& color)
-{
-	verts.push_back(VColor(pts[0], color));
-	verts.push_back(VColor(pts[1], color));
-	verts.push_back(VColor(pts[2], color));
-	verts.push_back(VColor(pts[2], color));
-	verts.push_back(VColor(pts[1], color));
-	verts.push_back(VColor(pts[3], color));
-}
-
-//=================================================================================================
-void BasicShader::EndBatch()
-{
-	assert(batch);
-	batch = false;
-
-	if(verts.empty())
-		return;
-
-	if(!vb || verts.size() > vb_size)
-	{
-		SafeRelease(vb);
-		V(device->CreateVertexBuffer(verts.size() * sizeof(VColor), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb, nullptr));
-		vb_size = verts.size();
-		V(device->SetStreamSource(0, vb, 0, sizeof(VColor)));
-	}
-
-	void* ptr;
-	V(vb->Lock(0, 0, &ptr, D3DLOCK_DISCARD));
-	memcpy(ptr, verts.data(), verts.size() * sizeof(VColor));
-	V(vb->Unlock());
-
-	uint passes;
-
-	V(effect->SetTechnique(techSimple));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	V(effect->SetMatrix(hMatCombined, (const D3DXMATRIX*)&mat_view_proj));
-	V(effect->CommitChanges());
-
-	V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, verts.size() / 3));
-
-	V(effect->EndPass());
-	V(effect->End());
-
-	verts.clear();
-}*/
 
 //=================================================================================================
 void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
@@ -141,11 +76,11 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 	app::render->SetRasterState(Render::RASTER_WIREFRAME);
 
 	// setup shader
-	deviceContext->VSSetShader(shaderSimple.vertexShader, nullptr, 0);
+	deviceContext->VSSetShader(shaderMesh.vertexShader, nullptr, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
-	deviceContext->PSSetShader(shaderSimple.pixelShader, nullptr, 0);
-	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
-	deviceContext->IASetInputLayout(shaderSimple.layout);
+	deviceContext->PSSetShader(shaderMesh.pixelShader, nullptr, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &psGlobalsMesh);
+	deviceContext->IASetInputLayout(shaderMesh.layout);
 
 	Color prevColor = Color::None;
 	DebugNode::Mesh prevMesh = DebugNode::None;
@@ -159,10 +94,10 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 		{
 			prevColor = node.color;
 			D3D11_MAPPED_SUBRESOURCE resource;
-			V(deviceContext->Map(psGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-			PsGlobals& psg = *(PsGlobals*)resource.pData;
+			V(deviceContext->Map(psGlobalsMesh, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
+			PsGlobalsMesh& psg = *(PsGlobalsMesh*)resource.pData;
 			psg.color = node.color;
-			deviceContext->Unmap(psGlobals, 0);
+			deviceContext->Unmap(psGlobalsMesh, 0);
 		}
 
 		// set matrix
@@ -199,19 +134,19 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 }
 
 //=================================================================================================
-void BasicShader::PrepareArea(const Camera& camera, const Vec3& playerPos)
+void BasicShader::Prepare(const Camera& camera)
 {
 	app::render->SetBlendState(Render::BLEND_ADD);
 	app::render->SetDepthState(Render::DEPTH_READ);
 	app::render->SetRasterState(Render::RASTER_NO_CULLING);
 
 	// setup shader
-	deviceContext->VSSetShader(shaderArea.vertexShader, nullptr, 0);
+	deviceContext->VSSetShader(shaderColor.vertexShader, nullptr, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
-	deviceContext->PSSetShader(shaderArea.pixelShader, nullptr, 0);
-	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
-	uint size = sizeof(Vec3), offset = 0;
-	deviceContext->IASetInputLayout(shaderArea.layout);
+	deviceContext->PSSetShader(shaderColor.pixelShader, nullptr, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &psGlobalsColor);
+	uint size = sizeof(VColor), offset = 0;
+	deviceContext->IASetInputLayout(shaderColor.layout);
 	deviceContext->IASetVertexBuffers(0, 1, &vb, &size, &offset);
 	deviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R16_UINT, 0);
 
@@ -221,20 +156,20 @@ void BasicShader::PrepareArea(const Camera& camera, const Vec3& playerPos)
 	VsGlobals& vsg = *(VsGlobals*)resource.pData;
 	vsg.matCombined = camera.mat_view_proj.Transpose();
 	deviceContext->Unmap(vsGlobals, 0);
-
-	this->playerPos = playerPos;
 }
 
 //=================================================================================================
-void BasicShader::SetAreaParams(Color color, float range)
+void BasicShader::SetAreaParams(const Vec3& playerPos, float range, float falloff)
 {
+	assert(vertices.empty());
+
 	D3D11_MAPPED_SUBRESOURCE resource;
-	V(deviceContext->Map(psGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	PsGlobals& psg = *(PsGlobals*)resource.pData;
-	psg.color = color;
+	V(deviceContext->Map(psGlobalsColor, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
+	PsGlobalsColor& psg = *(PsGlobalsColor*)resource.pData;
 	psg.playerPos = playerPos;
 	psg.range = range;
-	deviceContext->Unmap(psGlobals, 0);
+	psg.falloff = falloff;
+	deviceContext->Unmap(psGlobalsColor, 0);
 }
 
 //=================================================================================================
@@ -248,14 +183,14 @@ void BasicShader::ReserveVertexBuffer(uint vertexCount)
 
 	D3D11_BUFFER_DESC desc = {};
 	desc.Usage = D3D11_USAGE_DYNAMIC;
-	desc.ByteWidth = sizeof(VPos) * vertexCount;
+	desc.ByteWidth = sizeof(VColor) * vertexCount;
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 	V(app::render->GetDevice()->CreateBuffer(&desc, nullptr, &vb));
 	SetDebugName(vb, "BasicVb");
 
-	uint size = sizeof(Vec3), offset = 0;
+	uint size = sizeof(VColor), offset = 0;
 	deviceContext->IASetVertexBuffers(0, 1, &vb, &size, &offset);
 }
 
@@ -281,35 +216,42 @@ void BasicShader::ReserveIndexBuffer(uint indexCount)
 }
 
 //=================================================================================================
-void BasicShader::DrawArea(const Vec3(&pts)[4])
+void BasicShader::DrawQuad(const Vec3(&pts)[4], Color color)
 {
-	// copy vertices
-	{
-		ReserveVertexBuffer(4);
-		ResourceLock lock(vb, D3D11_MAP_WRITE_DISCARD);
-		memcpy(lock.Get(), &pts, sizeof(Vec3) * 4);
-	}
-
-	// copy indices
-	{
-		ReserveIndexBuffer(6);
-		ResourceLock lock(ib, D3D11_MAP_WRITE_DISCARD);
-		const word indices[] = { 0, 1, 2, 1, 2, 3 };
-		memcpy(lock.Get(), indices, sizeof(word) * 6);
-	}
-
-	// draw
-	deviceContext->DrawIndexed(6, 0, 0);
+	Vec4 col = color;
+	uint offset = vertices.size();
+	for(int i=0; i<4; ++i)
+		vertices.push_back(VColor(pts[i], col));
+	indices.push_back(offset + 0);
+	indices.push_back(offset + 1);
+	indices.push_back(offset + 2);
+	indices.push_back(offset + 2);
+	indices.push_back(offset + 1);
+	indices.push_back(offset + 3);
 }
 
 //=================================================================================================
-void BasicShader::DrawArea(const vector<Vec3>& vertices, const vector<word>& indices)
+void BasicShader::DrawArea(const vector<Vec3>& vertices, const vector<word>& indices, Color color)
 {
+	Vec4 col = color;
+	uint offset = this->vertices.size();
+	for(const Vec3& pos : vertices)
+		this->vertices.push_back(VColor(pos, col));
+	for(word idx : indices)
+		this->indices.push_back(idx + offset);
+}
+
+//=================================================================================================
+void BasicShader::Draw()
+{
+	if(vertices.empty())
+		return;
+
 	// copy vertices
 	{
 		ReserveVertexBuffer(vertices.size());
 		ResourceLock lock(vb, D3D11_MAP_WRITE_DISCARD);
-		memcpy(lock.Get(), vertices.data(), sizeof(Vec3) * vertices.size());
+		memcpy(lock.Get(), vertices.data(), sizeof(VColor) * vertices.size());
 	}
 
 	// copy indices
@@ -321,4 +263,7 @@ void BasicShader::DrawArea(const vector<Vec3>& vertices, const vector<word>& ind
 
 	// draw
 	deviceContext->DrawIndexed(indices.size(), 0, 0);
+
+	vertices.clear();
+	indices.clear();
 }
