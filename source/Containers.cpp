@@ -1,4 +1,5 @@
 #include "Pch.h"
+#include "File.h"
 #ifdef CHECK_POOL_LEAKS
 #	include "WindowsIncludes.h"
 #	define IN
@@ -97,14 +98,41 @@ void ObjectPoolLeakManager::Unregister(void* ptr)
 #endif
 
 //=================================================================================================
-#ifndef CORE_ONLY
+// Compress buffer and return it if new size is smaller, old one is freed
+// If compressing was worthless return original buffer
+Buffer* Buffer::Compress()
+{
+	Buffer* buf = Buffer::Get();
+	uLong origSize = Size();
+	uLong reqSize = compressBound(origSize);
+	buf->Resize(reqSize);
+	compress(reinterpret_cast<Bytef*>(buf->Data()), &reqSize, reinterpret_cast<const Bytef*>(Data()), origSize);
+	if(reqSize < origSize)
+	{
+		Free();
+		return buf;
+	}
+	else
+	{
+		buf->Free();
+		return this;
+	}
+}
+
+//=================================================================================================
+void Buffer::Crypt(const string& key)
+{
+	io::Crypt(reinterpret_cast<char*>(Data()), Size(), key.c_str(), key.length());
+}
+
+//=================================================================================================
+// Decompress to new buffer, old one is freed
 Buffer* Buffer::Decompress(uint real_size)
 {
 	Buffer* buf = Buffer::Get();
 	buf->Resize(real_size);
 	uLong size = real_size;
-	uncompress((Bytef*)buf->Data(), &size, (const Bytef*)Data(), Size());
+	uncompress(reinterpret_cast<Bytef*>(buf->Data()), &size, reinterpret_cast<const Bytef*>(Data()), Size());
 	Free();
 	return buf;
 }
-#endif

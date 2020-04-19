@@ -24,6 +24,7 @@
     <ClInclude Include="include\FastFunc.h" />
     <ClInclude Include="include\File.h" />
     <ClInclude Include="include\Logger.h" />
+    <ClInclude Include="include\Pak.h" />
     <ClInclude Include="include\Pch.h" />
     <ClInclude Include="include\Perlin.h" />
     <ClInclude Include="include\Profiler.h" />
@@ -47,6 +48,7 @@
     <ClCompile Include="source\CriticalSection.cpp" />
     <ClCompile Include="source\File.cpp" />
     <ClCompile Include="source\Logger.cpp" />
+    <ClCompile Include="source\Pak.cpp" />
     <ClCompile Include="source\Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

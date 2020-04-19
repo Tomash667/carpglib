@@ -124,9 +124,6 @@
     <ClInclude Include="include\Sound.h">
       <Filter>resources</Filter>
     </ClInclude>
-    <ClInclude Include="include\Pak.h">
-      <Filter>resources</Filter>
-    </ClInclude>
     <ClInclude Include="include\Mesh.h">
       <Filter>resources</Filter>
     </ClInclude>
@@ -294,6 +291,9 @@
     <ClInclude Include="include\CarpgLib.h" />
     <ClInclude Include="include\ManagedResource.h">
       <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Pak.h">
+      <Filter>resources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

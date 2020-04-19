@@ -330,6 +330,17 @@ void io::MoveFile(cstring filename, cstring new_filename)
 }
 
 //=================================================================================================
+uint io::GetFileSize(cstring filename)
+{
+	HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	if(file == INVALID_HANDLE_VALUE)
+		return (uint)-1;
+	uint fileSize = (uint)::GetFileSize(file, nullptr);
+	CloseHandle(file);
+	return fileSize;
+}
+
+//=================================================================================================
 bool io::FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func)
 {
 	assert(pattern);
@@ -375,7 +386,7 @@ bool io::LoadFileToString(cstring path, string& str, uint max_size)
 	if(file == INVALID_HANDLE_VALUE)
 		return false;
 
-	uint file_size = (uint)GetFileSize(file, nullptr);
+	uint file_size = (uint)::GetFileSize(file, nullptr);
 	uint size = min(file_size, max_size);
 	str.resize(size);
 
@@ -471,13 +482,30 @@ cstring io::FilenameFromPath(cstring path)
 }
 
 //=================================================================================================
+string io::CombinePath(cstring path, cstring filename)
+{
+	assert(path && filename);
+
+	string s;
+	int pos = FindCharInString(path, "/\\");
+	if(pos != -1)
+	{
+		s.assign(path, pos);
+		s += '/';
+		s += filename;
+	}
+	else
+		s = filename;
+	return s;
+}
+
+//=================================================================================================
 void io::OpenUrl(Cstring url)
 {
 	ShellExecute(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
 }
 
 //=================================================================================================
-#ifndef CORE_ONLY
 Buffer* io::Compress(byte* data, uint size)
 {
 	uint safe_size = size + size / 1000 + 13;
@@ -488,4 +516,3 @@ Buffer* io::Compress(byte* data, uint size)
 	buf->Resize(real_size);
 	return buf;
 }
-#endif

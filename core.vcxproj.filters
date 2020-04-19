@@ -47,6 +47,9 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="source\Pch.cpp" />
+    <ClCompile Include="source\Pak.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Algorithm.h">
@@ -108,6 +111,9 @@
     </ClInclude>
     <ClInclude Include="include\CarpgLibCore.h" />
     <ClInclude Include="include\Pch.h" />
+    <ClInclude Include="include\Pak.h">
+      <Filter>core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

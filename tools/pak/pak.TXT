@@ -12,7 +12,7 @@ EXE COMMANDS
 Parameters without '-' are treated as files/directories.
 
 --------------------------------------------------------------------------------
-VERSION 0
+VERSION 0 (unsupported)
 
 header
 {
@@ -37,18 +37,21 @@ for each file
 ... data ...
 
 --------------------------------------------------------------------------------
-VERSION 1
+VERSION 1/2
 
 header
 {
 	char[3] - sign ("PAK")
-	byte - version (1)
+	byte - version (1/2)
 	int - flags
 		0x01 - encrypted (only file entry table)
 		0x02 - full encrypted
 	uint - file count
 	uint - file entry table size
+	uint - custom data size (only in version 2)
 }
+
+... custom data ... (only in version 2)
 
 file entry table
 {
@@ -73,7 +76,9 @@ file entry table
 
 
 +-----------+
-| header    | header size = 16
+| header    | header size = 16 or 20
++-----------+
++ custom    |
 +-----------+
 | entries   | <- entries_offset
 |           |

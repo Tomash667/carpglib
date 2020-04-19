@@ -20,6 +20,7 @@ namespace io
 	// Check if file exists.
 	bool FileExists(cstring filename);
 	void MoveFile(cstring filename, cstring new_filename);
+	uint GetFileSize(cstring filename);
 	// Find files matching pattern, return false from func to stop.
 	bool FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func);
 	// Call ShellExecute on file
@@ -27,17 +28,15 @@ namespace io
 	// get filename from path, returned string use same string as argument
 	cstring FilenameFromPath(const string& path);
 	cstring FilenameFromPath(cstring path);
+	string CombinePath(cstring path, cstring filename);
 	// load text file to string (whole or up to max size)
 	bool LoadFileToString(cstring path, string& str, uint max_size = (uint)-1);
 	// simple encryption (pass encrypted to decrypt data)
 	void Crypt(char* inp, uint inplen, cstring key, uint keylen);
 	// open url in default web browser
 	void OpenUrl(Cstring url);
-
-#ifndef CORE_ONLY
 	// Compress data to buffer
 	Buffer* Compress(byte* data, uint size);
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -448,6 +447,10 @@ public:
 		uint length = strlen(str);
 		Write(str, length);
 	}
+	void WriteString0(const string& str)
+	{
+		Write(str.c_str(), str.length() + 1);
+	}
 
 	template<typename CountType, typename LengthType>
 	void WriteStringArray(const vector<string>& strs)
@@ -532,6 +535,11 @@ public:
 			WriteCasted<CastType>(e);
 	}
 
+	void operator << (Buffer* buf)
+	{
+		Write(buf->Data(), buf->Size());
+	}
+
 	template<typename T>
 	uint BeginPatch(const T& a)
 	{
@@ -579,6 +587,49 @@ public:
 protected:
 	FileHandle file;
 	bool own_handle;
+};
+
+//-----------------------------------------------------------------------------
+class MemoryWriter : public StreamWriter
+{
+public:
+	MemoryWriter() : buf(Buffer::Get()), pos(0) {}
+	~MemoryWriter()
+	{
+		if(buf)
+			buf->Free();
+	}
+	using StreamWriter::Write;
+	void Write(const void* ptr, uint size) override
+	{
+		uint reqSize = pos + size;
+		if(reqSize > buf->Size())
+			buf->Resize(reqSize);
+		memcpy(reinterpret_cast<byte*>(buf->Data()) + pos, ptr, size);
+		pos += size;
+	}
+	uint GetPos() const override { return pos; }
+	bool SetPos(uint pos)
+	{
+		this->pos = pos;
+		if(pos > buf->Size())
+			buf->Resize(pos);
+		return true;
+	}
+	void Resize(uint size)
+	{
+		buf->Resize(size);
+	}
+	Buffer* PinBuffer()
+	{
+		Buffer* b = buf;
+		buf = nullptr;
+		return b;
+	}
+
+protected:
+	Buffer* buf;
+	uint pos;
 };
 
 //-----------------------------------------------------------------------------

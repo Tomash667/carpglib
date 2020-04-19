@@ -1,86 +1,5 @@
-#include <windows.h>
-#include <cstdio>
-#include <conio.h>
-#include <vector>
-#include <string>
-#include <map>
-#include <zlib.h>
-
-using namespace std;
-
-typedef unsigned char byte;
-typedef unsigned int uint;
-typedef const char* cstring;
-
-static const uint FORMAT_STRINGS = 8;
-static const uint FORMAT_LENGTH = 2048;
-static char format_buf[FORMAT_STRINGS][FORMAT_LENGTH];
-static int format_marker;
-
-//=================================================================================================
-cstring Format(cstring str, ...)
-{
-	va_list list;
-	va_start(list, str);
-	char* cbuf = format_buf[format_marker];
-	_vsnprintf_s(cbuf, FORMAT_LENGTH, FORMAT_LENGTH - 1, str, list);
-	cbuf[FORMAT_LENGTH - 1] = 0;
-	format_marker = (format_marker + 1) % FORMAT_STRINGS;
-	va_end(list);
-
-	return cbuf;
-}
-
-struct Pak
-{
-	static const byte CURRENT_VERSION = 1;
-
-	struct Header
-	{
-		char sign[3];
-		byte version;
-		int flags;
-		uint file_count, file_entry_table_size;
-
-		bool HaveValidSign()
-		{
-			return sign[0] == 'P' && sign[1] == 'A' && sign[2] == 'K';
-		}
-	};
-
-	struct File
-	{
-		union
-		{
-			cstring filename;
-			uint filename_offset;
-		};
-		uint size;
-		uint compressed_size;
-		uint offset;
-	};
-
-	enum Flags
-	{
-		F_ENCRYPTION = 1 << 0,
-		F_FULL_ENCRYPTION = 1 << 1
-	};
-
-	HANDLE file;
-	union
-	{
-		byte* table;
-		File* file_table;
-	};
-	uint file_count;
-	bool encrypted;
-
-	~Pak()
-	{
-		CloseHandle(file);
-		delete[] table;
-	}
-};
+#include <CarpgLibCore.h>
+#include <Pak.h>
 
 struct Paker
 {
@@ -98,13 +17,7 @@ struct Paker
 		Unpack
 	};
 
-	struct File
-	{
-		string path, name;
-		uint size, compressed_size, offset, name_offset;
-	};
-
-	map<string, Cmd> cmds =
+	std::map<string, Cmd> cmds =
 	{
 		{"?", Help}, {"h", Help}, {"help", Help},
 		{"e", Encrypt}, {"encrypt", Encrypt},
@@ -117,9 +30,8 @@ struct Paker
 		{"u", Unpack }, {"unpack", Unpack }
 	};
 
-	vector<File> files;
+	PakWriter pakw;
 	string crypt_key, decrypt_key, output;
-	DWORD tmp;
 	bool compress, encrypt, full_encrypt, subdir, done_anything;
 
 	Paker()
@@ -132,164 +44,56 @@ struct Paker
 		done_anything = false;
 	}
 
-	void Add(cstring path, vector<File>& files, bool subdir)
+	void Add(cstring path, bool subdir)
 	{
 		printf("Scanning: %s ...\n", path);
-		// start find
-		WIN32_FIND_DATA find_data;
-		HANDLE find = FindFirstFile(path, &find_data);
-		if(find == INVALID_HANDLE_VALUE)
+		io::FindFiles(path, [=](const io::FileInfo& info)
 		{
-			DWORD result = GetLastError();
-			printf("ERROR: Can't search for '%s', result %u.\n", path, result);
-			return;
-		}
-
-		do
-		{
-			if(strcmp(find_data.cFileName, ".") != 0 && strcmp(find_data.cFileName, "..") != 0)
+			string new_path = io::CombinePath(path, info.filename);
+			if(info.is_dir)
 			{
-				string new_path = CombinePath(path, find_data.cFileName);
-				if((find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+				if(subdir)
 				{
-					// directory
-					if(subdir)
-					{
-						new_path += "/*";
-						Add(new_path.c_str(), files, true);
-					}
-				}
-				else
-				{
-					File f;
-					f.path = new_path;
-					f.name = find_data.cFileName;
-					f.size = find_data.nFileSizeLow;
-					f.name_offset = 0;
-					files.push_back(f);
+					new_path += "/*";
+					Add(new_path.c_str(), true);
 				}
 			}
-		} while(FindNextFile(find, &find_data));
-
-		DWORD result = GetLastError();
-		if(result != ERROR_NO_MORE_FILES)
-			printf("ERROR: Can't search for more files '%s', result %u.\n", path, result);
-
-		FindClose(find);
+			else
+				pakw.AddFile(new_path.c_str());
+			return true;
+		});
 	}
 
 	void BrowsePak(cstring path)
 	{
 		done_anything = true;
 
-		Pak* pak = OpenPak(path);
-		if(!pak)
+		if(!pakw.Read(path))
+		{
+			printf("Failed to read '%s'.", path);
 			return;
+		}
 
-		printf("Browsing files: %u\n", pak->file_count);
+		vector<PakWriter::File>& files = pakw.GetFiles();
+		printf("Browsing files: %u\n", files.size());
 		uint total_size = 0u, total_compressed_size = 0u;
-		for(uint i = 0; i < pak->file_count; ++i)
+		for(PakWriter::File& file : files)
 		{
-			Pak::File& f = pak->file_table[i];
-			if(f.compressed_size == f.size)
-				printf("  %s - size %s, offset %u\n", f.filename, GetSize(f.size), f.offset);
+			if(file.compressedSize == file.size)
+				printf("  %s - size %s, offset %u\n", file.name.c_str(), GetSize(file.size), file.dataOffset);
 			else
-				printf("  %s - size %s, compressed %s, offset %u\n", f.filename, GetSize(f.size), GetSize(f.compressed_size), f.offset);
-			total_size += f.size;
-			total_compressed_size += f.compressed_size;
+				printf("  %s - size %s, compressed %s, offset %u\n", file.name.c_str(), GetSize(file.size), GetSize(file.compressedSize), file.dataOffset);
+			total_size += file.size;
+			total_compressed_size += file.compressedSize;
 		}
-		printf("Size: %s, compressed %s (%d%%)\n", GetSize(total_size), GetSize(total_compressed_size), (int)floor(double(total_compressed_size) * 100 / total_size));
+		printf("Size: %s, compressed %s (%d%%)\n", GetSize(total_size), GetSize(total_compressed_size),
+			(int)floor(double(total_compressed_size) * 100 / total_size));
 		printf("Done.\n");
-
-		delete pak;
-	}
-
-	string CombinePath(cstring path, cstring filename)
-	{
-		string s;
-		int pos = FindCharInString(path, "/\\");
-		if(pos != -1)
-		{
-			s.assign(path, pos);
-			s += '/';
-			s += filename;
-		}
-		else
-			s = filename;
-		return s;
-	}
-
-	void Crypt(char *inp, DWORD inplen, cstring key, DWORD keylen)
-	{
-		//we will consider size of sbox 256 bytes
-		//(extra byte are only to prevent any mishep just in case)
-		char Sbox[257], Sbox2[257];
-		unsigned long i, j, t, x;
-
-		//this unsecured key is to be used only when there is no input key from user
-		char temp, k;
-		i = j = t = x = 0;
-		temp = k = 0;
-
-		//always initialize the arrays with zero
-		ZeroMemory(Sbox, sizeof(Sbox));
-		ZeroMemory(Sbox2, sizeof(Sbox2));
-
-		//initialize sbox i
-		for(i = 0; i < 256U; i++)
-		{
-			Sbox[i] = (char)i;
-		}
-
-		j = 0;
-		//initialize the sbox2 with user key
-		for(i = 0; i < 256U; i++)
-		{
-			if(j == keylen)
-			{
-				j = 0;
-			}
-			Sbox2[i] = key[j++];
-		}
-
-		j = 0; //Initialize j
-			   //scramble sbox1 with sbox2
-		for(i = 0; i < 256; i++)
-		{
-			j = (j + (unsigned long)Sbox[i] + (unsigned long)Sbox2[i]) % 256U;
-			temp = Sbox[i];
-			Sbox[i] = Sbox[j];
-			Sbox[j] = temp;
-		}
-
-		i = j = 0;
-		for(x = 0; x < inplen; x++)
-		{
-			//increment i
-			i = (i + 1U) % 256U;
-			//increment j
-			j = (j + (unsigned long)Sbox[i]) % 256U;
-
-			//Scramble SBox #1 further so encryption routine will
-			//will repeat itself at great interval
-			temp = Sbox[i];
-			Sbox[i] = Sbox[j];
-			Sbox[j] = temp;
-
-			//Get ready to create pseudo random  byte for encryption key
-			t = ((unsigned long)Sbox[i] + (unsigned long)Sbox[j]) % 256U;
-
-			//get the random byte
-			k = Sbox[t];
-
-			//xor with the data and done
-			inp[x] = (inp[x] ^ k);
-		}
 	}
 
 	void DisplayHelp()
 	{
-		printf("CaRpg paker v1. Switches:\n"
+		printf("CaRpg paker v2. Switches:\n"
 			"-?/h/help - help\n"
 			"-e/encrypt pswd - encrypt file entries with password\n"
 			"-fe/fullencrypt pswd - full encrypt with password\n"
@@ -342,28 +146,6 @@ struct Paker
 		default:
 			return Format("%g GB", dsize);
 		}
-	}
-
-	int FindCharInString(cstring str, cstring chars)
-	{
-		int last = -1, index = 0;
-		char c;
-		while((c = *str++) != 0)
-		{
-			cstring cs = chars;
-			char c2;
-			while((c2 = *cs++) != 0)
-			{
-				if(c == c2)
-				{
-					last = index;
-					break;
-				}
-			}
-			++index;
-		}
-
-		return last;
 	}
 
 	Pak* OpenPak(cstring path)
