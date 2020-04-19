@@ -65,41 +65,16 @@ void Render::Init()
 	wndSize = app::engine->GetWindowSize();
 
 	CreateAdapter();
+	CreateDevice();
 	LogAndSelectResolution();
-	CreateDeviceAndSwapChain();
+	LogAndSelectMultisampling();
+	CreateSwapChain();
 	CreateSizeDependentResources();
 	CreateBlendStates();
 	CreateDepthStates();
 	CreateRasterStates();
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	/*
-	// check multisampling
-	DWORD levels, levels2;
-	if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(usedAdapter, D3DDEVTYPE_HAL, D3DFMT_A8R8G8B8, fullscreen ? FALSE : TRUE,
-		(D3DMULTISAMPLE_TYPE)multisampling, &levels))
-		&& SUCCEEDED(d3d->CheckDeviceMultiSampleType(usedAdapter, D3DDEVTYPE_HAL, D3DFMT_D24S8, fullscreen ? FALSE : TRUE,
-		(D3DMULTISAMPLE_TYPE)multisampling, &levels2)))
-	{
-		levels = min(levels, levels2);
-		if(multisamplingQuality < 0 || multisamplingQuality >= (int)levels)
-		{
-			Warn("Render: Unavailable multisampling quality, changed to 0.");
-			multisamplingQuality = 0;
-		}
-	}
-	else
-	{
-		Warn("Render: Your graphic card don't support multisampling x%d. Maybe it's only available in fullscreen mode. "
-			"Multisampling was turned off.", multisampling);
-		multisampling = 0;
-		multisamplingQuality = 0;
-	}
-
-	LogMultisampling();
-	LogAndSelectResolution();
-;*/
 
 	initialized = true;
 	Info("Render: Directx device created.");
@@ -134,23 +109,8 @@ void Render::CreateAdapter()
 }
 
 //=================================================================================================
-void Render::CreateDeviceAndSwapChain()
+void Render::CreateDevice()
 {
-	DXGI_SWAP_CHAIN_DESC swap_desc = {};
-	swap_desc.BufferCount = 1;
-	swap_desc.BufferDesc.Width = wndSize.x;
-	swap_desc.BufferDesc.Height = wndSize.y;
-	swap_desc.BufferDesc.Format = DISPLAY_FORMAT;
-	swap_desc.BufferDesc.RefreshRate.Numerator = 0;
-	swap_desc.BufferDesc.RefreshRate.Denominator = 1;
-	swap_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swap_desc.OutputWindow = app::engine->GetWindowHandle();
-	swap_desc.SampleDesc.Count = 1;
-	swap_desc.SampleDesc.Quality = 0;
-	swap_desc.Windowed = true;
-	swap_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	swap_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-
 	int flags = 0;
 #ifdef _DEBUG
 	flags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -158,13 +118,36 @@ void Render::CreateDeviceAndSwapChain()
 
 	D3D_FEATURE_LEVEL feature_levels[] = { D3D_FEATURE_LEVEL_11_0 };
 	D3D_FEATURE_LEVEL feature_level;
-	HRESULT result = D3D11CreateDeviceAndSwapChain(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags, feature_levels, countof(feature_levels),
-		D3D11_SDK_VERSION, &swap_desc, &swapChain, &device, &feature_level, &deviceContext);
+	HRESULT result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags, feature_levels, countof(feature_levels),
+		D3D11_SDK_VERSION, &device, &feature_level, &deviceContext);
 	if(FAILED(result))
-		throw Format("Failed to create device and swap chain (%u).", result);
+		throw Format("Failed to create device (%u).", result);
+}
+
+//=================================================================================================
+void Render::CreateSwapChain()
+{
+	DXGI_SWAP_CHAIN_DESC desc = {};
+	desc.BufferCount = 1;
+	desc.BufferDesc.Width = wndSize.x;
+	desc.BufferDesc.Height = wndSize.y;
+	desc.BufferDesc.Format = DISPLAY_FORMAT;
+	desc.BufferDesc.RefreshRate.Numerator = 0;
+	desc.BufferDesc.RefreshRate.Denominator = 1;
+	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	desc.OutputWindow = app::engine->GetWindowHandle();
+	desc.SampleDesc.Count = max(multisampling, 1);
+	desc.SampleDesc.Quality = multisamplingQuality;
+	desc.Windowed = true;
+	desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+	HRESULT result = factory->CreateSwapChain(device, &desc, &swapChain);
+	if(FAILED(result))
+		throw Format("Failed to create swap chain (%u).", result);
 
 	// disable builtin alt+enter
-	V(factory->MakeWindowAssociation(swap_desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES));
+	V(factory->MakeWindowAssociation(desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES));
 }
 
 //=================================================================================================
@@ -204,12 +187,10 @@ ID3D11DepthStencilView* Render::CreateDepthStencilView(const Int2& size)
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	desc.SampleDesc.Count = 1;
-	desc.SampleDesc.Quality = 0;
+	desc.SampleDesc.Count = max(multisampling, 1);
+	desc.SampleDesc.Quality = multisamplingQuality;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	desc.CPUAccessFlags = 0;
-	desc.MiscFlags = 0;
 
 	ID3D11Texture2D* tex;
 	V(device->CreateTexture2D(&desc, nullptr, &tex));
@@ -217,8 +198,7 @@ ID3D11DepthStencilView* Render::CreateDepthStencilView(const Int2& size)
 	// create depth stencil view from texture
 	D3D11_DEPTH_STENCIL_VIEW_DESC viewDesc = {};
 	viewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	viewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	viewDesc.Texture2D.MipSlice = 0;
+	viewDesc.ViewDimension = multisampling ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 
 	ID3D11DepthStencilView* view;
 	V(device->CreateDepthStencilView(tex, &viewDesc, &view));
@@ -319,44 +299,22 @@ void Render::CreateDepthStates()
 //=================================================================================================
 void Render::CreateRasterStates()
 {
-	// get normal raster state
-	deviceContext->RSGetState(&rasterStates[RASTER_NORMAL]);
-
-	// create disabled culling raster state
+	// create normal raster state
 	D3D11_RASTERIZER_DESC desc = {};
 	desc.FillMode = D3D11_FILL_SOLID;
-	desc.CullMode = D3D11_CULL_NONE;
+	desc.CullMode = D3D11_CULL_BACK;
 	desc.DepthClipEnable = true;
+	desc.MultisampleEnable = multisampling > 0;
+	desc.AntialiasedLineEnable = multisampling > 0;
+	V(device->CreateRasterizerState(&desc, &rasterStates[RASTER_NORMAL]));
 
+	// create disabled culling raster state
+	desc.CullMode = D3D11_CULL_NONE;
 	V(device->CreateRasterizerState(&desc, &rasterStates[RASTER_NO_CULLING]));
 
 	// create wireframe raster state
 	desc.FillMode = D3D11_FILL_WIREFRAME;
-
 	V(device->CreateRasterizerState(&desc, &rasterStates[RASTER_WIREFRAME]));
-}
-
-//=================================================================================================
-void Render::LogMultisampling()
-{
-	LocalString s = "Render: Available multisampling: ";
-
-	/*for(int j = 2; j <= 16; ++j)
-	{
-		DWORD levels, levels2;
-		if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(usedAdapter, D3DDEVTYPE_HAL, BACKBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels))
-			&& SUCCEEDED(d3d->CheckDeviceMultiSampleType(usedAdapter, D3DDEVTYPE_HAL, ZBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels2)))
-		{
-			s += Format("x%d(%d), ", j, min(levels, levels2));
-		}
-	}*/
-
-	if(s.at_back(1) == ':')
-		s += "none";
-	else
-		s.pop(2);
-
-	Info(s);
 }
 
 //=================================================================================================
@@ -443,6 +401,47 @@ void Render::LogAndSelectResolution()
 			Info("Render: Defaulting refresh rate to %d Hz.", bestHz);
 		refreshHz = bestHz;
 	}
+}
+
+//=================================================================================================
+void Render::LogAndSelectMultisampling()
+{
+	LocalString s = "Render: Available multisampling: ";
+
+	bool ok = false;
+	for(uint i = 2; i <= D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT; i *= 2)
+	{
+		uint levels;
+		V(device->CheckMultisampleQualityLevels(DISPLAY_FORMAT, i, &levels));
+		if(levels == 0)
+			continue;
+		multisampleLevels.push_back(Int2(i, levels));
+		s += Format("x%u(%u), ", i, levels);
+		if(i == multisampling)
+		{
+			ok = true;
+			if((uint)multisamplingQuality >= levels)
+			{
+				Warn("Render: Unavailable multisampling quality, changed to 0.");
+				multisamplingQuality = 0;
+			}
+		}
+	}
+
+	if(!ok)
+	{
+		if(multisampling != 0)
+			Warn("Render: Unavailable multisampling mode, disabling.");
+		multisampling = 0;
+		multisamplingQuality = 0;
+	}
+
+	if(s.at_back(1) == ':')
+		s += "none";
+	else
+		s.pop(2);
+
+	Info(s);
 }
 
 //=================================================================================================
@@ -625,7 +624,8 @@ RenderTarget* Render::CreateRenderTarget(const Int2& size)
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Count = max(multisampling, 1);
+	desc.SampleDesc.Quality = multisamplingQuality;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
@@ -639,7 +639,7 @@ RenderTarget* Render::CreateRenderTarget(const Int2& size)
 	// create srv
 	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
 	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	viewDesc.ViewDimension = multisampling ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
 	viewDesc.Texture2D.MipLevels = 1;
 	V(device->CreateShaderResourceView(texResource, &viewDesc, &target->tex));
 
@@ -649,6 +649,50 @@ RenderTarget* Render::CreateRenderTarget(const Int2& size)
 	texResource->Release();
 	renderTargets.push_back(target);
 	return target;
+}
+
+//=================================================================================================
+void Render::RecreateRenderTarget(RenderTarget* target)
+{
+	// create texture
+	D3D11_TEXTURE2D_DESC desc = {};
+	desc.Width = target->size.x;
+	desc.Height = target->size.y;
+	desc.MipLevels = 1;
+	desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.SampleDesc.Count = max(multisampling, 1);
+	desc.SampleDesc.Quality = multisamplingQuality;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+
+	ID3D11Texture2D* texResource;
+	V(device->CreateTexture2D(&desc, nullptr, &texResource));
+
+	// copy texture
+	ID3D11Texture2D* prevTexResource;
+	target->tex->GetResource(reinterpret_cast<ID3D11Resource**>(&prevTexResource));
+	deviceContext->CopyResource(texResource, prevTexResource);
+	prevTexResource->Release();
+	target->tex->Release();
+	target->depthStencilView->Release();
+	target->renderTarget->Release();
+
+	// create render target view
+	V(device->CreateRenderTargetView(texResource, nullptr, &target->renderTarget));
+
+	// create srv
+	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
+	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	viewDesc.ViewDimension = multisampling ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
+	viewDesc.Texture2D.MipLevels = 1;
+	V(device->CreateShaderResourceView(texResource, &viewDesc, &target->tex));
+
+	// create depth stencil view
+	target->depthStencilView = CreateDepthStencilView(target->size);
+
+	texResource->Release();
 }
 
 //=================================================================================================
@@ -742,8 +786,7 @@ void Render::SetRasterState(RasterState rasterState)
 //=================================================================================================
 int Render::SetMultisampling(int type, int level)
 {
-	FIXME;
-	/*if(type == multisampling && (level == -1 || level == multisamplingQuality))
+	if(type == multisampling && (level == -1 || level == multisamplingQuality))
 		return 1;
 
 	if(!initialized)
@@ -753,45 +796,42 @@ int Render::SetMultisampling(int type, int level)
 		return 2;
 	}
 
-	bool fullscreen = app::engine->IsFullscreen();
-	DWORD levels, levels2;
-	if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(0, D3DDEVTYPE_HAL, D3DFMT_A8R8G8B8, fullscreen ? FALSE : TRUE, (D3DMULTISAMPLE_TYPE)type, &levels))
-		&& SUCCEEDED(d3d->CheckDeviceMultiSampleType(0, D3DDEVTYPE_HAL, D3DFMT_D24S8, fullscreen ? FALSE : TRUE, (D3DMULTISAMPLE_TYPE)type, &levels2)))
+	if(type != 0)
 	{
-		levels = min(levels, levels2);
-		if(level < 0)
-			level = levels - 1;
-		else if(level >= (int)levels)
+		bool ok = false;
+		for(Int2& ms : multisampleLevels)
+		{
+			if(ms.x == type && ms.y >= level)
+			{
+				ok = true;
+				if(level == -1)
+					level = ms.y;
+				break;
+			}
+		}
+		if(!ok)
 			return 0;
-
-		multisampling = type;
-		multisamplingQuality = level;
-
-		Reset(true);
-
-		return 2;
 	}
 	else
-		return 0;*/
-	return 0;
-}
+		level = 0;
 
-//=================================================================================================
-void Render::GetMultisamplingModes(vector<Int2>& v) const
-{
-	FIXME;
-	/*v.clear();
-	for(int j = 2; j <= 16; ++j)
-	{
-		DWORD levels, levels2;
-		if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(usedAdapter, D3DDEVTYPE_HAL, BACKBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels))
-			&& SUCCEEDED(d3d->CheckDeviceMultiSampleType(usedAdapter, D3DDEVTYPE_HAL, ZBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels2)))
-		{
-			int level = min(levels, levels2);
-			for(int i = 0; i < level; ++i)
-				v.push_back(Int2(j, i));
-		}
-	}*/
+	multisampling = type;
+	multisamplingQuality = level;
+
+	SafeRelease(rasterStates);
+	SafeRelease(depthStencilView);
+	SafeRelease(renderTarget);
+	SafeRelease(swapChain);
+
+	CreateSwapChain();
+	CreateRenderTarget();
+	depthStencilView = CreateDepthStencilView(wndSize);
+	deviceContext->OMSetRenderTargets(1, &renderTarget, depthStencilView);
+	CreateRasterStates();
+	for(RenderTarget* target : renderTargets)
+		RecreateRenderTarget(target);
+
+	return 2;
 }
 
 //=================================================================================================
@@ -880,8 +920,7 @@ ID3D11Buffer* Render::CreateConstantBuffer(uint size, cstring name)
 ID3D11SamplerState* Render::CreateSampler(TextureAddressMode mode, bool disableMipmap)
 {
 	D3D11_SAMPLER_DESC samplerDesc;
-	FIXME;
-	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;// D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.AddressU = (D3D11_TEXTURE_ADDRESS_MODE)mode;
 	samplerDesc.AddressV = (D3D11_TEXTURE_ADDRESS_MODE)mode;
 	samplerDesc.AddressW = (D3D11_TEXTURE_ADDRESS_MODE)mode;

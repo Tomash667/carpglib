@@ -95,7 +95,7 @@ public:
 	ID3D11Device* GetDevice() const { return device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return deviceContext; }
 	void GetMultisampling(int& ms, int& msq) const { ms = multisampling; msq = multisamplingQuality; }
-	void GetMultisamplingModes(vector<Int2>& v) const;
+	const vector<Int2>& GetMultisamplingModes() const { return multisampleLevels; }
 	uint GetRefreshRate() const { return refreshHz; }
 	const vector<Resolution>& GetResolutions() const { return resolutions; }
 	const string& GetShadersDir() const { return shaders_dir; }
@@ -112,7 +112,8 @@ public:
 
 private:
 	void CreateAdapter();
-	void CreateDeviceAndSwapChain();
+	void CreateDevice();
+	void CreateSwapChain();
 	void CreateSizeDependentResources();
 	void CreateRenderTarget();
 	ID3D11DepthStencilView* CreateDepthStencilView(const Int2& size);
@@ -121,8 +122,9 @@ private:
 	void CreateDepthStates();
 	void CreateRasterStates();
 	void LogAndSelectResolution();
-	void LogMultisampling();
+	void LogAndSelectMultisampling();
 	ID3DBlob* CompileShader(cstring filename, cstring entry, bool isVertex, D3D_SHADER_MACRO* macro);
+	void RecreateRenderTarget(RenderTarget* target);
 
 	IDXGIFactory* factory;
 	IDXGIAdapter* adapter;
@@ -138,6 +140,7 @@ private:
 	vector<ShaderHandler*> shaders;
 	vector<RenderTarget*> renderTargets;
 	vector<Resolution> resolutions;
+	vector<Int2> multisampleLevels;
 	RenderTarget* currentTarget;
 	string shaders_dir;
 	uint refreshHz;
