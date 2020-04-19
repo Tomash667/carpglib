@@ -56,6 +56,7 @@ void VsMain(in MESH_INPUT In, out MESH_OUTPUT Out)
 float4 PsMain(in MESH_OUTPUT In) : SV_TARGET
 {
 	float4 tex = texDiffuse.Sample(samplerDiffuse, In.tex);
+	clip(tex.w - 0.75f);
 	float fog = saturate((In.posViewZ-fogParam.x)/fogParam.z);
 	return float4(lerp(tex.xyz * ambientColor, fogColor, fog), tex.w);
 }
