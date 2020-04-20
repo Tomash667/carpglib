@@ -59,7 +59,7 @@ using CPtr = Ptr<T, internal::ComAllocator<T>>;
 //-----------------------------------------------------------------------------
 struct ResourceLock
 {
-	ResourceLock(ID3D11Resource* res, D3D11_MAP mode = D3D11_MAP_WRITE)
+	ResourceLock(ID3D11Resource* res, D3D11_MAP mode = D3D11_MAP_WRITE_DISCARD)
 	{
 		this->res = res;
 		D3D11_MAPPED_SUBRESOURCE sub;

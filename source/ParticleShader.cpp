@@ -73,6 +73,7 @@ void ParticleShader::Prepare(Camera& camera)
 
 	// setup shader
 	deviceContext->VSSetShader(vertexShader, nullptr, 0);
+	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
 	deviceContext->PSSetSamplers(0, 1, &sampler);
 	uint stride = sizeof(VParticle), offset = 0;
@@ -81,12 +82,8 @@ void ParticleShader::Prepare(Camera& camera)
 	ReserveVertexBuffer(1);
 
 	// vertex shader constants
-	D3D11_MAPPED_SUBRESOURCE resource;
-	V(deviceContext->Map(vsGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	VsGlobals& vsg = *(VsGlobals*)resource.pData;
-	vsg.matCombined = camera.mat_view_proj.Transpose();
-	deviceContext->Unmap(vsGlobals, 0);
-	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
+	ResourceLock lock(vsGlobals);
+	lock.Get<VsGlobals>()->matCombined = camera.mat_view_proj.Transpose();
 
 	lastTex = (Texture*)0xFEFEFEFE;
 }
@@ -108,7 +105,7 @@ void ParticleShader::DrawBillboards(const vector<Billboard>& billboards)
 
 		// fill vertex buffer
 		{
-			ResourceLock lock(vb, D3D11_MAP_WRITE_DISCARD);
+			ResourceLock lock(vb);
 			memcpy(lock.Get(), vBillboard, sizeof(VParticle) * 6);
 		}
 
@@ -133,7 +130,7 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 
 		// fill vertex buffer
 		{
-			ResourceLock lock(vb, D3D11_MAP_WRITE_DISCARD);
+			ResourceLock lock(vb);
 			VParticle* v = lock.Get<VParticle>();
 			int idx = 0;
 			for(const ParticleEmitter::Particle& p : pe.particles)
@@ -208,7 +205,7 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 			const TrailParticleEmitter::Particle* prev = &tp.parts[id];
 			const float width = tp.width / 2;
 			id = prev->next;
-			ResourceLock lock(vb, D3D11_MAP_WRITE_DISCARD);
+			ResourceLock lock(vb);
 			VParticle* v = lock.Get<VParticle>();
 			int idx = 0;
 			while(id != -1)

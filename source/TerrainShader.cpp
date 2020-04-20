@@ -65,34 +65,34 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 	app::render->SetRasterState(Render::RASTER_NORMAL);
 
 	// setup shader
-	deviceContext->IASetInputLayout(layout);
 	deviceContext->VSSetShader(vertexShader, nullptr, 0);
+	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
 	deviceContext->PSSetSamplers(0, 6, samplers);
-	uint stride = sizeof(VTerrain),
-		offset = 0;
+	uint stride = sizeof(VTerrain), offset = 0;
+	deviceContext->IASetInputLayout(layout);
 	deviceContext->IASetVertexBuffers(0, 1, &terrain->vb, &stride, &offset);
 	deviceContext->IASetIndexBuffer(terrain->ib, DXGI_FORMAT_R32_UINT, 0);
 
 	// vertex shader constants
-	D3D11_MAPPED_SUBRESOURCE resource;
-	V(deviceContext->Map(vsGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	VsGlobals& vsg = *(VsGlobals*)resource.pData;
-	vsg.matCombined = camera->mat_view_proj.Transpose();
-	vsg.matWorld = Matrix::IdentityMatrix.Transpose();
-	deviceContext->Unmap(vsGlobals, 0);
-	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
+	{
+		ResourceLock lock(vsGlobals);
+		VsGlobals& vsg = *lock.Get<VsGlobals>();
+		vsg.matCombined = camera->mat_view_proj.Transpose();
+		vsg.matWorld = Matrix::IdentityMatrix.Transpose();
+	}
 
 	// pixel shader constants
-	V(deviceContext->Map(psGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	PsGlobals& psg = *(PsGlobals*)resource.pData;
-	psg.colorAmbient = scene->GetAmbientColor();
-	psg.colorDiffuse = scene->GetLightColor();
-	psg.lightDir = scene->GetLightDir();
-	psg.fogColor = scene->GetFogColor();
-	psg.fogParam = scene->GetFogParams();
-	deviceContext->Unmap(psGlobals, 0);
-	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
+	{
+		ResourceLock lock(psGlobals);
+		PsGlobals& psg = *lock.Get<PsGlobals>();
+		psg.colorAmbient = scene->GetAmbientColor();
+		psg.colorDiffuse = scene->GetLightColor();
+		psg.lightDir = scene->GetLightDir();
+		psg.fogColor = scene->GetFogColor();
+		psg.fogParam = scene->GetFogParams();
+	}
 
 	// set textures
 	ID3D11ShaderResourceView* textures[6];

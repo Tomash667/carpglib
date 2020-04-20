@@ -226,21 +226,21 @@ void SuperShader::Prepare(Scene* scene, Camera* camera)
 	deviceContext->PSSetSamplers(0, 3, samplers);
 
 	// set vertex shader globals
-	D3D11_MAPPED_SUBRESOURCE resource;
-	V(deviceContext->Map(vsGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	VsGlobals& vsg = *(VsGlobals*)resource.pData;
-	vsg.cameraPos = camera->from;
-	deviceContext->Unmap(vsGlobals, 0);
+	{
+		ResourceLock lock(vsGlobals);
+		lock.Get<VsGlobals>()->cameraPos = camera->from;
+	}
 
 	// set pixel shader globals
-	V(deviceContext->Map(psGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	PsGlobals& psg = *(PsGlobals*)resource.pData;
-	psg.ambientColor = scene->GetAmbientColor();
-	psg.lightColor = scene->GetLightColor();
-	psg.lightDir = scene->GetLightDir();
-	psg.fogColor = scene->GetFogColor();
-	psg.fogParams = scene->GetFogParams();
-	deviceContext->Unmap(psGlobals, 0);
+	{
+		ResourceLock lock(psGlobals);
+		PsGlobals& psg = *lock.Get<PsGlobals>();
+		psg.ambientColor = scene->GetAmbientColor();
+		psg.lightColor = scene->GetLightColor();
+		psg.lightDir = scene->GetLightDir();
+		psg.fogColor = scene->GetFogColor();
+		psg.fogParams = scene->GetFogParams();
+	}
 }
 
 //=================================================================================================
@@ -292,7 +292,7 @@ void SuperShader::SetTexture(const TexOverride* texOverride, Mesh* mesh, uint in
 	}
 }
 
-
+//=================================================================================================
 void SuperShader::SetCustomMesh(ID3D11Buffer* vb, ID3D11Buffer* ib, uint vertexSize)
 {
 	uint stride = vertexSize, offset = 0;
@@ -300,13 +300,13 @@ void SuperShader::SetCustomMesh(ID3D11Buffer* vb, ID3D11Buffer* ib, uint vertexS
 	deviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R16_UINT, 0);
 
 	// apply vertex shader constants per material (default values)
-	D3D11_MAPPED_SUBRESOURCE resource;
-	V(deviceContext->Map(psMaterial, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	PsMaterial& psm = *(PsMaterial*)resource.pData;
-	psm.specularColor = Vec3::One;
-	psm.specularHardness = 10.f;
-	psm.specularIntensity = 0.2f;
-	deviceContext->Unmap(psMaterial, 0);
+	{
+		ResourceLock lock(psMaterial);
+		PsMaterial& psm = *lock.Get<PsMaterial>();
+		psm.specularColor = Vec3::One;
+		psm.specularHardness = 10.f;
+		psm.specularIntensity = 0.2f;
+	}
 }
 
 //=================================================================================================
@@ -326,34 +326,35 @@ void SuperShader::Draw(SceneNode* node)
 	}
 
 	// set vertex shader constants per mesh data
-	D3D11_MAPPED_SUBRESOURCE resource;
-	V(deviceContext->Map(vsLocals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	VsLocals& vsl = *(VsLocals*)resource.pData;
-	vsl.matCombined = (node->mat * camera->mat_view_proj).Transpose();
-	vsl.matWorld = node->mat.Transpose();
-	if(applyBones)
 	{
-		node->mesh_inst->SetupBones();
-		for(uint i = 0; i < node->mesh_inst->mesh->head.n_bones; ++i)
-			vsl.matBones[i] = node->mesh_inst->mat_bones[i].Transpose();
-	}
-	deviceContext->Unmap(vsLocals, 0);
-
-	// set pixel shader constants per mesh data
-	V(deviceContext->Map(psLocals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	PsLocals& psl = *(PsLocals*)resource.pData;
-	psl.tint = node->tint;
-	if(applyLights)
-	{
-		for(uint i = 0; i < Lights::COUNT; ++i)
+		ResourceLock lock(vsLocals);
+		VsLocals& vsl = *lock.Get<VsLocals>();
+		vsl.matCombined = (node->mat * camera->mat_view_proj).Transpose();
+		vsl.matWorld = node->mat.Transpose();
+		if(applyBones)
 		{
-			if(node->lights[i])
-				psl.lights.ld[i] = *node->lights[i];
-			else
-				psl.lights.ld[i] = Light::EMPTY;
+			node->mesh_inst->SetupBones();
+			for(uint i = 0; i < node->mesh_inst->mesh->head.n_bones; ++i)
+				vsl.matBones[i] = node->mesh_inst->mat_bones[i].Transpose();
 		}
 	}
-	deviceContext->Unmap(psLocals, 0);
+
+	// set pixel shader constants per mesh data
+	{
+		ResourceLock lock(psLocals);
+		PsLocals& psl = *lock.Get<PsLocals>();
+		psl.tint = node->tint;
+		if(applyLights)
+		{
+			for(uint i = 0; i < Lights::COUNT; ++i)
+			{
+				if(node->lights[i])
+					psl.lights.ld[i] = *node->lights[i];
+				else
+					psl.lights.ld[i] = Light::EMPTY;
+			}
+		}
+	}
 
 	// for each submesh
 	if(!IsSet(node->subs, SceneNode::SPLIT_INDEX))
@@ -377,13 +378,13 @@ void SuperShader::DrawSubmesh(SceneNode* node, uint index)
 	Mesh::Submesh& sub = node->mesh->subs[index];
 
 	// apply vertex shader constants per material
-	D3D11_MAPPED_SUBRESOURCE resource;
-	V(deviceContext->Map(psMaterial, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	PsMaterial& psm = *(PsMaterial*)resource.pData;
-	psm.specularColor = sub.specular_color;
-	psm.specularHardness = (float)sub.specular_hardness;
-	psm.specularIntensity = sub.specular_intensity;
-	deviceContext->Unmap(psMaterial, 0);
+	{
+		ResourceLock lock(psMaterial);
+		PsMaterial& psm = *lock.Get<PsMaterial>();
+		psm.specularColor = sub.specular_color;
+		psm.specularHardness = (float)sub.specular_hardness;
+		psm.specularIntensity = sub.specular_intensity;
+	}
 
 	// set texture OwO
 	SetTexture(node->tex_override, node->mesh, index);
@@ -396,28 +397,29 @@ void SuperShader::DrawSubmesh(SceneNode* node, uint index)
 void SuperShader::DrawCustom(const Matrix& matWorld, const Matrix& matCombined, const std::array<Light*, 3>& lights, uint startIndex, uint indexCount)
 {
 	// set vertex shader constants per mesh data
-	D3D11_MAPPED_SUBRESOURCE resource;
-	V(deviceContext->Map(vsLocals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	VsLocals& vsl = *(VsLocals*)resource.pData;
-	vsl.matCombined = matCombined.Transpose();
-	vsl.matWorld = matWorld.Transpose();
-	deviceContext->Unmap(vsLocals, 0);
+	{
+		ResourceLock lock(vsLocals);
+		VsLocals& vsl = *lock.Get<VsLocals>();
+		vsl.matCombined = matCombined.Transpose();
+		vsl.matWorld = matWorld.Transpose();
+	}
 
 	// set pixel shader constants per mesh data
-	V(deviceContext->Map(psLocals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	PsLocals& psl = *(PsLocals*)resource.pData;
-	psl.tint = Vec4::One;
-	if(applyLights)
 	{
-		for(uint i = 0; i < Lights::COUNT; ++i)
+		ResourceLock lock(psLocals);
+		PsLocals& psl = *lock.Get<PsLocals>();
+		psl.tint = Vec4::One;
+		if(applyLights)
 		{
-			if(lights[i])
-				psl.lights.ld[i] = *lights[i];
-			else
-				psl.lights.ld[i] = Light::EMPTY;
+			for(uint i = 0; i < Lights::COUNT; ++i)
+			{
+				if(lights[i])
+					psl.lights.ld[i] = *lights[i];
+				else
+					psl.lights.ld[i] = Light::EMPTY;
+			}
 		}
 	}
-	deviceContext->Unmap(psLocals, 0);
 
 	// actual drawing
 	deviceContext->DrawIndexed(indexCount, startIndex, 0);

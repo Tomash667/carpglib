@@ -55,12 +55,10 @@ void SkyboxShader::Draw(Mesh& mesh, Camera& camera)
 	deviceContext->IASetIndexBuffer(mesh.ib, DXGI_FORMAT_R16_UINT, 0);
 
 	// vertex shader constants
-	D3D11_MAPPED_SUBRESOURCE resource;
-	V(deviceContext->Map(vsGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	VsGlobals& vsg = *(VsGlobals*)resource.pData;
-	vsg.matCombined = (Matrix::Translation(camera.from) * camera.mat_view_proj).Transpose();
-	deviceContext->Unmap(vsGlobals, 0);
-	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
+	{
+		ResourceLock lock(vsGlobals);
+		lock.Get<VsGlobals>()->matCombined = (Matrix::Translation(camera.from) * camera.mat_view_proj).Transpose();
+	}
 
 	// draw
 	for(Mesh::Submesh& sub : mesh.subs)

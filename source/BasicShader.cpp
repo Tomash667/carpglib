@@ -93,19 +93,15 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 		if(node.color != prevColor)
 		{
 			prevColor = node.color;
-			D3D11_MAPPED_SUBRESOURCE resource;
-			V(deviceContext->Map(psGlobalsMesh, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-			PsGlobalsMesh& psg = *(PsGlobalsMesh*)resource.pData;
-			psg.color = node.color;
-			deviceContext->Unmap(psGlobalsMesh, 0);
+			ResourceLock lock(psGlobalsMesh);
+			lock.Get<PsGlobalsMesh>()->color = node.color;
 		}
 
 		// set matrix
-		D3D11_MAPPED_SUBRESOURCE resource;
-		V(deviceContext->Map(vsGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-		VsGlobals& vsg = *(VsGlobals*)resource.pData;
-		vsg.matCombined = node.mat.Transpose();
-		deviceContext->Unmap(vsGlobals, 0);
+		{
+			ResourceLock lock(vsGlobals);
+			lock.Get<VsGlobals>()->matCombined = node.mat.Transpose();
+		}
 
 		if(node.mesh == DebugNode::TriMesh)
 		{
@@ -151,11 +147,11 @@ void BasicShader::Prepare(const Camera& camera)
 	deviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R16_UINT, 0);
 
 	// set matrix
-	D3D11_MAPPED_SUBRESOURCE resource;
-	V(deviceContext->Map(vsGlobals, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	VsGlobals& vsg = *(VsGlobals*)resource.pData;
-	vsg.matCombined = camera.mat_view_proj.Transpose();
-	deviceContext->Unmap(vsGlobals, 0);
+	{
+		ResourceLock lock(vsGlobals);
+		VsGlobals& vsg = *lock.Get<VsGlobals>();
+		vsg.matCombined = camera.mat_view_proj.Transpose();
+	}
 }
 
 //=================================================================================================
@@ -163,13 +159,11 @@ void BasicShader::SetAreaParams(const Vec3& playerPos, float range, float fallof
 {
 	assert(vertices.empty());
 
-	D3D11_MAPPED_SUBRESOURCE resource;
-	V(deviceContext->Map(psGlobalsColor, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource));
-	PsGlobalsColor& psg = *(PsGlobalsColor*)resource.pData;
+	ResourceLock lock(psGlobalsColor);
+	PsGlobalsColor& psg = *lock.Get<PsGlobalsColor>();
 	psg.playerPos = playerPos;
 	psg.range = range;
 	psg.falloff = falloff;
-	deviceContext->Unmap(psGlobalsColor, 0);
 }
 
 //=================================================================================================
@@ -250,14 +244,14 @@ void BasicShader::Draw()
 	// copy vertices
 	{
 		ReserveVertexBuffer(vertices.size());
-		ResourceLock lock(vb, D3D11_MAP_WRITE_DISCARD);
+		ResourceLock lock(vb);
 		memcpy(lock.Get(), vertices.data(), sizeof(VColor) * vertices.size());
 	}
 
 	// copy indices
 	{
 		ReserveIndexBuffer(indices.size());
-		ResourceLock lock(ib, D3D11_MAP_WRITE_DISCARD);
+		ResourceLock lock(ib);
 		memcpy(lock.Get(), indices.data(), sizeof(word) * indices.size());
 	}
 

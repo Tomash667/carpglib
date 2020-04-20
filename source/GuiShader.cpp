@@ -81,7 +81,7 @@ void GuiShader::Prepare()
 	deviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
 
 	// vertex shader constants
-	ResourceLock lock(vsGlobals, D3D11_MAP_WRITE_DISCARD);
+	ResourceLock lock(vsGlobals);
 	lock.Get<VsGlobals>()->size = Vec2(app::engine->GetWindowSize());
 
 	SetGrayscale(0.f);
@@ -92,7 +92,7 @@ void GuiShader::Prepare()
 void GuiShader::SetGrayscale(float value)
 {
 	assert(InRange(value, 0.f, 1.f));
-	ResourceLock lock(psGlobals, D3D11_MAP_WRITE_DISCARD);
+	ResourceLock lock(psGlobals);
 	lock.Get<PsGlobals>()->grayscale = value;
 }
 
@@ -110,7 +110,7 @@ void GuiShader::Draw(TEX tex, VGui* v, uint quads)
 
 	// copy vertices
 	{
-		ResourceLock lock(vb, D3D11_MAP_WRITE_DISCARD);
+		ResourceLock lock(vb);
 		memcpy(lock.Get(), v, sizeof(VGui) * 6 * quads);
 	}
 

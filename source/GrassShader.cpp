@@ -15,8 +15,8 @@ struct VsGlobals
 struct PsGlobals
 {
 	Vec4 fogColor;
-	Vec4 fogParam;
-	Vec3 ambientColor;
+	Vec4 fogParams;
+	Vec4 ambientColor;
 };
 
 //=================================================================================================
@@ -44,6 +44,7 @@ void GrassShader::OnRelease()
 	SafeRelease(psGlobals);
 	SafeRelease(sampler);
 	SafeRelease(vb);
+	vbSize = 0;
 }
 
 //=================================================================================================
@@ -59,22 +60,43 @@ void GrassShader::Prepare(Scene* scene, Camera* camera)
 	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
+	deviceContext->PSSetSamplers(0, 1, &sampler);
 	deviceContext->IASetInputLayout(layout);
 
-	// setup stream source for instancing
-	/*V(device->SetStreamSourceFreq(1, D3DSTREAMSOURCE_INSTANCEDATA | 1));
-	V(device->SetStreamSource(1, vb, 0, sizeof(Matrix)));
-	V(device->SetVertexDeclaration(vertex_decl));
+	// set matrix
+	{
+		ResourceLock lock(vsGlobals);
+		VsGlobals& vsg = *lock.Get<VsGlobals>();
+		vsg.matViewProj = camera->mat_view_proj.Transpose();
+	}
 
-	// set effect
-	uint passes;
-	V(effect->SetTechnique(tech));
-	V(effect->SetVector(h_fog_color, (D3DXVECTOR4*)&scene->GetFogColor()));
-	V(effect->SetVector(h_fog_params, (D3DXVECTOR4*)&scene->GetFogParams()));
-	V(effect->SetVector(h_ambient, (D3DXVECTOR4*)&scene->GetAmbientColor()));
-	V(effect->SetMatrix(h_view_proj, (D3DXMATRIX*)&camera->mat_view_proj));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));*/
+	// set pixel shader globals
+	{
+		ResourceLock lock(psGlobals);
+		PsGlobals& psg = *lock.Get<PsGlobals>();
+		psg.ambientColor = scene->GetAmbientColor();
+		psg.fogColor = scene->GetFogColor();
+		psg.fogParams = scene->GetFogParams();
+	}
+}
+
+//=================================================================================================
+void GrassShader::ReserveVertexBuffer(uint vertexCount)
+{
+	if(vertexCount <= vbSize)
+		return;
+
+	SafeRelease(vb);
+	vbSize = vertexCount;
+
+	D3D11_BUFFER_DESC desc = {};
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.ByteWidth = sizeof(Matrix) * vertexCount;
+	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	V(app::render->GetDevice()->CreateBuffer(&desc, nullptr, &vb));
+	SetDebugName(vb, "GrassVb");
 }
 
 //=================================================================================================
@@ -82,45 +104,32 @@ void GrassShader::Draw(Mesh* mesh, const vector<const vector<Matrix>*>& patches,
 {
 	assert(mesh->vertex_decl == VDI_DEFAULT);
 
-	uint size = sizeof(VDefault), offset = 0;
+	ReserveVertexBuffer(count);
+
+	ID3D11Buffer* vbs[2] = { mesh->vb, vb };
+	uint size[2] = { sizeof(VDefault), sizeof(Matrix) };
+	uint offset[2] = { 0, 0 };
 	deviceContext->IASetInputLayout(layout);
-	deviceContext->IASetVertexBuffers(0, 1, &vb, &size, &offset);
-	deviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R16_UINT, 0);
+	deviceContext->IASetVertexBuffers(0, 2, vbs, size, offset);
+	deviceContext->IASetIndexBuffer(mesh->ib, DXGI_FORMAT_R16_UINT, 0);
 
 	// setup instancing data
-	Matrix* m;
-	V(vb->Lock(0, 0, (void**)&m, D3DLOCK_DISCARD));
-	int index = 0;
-	for(vector< const vector<Matrix>* >::const_iterator it = patches.begin(), end = patches.end(); it != end; ++it)
 	{
-		const vector<Matrix>& vm = **it;
-		memcpy(&m[index], &vm[0], sizeof(Matrix)*vm.size());
-		index += vm.size();
+		ResourceLock lock(vb);
+		Matrix* m = lock.Get<Matrix>();
+		int index = 0;
+		for(vector< const vector<Matrix>* >::const_iterator it = patches.begin(), end = patches.end(); it != end; ++it)
+		{
+			const vector<Matrix>& vm = **it;
+			memcpy(&m[index], &vm[0], sizeof(Matrix) * vm.size());
+			index += vm.size();
+		}
 	}
-	V(vb->Unlock());
-
-	// setup stream source for mesh
-	V(device->SetStreamSourceFreq(0, D3DSTREAMSOURCE_INDEXEDDATA | count));
-	V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
-	V(device->SetIndices(mesh->ib));
 
 	// draw
-	for(int i = 0; i < mesh->head.n_subs; ++i)
+	for(Mesh::Submesh& sub : mesh->subs)
 	{
-		V(effect->SetTexture(h_tex, mesh->subs[i].tex->tex));
-		V(effect->CommitChanges());
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
+		deviceContext->PSSetShaderResources(0, 1, &sub.tex->tex);
+		deviceContext->DrawIndexedInstanced(sub.tris * 3, count, sub.first * 3, 0, 0);
 	}
 }
-
-//=================================================================================================
-void GrassShader::End()
-{
-	V(effect->EndPass());
-	V(effect->End());
-
-	// restore vertex stream frequency
-	V(device->SetStreamSourceFreq(0, 1));
-	V(device->SetStreamSourceFreq(1, 1));
-}*/
-FIXME;

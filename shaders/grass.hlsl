@@ -7,7 +7,7 @@ cbuffer PsGlobals : register(b0)
 {
 	// mg-a
 	float4 fogColor;
-	float4 fogParam; //(x=fogStart,y=fogEnd,z=(fogEnd-fogStart),a=?)
+	float4 fogParams; //(x=fogStart,y=fogEnd,z=(fogEnd-fogStart),a=?)
 	// o¶wietlenie ambient
 	float3 ambientColor;
 };
@@ -57,6 +57,6 @@ float4 PsMain(in MESH_OUTPUT In) : SV_TARGET
 {
 	float4 tex = texDiffuse.Sample(samplerDiffuse, In.tex);
 	clip(tex.w - 0.75f);
-	float fog = saturate((In.posViewZ-fogParam.x)/fogParam.z);
+	float fog = saturate((In.posViewZ-fogParams.x)/fogParams.z);
 	return float4(lerp(tex.xyz * ambientColor, fogColor, fog), tex.w);
 }
