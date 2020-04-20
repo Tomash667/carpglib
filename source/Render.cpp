@@ -612,7 +612,7 @@ TEX Render::CreateImmutableTexture(const Int2& size, const Color* fill)
 RenderTarget* Render::CreateRenderTarget(const Int2& size)
 {
 	assert(size <= wndSize);
-	assert(size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y));
+	assert((size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y)) || size == wndSize);
 	RenderTarget* target = new RenderTarget;
 	target->size = size;
 	target->state = ResourceState::Loaded;
@@ -835,21 +835,12 @@ int Render::SetMultisampling(int type, int level)
 }
 
 //=================================================================================================
-void Render::SetTarget(RenderTarget* target)
+RenderTarget* Render::SetTarget(RenderTarget* target)
 {
+	RenderTarget* prevTarget = currentTarget;
+
 	if(target)
 	{
-		assert(!currentTarget);
-
-		/*if(target->surf)
-			V(device->SetRenderTarget(0, target->surf));
-		else
-		{
-			V(target->tex->GetSurfaceLevel(0, &current_surf));
-			V(device->SetRenderTarget(0, current_surf));
-		}*/
-		FIXME;
-
 		deviceContext->OMSetRenderTargets(1, &target->renderTarget, target->depthStencilView);
 		SetViewport(target->size);
 
@@ -859,37 +850,13 @@ void Render::SetTarget(RenderTarget* target)
 	{
 		assert(currentTarget);
 
-		/*if(currentTarget->tmp_surf)
-		{
-			currentTarget->surf->Release();
-			currentTarget->surf = nullptr;
-			currentTarget->tmp_surf = false;
-		}
-		else
-		{
-			// copy to surface if using multisampling
-			if(currentTarget->surf)
-			{
-				V(currentTarget->tex->GetSurfaceLevel(0, &current_surf));
-				V(device->StretchRect(currentTarget->surf, nullptr, current_surf, nullptr, D3DTEXF_NONE));
-			}
-			current_surf->Release();
-		}
-
-		// restore old render target
-		V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &current_surf));
-		V(device->SetRenderTarget(0, current_surf));
-		current_surf->Release();
-
-		currentTarget = nullptr;
-		current_surf = nullptr;*/
-		FIXME;
-
 		deviceContext->OMSetRenderTargets(1, &renderTarget, depthStencilView);
 		SetViewport(wndSize);
 
 		currentTarget = nullptr;
 	}
+
+	return prevTarget;
 }
 
 //=================================================================================================

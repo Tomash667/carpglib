@@ -107,7 +107,7 @@ public:
 	void SetRefreshRateInternal(uint refreshHz) { this->refreshHz = refreshHz; }
 	int SetMultisampling(int type, int quality);
 	void SetShadersDir(cstring dir) { shaders_dir = dir; }
-	void SetTarget(RenderTarget* target);
+	RenderTarget* SetTarget(RenderTarget* target);
 	void SetVsync(bool vsync) { this->vsync = vsync; }
 
 private:

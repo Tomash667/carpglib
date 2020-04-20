@@ -1,11 +1,12 @@
 #include "Pch.h"
 #include "GrassShader.h"
-#include "Render.h"
-#include "Mesh.h"
+
 #include "Camera.h"
+#include "DirectX.h"
+#include "Mesh.h"
+#include "Render.h"
 #include "Scene.h"
 #include "SceneManager.h"
-#include "DirectX.h"
 
 struct VsGlobals
 {

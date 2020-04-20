@@ -329,7 +329,10 @@ void SuperShader::Draw(SceneNode* node)
 	{
 		ResourceLock lock(vsLocals);
 		VsLocals& vsl = *lock.Get<VsLocals>();
-		vsl.matCombined = (node->mat * camera->mat_view_proj).Transpose();
+		if(node->type == SceneNode::NORMAL)
+			vsl.matCombined = (node->mat * camera->mat_view_proj).Transpose();
+		else
+			vsl.matCombined = (node->mat.Inverse() * camera->mat_view_proj).Transpose();
 		vsl.matWorld = node->mat.Transpose();
 		if(applyBones)
 		{

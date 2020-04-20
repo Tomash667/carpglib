@@ -4,10 +4,19 @@
 #include "DirectX.h"
 #include "Engine.h"
 #include "Render.h"
+#include "RenderTarget.h"
 #include "VertexDeclaration.h"
 
+struct PsGlobals
+{
+	Vec4 skill;
+	float power;
+	float time;
+};
+
 //=================================================================================================
-PostfxShader::PostfxShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(), layout(nullptr), sampler(nullptr)
+PostfxShader::PostfxShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(), layout(nullptr), psGlobals(nullptr),
+sampler(nullptr), targetA(nullptr), targetB(nullptr), vb(nullptr)
 {
 }
 
@@ -22,8 +31,32 @@ void PostfxShader::OnInit()
 	pixelShader[POSTFX_BLUR_X] = app::render->CreatePixelShader("postfx.hlsl", "PsBlurX");
 	pixelShader[POSTFX_BLUR_Y] = app::render->CreatePixelShader("postfx.hlsl", "PsBlurY");
 	layout = app::render->CreateInputLayout(VDI_TEX, vsBlob, "PostfxLayout");
+	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "PostfxPsGlobals");
 	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 	vsBlob->Release();
+
+	const Int2& wndSize = app::engine->GetWindowSize();
+	targetA = app::render->CreateRenderTarget(wndSize);
+	targetB = app::render->CreateRenderTarget(wndSize);
+
+	// create fullscreen vertex buffer
+	const VTex v[] = {
+		VTex(-1.f, 1.f, 0.f, 0, 0),
+		VTex(1.f, 1.f, 0.f, 1, 0),
+		VTex(1.f, -1.f, 0.f, 1, 1),
+		VTex(1.f, -1.f, 0.f, 1, 1),
+		VTex(-1.f, -1.f, 0.f, 0, 1),
+		VTex(-1.f, 1.f, 0.f, 0, 0)
+	};
+	D3D11_BUFFER_DESC desc = {};
+	desc.Usage = D3D11_USAGE_IMMUTABLE;
+	desc.ByteWidth = sizeof(VTex) * 6;
+	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+	D3D11_SUBRESOURCE_DATA data = {};
+	data.pSysMem = v;
+
+	V(app::render->GetDevice()->CreateBuffer(&desc, &data, &vb));
 }
 
 //=================================================================================================
@@ -32,7 +65,54 @@ void PostfxShader::OnRelease()
 	SafeRelease(vertexShader);
 	SafeRelease(pixelShader);
 	SafeRelease(layout);
+	SafeRelease(psGlobals);
 	SafeRelease(sampler);
+	SafeRelease(targetA);
+	SafeRelease(targetB);
+	SafeRelease(vb);
+}
+
+void PostfxShader::Prepare()
+{
+	prevTarget = app::render->SetTarget(targetA);
+}
+
+void PostfxShader::Draw(const vector<PostEffect>& effects)
+{
+	assert(!effects.empty());
+
+	deviceContext->VSSetShader(vertexShader, nullptr, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
+	deviceContext->PSSetSamplers(0, 1, &sampler);
+	uint stride = sizeof(VTex), offset = 0;
+	deviceContext->IASetInputLayout(layout);
+	deviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+
+	bool useTexA = true;
+
+	for(uint i = 0, count = effects.size(); i < count; ++i)
+	{
+		const PostEffect& effect = effects[i];
+		const bool isLast = (i + 1 == count);
+
+		// set pixel shader params
+		{
+			ResourceLock lock(psGlobals);
+			PsGlobals& psg = *lock.Get<PsGlobals>();
+			psg.power = effect.power;
+			psg.skill = effect.skill;
+		}
+
+		deviceContext->PSSetShaderResources(0, 1, useTexA ? &targetA->tex : &targetB->tex);
+		if(isLast)
+			app::render->SetTarget(prevTarget);
+		else
+			app::render->SetTarget(useTexA ? targetB : targetA);
+
+		deviceContext->Draw(6, 0);
+
+		useTexA = !useTexA;
+	}
 }
 
 /*: effect(nullptr), vbFullscreen(nullptr), surf(), tex()

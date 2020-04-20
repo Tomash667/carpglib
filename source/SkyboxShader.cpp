@@ -46,6 +46,7 @@ void SkyboxShader::Draw(Mesh& mesh, Camera& camera)
 
 	// setup shader
 	deviceContext->VSSetShader(vertexShader, nullptr, 0);
+	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
 	deviceContext->PSSetSamplers(0, 1, &sampler);
 	uint stride = sizeof(VDefault),

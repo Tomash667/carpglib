@@ -17,8 +17,7 @@ enum PostEffectId
 //-----------------------------------------------------------------------------
 struct PostEffect
 {
-	int id;
-	//D3DXHANDLE tech;
+	PostEffectId id;
 	float power;
 	Vec4 skill;
 };
@@ -31,6 +30,8 @@ public:
 	cstring GetName() const override { return "postfx"; }
 	void OnInit() override;
 	void OnRelease() override;
+	void Prepare();
+	void Draw(const vector<PostEffect>& effects);
 
 	/*ID3DXEffect* effect;
 	D3DXHANDLE techMonochrome, techBlurX, techBlurY, techEmpty;
@@ -47,5 +48,11 @@ private:
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader[POSTFX_MAX];
 	ID3D11InputLayout* layout;
+	ID3D11Buffer* psGlobals;
 	ID3D11SamplerState* sampler;
+	RenderTarget* targetA;
+	RenderTarget* targetB;
+	ID3D11Buffer* vb;
+
+	RenderTarget* prevTarget;
 };
