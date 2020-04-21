@@ -1,8 +1,9 @@
 #include "Pch.h"
 #include "Mesh.h"
-#include "ResourceManager.h"
-#include "File.h"
+
 #include "DirectX.h"
+#include "File.h"
+#include "ResourceManager.h"
 
 //---------------------------
 Matrix mat_zero;

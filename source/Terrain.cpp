@@ -1,9 +1,9 @@
 #include "Pch.h"
 #include "Terrain.h"
-#include "Texture.h"
-#include "DirectX.h"
 
+#include "DirectX.h"
 #include "Render.h"
+#include "Texture.h"
 
 //-----------------------------------------------------------------------------
 void CalculateNormal(VTerrain& v1, VTerrain& v2, VTerrain& v3)

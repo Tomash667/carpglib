@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "Window.h"
+
 #include "MenuBar.h"
 
 Window::Window(bool fullscreen, bool borderless) : menu(nullptr), fullscreen(fullscreen), borderless(borderless)

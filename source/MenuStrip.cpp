@@ -1,8 +1,9 @@
 #include "Pch.h"
+#include "MenuStrip.h"
+
 #include "GuiElement.h"
 #include "Input.h"
 #include "MenuBar.h"
-#include "MenuStrip.h"
 #include "Overlay.h"
 
 MenuStrip::MenuStrip(vector<SimpleMenuCtor>& _items, int min_width) : selected(nullptr)

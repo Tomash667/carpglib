@@ -1,8 +1,9 @@
 #include "Pch.h"
 #include "SceneNode.h"
-#include "SceneManager.h"
+
 #include "Camera.h"
 #include "ResourceManager.h"
+#include "SceneManager.h"
 
 //=================================================================================================
 void SceneNode::SetMesh(Mesh* mesh, MeshInstance* mesh_inst)

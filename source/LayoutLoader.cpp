@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "LayoutLoader.h"
-#include "ResourceManager.h"
-// controls
+
 #include "Button.h"
 #include "CheckBox.h"
 #include "CheckBoxGroup.h"
@@ -18,6 +17,7 @@
 #include "Panel.h"
 #include "PickFileDialog.h"
 #include "PickItemDialog.h"
+#include "ResourceManager.h"
 #include "Scrollbar.h"
 #include "Slider.h"
 #include "SplitPanel.h"

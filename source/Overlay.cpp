@@ -1,9 +1,10 @@
 #include "Pch.h"
+#include "Overlay.h"
+
 #include "DialogBox.h"
 #include "GuiDialog.h"
 #include "Input.h"
 #include "MenuStrip.h"
-#include "Overlay.h"
 
 Overlay::Overlay() : Container(true), focused(nullptr), to_add(nullptr)
 {

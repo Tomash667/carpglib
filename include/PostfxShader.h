@@ -33,17 +33,7 @@ public:
 	void Prepare();
 	void Draw(const vector<PostEffect>& effects);
 
-	/*ID3DXEffect* effect;
-	D3DXHANDLE techMonochrome, techBlurX, techBlurY, techEmpty;
-	D3DXHANDLE hTex, hPower, hSkill;
-	VB vbFullscreen;
-	// post effect uses 3 textures or if multisampling is enabled 3 surfaces and 1 texture
-	SURFACE surf[3];*/
-	TEX tex[3];
-
 private:
-	void CreateResources();
-
 	ID3D11DeviceContext* deviceContext;
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader[POSTFX_MAX];
@@ -53,6 +43,5 @@ private:
 	RenderTarget* targetA;
 	RenderTarget* targetB;
 	ID3D11Buffer* vb;
-
 	RenderTarget* prevTarget;
 };

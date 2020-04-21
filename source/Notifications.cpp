@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "Notifications.h"
+
 #include "Input.h"
 
 static const Int2 notification_size(350, 80);

@@ -1,7 +1,8 @@
 #include "Pch.h"
 #include "Texture.h"
-#include "Render.h"
+
 #include "DirectX.h"
+#include "Render.h"
 
 //=================================================================================================
 Texture::~Texture()
