@@ -42,7 +42,7 @@
     <ClInclude Include="include\Entity.h" />
     <ClInclude Include="include\FastFunc.h" />
     <ClInclude Include="include\File.h" />
-    <ClInclude Include="include\FileFormat.h" />
+    <ClInclude Include="include\ImageFormat.h" />
     <ClInclude Include="include\FlowContainer.h" />
     <ClInclude Include="include\Font.h" />
     <ClInclude Include="include\GetNumberDialog.h" />
@@ -141,6 +141,7 @@
     <ClCompile Include="source\DrawBox.cpp" />
     <ClCompile Include="source\Engine.cpp" />
     <ClCompile Include="source\FontLoader.cpp" />
+    <ClCompile Include="source\ImageFormat.cpp" />
     <ClCompile Include="source\Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

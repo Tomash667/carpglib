@@ -223,9 +223,6 @@
     <ClInclude Include="include\Key.h">
       <Filter>const</Filter>
     </ClInclude>
-    <ClInclude Include="include\FileFormat.h">
-      <Filter>const</Filter>
-    </ClInclude>
     <ClInclude Include="include\VertexDeclaration.h">
       <Filter>const</Filter>
     </ClInclude>
@@ -303,6 +300,9 @@
     </ClInclude>
     <ClInclude Include="include\DebugNode.h">
       <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ImageFormat.h">
+      <Filter>const</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -561,6 +561,9 @@
     </ClCompile>
     <ClCompile Include="source\BuiltinMesh.cpp">
       <Filter>resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ImageFormat.cpp">
+      <Filter>const</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

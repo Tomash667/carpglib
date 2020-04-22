@@ -87,6 +87,7 @@ public:
 	void ReloadShaders();
 	void SaveToFile(TEX tex, cstring path, ImageFormat format = ImageFormat::JPG);
 	uint SaveToFile(TEX tex, FileWriter& file, ImageFormat format = ImageFormat::JPG);
+	void SaveScreenshot(cstring path, ImageFormat format = ImageFormat::JPG);
 
 	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	bool IsVsyncEnabled() const { return vsync; }

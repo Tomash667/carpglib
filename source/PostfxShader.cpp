@@ -15,7 +15,7 @@ struct PsGlobals
 };
 
 //=================================================================================================
-PostfxShader::PostfxShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(), layout(nullptr), psGlobals(nullptr),
+PostfxShader::PostfxShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShaders(), layout(nullptr), psGlobals(nullptr),
 sampler(nullptr), targetA(nullptr), targetB(nullptr), vb(nullptr)
 {
 }
@@ -25,11 +25,11 @@ void PostfxShader::OnInit()
 {
 	ID3DBlob* vsBlob;
 	vertexShader = app::render->CreateVertexShader("postfx.hlsl", "VsEmpty", &vsBlob);
-	pixelShader[POSTFX_EMPTY] = app::render->CreatePixelShader("postfx.hlsl", "PsEmpty");
-	pixelShader[POSTFX_MONOCHROME] = app::render->CreatePixelShader("postfx.hlsl", "PsMonochrome");
-	pixelShader[POSTFX_DREAM] = app::render->CreatePixelShader("postfx.hlsl", "PsDream");
-	pixelShader[POSTFX_BLUR_X] = app::render->CreatePixelShader("postfx.hlsl", "PsBlurX");
-	pixelShader[POSTFX_BLUR_Y] = app::render->CreatePixelShader("postfx.hlsl", "PsBlurY");
+	pixelShaders[POSTFX_EMPTY] = app::render->CreatePixelShader("postfx.hlsl", "PsEmpty");
+	pixelShaders[POSTFX_MONOCHROME] = app::render->CreatePixelShader("postfx.hlsl", "PsMonochrome");
+	pixelShaders[POSTFX_DREAM] = app::render->CreatePixelShader("postfx.hlsl", "PsDream");
+	pixelShaders[POSTFX_BLUR_X] = app::render->CreatePixelShader("postfx.hlsl", "PsBlurX");
+	pixelShaders[POSTFX_BLUR_Y] = app::render->CreatePixelShader("postfx.hlsl", "PsBlurY");
 	layout = app::render->CreateInputLayout(VDI_TEX, vsBlob, "PostfxLayout");
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "PostfxPsGlobals");
 	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
@@ -63,7 +63,7 @@ void PostfxShader::OnInit()
 void PostfxShader::OnRelease()
 {
 	SafeRelease(vertexShader);
-	SafeRelease(pixelShader);
+	SafeRelease(pixelShaders);
 	SafeRelease(layout);
 	SafeRelease(psGlobals);
 	SafeRelease(sampler);
@@ -109,11 +109,14 @@ void PostfxShader::Draw(const vector<PostEffect>& effects)
 			psg.skill = effect.skill;
 		}
 
-		deviceContext->PSSetShaderResources(0, 1, useTexA ? &targetA->tex : &targetB->tex);
+		TEX texEmpty = nullptr;
+		deviceContext->PSSetShaderResources(0, 1, &texEmpty);
 		if(isLast)
 			app::render->SetTarget(prevTarget);
 		else
 			app::render->SetTarget(useTexA ? targetB : targetA);
+		deviceContext->PSSetShader(pixelShaders[effect.id], nullptr, 0);
+		deviceContext->PSSetShaderResources(0, 1, useTexA ? &targetA->tex : &targetB->tex);
 
 		deviceContext->Draw(6, 0);
 

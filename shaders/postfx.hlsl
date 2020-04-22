@@ -12,26 +12,39 @@ Texture2D texDiffuse : register(t0);
 SamplerState samplerDiffuse;
 
 //******************************************************************************
+struct VS_INPUT
+{
+	float3 pos : POSITION;
+	float2 tex : TEXCOORD;
+};
+
+struct VS_OUTPUT
+{
+	float4 pos : SV_POSITION;
+	float2 tex : TEXCOORD;
+};
+
+//******************************************************************************
 // Vertex shader który nic nie robi
 //******************************************************************************
-void VsEmpty(float3 pos : POSITION, float2 tex : TEXCOORD0, out float4 opos : SV_POSITION, out float2 otex : TEXCOORD0)
+void VsEmpty(VS_INPUT In, out VS_OUTPUT Out)
 {
-	opos = float4(pos, 1);
-	otex = tex;
+	Out.pos = float4(In.pos, 1);
+	Out.tex = In.tex;
 }
 
-float4 PsEmpty(in float2 tex : TEXCOORD0) : SV_TARGET
+float4 PsEmpty(VS_OUTPUT In) : SV_TARGET
 {
-	return texDiffuse.Sample(samplerDiffuse, tex);
+	return texDiffuse.Sample(samplerDiffuse, In.tex);
 }
 
 //******************************************************************************
 // Przekszta³ca na szary obraz, parametry:
 // float power(0..1) - 0 brak efektu, 1 ca³kowicie szary
 //******************************************************************************
-float4 PsMonochrome(float2 tex : TEXCOORD0) : SV_TARGET
+float4 PsMonochrome(VS_OUTPUT In) : SV_TARGET
 {
-	float4 base_color = texDiffuse.Sample(samplerDiffuse, tex);
+	float4 base_color = texDiffuse.Sample(samplerDiffuse, In.tex);
 	float4 color;
 	color.a = base_color.a;
 	color.rgb = (base_color.r+base_color.g+base_color.b)/3.0f;
@@ -48,9 +61,10 @@ float4 PsMonochrome(float2 tex : TEXCOORD0) : SV_TARGET
 //   2 - speed (0.1)
 //   3 - range (0.4)
 //******************************************************************************
-float4 PsDream(float2 tex : TEXCOORD0) : SV_TARGET
-{	
-	float4 base_color = texDiffuse.Sample(samplerDiffuse,tex);
+float4 PsDream(VS_OUTPUT In) : SV_TARGET
+{
+	float2 tex = In.tex;
+	float4 base_color = texDiffuse.Sample(samplerDiffuse, tex);
 	tex.xy -= 0.5;
 	tex.xy *= 1-(sin(time*skill[2])*skill[3]+skill[3])*0.5;
 	tex.xy += 0.5;
@@ -84,8 +98,9 @@ float4 PsDream(float2 tex : TEXCOORD0) : SV_TARGET
 // 	0 - odstêp po x
 // 	1 - odstêp po y
 //******************************************************************************
-float4 PsBlurX(float2 tex : TEXCOORD0) : SV_TARGET
+float4 PsBlurX(VS_OUTPUT In) : SV_TARGET
 {
+	float2 tex = In.tex;
 	float4
 	c  = texDiffuse.Sample(samplerDiffuse, float2(tex.x - 4.f*skill[0], tex.y)) * 0.05f;
 	c += texDiffuse.Sample(samplerDiffuse, float2(tex.x - 3.f*skill[0], tex.y)) * 0.09f;
@@ -99,8 +114,9 @@ float4 PsBlurX(float2 tex : TEXCOORD0) : SV_TARGET
 	return lerp(texDiffuse.Sample(samplerDiffuse, tex), c, power);
 }
 
-float4 PsBlurY(float2 tex : TEXCOORD0) : SV_TARGET
+float4 PsBlurY(VS_OUTPUT In) : SV_TARGET
 {
+	float2 tex = In.tex;
 	float4
 	c  = texDiffuse.Sample(samplerDiffuse, float2(tex.x, tex.y - 4.f*skill[1])) * 0.05f;
 	c += texDiffuse.Sample(samplerDiffuse, float2(tex.x, tex.y - 3.f*skill[1])) * 0.09f;

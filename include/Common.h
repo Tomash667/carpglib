@@ -1,7 +1,5 @@
 #pragma once
 
-#include "FileFormat.h"
-
 // Enums
 enum VertexDeclarationId;
 
@@ -88,7 +86,9 @@ class TreeView;
 
 // Windows types
 struct HWND__;
+struct _GUID;
 typedef HWND__* HWND;
+typedef _GUID GUID;
 
 // DirectX types
 struct _D3D_SHADER_MACRO;
@@ -147,3 +147,5 @@ namespace app
 
 // Misc functions
 void RegisterCrashHandler(cstring title, cstring version, cstring url, cstring log_file, int minidump_level);
+
+#include "ImageFormat.h"

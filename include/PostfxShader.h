@@ -36,7 +36,7 @@ public:
 private:
 	ID3D11DeviceContext* deviceContext;
 	ID3D11VertexShader* vertexShader;
-	ID3D11PixelShader* pixelShader[POSTFX_MAX];
+	ID3D11PixelShader* pixelShaders[POSTFX_MAX];
 	ID3D11InputLayout* layout;
 	ID3D11Buffer* psGlobals;
 	ID3D11SamplerState* sampler;

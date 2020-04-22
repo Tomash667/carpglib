@@ -10,7 +10,6 @@
 #include "VertexDeclaration.h"
 
 #include <d3dcompiler.h>
-#include <wincodec.h>
 
 Render* app::render;
 static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -162,19 +161,12 @@ void Render::CreateSizeDependentResources()
 //=================================================================================================
 void Render::CreateRenderTarget()
 {
-	HRESULT result;
-	ID3D11Texture2D* back_buffer;
-	result = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&back_buffer);
-	if(FAILED(result))
-		throw Format("Failed to get back buffer (%u).", result);
+	ID3D11Texture2D* backBuffer;
+	V(swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer));
 
-	// Create the render target view with the back buffer pointer.
-	result = device->CreateRenderTargetView(back_buffer, nullptr, &renderTarget);
-	if(FAILED(result))
-		throw Format("Failed to create render target view (%u).", result);
+	V(device->CreateRenderTargetView(backBuffer, nullptr, &renderTarget));
 
-	// Release pointer to the back buffer as we no longer need it.
-	back_buffer->Release();
+	backBuffer->Release();
 }
 
 //=================================================================================================
@@ -1048,35 +1040,12 @@ ID3D11InputLayout* Render::CreateInputLayout(VertexDeclarationId decl, ID3DBlob*
 }
 
 //=================================================================================================
-const GUID& ImageFormatToGuid(ImageFormat format)
-{
-	switch(format)
-	{
-	case ImageFormat::BMP:
-		return GUID_ContainerFormatBmp;
-	case ImageFormat::JPG:
-		return GUID_ContainerFormatJpeg;
-	case ImageFormat::TIF:
-		return GUID_ContainerFormatTiff;
-	case ImageFormat::GIF:
-		return GUID_ContainerFormatGif;
-	case ImageFormat::PNG:
-		return GUID_ContainerFormatPng;
-	case ImageFormat::DDS:
-		return GUID_ContainerFormatDds;
-	default:
-		assert(0);
-		return GUID_ContainerFormatJpeg;
-	}
-}
-
-//=================================================================================================
 void Render::SaveToFile(TEX tex, cstring path, ImageFormat format)
 {
 	ID3D11Texture2D* res;
 	tex->GetResource(reinterpret_cast<ID3D11Resource**>(&res));
 
-	V(SaveWICTextureToFile(deviceContext, res, ImageFormatToGuid(format), ToWString(path)));
+	V(SaveWICTextureToFile(deviceContext, res, ImageFormatMethods::ToGuid(format), ToWString(path)));
 
 	res->Release();
 }
@@ -1088,7 +1057,7 @@ uint Render::SaveToFile(TEX tex, FileWriter& file, ImageFormat format)
 	tex->GetResource(reinterpret_cast<ID3D11Resource**>(&res));
 
 	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, 0);
-	V(SaveWICTextureToFileInMemory(deviceContext, res, ImageFormatToGuid(format), hGlobal));
+	V(SaveWICTextureToFileInMemory(deviceContext, res, ImageFormatMethods::ToGuid(format), hGlobal));
 	res->Release();
 
 	void* ptr = GlobalLock(hGlobal);
@@ -1100,4 +1069,15 @@ uint Render::SaveToFile(TEX tex, FileWriter& file, ImageFormat format)
 	GlobalUnlock(hGlobal);
 	GlobalFree(hGlobal);
 	return size;
+}
+
+//=================================================================================================
+void Render::SaveScreenshot(cstring path, ImageFormat format)
+{
+	ID3D11Texture2D* backBuffer;
+	V(swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer));
+
+	V(SaveWICTextureToFile(deviceContext, backBuffer, ImageFormatMethods::ToGuid(format), ToWString(path)));
+
+	backBuffer->Release();
 }
