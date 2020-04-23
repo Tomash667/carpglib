@@ -112,6 +112,7 @@ private:
 	uint n_tris, n_verts, part_tris, part_verts, tex_size;
 	Box box;
 	ID3D11Buffer* vb;
+	ID3D11Buffer* vbStaging;
 	ID3D11Buffer* ib;
 	DynamicTexture* texSplat;
 	TexturePtr tex[5];

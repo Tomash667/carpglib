@@ -27,7 +27,7 @@ void CalculateNormal(Vec3& out, const Vec3& v1, const Vec3& v2, const Vec3& v3)
 }
 
 //=================================================================================================
-Terrain::Terrain() : vb(nullptr), ib(nullptr), parts(nullptr), h(nullptr), texSplat(nullptr), tex(), state(0), uv_mod(DEFAULT_UV_MOD)
+Terrain::Terrain() : vb(nullptr), vbStaging(nullptr), ib(nullptr), parts(nullptr), h(nullptr), texSplat(nullptr), tex(), state(0), uv_mod(DEFAULT_UV_MOD)
 {
 }
 
@@ -35,6 +35,7 @@ Terrain::Terrain() : vb(nullptr), ib(nullptr), parts(nullptr), h(nullptr), texSp
 Terrain::~Terrain()
 {
 	SafeRelease(vb);
+	SafeRelease(vbStaging);
 	SafeRelease(ib);
 	delete texSplat;
 
@@ -96,20 +97,26 @@ void Terrain::Build(bool smooth)
 	ID3D11Device* device = app::render->GetDevice();
 
 	// create vertex buffer
-	D3D11_BUFFER_DESC v_desc;
+	D3D11_BUFFER_DESC v_desc = {};
 	v_desc.Usage = D3D11_USAGE_DYNAMIC;
 	v_desc.ByteWidth = sizeof(VTerrain) * n_verts;
 	v_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	v_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	v_desc.MiscFlags = 0;
-	v_desc.StructureByteStride = 0;
 
 	V(device->CreateBuffer(&v_desc, nullptr, &vb));
 	SetDebugName(vb, "TerrainVb");
 
+	// create staging vertex buffer
+	v_desc.Usage = D3D11_USAGE_STAGING;
+	v_desc.BindFlags = 0;
+	v_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+
+	V(device->CreateBuffer(&v_desc, nullptr, &vbStaging));
+	SetDebugName(vbStaging, "TerrainVbStaging");
+
 	// build mesh
+	ID3D11DeviceContext* deviceContext = app::render->GetDeviceContext();
 	D3D11_MAPPED_SUBRESOURCE res;
-	V(app::render->GetDeviceContext()->Map(vb, 0, D3D11_MAP_WRITE_DISCARD, 0, &res));
+	V(deviceContext->Map(vbStaging, 0, D3D11_MAP_WRITE, 0, &res));
 	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
 
 #define TRI(xx,zz,uu,vv) v[n++] = VTerrain((x+xx)*tile_size, h[x+xx+(z+zz)*width], (z+zz)*tile_size, float(uu)/uv_mod, float(vv)/uv_mod,\
@@ -187,7 +194,8 @@ void Terrain::Build(bool smooth)
 	state = 2;
 	if(smooth)
 		SmoothNormals(v);
-	app::render->GetDeviceContext()->Unmap(vb, 0);
+	deviceContext->Unmap(vbStaging, 0);
+	deviceContext->CopyResource(vb, vbStaging);
 }
 
 //=================================================================================================
@@ -195,8 +203,9 @@ void Terrain::Rebuild(bool smooth)
 {
 	assert(state == 2);
 
+	ID3D11DeviceContext* deviceContext = app::render->GetDeviceContext();
 	D3D11_MAPPED_SUBRESOURCE res;
-	V(app::render->GetDeviceContext()->Map(vb, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &res));
+	V(deviceContext->Map(vbStaging, 0, D3D11_MAP_READ_WRITE, 0, &res));
 	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
 
 #define TRI(xx,zz) v[n++].pos.y = h[x+xx+(z+zz)*width]
@@ -222,7 +231,8 @@ void Terrain::Rebuild(bool smooth)
 	if(smooth)
 		SmoothNormals(v);
 
-	app::render->GetDeviceContext()->Unmap(vb, 0);
+	deviceContext->Unmap(vbStaging, 0);
+	deviceContext->CopyResource(vb, vbStaging);
 }
 
 //=================================================================================================
@@ -230,8 +240,9 @@ void Terrain::RebuildUv()
 {
 	assert(state == 2);
 
+	ID3D11DeviceContext* deviceContext = app::render->GetDeviceContext();
 	D3D11_MAPPED_SUBRESOURCE res;
-	V(app::render->GetDeviceContext()->Map(vb, 0, D3D11_MAP_READ_WRITE, 0, &res));
+	V(deviceContext->Map(vbStaging, 0, D3D11_MAP_READ_WRITE, 0, &res));
 	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
 
 #define TRI(uu,vv) v[n++].tex = Vec2(float(uu)/uv_mod, float(vv)/uv_mod)
@@ -261,7 +272,8 @@ void Terrain::RebuildUv()
 	}
 #undef TRI
 
-	app::render->GetDeviceContext()->Unmap(vb, 0);
+	deviceContext->Unmap(vbStaging, 0);
+	deviceContext->CopyResource(vb, vbStaging);
 }
 
 //=================================================================================================
@@ -415,13 +427,15 @@ void Terrain::SmoothNormals()
 {
 	assert(state > 0);
 
+	ID3D11DeviceContext* deviceContext = app::render->GetDeviceContext();
 	D3D11_MAPPED_SUBRESOURCE res;
-	V(app::render->GetDeviceContext()->Map(vb, 0, D3D11_MAP_READ_WRITE, 0, &res));
+	V(deviceContext->Map(vbStaging, 0, D3D11_MAP_READ_WRITE, 0, &res));
 	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
 
 	SmoothNormals(v);
 
-	app::render->GetDeviceContext()->Unmap(vb, 0);
+	deviceContext->Unmap(vbStaging, 0);
+	deviceContext->CopyResource(vb, vbStaging);
 }
 
 //=================================================================================================
