@@ -16,7 +16,7 @@ static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 //=================================================================================================
 Render::Render() : initialized(false), vsync(true), shaders_dir("shaders"), refreshHz(0), usedAdapter(0), multisampling(0), multisamplingQuality(0),
-factory(nullptr), adapter(nullptr), swapChain(nullptr), device(nullptr), deviceContext(nullptr), renderTarget(nullptr), depthStencilView(nullptr),
+factory(nullptr), adapter(nullptr), swapChain(nullptr), device(nullptr), deviceContext(nullptr), renderTargetView(nullptr), depthStencilView(nullptr),
 blendStates(), depthStates(), rasterStates(), blendState(BLEND_NO), depthState(DEPTH_YES), rasterState(RASTER_NORMAL), currentTarget(nullptr)
 {
 }
@@ -32,7 +32,7 @@ Render::~Render()
 	DeleteElements(renderTargets);
 
 	SafeRelease(depthStencilView);
-	SafeRelease(renderTarget);
+	SafeRelease(renderTargetView);
 	SafeRelease(swapChain);
 	SafeRelease(deviceContext);
 	SafeRelease(blendStates);
@@ -152,19 +152,19 @@ void Render::CreateSwapChain()
 //=================================================================================================
 void Render::CreateSizeDependentResources()
 {
-	CreateRenderTarget();
+	CreateRenderTargetView();
 	depthStencilView = CreateDepthStencilView(wndSize);
-	deviceContext->OMSetRenderTargets(1, &renderTarget, depthStencilView);
+	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
 	SetViewport(wndSize);
 }
 
 //=================================================================================================
-void Render::CreateRenderTarget()
+void Render::CreateRenderTargetView()
 {
 	ID3D11Texture2D* backBuffer;
 	V(swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer));
 
-	V(device->CreateRenderTargetView(backBuffer, nullptr, &renderTarget));
+	V(device->CreateRenderTargetView(backBuffer, nullptr, &renderTargetView));
 
 	backBuffer->Release();
 }
@@ -235,9 +235,14 @@ void Render::CreateBlendStates()
 	desc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
 	V(device->CreateBlendState(&desc, &blendStates[BLEND_ADD_ONE]));
 
+	// create additive one to one blend state
+	desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	V(device->CreateBlendState(&desc, &blendStates[BLEND_ADD_ONE2]));
+
 	// create reverse subtract blend state
 	desc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 	desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_REV_SUBTRACT;
+	desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
 	V(device->CreateBlendState(&desc, &blendStates[BLEND_REV_SUBTRACT]));
 }
 
@@ -275,7 +280,7 @@ void Render::CreateDepthStates()
 	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 	V(device->CreateDepthStencilState(&desc, &depthStates[DEPTH_READ]));
 
-	// create stencil enabled depth stencil state
+	// create stencil write depth state
 	desc.StencilEnable = true;
 	desc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
 	desc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
@@ -285,7 +290,13 @@ void Render::CreateDepthStates()
 	desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
 	desc.BackFace = desc.FrontFace;
 
-	V(device->CreateDepthStencilState(&desc, &depthStates[DEPTH_USE_STENCIL]));
+	V(device->CreateDepthStencilState(&desc, &depthStates[DEPTH_STENCIL_REPLACE]));
+
+	// create stencil block depth state
+	desc.FrontFace.StencilFunc = D3D11_COMPARISON_EQUAL;
+	desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	desc.BackFace = desc.FrontFace;
+	V(device->CreateDepthStencilState(&desc, &depthStates[DEPTH_STENCIL_KEEP]));
 }
 
 //=================================================================================================
@@ -441,13 +452,13 @@ void Render::Clear(const Vec4& color)
 {
 	if(currentTarget)
 	{
-		deviceContext->ClearRenderTargetView(currentTarget->renderTarget, (const float*)color);
-		deviceContext->ClearDepthStencilView(currentTarget->depthStencilView, D3D11_CLEAR_DEPTH, 1.f, 0);
+		deviceContext->ClearRenderTargetView(currentTarget->renderTargetView, (const float*)color);
+		deviceContext->ClearDepthStencilView(currentTarget->depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 	}
 	else
 	{
-		deviceContext->ClearRenderTargetView(renderTarget, (const float*)color);
-		deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.f, 0);
+		deviceContext->ClearRenderTargetView(renderTargetView, (const float*)color);
+		deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 	}
 }
 
@@ -601,7 +612,7 @@ TEX Render::CreateImmutableTexture(const Int2& size, const Color* fill)
 }
 
 //=================================================================================================
-RenderTarget* Render::CreateRenderTarget(const Int2& size)
+RenderTarget* Render::CreateRenderTarget(const Int2& size, bool createDepthStencilView)
 {
 	assert(size <= wndSize);
 	assert((size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y)) || size == wndSize);
@@ -626,7 +637,7 @@ RenderTarget* Render::CreateRenderTarget(const Int2& size)
 	V(device->CreateTexture2D(&desc, nullptr, &texResource));
 
 	// create render target view
-	V(device->CreateRenderTargetView(texResource, nullptr, &target->renderTarget));
+	V(device->CreateRenderTargetView(texResource, nullptr, &target->renderTargetView));
 
 	// create srv
 	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
@@ -636,7 +647,10 @@ RenderTarget* Render::CreateRenderTarget(const Int2& size)
 	V(device->CreateShaderResourceView(texResource, &viewDesc, &target->tex));
 
 	// create depth stencil view
-	target->depthStencilView = CreateDepthStencilView(size);
+	if(createDepthStencilView)
+		target->depthStencilView = CreateDepthStencilView(size);
+	else
+		target->depthStencilView = nullptr;
 
 	texResource->Release();
 	renderTargets.push_back(target);
@@ -669,10 +683,10 @@ void Render::RecreateRenderTarget(RenderTarget* target)
 	prevTexResource->Release();
 	target->tex->Release();
 	target->depthStencilView->Release();
-	target->renderTarget->Release();
+	target->renderTargetView->Release();
 
 	// create render target view
-	V(device->CreateRenderTargetView(texResource, nullptr, &target->renderTarget));
+	V(device->CreateRenderTargetView(texResource, nullptr, &target->renderTargetView));
 
 	// create srv
 	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
@@ -760,7 +774,7 @@ void Render::SetDepthState(DepthState depthState)
 	if(this->depthState != depthState)
 	{
 		this->depthState = depthState;
-		deviceContext->OMSetDepthStencilState(depthStates[depthState], 1);
+		deviceContext->OMSetDepthStencilState(depthStates[depthState], depthState == DEPTH_STENCIL_REPLACE ? 1 : 0);
 	}
 }
 
@@ -812,13 +826,13 @@ int Render::SetMultisampling(int type, int level)
 
 	SafeRelease(rasterStates);
 	SafeRelease(depthStencilView);
-	SafeRelease(renderTarget);
+	SafeRelease(renderTargetView);
 	SafeRelease(swapChain);
 
 	CreateSwapChain();
-	CreateRenderTarget();
+	CreateRenderTargetView();
 	depthStencilView = CreateDepthStencilView(wndSize);
-	deviceContext->OMSetRenderTargets(1, &renderTarget, depthStencilView);
+	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
 	CreateRasterStates();
 	for(RenderTarget* target : renderTargets)
 		RecreateRenderTarget(target);
@@ -827,28 +841,22 @@ int Render::SetMultisampling(int type, int level)
 }
 
 //=================================================================================================
-RenderTarget* Render::SetTarget(RenderTarget* target)
+void Render::SetRenderTarget(RenderTarget* target)
 {
-	RenderTarget* prevTarget = currentTarget;
-
 	if(target)
 	{
-		deviceContext->OMSetRenderTargets(1, &target->renderTarget, target->depthStencilView);
+		deviceContext->OMSetRenderTargets(1, &target->renderTargetView, target->depthStencilView);
 		SetViewport(target->size);
 
 		currentTarget = target;
 	}
 	else
 	{
-		assert(currentTarget);
-
-		deviceContext->OMSetRenderTargets(1, &renderTarget, depthStencilView);
+		deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
 		SetViewport(wndSize);
 
 		currentTarget = nullptr;
 	}
-
-	return prevTarget;
 }
 
 //=================================================================================================

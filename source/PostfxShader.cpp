@@ -16,7 +16,7 @@ struct PsGlobals
 
 //=================================================================================================
 PostfxShader::PostfxShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShaders(), layout(nullptr), psGlobals(nullptr),
-sampler(nullptr), targetA(nullptr), targetB(nullptr), vb(nullptr)
+sampler(nullptr), targets(), vb(nullptr)
 {
 }
 
@@ -35,9 +35,10 @@ void PostfxShader::OnInit()
 	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 	vsBlob->Release();
 
+	// create render targets
 	const Int2& wndSize = app::engine->GetWindowSize();
-	targetA = app::render->CreateRenderTarget(wndSize);
-	targetB = app::render->CreateRenderTarget(wndSize);
+	for(int i = 0; i < 3; ++i)
+		targets[i] = app::render->CreateRenderTarget(wndSize, false);
 
 	// create fullscreen vertex buffer
 	const VTex v[] = {
@@ -67,19 +68,22 @@ void PostfxShader::OnRelease()
 	SafeRelease(layout);
 	SafeRelease(psGlobals);
 	SafeRelease(sampler);
-	SafeRelease(targetA);
-	SafeRelease(targetB);
+	SafeRelease(targets);
 	SafeRelease(vb);
 }
 
 //=================================================================================================
-void PostfxShader::Prepare()
+void PostfxShader::Prepare(bool dual)
 {
-	prevTarget = app::render->SetTarget(targetA);
+	prevTarget = app::render->GetRenderTarget();
+	depthStencilView = (prevTarget ? prevTarget->GetDepthStencilView() : app::render->GetDepthStencilView());
+	ID3D11RenderTargetView* renderTargetView = targets[dual ? 2 : 0]->GetRenderTargetView();
+	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+	app::render->SetViewport(targets[0]->GetSize());
 }
 
 //=================================================================================================
-void PostfxShader::Draw(const vector<PostEffect>& effects)
+int PostfxShader::Draw(const vector<PostEffect>& effects, bool finalStage, bool useTexB)
 {
 	assert(!effects.empty());
 
@@ -94,7 +98,7 @@ void PostfxShader::Draw(const vector<PostEffect>& effects)
 	deviceContext->IASetInputLayout(layout);
 	deviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
 
-	bool useTexA = true;
+	bool useTexA = !useTexB;
 
 	for(uint i = 0, count = effects.size(); i < count; ++i)
 	{
@@ -111,15 +115,69 @@ void PostfxShader::Draw(const vector<PostEffect>& effects)
 
 		TEX texEmpty = nullptr;
 		deviceContext->PSSetShaderResources(0, 1, &texEmpty);
-		if(isLast)
-			app::render->SetTarget(prevTarget);
+		if(isLast && finalStage)
+			app::render->SetRenderTarget(prevTarget);
 		else
-			app::render->SetTarget(useTexA ? targetB : targetA);
+		{
+			ID3D11RenderTargetView* renderTargetView = targets[useTexA ? 1 : 0]->GetRenderTargetView();
+			deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+		}
 		deviceContext->PSSetShader(pixelShaders[effect.id], nullptr, 0);
-		deviceContext->PSSetShaderResources(0, 1, useTexA ? &targetA->tex : &targetB->tex);
+		deviceContext->PSSetShaderResources(0, 1, &targets[useTexA ? 0 : 1]->tex);
 
 		deviceContext->Draw(6, 0);
 
 		useTexA = !useTexA;
 	}
+
+	if(finalStage)
+		return -1;
+	else
+		return useTexA ? 0 : 1;
+}
+
+//=================================================================================================
+void PostfxShader::Merge(int targetA, int targetB, int output)
+{
+	assert(InRange(targetA, 0, 2));
+	assert(InRange(targetB, 0, 2));
+	assert(InRange(output, -1, 2));
+	assert(targetA != targetB && targetA != output);
+
+	app::render->SetBlendState(Render::BLEND_NO);
+	app::render->SetDepthState(Render::DEPTH_NO);
+	app::render->SetRasterState(Render::RASTER_NORMAL);
+
+	ID3D11RenderTargetView* renderTargetView;
+	if(output == -1)
+	{
+		if(prevTarget)
+		{
+			renderTargetView = prevTarget->GetRenderTargetView();
+			app::render->SetViewport(prevTarget->GetSize());
+		}
+		else
+			renderTargetView = app::render->GetRenderTargetView();
+	}
+	else
+		renderTargetView = targets[output]->GetRenderTargetView();
+
+	deviceContext->VSSetShader(vertexShader, nullptr, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
+	deviceContext->PSSetSamplers(0, 1, &sampler);
+	uint stride = sizeof(VTex), offset = 0;
+	deviceContext->IASetInputLayout(layout);
+	deviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+	TEX texEmpty = nullptr;
+	deviceContext->PSSetShaderResources(0, 1, &texEmpty);
+	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+	deviceContext->PSSetShader(pixelShaders[POSTFX_EMPTY], nullptr, 0);
+
+	deviceContext->PSSetShaderResources(0, 1, &targets[targetA]->tex);
+	deviceContext->Draw(6, 0);
+
+	app::render->SetBlendState(Render::BLEND_ADD_ONE2);
+	app::render->SetDepthState(Render::DEPTH_STENCIL_KEEP);
+	deviceContext->PSSetShaderResources(0, 1, &targets[targetB]->tex);
+	deviceContext->Draw(6, 0);
 }

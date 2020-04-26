@@ -1,7 +1,7 @@
 cbuffer VsGlobals : register(b0)
 {
-	float4x4 matCombined;
-	float4x4 matBones[32];
+	matrix matCombined;
+	matrix matBones[32];
 };
 
 cbuffer PsGlobals : register(b0)
@@ -57,5 +57,6 @@ void VsAni(in ANI_INPUT In, out MESH_OUTPUT Out)
 float4 PsMain(in MESH_OUTPUT In) : SV_TARGET
 {
 	float4 tex = texDiffuse.Sample(samplerDiffuse, In.tex);
+	clip(tex.w - 0.75f);
 	return float4(color.rgb, tex.w * color.w);
 }

@@ -30,8 +30,10 @@ public:
 	cstring GetName() const override { return "postfx"; }
 	void OnInit() override;
 	void OnRelease() override;
-	void Prepare();
-	void Draw(const vector<PostEffect>& effects);
+	void Prepare(bool dual);
+	int Draw(const vector<PostEffect>& effects, bool finalStage, bool useTexB);
+	void Merge(int targetA, int targetB, int output);
+	RenderTarget* GetTarget(uint index) { return targets[index]; }
 
 private:
 	ID3D11DeviceContext* deviceContext;
@@ -40,8 +42,8 @@ private:
 	ID3D11InputLayout* layout;
 	ID3D11Buffer* psGlobals;
 	ID3D11SamplerState* sampler;
-	RenderTarget* targetA;
-	RenderTarget* targetB;
+	RenderTarget* targets[3];
+	ID3D11DepthStencilView* depthStencilView;
 	ID3D11Buffer* vb;
 	RenderTarget* prevTarget;
 };

@@ -8,6 +8,7 @@ struct Billboard;
 struct Camera;
 struct DebugNode;
 struct DynamicTexture;
+struct GlowNode;
 struct Light;
 struct Lights;
 struct MeshInstance;

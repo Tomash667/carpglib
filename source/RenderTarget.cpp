@@ -9,7 +9,7 @@ FIXME; // move to Texture?
 
 RenderTarget::~RenderTarget()
 {
-	SafeRelease(renderTarget);
+	SafeRelease(renderTargetView);
 	SafeRelease(depthStencilView);
 }
 

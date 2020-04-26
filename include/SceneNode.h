@@ -63,3 +63,10 @@ struct SceneBatch
 	void Add(SceneNode* node, int sub = -1);
 	void Process();
 };
+
+//-----------------------------------------------------------------------------
+struct GlowNode
+{
+	SceneNode* node;
+	Color color;
+};

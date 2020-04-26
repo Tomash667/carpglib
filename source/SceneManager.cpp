@@ -37,7 +37,7 @@ void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 	batch.Process();
 
 	if(target)
-		app::render->SetTarget(target);
+		app::render->SetRenderTarget(target);
 
 	app::render->Clear(scene->clear_color);
 
@@ -50,7 +50,7 @@ void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 		DrawAlphaSceneNodes(batch.alpha_nodes);
 
 	if(target)
-		app::render->SetTarget(nullptr);
+		app::render->SetRenderTarget(nullptr);
 }
 
 //=================================================================================================

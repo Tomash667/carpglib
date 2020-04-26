@@ -98,7 +98,7 @@ void Terrain::Build(bool smooth)
 
 	// create vertex buffer
 	D3D11_BUFFER_DESC v_desc = {};
-	v_desc.Usage = D3D11_USAGE_DYNAMIC;
+	v_desc.Usage = D3D11_USAGE_DEFAULT;
 	v_desc.ByteWidth = sizeof(VTerrain) * n_verts;
 	v_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 

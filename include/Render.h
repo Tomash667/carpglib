@@ -34,6 +34,7 @@ public:
 		BLEND_NO,
 		BLEND_ADD,
 		BLEND_ADD_ONE,
+		BLEND_ADD_ONE2,
 		BLEND_REV_SUBTRACT,
 		BLEND_MAX
 	};
@@ -43,7 +44,8 @@ public:
 		DEPTH_NO,
 		DEPTH_READ,
 		DEPTH_YES,
-		DEPTH_USE_STENCIL,
+		DEPTH_STENCIL_REPLACE,
+		DEPTH_STENCIL_KEEP,
 		DEPTH_MAX
 	};
 
@@ -77,7 +79,7 @@ public:
 	TEX CreateImmutableTexture(const Int2& size, const Color* fill);
 	ID3D11InputLayout* CreateInputLayout(VertexDeclarationId decl, ID3DBlob* vsBlob, cstring name);
 	ID3D11PixelShader* CreatePixelShader(cstring filename, cstring entry = "PsMain");
-	RenderTarget* CreateRenderTarget(const Int2& size);
+	RenderTarget* CreateRenderTarget(const Int2& size, bool createDepthStencilView = true);
 	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP, bool disableMipmap = false);
 	void CreateShader(cstring filename, VertexDeclarationId decl, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader,
 		ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr, cstring vsEntry = "VsMain", cstring psEntry = "PsMain");
@@ -93,11 +95,14 @@ public:
 	bool IsVsyncEnabled() const { return vsync; }
 
 	int GetAdapter() const { return usedAdapter; }
+	ID3D11DepthStencilView* GetDepthStencilView() const { return depthStencilView; }
 	ID3D11Device* GetDevice() const { return device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return deviceContext; }
 	void GetMultisampling(int& ms, int& msq) const { ms = multisampling; msq = multisamplingQuality; }
 	const vector<Int2>& GetMultisamplingModes() const { return multisampleLevels; }
 	uint GetRefreshRate() const { return refreshHz; }
+	RenderTarget* GetRenderTarget() const { return currentTarget; }
+	ID3D11RenderTargetView* GetRenderTargetView() const { return renderTargetView; }
 	const vector<Resolution>& GetResolutions() const { return resolutions; }
 	const string& GetShadersDir() const { return shaders_dir; }
 
@@ -108,7 +113,8 @@ public:
 	void SetRefreshRateInternal(uint refreshHz) { this->refreshHz = refreshHz; }
 	int SetMultisampling(int type, int quality);
 	void SetShadersDir(cstring dir) { shaders_dir = dir; }
-	RenderTarget* SetTarget(RenderTarget* target);
+	void SetRenderTarget(RenderTarget* target);
+	void SetViewport(const Int2& size);
 	void SetVsync(bool vsync) { this->vsync = vsync; }
 
 private:
@@ -116,9 +122,8 @@ private:
 	void CreateDevice();
 	void CreateSwapChain();
 	void CreateSizeDependentResources();
-	void CreateRenderTarget();
+	void CreateRenderTargetView();
 	ID3D11DepthStencilView* CreateDepthStencilView(const Int2& size);
-	void SetViewport(const Int2& size);
 	void CreateBlendStates();
 	void CreateDepthStates();
 	void CreateRasterStates();
@@ -132,7 +137,7 @@ private:
 	IDXGISwapChain* swapChain;
 	ID3D11Device* device;
 	ID3D11DeviceContext* deviceContext;
-	ID3D11RenderTargetView* renderTarget;
+	ID3D11RenderTargetView* renderTargetView;
 	ID3D11DepthStencilView* depthStencilView;
 	ID3D11BlendState* blendStates[BLEND_MAX];
 	ID3D11DepthStencilState* depthStates[DEPTH_MAX];
