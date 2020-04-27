@@ -36,6 +36,8 @@ public:
 	RenderTarget* GetTarget(uint index) { return targets[index]; }
 
 private:
+	int GetFreeTarget(int targetA, int targetB);
+
 	ID3D11DeviceContext* deviceContext;
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShaders[POSTFX_MAX];
@@ -43,7 +45,6 @@ private:
 	ID3D11Buffer* psGlobals;
 	ID3D11SamplerState* sampler;
 	RenderTarget* targets[3];
-	ID3D11DepthStencilView* depthStencilView;
 	ID3D11Buffer* vb;
 	RenderTarget* prevTarget;
 };
