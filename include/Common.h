@@ -6,6 +6,7 @@ enum VertexDeclarationId;
 // Engine types
 struct Billboard;
 struct Camera;
+struct Decal;
 struct DebugNode;
 struct DynamicTexture;
 struct GlowNode;

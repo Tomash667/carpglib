@@ -33,12 +33,15 @@ public:
 	void OnInit() override;
 	void OnRelease() override;
 	uint GetShaderId(bool have_weights, bool have_tangents, bool animated, bool fog, bool specular_map, bool normal_map, bool point_light, bool dir_light) const;
-	void Prepare(Scene* scene, Camera* camera);
+	void SetScene(Scene* scene, Camera* camera);
+	void Prepare();
+	void PrepareDecals();
 	void SetShader(uint id);
 	void SetTexture(const TexOverride* texOverride, Mesh* mesh, uint index);
 	void SetCustomMesh(ID3D11Buffer* vb, ID3D11Buffer* ib, uint vertexSize);
 	void Draw(SceneNode* node);
 	void DrawCustom(const Matrix& matWorld, const Matrix& matCombined, const std::array<Light*, 3>& lights, uint startIndex, uint indexCount);
+	void DrawDecal(const Decal& decal);
 
 private:
 	Shader& GetShader(uint id);
@@ -56,6 +59,8 @@ private:
 	ID3D11Buffer* psLocals;
 	ID3D11Buffer* psMaterial;
 	TEX texEmptyNormalMap, texEmptySpecularMap;
+	ID3D11Buffer* vbDecal;
+	ID3D11Buffer* ibDecal;
 
 	Camera* camera;
 	bool applyBones, applyLights, applyNormalMap, applySpecularMap;

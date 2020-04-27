@@ -45,7 +45,8 @@ struct PsMaterial
 
 //=================================================================================================
 SuperShader::SuperShader() : deviceContext(app::render->GetDeviceContext()), samplerDiffuse(nullptr), samplerNormal(nullptr), samplerSpecular(nullptr),
-vsGlobals(nullptr), vsLocals(nullptr), psGlobals(nullptr), psLocals(nullptr), psMaterial(nullptr), texEmptyNormalMap(nullptr), texEmptySpecularMap(nullptr)
+vsGlobals(nullptr), vsLocals(nullptr), psGlobals(nullptr), psLocals(nullptr), psMaterial(nullptr), texEmptyNormalMap(nullptr), texEmptySpecularMap(nullptr),
+vbDecal(nullptr), ibDecal(nullptr)
 {
 }
 
@@ -64,6 +65,29 @@ void SuperShader::OnInit()
 
 	texEmptyNormalMap = app::render->CreateImmutableTexture(Int2(1, 1), &Color(128, 128, 255));
 	texEmptySpecularMap = app::render->CreateImmutableTexture(Int2(1, 1), &Color::None);
+
+	// create decal vertex buffer
+	D3D11_BUFFER_DESC desc = {};
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.ByteWidth = sizeof(VDefault) * 4;
+	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	V(app::render->GetDevice()->CreateBuffer(&desc, nullptr, &vbDecal));
+	SetDebugName(vbDecal, "DecalVb");
+
+	// create decal index buffer
+	desc.Usage = D3D11_USAGE_IMMUTABLE;
+	desc.ByteWidth = sizeof(word) * 6;
+	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	desc.CPUAccessFlags = 0;
+
+	word ids[] = { 0, 1, 2, 2, 1, 3 };
+	D3D11_SUBRESOURCE_DATA data = {};
+	data.pSysMem = ids;
+
+	V(app::render->GetDevice()->CreateBuffer(&desc, &data, &ibDecal));
+	SetDebugName(ibDecal, "DecalIb");
 }
 
 //=================================================================================================
@@ -87,6 +111,8 @@ void SuperShader::OnRelease()
 	SafeRelease(psMaterial);
 	SafeRelease(texEmptyNormalMap);
 	SafeRelease(texEmptySpecularMap);
+	SafeRelease(vbDecal);
+	SafeRelease(ibDecal);
 }
 
 //=================================================================================================
@@ -210,20 +236,10 @@ SuperShader::Shader& SuperShader::CompileShader(uint id)
 }
 
 //=================================================================================================
-void SuperShader::Prepare(Scene* scene, Camera* camera)
+void SuperShader::SetScene(Scene* scene, Camera* camera)
 {
 	assert(scene && camera);
 	this->camera = camera;
-
-	// bind shader buffers, samplers
-	ID3D11Buffer* vsBuffers[] = { vsGlobals, vsLocals };
-	deviceContext->VSSetConstantBuffers(0, 2, vsBuffers);
-
-	ID3D11Buffer* psBuffers[] = { psGlobals, psLocals, psMaterial };
-	deviceContext->PSSetConstantBuffers(0, 3, psBuffers);
-
-	ID3D11SamplerState* samplers[] = { samplerDiffuse, samplerNormal, samplerSpecular };
-	deviceContext->PSSetSamplers(0, 3, samplers);
 
 	// set vertex shader globals
 	{
@@ -241,6 +257,35 @@ void SuperShader::Prepare(Scene* scene, Camera* camera)
 		psg.fogColor = scene->GetFogColor();
 		psg.fogParams = scene->GetFogParams();
 	}
+}
+
+//=================================================================================================
+void SuperShader::Prepare()
+{
+	// bind shader buffers, samplers
+	ID3D11Buffer* vsBuffers[] = { vsGlobals, vsLocals };
+	deviceContext->VSSetConstantBuffers(0, 2, vsBuffers);
+
+	ID3D11Buffer* psBuffers[] = { psGlobals, psLocals, psMaterial };
+	deviceContext->PSSetConstantBuffers(0, 3, psBuffers);
+
+	ID3D11SamplerState* samplers[] = { samplerDiffuse, samplerNormal, samplerSpecular };
+	deviceContext->PSSetSamplers(0, 3, samplers);
+}
+
+//=================================================================================================
+void SuperShader::PrepareDecals()
+{
+	Prepare();
+	SetCustomMesh(vbDecal, ibDecal, sizeof(VDefault));
+
+	app::render->SetBlendState(Render::BLEND_ADD);
+	app::render->SetDepthState(Render::DEPTH_READ);
+	app::render->SetRasterState(Render::RASTER_NORMAL);
+
+	const bool use_fog = scene_mgr->use_lighting && scene_mgr->use_fog;
+
+	SetShader(GetShaderId(false, false, false, use_fog, false, false, !outside && scene_mgr->use_lighting, outside && scene_mgr->use_lighting));
 }
 
 //=================================================================================================
@@ -426,4 +471,93 @@ void SuperShader::DrawCustom(const Matrix& matWorld, const Matrix& matCombined, 
 
 	// actual drawing
 	deviceContext->DrawIndexed(indexCount, startIndex, 0);
+}
+
+//=================================================================================================
+void SuperShader::DrawDecal(const Decal& decal)
+{
+	// set decal vertices
+	{
+		ResourceLock lock(vbDecal);
+		VDefault* v = lock.Get<VDefault>();
+		v[0].tex = Vec2(0, 0);
+		v[1].tex = Vec2(0, 1);
+		v[2].tex = Vec2(1, 0);
+		v[3].tex = Vec2(1, 1);
+		for(int i = 0; i < 4; ++i)
+			v[i].normal = decal.normal;
+		if(decal.normal.Equal(Vec3(0, 1, 0)))
+		{
+			v[0].pos.x = decal.scale * sin(decal.rot + 5.f / 4 * PI);
+			v[0].pos.z = decal.scale * cos(decal.rot + 5.f / 4 * PI);
+			v[1].pos.x = decal.scale * sin(decal.rot + 7.f / 4 * PI);
+			v[1].pos.z = decal.scale * cos(decal.rot + 7.f / 4 * PI);
+			v[2].pos.x = decal.scale * sin(decal.rot + 3.f / 4 * PI);
+			v[2].pos.z = decal.scale * cos(decal.rot + 3.f / 4 * PI);
+			v[3].pos.x = decal.scale * sin(decal.rot + 1.f / 4 * PI);
+			v[3].pos.z = decal.scale * cos(decal.rot + 1.f / 4 * PI);
+		}
+		else
+		{
+			const Vec3 front(sin(decal.rot), 0, cos(decal.rot)), right(sin(decal.rot + PI / 2), 0, cos(decal.rot + PI / 2));
+			Vec3 v_x, v_z, v_lx, v_rx, v_lz, v_rz;
+			v_x = decal.normal.Cross(front);
+			v_z = decal.normal.Cross(right);
+			if(v_x.x > 0.f)
+			{
+				v_rx = v_x * decal.scale;
+				v_lx = -v_x * decal.scale;
+			}
+			else
+			{
+				v_rx = -v_x * decal.scale;
+				v_lx = v_x * decal.scale;
+			}
+			if(v_z.z > 0.f)
+			{
+				v_rz = v_z * decal.scale;
+				v_lz = -v_z * decal.scale;
+			}
+			else
+			{
+				v_rz = -v_z * decal.scale;
+				v_lz = v_z * decal.scale;
+			}
+
+			v[0].pos = v_lx + v_lz;
+			v[1].pos = v_lx + v_rz;
+			v[2].pos = v_rx + v_lz;
+			v[3].pos = v_rx + v_rz;
+		}
+	}
+
+	// set vertex shader constants
+	{
+		ResourceLock lock(vsLocals);
+		VsLocals& vsl = *lock.Get<VsLocals>();
+		Matrix matWorld = Matrix::Translation(decal.pos);
+		vsl.matWorld = matWorld.Transpose();
+		vsl.matCombined = (matWorld * camera->mat_view_proj).Transpose();
+	}
+
+	// set pixel shader constants
+	{
+		ResourceLock lock(psLocals);
+		PsLocals& psl = *lock.Get<PsLocals>();
+		psl.tint = Vec4::One;
+		if(applyLights)
+		{
+			const std::array<Light*, 3>& lights = *decal.lights;
+			for(uint i = 0; i < Lights::COUNT; ++i)
+			{
+				if(lights[i])
+					psl.lights.ld[i] = *lights[i];
+				else
+					psl.lights.ld[i] = Light::EMPTY;
+			}
+		}
+	}
+
+	deviceContext->PSSetShaderResources(0, 1, &decal.tex);
+	deviceContext->DrawIndexed(6, 0, 0);
 }

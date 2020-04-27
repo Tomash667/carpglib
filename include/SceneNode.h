@@ -70,3 +70,13 @@ struct GlowNode
 	SceneNode* node;
 	Color color;
 };
+
+//-----------------------------------------------------------------------------
+struct Decal
+{
+	Vec3 pos;
+	Vec3 normal;
+	float rot, scale;
+	TEX tex;
+	std::array<Light*, 3>* lights;
+};
