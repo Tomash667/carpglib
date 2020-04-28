@@ -23,13 +23,17 @@ void SceneManager::Init()
 }
 
 //=================================================================================================
-void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
+void SceneManager::SetScene(Scene* scene, Camera* camera)
 {
 	assert(scene && camera);
-
 	this->scene = scene;
 	this->camera = camera;
+	super_shader->SetScene(scene, camera);
+}
 
+//=================================================================================================
+void SceneManager::Draw(RenderTarget* target)
+{
 	batch.Clear();
 	batch.camera = camera;
 	batch.gather_lights = use_lighting && !scene->use_light_dir;
@@ -41,7 +45,7 @@ void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 
 	app::render->Clear(scene->clear_color);
 
-	super_shader->Prepare(scene, camera);
+	super_shader->Prepare();
 
 	if(!batch.node_groups.empty())
 		DrawSceneNodes(batch.nodes, batch.node_groups);
@@ -56,7 +60,7 @@ void SceneManager::Draw(Scene* scene, Camera* camera, RenderTarget* target)
 //=================================================================================================
 void SceneManager::DrawSceneNodes(SceneBatch& batch)
 {
-	super_shader->Prepare(scene, camera);
+	super_shader->Prepare();
 
 	DrawSceneNodes(batch.nodes, batch.node_groups);
 }
@@ -64,7 +68,7 @@ void SceneManager::DrawSceneNodes(SceneBatch& batch)
 //=================================================================================================
 void SceneManager::DrawAlphaSceneNodes(SceneBatch& batch)
 {
-	super_shader->Prepare(scene, camera);
+	super_shader->Prepare();
 
 	DrawAlphaSceneNodes(batch.alpha_nodes);
 }

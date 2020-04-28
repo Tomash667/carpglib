@@ -78,5 +78,5 @@ struct Decal
 	Vec3 normal;
 	float rot, scale;
 	TEX tex;
-	std::array<Light*, 3>* lights;
+	const std::array<Light*, 3>* lights;
 };

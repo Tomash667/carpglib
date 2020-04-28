@@ -7,6 +7,7 @@
 #include "Mesh.h"
 #include "Render.h"
 #include "Scene.h"
+#include "SceneManager.h"
 #include "SceneNode.h"
 
 struct VsGlobals
@@ -239,6 +240,7 @@ SuperShader::Shader& SuperShader::CompileShader(uint id)
 void SuperShader::SetScene(Scene* scene, Camera* camera)
 {
 	assert(scene && camera);
+	this->scene = scene;
 	this->camera = camera;
 
 	// set vertex shader globals
@@ -283,9 +285,10 @@ void SuperShader::PrepareDecals()
 	app::render->SetDepthState(Render::DEPTH_READ);
 	app::render->SetRasterState(Render::RASTER_NORMAL);
 
-	const bool use_fog = scene_mgr->use_lighting && scene_mgr->use_fog;
+	const bool use_fog = app::scene_mgr->use_lighting && app::scene_mgr->use_fog;
 
-	SetShader(GetShaderId(false, false, false, use_fog, false, false, !outside && scene_mgr->use_lighting, outside && scene_mgr->use_lighting));
+	SetShader(GetShaderId(false, false, false, use_fog, false, false,
+		!scene->use_light_dir && app::scene_mgr->use_lighting, scene->use_light_dir && app::scene_mgr->use_lighting));
 }
 
 //=================================================================================================

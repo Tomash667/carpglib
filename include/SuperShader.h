@@ -62,6 +62,7 @@ private:
 	ID3D11Buffer* vbDecal;
 	ID3D11Buffer* ibDecal;
 
+	Scene* scene;
 	Camera* camera;
 	bool applyBones, applyLights, applyNormalMap, applySpecularMap;
 	Mesh* prevMesh;
