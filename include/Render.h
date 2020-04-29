@@ -69,8 +69,9 @@ public:
 	Render();
 	~Render();
 	void Init();
+	void OnChangeResolution();
 
-	bool CheckDisplay(const Int2& size, uint& hz); // for hz=0 return best hz available
+	bool CheckDisplay(const Int2& size, uint& hz) const; // for hz=0 return best hz available
 	void Clear(const Vec4& color);
 	Texture* CopyToTexture(RenderTarget* target);
 	TEX CopyToTextureRaw(RenderTarget* target);
@@ -154,5 +155,5 @@ private:
 	BlendState blendState;
 	DepthState depthState;
 	RasterState rasterState;
-	bool initialized, vsync;
+	bool initialized, vsync, useV4Shaders;
 };

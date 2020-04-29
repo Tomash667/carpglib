@@ -36,9 +36,8 @@ void PostfxShader::OnInit()
 	vsBlob->Release();
 
 	// create render targets
-	const Int2& wndSize = app::engine->GetWindowSize();
 	for(int i = 0; i < 3; ++i)
-		targets[i] = app::render->CreateRenderTarget(wndSize, false);
+		targets[i] = app::render->CreateRenderTarget(Int2::Zero, false);
 
 	// create fullscreen vertex buffer
 	const VTex v[] = {

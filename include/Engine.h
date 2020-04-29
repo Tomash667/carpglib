@@ -14,8 +14,9 @@ public:
 	Engine();
 	~Engine();
 
-	bool ChangeMode(bool fullscreen);
-	bool ChangeMode(Int2 size, bool fullscreen, uint hz = 0);
+	FIXME;
+	//bool ChangeMode(bool fullscreen);
+	//bool ChangeMode(Int2 size, bool fullscreen, uint hz = 0);
 	void DoPseudotick(bool msg_only = false);
 	void Shutdown();
 	void FatalError(cstring err);
@@ -32,19 +33,22 @@ public:
 	bool IsFullscreen() const { return fullscreen; }
 
 	float GetFps() const { return fps; }
-	float GetWindowAspect() const { return float(wnd_size.x) / wnd_size.y; }
+	float GetWindowAspect() const { return float(client_size.x) / client_size.y; }
 	HWND GetWindowHandle() const { return hwnd; }
-	const Int2& GetWindowSize() const { return wnd_size; }
+	const Int2& GetWindowSize() const { return client_size; }
 	CustomCollisionWorld* GetPhysicsWorld() { return phy_world; }
 
+	void SetFullscreen(bool fullscreen);
 	void SetTitle(cstring title);
 	void SetUnlockPoint(const Int2& pt) { unlock_point = pt; }
 	void SetWindowInitialPos(const Int2& pos, const Int2& size) { force_pos = pos; force_size = size; }
+	void SetWindowSize(const Int2& size);
 
 private:
 	void Init();
 	void AdjustWindowSize();
-	void ChangeMode();
+	//void ChangeMode();
+	FIXME;
 	void Cleanup();
 	void DoTick(bool update_game);
 	long HandleEvent(HWND hwnd, uint msg, uint wParam, long lParam);
@@ -61,8 +65,8 @@ private:
 	HWND hwnd;
 	Timer timer;
 	string title;
-	Int2 wnd_size, real_size, unlock_point, activation_point, force_pos, force_size;
+	Int2 wnd_size, real_size, client_size, unlock_point, activation_point, force_pos, force_size;
 	float frame_time, fps;
 	uint frames;
-	bool initialized, shutdown, cursor_visible, replace_cursor, locked_cursor, lock_on_focus, active, fullscreen, hidden_window;
+	bool initialized, shutdown, cursor_visible, replace_cursor, locked_cursor, lock_on_focus, active, fullscreen, hidden_window, in_resize;
 };

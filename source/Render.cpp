@@ -76,7 +76,30 @@ void Render::Init()
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	initialized = true;
-	Info("Render: Directx device created.");
+	Info("Render: Initialization finished.");
+}
+
+//=================================================================================================
+void Render::OnChangeResolution()
+{
+	if(!swapChain)
+		return;
+
+	wndSize = app::engine->GetWindowSize();
+
+	SafeRelease(rasterStates);
+	SafeRelease(depthStencilView);
+	SafeRelease(renderTargetView);
+	SafeRelease(swapChain);
+
+	CreateSwapChain();
+	CreateRenderTargetView();
+	depthStencilView = CreateDepthStencilView(wndSize);
+	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+	SetViewport(wndSize);
+	CreateRasterStates();
+	for(RenderTarget* target : renderTargets)
+		RecreateRenderTarget(target);
 }
 
 //=================================================================================================
@@ -115,12 +138,17 @@ void Render::CreateDevice()
 	flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-	D3D_FEATURE_LEVEL feature_levels[] = { D3D_FEATURE_LEVEL_11_0 };
-	D3D_FEATURE_LEVEL feature_level;
-	HRESULT result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags, feature_levels, countof(feature_levels),
-		D3D11_SDK_VERSION, &device, &feature_level, &deviceContext);
+	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };
+	D3D_FEATURE_LEVEL featureLevel;
+	HRESULT result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags, featureLevels, countof(featureLevels),
+		D3D11_SDK_VERSION, &device, &featureLevel, &deviceContext);
 	if(FAILED(result))
 		throw Format("Failed to create device (%u).", result);
+
+	cstring levelName = Format("%d.%d", (featureLevel & 0xF000) >> 12, (featureLevel & 0xF00) >> 8);
+	Info("Render: Device created with %s feature level.", levelName);
+
+	useV4Shaders = (featureLevel != D3D_FEATURE_LEVEL_11_0);
 }
 
 //=================================================================================================
@@ -470,30 +498,23 @@ void Render::Present()
 }
 
 //=================================================================================================
-bool Render::CheckDisplay(const Int2& size, uint& hz)
+bool Render::CheckDisplay(const Int2& size, uint& hz) const
 {
-	FIXME;
-	/*assert(size.x >= Engine::MIN_WINDOW_SIZE.x && size.x >= Engine::MIN_WINDOW_SIZE.y);
-
 	// check minimum resolution
 	if(size.x < Engine::MIN_WINDOW_SIZE.x || size.y < Engine::MIN_WINDOW_SIZE.y)
 		return false;
-
-	uint display_modes = d3d->GetAdapterModeCount(usedAdapter, DISPLAY_FORMAT);
 
 	if(hz == 0)
 	{
 		bool valid = false;
 
-		for(uint i = 0; i < display_modes; ++i)
+		for(const Resolution& resolution : resolutions)
 		{
-			D3DDISPLAYMODE d_mode;
-			V(d3d->EnumAdapterModes(usedAdapter, DISPLAY_FORMAT, i, &d_mode));
-			if(size.x == d_mode.Width && size.y == d_mode.Height)
+			if(resolution.size == size)
 			{
 				valid = true;
-				if(hz < (int)d_mode.RefreshRate)
-					hz = d_mode.RefreshRate;
+				if(hz < resolution.hz)
+					hz = resolution.hz;
 			}
 		}
 
@@ -501,18 +522,14 @@ bool Render::CheckDisplay(const Int2& size, uint& hz)
 	}
 	else
 	{
-		for(uint i = 0; i < display_modes; ++i)
+		for(const Resolution& resolution : resolutions)
 		{
-			D3DDISPLAYMODE d_mode;
-			V(d3d->EnumAdapterModes(usedAdapter, DISPLAY_FORMAT, i, &d_mode));
-			if(size.x == d_mode.Width && size.y == d_mode.Height && hz == d_mode.RefreshRate)
+			if(resolution.size == size && resolution.hz == hz)
 				return true;
 		}
 
 		return false;
-	}*/
-
-	return false;
+	}
 }
 
 //=================================================================================================
@@ -615,15 +632,24 @@ TEX Render::CreateImmutableTexture(const Int2& size, const Color* fill)
 RenderTarget* Render::CreateRenderTarget(const Int2& size, bool createDepthStencilView)
 {
 	assert(size <= wndSize);
-	assert((size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y)) || size == wndSize);
+	assert((size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y)) || size == Int2::Zero);
 	RenderTarget* target = new RenderTarget;
-	target->size = size;
+	if(size == Int2::Zero)
+	{
+		target->useWindowSize = true;
+		target->size = wndSize;
+	}
+	else
+	{
+		target->useWindowSize = false;
+		target->size = size;
+	}
 	target->state = ResourceState::Loaded;
 
 	// create texture
 	D3D11_TEXTURE2D_DESC desc = {};
-	desc.Width = size.x;
-	desc.Height = size.y;
+	desc.Width = target->size.x;
+	desc.Height = target->size.y;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -648,7 +674,7 @@ RenderTarget* Render::CreateRenderTarget(const Int2& size, bool createDepthStenc
 
 	// create depth stencil view
 	if(createDepthStencilView)
-		target->depthStencilView = CreateDepthStencilView(size);
+		target->depthStencilView = CreateDepthStencilView(target->size);
 	else
 		target->depthStencilView = nullptr;
 
@@ -660,6 +686,16 @@ RenderTarget* Render::CreateRenderTarget(const Int2& size, bool createDepthStenc
 //=================================================================================================
 void Render::RecreateRenderTarget(RenderTarget* target)
 {
+	bool haveDepthStencilView = (target->depthStencilView != nullptr);
+	if(target->useWindowSize)
+		target->size = wndSize;
+
+	// release old texture
+	target->tex->Release();
+	if(haveDepthStencilView)
+		target->depthStencilView->Release();
+	target->renderTargetView->Release();
+
 	// create texture
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.Width = target->size.x;
@@ -676,15 +712,6 @@ void Render::RecreateRenderTarget(RenderTarget* target)
 	ID3D11Texture2D* texResource;
 	V(device->CreateTexture2D(&desc, nullptr, &texResource));
 
-	// copy texture
-	ID3D11Texture2D* prevTexResource;
-	target->tex->GetResource(reinterpret_cast<ID3D11Resource**>(&prevTexResource));
-	deviceContext->CopyResource(texResource, prevTexResource);
-	prevTexResource->Release();
-	target->tex->Release();
-	target->depthStencilView->Release();
-	target->renderTargetView->Release();
-
 	// create render target view
 	V(device->CreateRenderTargetView(texResource, nullptr, &target->renderTargetView));
 
@@ -696,7 +723,8 @@ void Render::RecreateRenderTarget(RenderTarget* target)
 	V(device->CreateShaderResourceView(texResource, &viewDesc, &target->tex));
 
 	// create depth stencil view
-	target->depthStencilView = CreateDepthStencilView(target->size);
+	if(haveDepthStencilView)
+		target->depthStencilView = CreateDepthStencilView(target->size);
 
 	texResource->Release();
 }
@@ -824,18 +852,7 @@ int Render::SetMultisampling(int type, int level)
 	multisampling = type;
 	multisamplingQuality = level;
 
-	SafeRelease(rasterStates);
-	SafeRelease(depthStencilView);
-	SafeRelease(renderTargetView);
-	SafeRelease(swapChain);
-
-	CreateSwapChain();
-	CreateRenderTargetView();
-	depthStencilView = CreateDepthStencilView(wndSize);
-	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
-	CreateRasterStates();
-	for(RenderTarget* target : renderTargets)
-		RecreateRenderTarget(target);
+	OnChangeResolution();
 
 	return 2;
 }
@@ -994,7 +1011,11 @@ ID3DBlob* Render::CompileShader(cstring filename, cstring entry, bool isVertex, 
 {
 	assert(filename && entry);
 
-	cstring target = isVertex ? "vs_5_0" : "ps_5_0";
+	cstring target;
+	if(isVertex)
+		target = useV4Shaders ? "vs_4_0" : "vs_5_0";
+	else
+		target = useV4Shaders ? "ps_4_0" : "ps_5_0";
 
 	uint flags = D3DCOMPILE_ENABLE_STRICTNESS;
 #ifdef _DEBUG

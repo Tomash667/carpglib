@@ -18,4 +18,5 @@ private:
 	ID3D11RenderTargetView* renderTargetView;
 	ID3D11DepthStencilView* depthStencilView;
 	Int2 size;
+	bool useWindowSize;
 };
