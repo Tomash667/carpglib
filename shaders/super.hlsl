@@ -42,6 +42,7 @@ cbuffer PsLocals : register(b1)
 {
 	float4 tint;
 	Light lights[3];
+	float alphaTest;
 };
 
 cbuffer PsMaterial : register(b2)
@@ -138,7 +139,7 @@ void VsMain(VsInput In, out VsOutput Out)
 float4 PsMain(VsOutput In) : SV_TARGET
 {
 	float4 tex = texDiffuse.Sample(samplerDiffuse, In.tex);
-	clip(tex.w - 0.75f);
+	clip(tex.w - alphaTest);
 	tex *= tint;
 	float4 color = ambientColor;
 	

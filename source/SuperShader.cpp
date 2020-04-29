@@ -35,6 +35,7 @@ struct PsLocals
 {
 	Vec4 tint;
 	Lights lights;
+	float alphaTest;
 };
 
 struct PsMaterial
@@ -395,6 +396,7 @@ void SuperShader::Draw(SceneNode* node)
 		ResourceLock lock(psLocals);
 		PsLocals& psl = *lock.Get<PsLocals>();
 		psl.tint = node->tint;
+		psl.alphaTest = 0.5f;
 		if(applyLights)
 		{
 			for(uint i = 0; i < Lights::COUNT; ++i)
@@ -460,6 +462,7 @@ void SuperShader::DrawCustom(const Matrix& matWorld, const Matrix& matCombined, 
 		ResourceLock lock(psLocals);
 		PsLocals& psl = *lock.Get<PsLocals>();
 		psl.tint = Vec4::One;
+		psl.alphaTest = 0.5f;
 		if(applyLights)
 		{
 			for(uint i = 0; i < Lights::COUNT; ++i)
@@ -548,6 +551,7 @@ void SuperShader::DrawDecal(const Decal& decal)
 		ResourceLock lock(psLocals);
 		PsLocals& psl = *lock.Get<PsLocals>();
 		psl.tint = Vec4::One;
+		psl.alphaTest = 0;
 		if(applyLights)
 		{
 			const std::array<Light*, 3>& lights = *decal.lights;
