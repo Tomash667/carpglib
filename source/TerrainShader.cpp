@@ -25,7 +25,7 @@ struct PsGlobals
 
 //=================================================================================================
 TerrainShader::TerrainShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(nullptr), layout(nullptr),
-vsGlobals(nullptr), psGlobals(nullptr), samplers()
+vsGlobals(nullptr), psGlobals(nullptr), sampler(nullptr)
 {
 }
 
@@ -35,12 +35,7 @@ void TerrainShader::OnInit()
 	app::render->CreateShader("terrain.hlsl", VDI_TERRAIN, vertexShader, pixelShader, layout);
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "TerrainVsGlobals");
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "TerrainPsGlobals");
-	samplers[0] = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
-	samplers[1] = app::render->CreateSampler();
-	samplers[2] = app::render->CreateSampler();
-	samplers[3] = app::render->CreateSampler();
-	samplers[4] = app::render->CreateSampler();
-	samplers[5] = app::render->CreateSampler();
+	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 }
 
 //=================================================================================================
@@ -51,8 +46,7 @@ void TerrainShader::OnRelease()
 	SafeRelease(layout);
 	SafeRelease(vsGlobals);
 	SafeRelease(psGlobals);
-	for(int i = 0; i < 6; ++i)
-		SafeRelease(samplers[i]);
+	SafeRelease(sampler);
 }
 
 //=================================================================================================
@@ -69,7 +63,8 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
-	deviceContext->PSSetSamplers(0, 6, samplers);
+	ID3D11SamplerState* samplers[] = { sampler, app::render->GetSampler() };
+	deviceContext->PSSetSamplers(0, 2, samplers);
 	uint stride = sizeof(VTerrain), offset = 0;
 	deviceContext->IASetInputLayout(layout);
 	deviceContext->IASetVertexBuffers(0, 1, &terrain->vb, &stride, &offset);

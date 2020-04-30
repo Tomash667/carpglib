@@ -25,7 +25,6 @@ private:
 	ID3D11PixelShader* pixelShader;
 	ID3D11InputLayout* layout;
 	ID3D11Buffer* vsGlobals;
-	ID3D11SamplerState* sampler;
 	ID3D11Buffer* vb;
 	TEX texEmpty;
 

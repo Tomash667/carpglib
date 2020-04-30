@@ -46,19 +46,14 @@ struct PsMaterial
 };
 
 //=================================================================================================
-SuperShader::SuperShader() : deviceContext(app::render->GetDeviceContext()), samplerDiffuse(nullptr), samplerNormal(nullptr), samplerSpecular(nullptr),
-vsGlobals(nullptr), vsLocals(nullptr), psGlobals(nullptr), psLocals(nullptr), psMaterial(nullptr), texEmptyNormalMap(nullptr), texEmptySpecularMap(nullptr),
-vbDecal(nullptr), ibDecal(nullptr)
+SuperShader::SuperShader() : deviceContext(app::render->GetDeviceContext()), vsGlobals(nullptr), vsLocals(nullptr), psGlobals(nullptr), psLocals(nullptr),
+psMaterial(nullptr), texEmptyNormalMap(nullptr), texEmptySpecularMap(nullptr), vbDecal(nullptr), ibDecal(nullptr)
 {
 }
 
 //=================================================================================================
 void SuperShader::OnInit()
 {
-	samplerDiffuse = app::render->CreateSampler();
-	samplerNormal = app::render->CreateSampler();
-	samplerSpecular = app::render->CreateSampler();
-
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "SuperVsGlobals");
 	vsLocals = app::render->CreateConstantBuffer(sizeof(VsLocals), "SuperVsLocals");
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "SuperPsGlobals");
@@ -103,9 +98,6 @@ void SuperShader::OnRelease()
 	}
 	shaders.clear();
 
-	SafeRelease(samplerDiffuse);
-	SafeRelease(samplerNormal);
-	SafeRelease(samplerSpecular);
 	SafeRelease(vsGlobals);
 	SafeRelease(vsLocals);
 	SafeRelease(psGlobals);
@@ -272,8 +264,8 @@ void SuperShader::Prepare()
 	ID3D11Buffer* psBuffers[] = { psGlobals, psLocals, psMaterial };
 	deviceContext->PSSetConstantBuffers(0, 3, psBuffers);
 
-	ID3D11SamplerState* samplers[] = { samplerDiffuse, samplerNormal, samplerSpecular };
-	deviceContext->PSSetSamplers(0, 3, samplers);
+	ID3D11SamplerState* sampler = app::render->GetSampler();
+	deviceContext->PSSetSamplers(0, 1, &sampler);
 }
 
 //=================================================================================================

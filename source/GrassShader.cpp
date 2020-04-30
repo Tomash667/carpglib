@@ -22,7 +22,7 @@ struct PsGlobals
 
 //=================================================================================================
 GrassShader::GrassShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(nullptr), layout(nullptr),
-vsGlobals(nullptr), psGlobals(nullptr), sampler(nullptr), vb(nullptr), vbSize(0)
+vsGlobals(nullptr), psGlobals(nullptr), vb(nullptr), vbSize(0)
 {
 }
 
@@ -32,7 +32,6 @@ void GrassShader::OnInit()
 	app::render->CreateShader("grass.hlsl", VDI_GRASS, vertexShader, pixelShader, layout);
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
-	sampler = app::render->CreateSampler();
 }
 
 //=================================================================================================
@@ -43,7 +42,6 @@ void GrassShader::OnRelease()
 	SafeRelease(layout);
 	SafeRelease(vsGlobals);
 	SafeRelease(psGlobals);
-	SafeRelease(sampler);
 	SafeRelease(vb);
 	vbSize = 0;
 }
@@ -61,6 +59,7 @@ void GrassShader::Prepare(Scene* scene, Camera* camera)
 	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
+	ID3D11SamplerState* sampler = app::render->GetSampler();
 	deviceContext->PSSetSamplers(0, 1, &sampler);
 	deviceContext->IASetInputLayout(layout);
 

@@ -27,12 +27,8 @@ Texture2D tex1 : register(t2);
 Texture2D tex2 : register(t3);
 Texture2D tex3 : register(t4);
 Texture2D tex4 : register(t5);
-SamplerState samplerBlend;
-SamplerState sampler0;
-SamplerState sampler1;
-SamplerState sampler2;
-SamplerState sampler3;
-SamplerState sampler4;
+SamplerState samplerBlend : register(s0);
+SamplerState sampler0 : register(s1);
 
 //------------------------------------------------------------------------------
 // VERTEX SHADER INPUT
@@ -74,10 +70,10 @@ float4 PsMain(in TERRAIN_OUTPUT In) : SV_TARGET
 {
 	float4 a = texBlend.Sample(samplerBlend, In.texBlend);
 	float4 c0 = tex0.Sample(sampler0, In.tex);
-	float4 c1 = tex1.Sample(sampler1, In.tex);
-	float4 c2 = tex2.Sample(sampler2, In.tex);
-	float4 c3 = tex3.Sample(sampler3, In.tex);
-	float4 c4 = tex4.Sample(sampler4, In.tex);
+	float4 c1 = tex1.Sample(sampler0, In.tex);
+	float4 c2 = tex2.Sample(sampler0, In.tex);
+	float4 c3 = tex3.Sample(sampler0, In.tex);
+	float4 c4 = tex4.Sample(sampler0, In.tex);
 	
 	float4 texColor = lerp(c0,c1,a.b);
 	texColor = lerp(texColor,c2,a.g);

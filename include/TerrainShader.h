@@ -20,5 +20,5 @@ private:
 	ID3D11InputLayout* layout;
 	ID3D11Buffer* vsGlobals;
 	ID3D11Buffer* psGlobals;
-	ID3D11SamplerState* samplers[6];
+	ID3D11SamplerState* sampler;
 };

@@ -55,9 +55,7 @@ cbuffer PsMaterial : register(b2)
 Texture2D texDiffuse : register(t0);
 Texture2D texNormal : register(t1);
 Texture2D texSpecular : register(t2);
-SamplerState samplerDiffuse : register(s0);
-SamplerState samplerNormal : register(s1);
-SamplerState samplerSpecular : register(s2);
+SamplerState sampler0 : register(s0);
 
 struct VsInput
 {
@@ -138,13 +136,13 @@ void VsMain(VsInput In, out VsOutput Out)
 
 float4 PsMain(VsOutput In) : SV_TARGET
 {
-	float4 tex = texDiffuse.Sample(samplerDiffuse, In.tex);
+	float4 tex = texDiffuse.Sample(sampler0, In.tex);
 	clip(tex.w - alphaTest);
 	tex *= tint;
 	float4 color = ambientColor;
 	
 #ifdef NORMAL_MAP
-	float3 bump = texNormal.Sample(samplerNormal, In.tex).xyz * 2.f - 1.f;
+	float3 bump = texNormal.Sample(sampler0, In.tex).xyz * 2.f - 1.f;
 	float3 normal = normalize(bump.x * In.tangent + (-bump.y) * In.binormal + bump.z * In.normal);
 #else
 	float3 normal = In.normal;
@@ -152,7 +150,7 @@ float4 PsMain(VsOutput In) : SV_TARGET
 
 	float specInt;
 #ifdef SPECULAR_MAP
-	float4 specTex = texSpecular.Sample(samplerSpecular, In.tex);
+	float4 specTex = texSpecular.Sample(sampler0, In.tex);
 	specInt = specTex.r + (1.f - specTex.a) * specularIntensity;
 #else
 	specInt = specularIntensity;

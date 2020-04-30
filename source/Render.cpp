@@ -18,7 +18,7 @@ static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 Render::Render() : initialized(false), vsync(true), shaders_dir("shaders"), refreshHz(0), usedAdapter(0), multisampling(0), multisamplingQuality(0),
 factory(nullptr), adapter(nullptr), swapChain(nullptr), device(nullptr), deviceContext(nullptr), renderTargetView(nullptr), depthStencilView(nullptr),
 blendStates(), depthStates(), rasterStates(), blendState(BLEND_NO), depthState(DEPTH_YES), rasterState(RASTER_NORMAL), currentTarget(nullptr),
-forceFeatureLevel(0)
+forceFeatureLevel(0), defaultSampler(nullptr)
 {
 }
 
@@ -39,6 +39,7 @@ Render::~Render()
 	SafeRelease(blendStates);
 	SafeRelease(depthStates);
 	SafeRelease(rasterStates);
+	SafeRelease(defaultSampler);
 
 	if(device)
 	{
@@ -75,6 +76,7 @@ void Render::Init()
 	CreateRasterStates();
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	defaultSampler = CreateSampler();
 
 	initialized = true;
 	Info("Render: Initialization finished.");

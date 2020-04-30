@@ -14,7 +14,7 @@ struct VsGlobals
 
 //=================================================================================================
 ParticleShader::ParticleShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(nullptr), layout(nullptr),
-vsGlobals(nullptr), sampler(nullptr), vb(nullptr), texEmpty(nullptr), particleCount(0)
+vsGlobals(nullptr), vb(nullptr), texEmpty(nullptr), particleCount(0)
 {
 }
 
@@ -23,7 +23,6 @@ void ParticleShader::OnInit()
 {
 	app::render->CreateShader("particle.hlsl", VDI_PARTICLE, vertexShader, pixelShader, layout);
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
-	sampler = app::render->CreateSampler();
 	texEmpty = app::render->CreateImmutableTexture(Int2(1, 1), &Color::White);
 
 	vBillboard[0].pos = Vec3(-1, -1, 0);
@@ -56,7 +55,6 @@ void ParticleShader::OnRelease()
 	SafeRelease(pixelShader);
 	SafeRelease(layout);
 	SafeRelease(vsGlobals);
-	SafeRelease(sampler);
 	SafeRelease(vb);
 	SafeRelease(texEmpty);
 	particleCount = 0;
@@ -75,6 +73,7 @@ void ParticleShader::Prepare(Camera& camera)
 	deviceContext->VSSetShader(vertexShader, nullptr, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
+	ID3D11SamplerState* sampler = app::render->GetSampler();
 	deviceContext->PSSetSamplers(0, 1, &sampler);
 	uint stride = sizeof(VParticle), offset = 0;
 	deviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);

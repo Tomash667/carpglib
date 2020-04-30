@@ -29,5 +29,4 @@ private:
 	ID3D11InputLayout* layoutAniTangent;
 	ID3D11Buffer* vsGlobals;
 	ID3D11Buffer* psGlobals;
-	ID3D11SamplerState* sampler;
 };

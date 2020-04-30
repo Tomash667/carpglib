@@ -50,9 +50,6 @@ private:
 
 	ID3D11DeviceContext* deviceContext;
 	vector<Shader> shaders;
-	ID3D11SamplerState* samplerDiffuse;
-	ID3D11SamplerState* samplerNormal;
-	ID3D11SamplerState* samplerSpecular;
 	ID3D11Buffer* vsGlobals;
 	ID3D11Buffer* vsLocals;
 	ID3D11Buffer* psGlobals;

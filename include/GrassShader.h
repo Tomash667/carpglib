@@ -23,7 +23,6 @@ private:
 	ID3D11InputLayout* layout;
 	ID3D11Buffer* vsGlobals;
 	ID3D11Buffer* psGlobals;
-	ID3D11SamplerState* sampler;
 	ID3D11Buffer* vb;
 	uint vbSize;
 };

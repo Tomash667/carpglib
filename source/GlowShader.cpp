@@ -23,7 +23,7 @@ struct PsGlobals
 //=================================================================================================
 GlowShader::GlowShader(PostfxShader* postfxShader) : postfxShader(postfxShader), deviceContext(app::render->GetDeviceContext()), vertexShaderMesh(nullptr),
 vertexShaderAni(nullptr), pixelShader(nullptr), layoutMesh(nullptr), layoutMeshTangent(nullptr), layoutMeshWeight(nullptr), layoutMeshTangentWeight(nullptr),
-layoutAni(nullptr), layoutAniTangent(nullptr), vsGlobals(nullptr), psGlobals(nullptr), sampler(nullptr)
+layoutAni(nullptr), layoutAniTangent(nullptr), vsGlobals(nullptr), psGlobals(nullptr)
 {
 }
 
@@ -48,7 +48,6 @@ void GlowShader::OnInit()
 
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "GlowVsGlobals");
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "GlowPsGlobals");
-	sampler = app::render->CreateSampler();
 }
 
 //=================================================================================================
@@ -65,7 +64,6 @@ void GlowShader::OnRelease()
 	SafeRelease(layoutAniTangent);
 	SafeRelease(vsGlobals);
 	SafeRelease(psGlobals);
-	SafeRelease(sampler);
 }
 
 //=================================================================================================
@@ -114,6 +112,7 @@ void GlowShader::DrawGlowNodes(Camera& camera, const vector<GlowNode>& glowNodes
 	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
+	ID3D11SamplerState* sampler = app::render->GetSampler();
 	deviceContext->PSSetSamplers(0, 1, &sampler);
 
 	// draw all meshes

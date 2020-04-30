@@ -105,6 +105,7 @@ public:
 	RenderTarget* GetRenderTarget() const { return currentTarget; }
 	ID3D11RenderTargetView* GetRenderTargetView() const { return renderTargetView; }
 	const vector<Resolution>& GetResolutions() const { return resolutions; }
+	ID3D11SamplerState* GetSampler() const { return defaultSampler; }
 	const string& GetShadersDir() const { return shaders_dir; }
 
 	void SetAdapter(int adapter) { assert(!initialized); usedAdapter = adapter; }
@@ -144,6 +145,7 @@ private:
 	ID3D11BlendState* blendStates[BLEND_MAX];
 	ID3D11DepthStencilState* depthStates[DEPTH_MAX];
 	ID3D11RasterizerState* rasterStates[RASTER_MAX];
+	ID3D11SamplerState* defaultSampler;
 	Int2 wndSize;
 	vector<ShaderHandler*> shaders;
 	vector<RenderTarget*> renderTargets;
