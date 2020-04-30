@@ -17,7 +17,8 @@ static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 //=================================================================================================
 Render::Render() : initialized(false), vsync(true), shaders_dir("shaders"), refreshHz(0), usedAdapter(0), multisampling(0), multisamplingQuality(0),
 factory(nullptr), adapter(nullptr), swapChain(nullptr), device(nullptr), deviceContext(nullptr), renderTargetView(nullptr), depthStencilView(nullptr),
-blendStates(), depthStates(), rasterStates(), blendState(BLEND_NO), depthState(DEPTH_YES), rasterState(RASTER_NORMAL), currentTarget(nullptr)
+blendStates(), depthStates(), rasterStates(), blendState(BLEND_NO), depthState(DEPTH_YES), rasterState(RASTER_NORMAL), currentTarget(nullptr),
+forceFeatureLevel(0)
 {
 }
 
@@ -131,23 +132,42 @@ void Render::CreateAdapter()
 }
 
 //=================================================================================================
+cstring GetFeatureLevelString(int value)
+{
+	return Format("%d.%d", (value & 0xF000) >> 12, (value & 0xF00) >> 8);
+}
+
+//=================================================================================================
 void Render::CreateDevice()
 {
 	int flags = 0;
 #ifdef _DEBUG
 	flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
-
-	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };
 	D3D_FEATURE_LEVEL featureLevel;
-	HRESULT result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags, featureLevels, countof(featureLevels),
-		D3D11_SDK_VERSION, &device, &featureLevel, &deviceContext);
-	if(FAILED(result))
-		throw Format("Failed to create device (%u).", result);
 
-	cstring levelName = Format("%d.%d", (featureLevel & 0xF000) >> 12, (featureLevel & 0xF00) >> 8);
-	Info("Render: Device created with %s feature level.", levelName);
+	if(forceFeatureLevel != 0)
+	{
+		D3D_FEATURE_LEVEL featureLevels[] = { (D3D_FEATURE_LEVEL)forceFeatureLevel };
+		HRESULT result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags, featureLevels, countof(featureLevels),
+			D3D11_SDK_VERSION, &device, &featureLevel, &deviceContext);
+		if(FAILED(result))
+		{
+			Warn("Render: Failed to create device in feature level %s (%u). Retrying...", GetFeatureLevelString(forceFeatureLevel), result);
+			forceFeatureLevel = 0;
+		}
+	}
 
+	if(forceFeatureLevel == 0)
+	{
+		D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };
+		HRESULT result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags, featureLevels, countof(featureLevels),
+			D3D11_SDK_VERSION, &device, &featureLevel, &deviceContext);
+		if(FAILED(result))
+			throw Format("Render: Failed to create device (%u).", result);
+	}
+
+	Info("Render: Device created with %s feature level.", GetFeatureLevelString(featureLevel));
 	useV4Shaders = (featureLevel != D3D_FEATURE_LEVEL_11_0);
 }
 
@@ -1109,4 +1129,20 @@ void Render::SaveScreenshot(cstring path, ImageFormat format)
 	V(SaveWICTextureToFile(deviceContext, backBuffer, ImageFormatMethods::ToGuid(format), ToWString(path)));
 
 	backBuffer->Release();
+}
+
+//=================================================================================================
+bool Render::SetFeatureLevel(const string& level)
+{
+	if(initialized)
+		return false;
+	if(level == "10.0")
+		forceFeatureLevel = D3D_FEATURE_LEVEL_10_0;
+	else if(level == "10.1")
+		forceFeatureLevel = D3D_FEATURE_LEVEL_10_1;
+	else if(level == "11.0")
+		forceFeatureLevel = D3D_FEATURE_LEVEL_11_0;
+	else
+		return false;
+	return true;
 }

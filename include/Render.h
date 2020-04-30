@@ -110,6 +110,7 @@ public:
 	void SetAdapter(int adapter) { assert(!initialized); usedAdapter = adapter; }
 	void SetBlendState(BlendState blendState);
 	void SetDepthState(DepthState depthState);
+	bool SetFeatureLevel(const string& level);
 	void SetRasterState(RasterState rasterState);
 	void SetRefreshRateInternal(uint refreshHz) { this->refreshHz = refreshHz; }
 	int SetMultisampling(int type, int quality);
@@ -151,7 +152,7 @@ private:
 	RenderTarget* currentTarget;
 	string shaders_dir;
 	uint refreshHz;
-	int usedAdapter, multisampling, multisamplingQuality;
+	int usedAdapter, multisampling, multisamplingQuality, forceFeatureLevel;
 	BlendState blendState;
 	DepthState depthState;
 	RasterState rasterState;
