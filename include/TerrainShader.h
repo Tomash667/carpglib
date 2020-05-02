@@ -8,17 +8,17 @@ class TerrainShader : public ShaderHandler
 {
 public:
 	TerrainShader();
-	~TerrainShader();
+	cstring GetName() const override { return "terrain"; }
 	void OnInit() override;
-	void OnReset() override;
-	void OnReload() override;
 	void OnRelease() override;
 	void Draw(Scene* scene, Camera* camera, Terrain* terrain, const vector<uint>& parts);
 
 private:
-	IDirect3DDevice9* device;
-	IDirect3DVertexDeclaration9* vertex_decl;
-	ID3DXEffect* effect;
-	D3DXHANDLE tech;
-	D3DXHANDLE h_mat, h_world, h_tex_blend, h_tex[5], h_color_ambient, h_color_diffuse, h_light_dir, h_fog_color, h_fog_params;
+	ID3D11DeviceContext* deviceContext;
+	ID3D11VertexShader* vertexShader;
+	ID3D11PixelShader* pixelShader;
+	ID3D11InputLayout* layout;
+	ID3D11Buffer* vsGlobals;
+	ID3D11Buffer* psGlobals;
+	ID3D11SamplerState* sampler;
 };

@@ -1,14 +1,17 @@
 #pragma once
 
-#include "FileFormat.h"
+// Enums
+enum VertexDeclarationId;
 
 // Engine types
 struct Billboard;
 struct Camera;
+struct Decal;
+struct DebugNode;
 struct DynamicTexture;
+struct GlowNode;
 struct Light;
 struct Lights;
-struct ManagedResource;
 struct MeshInstance;
 struct ParticleEmitter;
 struct PostEffect;
@@ -16,6 +19,7 @@ struct Scene;
 struct SceneBatch;
 struct SceneNode;
 struct SceneNodeGroup;
+struct SimpleMesh;
 struct TaskData;
 struct Terrain;
 struct TrailParticleEmitter;
@@ -23,6 +27,7 @@ class App;
 class BasicShader;
 class CustomCollisionWorld;
 class Engine;
+class FontLoader;
 class GlowShader;
 class GrassShader;
 class Gui;
@@ -83,30 +88,34 @@ class TreeView;
 
 // Windows types
 struct HWND__;
+struct _GUID;
 typedef HWND__* HWND;
+typedef _GUID GUID;
 
 // DirectX types
-struct _D3DPRESENT_PARAMETERS_;
-struct _D3DXMACRO;
-struct ID3DXEffect;
-struct ID3DXEffectPool;
-struct ID3DXFont;
-struct ID3DXSprite;
-struct IDirect3D9;
-struct IDirect3DDevice9;
-struct IDirect3DIndexBuffer9;
-struct IDirect3DSurface9;
-struct IDirect3DTexture9;
-struct IDirect3DVertexBuffer9;
-struct IDirect3DVertexDeclaration9;
-typedef _D3DPRESENT_PARAMETERS_ D3DPRESENT_PARAMETERS;
-typedef _D3DXMACRO D3DXMACRO;
-typedef const char* D3DXHANDLE;
-typedef ID3DXFont* FONT;
-typedef IDirect3DIndexBuffer9* IB;
-typedef IDirect3DSurface9* SURFACE;
-typedef IDirect3DTexture9* TEX;
-typedef IDirect3DVertexBuffer9* VB;
+struct _D3D_SHADER_MACRO;
+struct D3D11_INPUT_ELEMENT_DESC;
+struct ID3D11BlendState;
+struct ID3D10Blob;
+struct ID3D11Buffer;
+struct ID3D11DepthStencilState;
+struct ID3D11DepthStencilView;
+struct ID3D11Device;
+struct ID3D11DeviceContext;
+struct ID3D11InputLayout;
+struct ID3D11PixelShader;
+struct ID3D11RasterizerState;
+struct ID3D11RenderTargetView;
+struct ID3D11SamplerState;
+struct ID3D11ShaderResourceView;
+struct ID3D11Texture2D;
+struct ID3D11VertexShader;
+struct IDXGIAdapter;
+struct IDXGIFactory;
+struct IDXGISwapChain;
+typedef _D3D_SHADER_MACRO D3D_SHADER_MACRO;
+typedef ID3D10Blob ID3DBlob;
+typedef ID3D11ShaderResourceView* TEX;
 
 // FMod types
 namespace FMOD
@@ -140,3 +149,5 @@ namespace app
 
 // Misc functions
 void RegisterCrashHandler(cstring title, cstring version, cstring url, cstring log_file, int minidump_level);
+
+#include "ImageFormat.h"

@@ -1,13 +1,24 @@
 #include "Pch.h"
 #include "ResourceManager.h"
+
+#include "DirectX.h"
 #include "Engine.h"
 #include "Mesh.h"
-#include "SoundManager.h"
 #include "Pak.h"
 #include "Render.h"
-#include "DirectX.h"
+#include "SoundManager.h"
+#include "WICTextureLoader.h"
 
 ResourceManager* app::res_mgr;
+
+extern byte box_qmsh[];
+extern byte sphere_qmsh[];
+extern byte capsule_qmsh[];
+extern byte cylinder_qmsh[];
+extern uint box_qmsh_len;
+extern uint sphere_qmsh_len;
+extern uint capsule_qmsh_len;
+extern uint cylinder_qmsh_len;
 
 //=================================================================================================
 ResourceManager::ResourceManager() : mode(Mode::Instant)
@@ -35,6 +46,11 @@ ResourceManager::~ResourceManager()
 void ResourceManager::Init()
 {
 	RegisterExtensions();
+
+	LoadBuiltinMesh("box.qmsh", box_qmsh, box_qmsh_len);
+	LoadBuiltinMesh("sphere.qmsh", sphere_qmsh, sphere_qmsh_len);
+	LoadBuiltinMesh("capsule.qmsh", capsule_qmsh, capsule_qmsh_len);
+	LoadBuiltinMesh("cylinder.qmsh", cylinder_qmsh, cylinder_qmsh_len);
 }
 
 //=================================================================================================
@@ -549,7 +565,7 @@ void ResourceManager::LoadMesh(Mesh* mesh)
 {
 	try
 	{
-		IDirect3DDevice9* device = app::render->GetDevice();
+		ID3D11Device* device = app::render->GetDevice();
 		if(mesh->IsFile())
 		{
 			FileReader f(mesh->path);
@@ -622,24 +638,94 @@ void ResourceManager::LoadSoundOrMusic(Sound* sound)
 //=================================================================================================
 void ResourceManager::LoadTexture(Texture* tex)
 {
-	IDirect3DDevice9* device = app::render->GetDevice();
 	HRESULT hr;
-
 	if(tex->IsFile())
 	{
-		hr = D3DXCreateTextureFromFile(device, tex->path.c_str(), &tex->tex);
-		if(FAILED(hr))
-		{
-			Sleep(250);
-			hr = D3DXCreateTextureFromFile(device, tex->path.c_str(), &tex->tex);
-		}
+		hr = CreateWICTextureFromFileEx(app::render->GetDevice(), app::render->GetDeviceContext(), ToWString(tex->path.c_str()), 0u,
+			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_IGNORE_SRGB, nullptr, &tex->tex);
 	}
 	else
 	{
 		BufferHandle&& buf = tex->GetBuffer();
-		hr = D3DXCreateTextureFromFileInMemory(device, buf->Data(), buf->Size(), &tex->tex);
+		hr = CreateWICTextureFromMemoryEx(app::render->GetDevice(), app::render->GetDeviceContext(), static_cast<byte*>(buf->Data()), buf->Size(), 0u,
+			D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_IGNORE_SRGB, nullptr, &tex->tex);
 	}
 
 	if(FAILED(hr))
 		throw Format("Failed to load texture '%s' (%u).", tex->GetPath(), hr);
+}
+
+//=================================================================================================
+TEX ResourceManager::LoadRawTexture(cstring path)
+{
+	assert(path);
+	TEX tex;
+	HRESULT hr = CreateWICTextureFromFileEx(app::render->GetDevice(), app::render->GetDeviceContext(), ToWString(path), 0u,
+		D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_IGNORE_SRGB, nullptr, &tex);
+	if(FAILED(hr))
+		throw Format("Failed to load texture '%s' (%u).", path, hr);
+	return tex;
+}
+
+//=================================================================================================
+TEX ResourceManager::LoadRawTexture(Buffer* buf)
+{
+	assert(buf);
+	TEX tex;
+	HRESULT hr = CreateWICTextureFromMemoryEx(app::render->GetDevice(), app::render->GetDeviceContext(), static_cast<byte*>(buf->Data()), buf->Size(), 0u,
+		D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, WIC_LOADER_IGNORE_SRGB, nullptr, &tex);
+	if(FAILED(hr))
+		throw Format("Failed to load in-memory texture (%u).", hr);
+	return tex;
+}
+
+//=================================================================================================
+void ResourceManager::LoadBuiltinMesh(cstring name, byte* data, uint size)
+{
+	Buffer* buf = Buffer::Get();
+	buf->Clear();
+	buf->Append(data, size);
+
+	Mesh* mesh = new Mesh;
+	mesh->type = ResourceType::Mesh;
+	mesh->path = name;
+	mesh->filename = mesh->path.c_str();
+	mesh->state = ResourceState::Loaded;
+
+	try
+	{
+		MemoryReader f(buf);
+		mesh->Load(f, app::render->GetDevice());
+		resources.insert(mesh);
+	}
+	catch(cstring err)
+	{
+		throw Format("ResourceManager: Failed to load builtin mesh '%s'. %s", name, err);
+	}
+}
+
+//=================================================================================================
+uint ResourceManager::VerifyResources()
+{
+	uint errors = 0;
+
+	for(Resource* res : resources)
+	{
+		if(res->type != ResourceType::Texture)
+			continue;
+
+		res->EnsureIsLoaded();
+
+		Texture* tex = (Texture*)res;
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC desc;
+		tex->tex->GetDesc(&desc);
+		if(Any(desc.Format, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R16_FLOAT, DXGI_FORMAT_R16_UNORM, DXGI_FORMAT_R8_UNORM))
+		{
+			Error("Grayscale texture: %s", tex->filename);
+			++errors;
+		}
+	}
+
+	return errors;
 }

@@ -1,7 +1,8 @@
 #include "Pch.h"
+#include "TextBox.h"
+
 #include "Input.h"
 #include "Scrollbar.h"
-#include "TextBox.h"
 
 //-----------------------------------------------------------------------------
 static const int padding = 4;

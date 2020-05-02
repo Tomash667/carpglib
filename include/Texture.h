@@ -2,7 +2,6 @@
 
 //-----------------------------------------------------------------------------
 #include "Resource.h"
-#include "ManagedResource.h"
 
 //-----------------------------------------------------------------------------
 struct Texture : public Resource
@@ -13,20 +12,10 @@ struct Texture : public Resource
 
 	Texture() : tex(nullptr) {}
 	~Texture();
+	void Release();
 	void ResizeImage(Int2& new_size, Int2& img_size, Vec2& scale);
 	Int2 GetSize() const { return GetSize(tex); }
 	static Int2 GetSize(TEX tex);
-};
-
-//-----------------------------------------------------------------------------
-struct DynamicTexture : public Texture, public ManagedResource
-{
-	void OnReset() override;
-	void OnReload() override;
-	void OnRelease() override;
-
-	Int2 size;
-	delegate<void()> reload;
 };
 
 //-----------------------------------------------------------------------------
@@ -42,17 +31,18 @@ struct TexOverride
 };
 
 //-----------------------------------------------------------------------------
-struct TextureLock
+struct DynamicTexture : public Texture
 {
-	TextureLock(TEX tex);
-	TextureLock(Texture* tex) : TextureLock(tex->tex) {}
-	~TextureLock();
+	friend class Render;
+
+	~DynamicTexture();
+	void Lock();
+	void Unlock(bool generateMipmaps = false);
 	uint* operator [] (uint row) { return (uint*)(data + pitch * row); }
-	void Fill(Color color);
-	void GenerateMipSubLevels();
 
 private:
-	TEX tex;
+	ID3D11Texture2D* texResource;
+	ID3D11Texture2D* texStaging;
 	byte* data;
 	int pitch;
 };

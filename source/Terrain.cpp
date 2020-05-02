@@ -1,10 +1,12 @@
 #include "Pch.h"
 #include "Terrain.h"
-#include "Texture.h"
+
 #include "DirectX.h"
+#include "Render.h"
+#include "Texture.h"
 
 //-----------------------------------------------------------------------------
-void CalculateNormal(TerrainVertex& v1, TerrainVertex& v2, TerrainVertex& v3)
+void CalculateNormal(VTerrain& v1, VTerrain& v2, VTerrain& v3)
 {
 	Vec3 v01 = v2.pos - v1.pos;
 	Vec3 v02 = v3.pos - v1.pos;
@@ -25,7 +27,7 @@ void CalculateNormal(Vec3& out, const Vec3& v1, const Vec3& v2, const Vec3& v3)
 }
 
 //=================================================================================================
-Terrain::Terrain() : device(nullptr), vb(nullptr), ib(nullptr), parts(nullptr), h(nullptr), texSplat(nullptr), tex(), state(0), uv_mod(DEFAULT_UV_MOD)
+Terrain::Terrain() : vb(nullptr), vbStaging(nullptr), ib(nullptr), parts(nullptr), h(nullptr), texSplat(nullptr), tex(), state(0), uv_mod(DEFAULT_UV_MOD)
 {
 }
 
@@ -33,8 +35,9 @@ Terrain::Terrain() : device(nullptr), vb(nullptr), ib(nullptr), parts(nullptr), 
 Terrain::~Terrain()
 {
 	SafeRelease(vb);
+	SafeRelease(vbStaging);
 	SafeRelease(ib);
-	SafeRelease(texSplat);
+	delete texSplat;
 
 	delete[] parts;
 	// h jest przechowywany w OutsideLocation wiêc nie mo¿na tu usuwaæ
@@ -43,12 +46,11 @@ Terrain::~Terrain()
 }
 
 //=================================================================================================
-void Terrain::Init(IDirect3DDevice9* dev, const TerrainOptions& o)
+void Terrain::Init(const Options& o)
 {
 	assert(state == 0);
-	assert(dev && o.tile_size > 0.f && o.n_parts > 0 && o.tiles_per_part > 0 && IsPow2(o.tex_size));
+	assert(o.tile_size > 0.f && o.n_parts > 0 && o.tiles_per_part > 0 && IsPow2(o.tex_size));
 
-	device = dev;
 	pos = Vec3(0, 0, 0);
 	tile_size = o.tile_size;
 	n_parts = o.n_parts;
@@ -82,17 +84,9 @@ void Terrain::Init(IDirect3DDevice9* dev, const TerrainOptions& o)
 		}
 	}
 
-	CreateSplatTexture();
+	texSplat = app::render->CreateDynamicTexture(Int2(tex_size));
 
 	state = 1;
-}
-
-//=================================================================================================
-void Terrain::CreateSplatTexture()
-{
-	HRESULT hr = D3DXCreateTexture(device, tex_size, tex_size, 1, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &texSplat);
-	if(FAILED(hr))
-		throw Format("Failed to create terrain texture with size '%d' (%d)!", tex_size, hr);
 }
 
 //=================================================================================================
@@ -100,24 +94,35 @@ void Terrain::Build(bool smooth)
 {
 	assert(state == 1);
 
-	HRESULT hr = device->CreateVertexBuffer(sizeof(TerrainVertex) * n_verts, 0, D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2, D3DPOOL_MANAGED, &vb, nullptr);
-	if(FAILED(hr))
-		throw Format("Failed to create terrain vertex buffer (%d).", hr);
+	ID3D11Device* device = app::render->GetDevice();
 
-	hr = device->CreateIndexBuffer(sizeof(int) * n_tris * 3, 0, D3DFMT_INDEX32, D3DPOOL_MANAGED, &ib, nullptr);
-	if(FAILED(hr))
-		throw Format("Failed to create terrain index buffer (%d).", hr);
+	// create vertex buffer
+	D3D11_BUFFER_DESC v_desc = {};
+	v_desc.Usage = D3D11_USAGE_DEFAULT;
+	v_desc.ByteWidth = sizeof(VTerrain) * n_verts;
+	v_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
-	TerrainVertex* v;
-	uint* idx;
-	uint n = 0;
+	V(device->CreateBuffer(&v_desc, nullptr, &vb));
+	SetDebugName(vb, "TerrainVb");
 
-	V(vb->Lock(0, 0, (void**)&v, D3DLOCK_DISCARD));
-	V(ib->Lock(0, 0, (void**)&idx, D3DLOCK_DISCARD));
+	// create staging vertex buffer
+	v_desc.Usage = D3D11_USAGE_STAGING;
+	v_desc.BindFlags = 0;
+	v_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
 
-#define TRI(xx,zz,uu,vv) v[n++] = TerrainVertex((x+xx)*tile_size, h[x+xx+(z+zz)*width], (z+zz)*tile_size, float(uu)/uv_mod, float(vv)/uv_mod,\
+	V(device->CreateBuffer(&v_desc, nullptr, &vbStaging));
+	SetDebugName(vbStaging, "TerrainVbStaging");
+
+	// build mesh
+	ID3D11DeviceContext* deviceContext = app::render->GetDeviceContext();
+	D3D11_MAPPED_SUBRESOURCE res;
+	V(deviceContext->Map(vbStaging, 0, D3D11_MAP_WRITE, 0, &res));
+	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
+
+#define TRI(xx,zz,uu,vv) v[n++] = VTerrain((x+xx)*tile_size, h[x+xx+(z+zz)*width], (z+zz)*tile_size, float(uu)/uv_mod, float(vv)/uv_mod,\
 	((float)(x+xx)) / n_tiles, ((float)(z+zz)) / n_tiles)
 
+	uint n = 0;
 	for(uint z = 0; z < n_tiles; ++z)
 	{
 		for(uint x = 0; x < n_tiles; ++x)
@@ -144,6 +149,10 @@ void Terrain::Build(bool smooth)
 	}
 #undef TRI
 
+	// fill indices
+	Buf buf;
+	uint size = sizeof(int) * n_tris * 3;
+	uint* idx = buf.Get<uint>(size);
 	for(uint z = 0; z < n_parts; ++z)
 	{
 		for(uint x = 0; x < n_parts; ++x)
@@ -167,14 +176,26 @@ void Terrain::Build(bool smooth)
 		}
 	}
 
-	V(ib->Unlock());
+	// create index buffer
+	v_desc.Usage = D3D11_USAGE_IMMUTABLE;
+	v_desc.ByteWidth = sizeof(int) * n_tris * 3;
+	v_desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	v_desc.CPUAccessFlags = 0;
+	v_desc.MiscFlags = 0;
+	v_desc.StructureByteStride = 0;
 
+	D3D11_SUBRESOURCE_DATA v_data = {};
+	v_data.pSysMem = buf.Get();
+
+	V(device->CreateBuffer(&v_desc, &v_data, &ib));
+	SetDebugName(ib, "TerrainIb");
+
+	// smooth mesh
 	state = 2;
-
 	if(smooth)
 		SmoothNormals(v);
-
-	V(vb->Unlock());
+	deviceContext->Unmap(vbStaging, 0);
+	deviceContext->CopyResource(vb, vbStaging);
 }
 
 //=================================================================================================
@@ -182,9 +203,10 @@ void Terrain::Rebuild(bool smooth)
 {
 	assert(state == 2);
 
-	TerrainVertex* v;
-
-	V(vb->Lock(0, 0, (void**)&v, 0));
+	ID3D11DeviceContext* deviceContext = app::render->GetDeviceContext();
+	D3D11_MAPPED_SUBRESOURCE res;
+	V(deviceContext->Map(vbStaging, 0, D3D11_MAP_READ_WRITE, 0, &res));
+	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
 
 #define TRI(xx,zz) v[n++].pos.y = h[x+xx+(z+zz)*width]
 
@@ -209,7 +231,8 @@ void Terrain::Rebuild(bool smooth)
 	if(smooth)
 		SmoothNormals(v);
 
-	V(vb->Unlock());
+	deviceContext->Unmap(vbStaging, 0);
+	deviceContext->CopyResource(vb, vbStaging);
 }
 
 //=================================================================================================
@@ -217,9 +240,10 @@ void Terrain::RebuildUv()
 {
 	assert(state == 2);
 
-	TerrainVertex* v;
-
-	V(vb->Lock(0, 0, (void**)&v, 0));
+	ID3D11DeviceContext* deviceContext = app::render->GetDeviceContext();
+	D3D11_MAPPED_SUBRESOURCE res;
+	V(deviceContext->Map(vbStaging, 0, D3D11_MAP_READ_WRITE, 0, &res));
+	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
 
 #define TRI(uu,vv) v[n++].tex = Vec2(float(uu)/uv_mod, float(vv)/uv_mod)
 
@@ -248,7 +272,8 @@ void Terrain::RebuildUv()
 	}
 #undef TRI
 
-	V(vb->Unlock());
+	deviceContext->Unmap(vbStaging, 0);
+	deviceContext->CopyResource(vb, vbStaging);
 }
 
 //=================================================================================================
@@ -402,16 +427,19 @@ void Terrain::SmoothNormals()
 {
 	assert(state > 0);
 
-	TerrainVertex* v;
-	V(vb->Lock(0, 0, (void**)&v, D3DLOCK_DISCARD));
+	ID3D11DeviceContext* deviceContext = app::render->GetDeviceContext();
+	D3D11_MAPPED_SUBRESOURCE res;
+	V(deviceContext->Map(vbStaging, 0, D3D11_MAP_READ_WRITE, 0, &res));
+	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
 
 	SmoothNormals(v);
 
-	V(vb->Unlock());
+	deviceContext->Unmap(vbStaging, 0);
+	deviceContext->CopyResource(vb, vbStaging);
 }
 
 //=================================================================================================
-void Terrain::SmoothNormals(TerrainVertex* v)
+void Terrain::SmoothNormals(VTerrain* v)
 {
 	assert(state > 0);
 	assert(v);

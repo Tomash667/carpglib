@@ -1,77 +1,70 @@
 #include "Pch.h"
 #include "SkyboxShader.h"
-#include "Render.h"
-#include "Mesh.h"
+
 #include "Camera.h"
 #include "DirectX.h"
+#include "Mesh.h"
+#include "Render.h"
+
+struct VsGlobals
+{
+	Matrix matCombined;
+};
 
 //=================================================================================================
-SkyboxShader::SkyboxShader() : effect(nullptr)
+SkyboxShader::SkyboxShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShader(nullptr), layout(nullptr),
+vsGlobals(nullptr), sampler(nullptr)
 {
 }
 
 //=================================================================================================
 void SkyboxShader::OnInit()
 {
-	effect = app::render->CompileShader("skybox.fx");
-
-	tech = effect->GetTechniqueByName("skybox");
-	assert(tech);
-
-	hMatCombined = effect->GetParameterByName(nullptr, "matCombined");
-	hTex = effect->GetParameterByName(nullptr, "tex0");
-	assert(hMatCombined && hTex);
-}
-
-//=================================================================================================
-void SkyboxShader::OnReset()
-{
-	if(effect)
-		V(effect->OnLostDevice());
-}
-
-//=================================================================================================
-void SkyboxShader::OnReload()
-{
-	if(effect)
-		V(effect->OnResetDevice());
+	app::render->CreateShader("skybox.hlsl", VDI_DEFAULT, vertexShader, pixelShader, layout);
+	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "SkyboxVsGlobals");
+	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 }
 
 //=================================================================================================
 void SkyboxShader::OnRelease()
 {
-	SafeRelease(effect);
+	SafeRelease(vertexShader);
+	SafeRelease(pixelShader);
+	SafeRelease(layout);
+	SafeRelease(vsGlobals);
+	SafeRelease(sampler);
 }
 
 //=================================================================================================
 void SkyboxShader::Draw(Mesh& mesh, Camera& camera)
 {
-	IDirect3DDevice9* device = app::render->GetDevice();
+	assert(mesh.vertex_decl == VDI_DEFAULT);
 
-	app::render->SetAlphaTest(false);
-	app::render->SetAlphaBlend(false);
-	app::render->SetNoCulling(false);
-	app::render->SetNoZWrite(true);
+	app::render->SetBlendState(Render::BLEND_NO);
+	app::render->SetDepthState(Render::DEPTH_NO);
+	app::render->SetRasterState(Render::RASTER_NORMAL);
 
-	uint passes;
-	Matrix m1 = Matrix::Translation(camera.from) * camera.mat_view_proj;
+	// setup shader
+	deviceContext->VSSetShader(vertexShader, nullptr, 0);
+	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
+	deviceContext->PSSetShader(pixelShader, nullptr, 0);
+	deviceContext->PSSetSamplers(0, 1, &sampler);
+	uint stride = sizeof(VDefault),
+		offset = 0;
+	deviceContext->IASetInputLayout(layout);
+	deviceContext->IASetVertexBuffers(0, 1, &mesh.vb, &stride, &offset);
+	deviceContext->IASetIndexBuffer(mesh.ib, DXGI_FORMAT_R16_UINT, 0);
 
-	V(device->SetVertexDeclaration(app::render->GetVertexDeclaration(mesh.vertex_decl)));
-	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
-	V(device->SetIndices(mesh.ib));
-
-	V(effect->SetTechnique(tech));
-	V(effect->SetMatrix(hMatCombined, (D3DXMATRIX*)&m1));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	for(vector<Mesh::Submesh>::iterator it = mesh.subs.begin(), end = mesh.subs.end(); it != end; ++it)
+	// vertex shader constants
 	{
-		V(effect->SetTexture(hTex, it->tex->tex));
-		V(effect->CommitChanges());
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, it->min_ind, it->n_ind, it->first * 3, it->tris));
+		ResourceLock lock(vsGlobals);
+		lock.Get<VsGlobals>()->matCombined = (Matrix::Translation(camera.from) * camera.mat_view_proj).Transpose();
 	}
 
-	V(effect->EndPass());
-	V(effect->End());
+	// draw
+	for(Mesh::Submesh& sub : mesh.subs)
+	{
+		deviceContext->PSSetShaderResources(0, 1, &sub.tex->tex);
+		deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, 0);
+	}
 }

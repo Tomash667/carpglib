@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Qmsh",
     "author": "Tomashu",
-    "version": (0, 21, 0),
+    "version": (0, 21, 1),
     "blender": (2, 7, 8),
     "location": "File > Import > Qmsh",
     "description": "Import from Qmsh",
@@ -520,10 +520,8 @@ class Importer:
 			if not filepath is None:
 				img = bpy.data.images.load(filepath)
 				return img
-		img = bpy.data.images.new(sub.tex, 1, 1)
-		img.filepath = sub.tex
-		img.source = 'FILE'
-		return img
+			print("WARN: Can't load texture "+filename)
+		return None
 	def Import(self):
 		print("INFO: Importing mesh...")
 		mesh = self.mesh

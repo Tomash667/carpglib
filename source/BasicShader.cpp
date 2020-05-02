@@ -1,120 +1,263 @@
 #include "Pch.h"
 #include "BasicShader.h"
-#include "Render.h"
+
 #include "Camera.h"
+#include "DebugNode.h"
 #include "DirectX.h"
+#include "Mesh.h"
+#include "Render.h"
+#include "ResourceManager.h"
+
+struct VsGlobals
+{
+	Matrix matCombined;
+};
+
+struct PsGlobalsMesh
+{
+	Vec4 color;
+};
+
+struct PsGlobalsColor
+{
+	Vec3 playerPos;
+	float range;
+	float falloff;
+};
+
+void BasicShader::Shader::Release()
+{
+	SafeRelease(vertexShader);
+	SafeRelease(pixelShader);
+	SafeRelease(layout);
+}
 
 //=================================================================================================
-BasicShader::BasicShader() : device(app::render->GetDevice()), effect(nullptr), vb(nullptr), batch(false)
+BasicShader::BasicShader() : deviceContext(app::render->GetDeviceContext()), vsGlobals(nullptr), psGlobalsMesh(nullptr), psGlobalsColor(nullptr),
+vb(nullptr), ib(nullptr), vbSize(0), ibSize(0)
 {
 }
 
 //=================================================================================================
 void BasicShader::OnInit()
 {
-	effect = app::render->CompileShader("debug.fx");
+	app::render->CreateShader("basic.hlsl", VDI_POS, shaderMesh.vertexShader, shaderMesh.pixelShader, shaderMesh.layout, nullptr, "VsMesh", "PsMesh");
+	app::render->CreateShader("basic.hlsl", VDI_COLOR, shaderColor.vertexShader, shaderColor.pixelShader, shaderColor.layout, nullptr, "VsColor", "PsColor");
 
-	techSimple = effect->GetTechniqueByName("techSimple");
-	techColor = effect->GetTechniqueByName("techColor");
-	techArea = effect->GetTechniqueByName("techArea");
-	assert(techSimple && techColor && techArea);
+	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "BasicVsGlobals");
+	psGlobalsMesh = app::render->CreateConstantBuffer(sizeof(PsGlobalsMesh), "BasicPsGlobalsMesh");
+	psGlobalsColor = app::render->CreateConstantBuffer(sizeof(PsGlobalsColor), "BasicPsGlobalsColor");
 
-	hMatCombined = effect->GetParameterByName(nullptr, "matCombined");
-	hColor = effect->GetParameterByName(nullptr, "color");
-	hPlayerPos = effect->GetParameterByName(nullptr, "playerPos");
-	hRange = effect->GetParameterByName(nullptr, "range");
-	assert(hMatCombined && hColor && hPlayerPos && hRange);
-}
-
-//=================================================================================================
-void BasicShader::OnReset()
-{
-	if(effect)
-		V(effect->OnLostDevice());
-	SafeRelease(vb);
-}
-
-//=================================================================================================
-void BasicShader::OnReload()
-{
-	if(effect)
-		V(effect->OnResetDevice());
+	meshes[(int)DebugNode::Box] = app::res_mgr->Get<Mesh>("box.qmsh");
+	meshes[(int)DebugNode::Sphere] = app::res_mgr->Get<Mesh>("sphere.qmsh");
+	meshes[(int)DebugNode::Capsule] = app::res_mgr->Get<Mesh>("capsule.qmsh");
+	meshes[(int)DebugNode::Cylinder] = app::res_mgr->Get<Mesh>("cylinder.qmsh");
 }
 
 //=================================================================================================
 void BasicShader::OnRelease()
 {
-	SafeRelease(effect);
+	shaderMesh.Release();
+	shaderColor.Release();
+	SafeRelease(vsGlobals);
+	SafeRelease(psGlobalsMesh);
+	SafeRelease(psGlobalsColor);
 	SafeRelease(vb);
+	SafeRelease(ib);
+	vbSize = 0;
+	ibSize = 0;
+}
+
+//=================================================================================================
+void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
+{
+	app::render->SetBlendState(Render::BLEND_NO);
+	app::render->SetDepthState(Render::DEPTH_NO);
+	app::render->SetRasterState(Render::RASTER_WIREFRAME);
+
+	// setup shader
+	deviceContext->VSSetShader(shaderMesh.vertexShader, nullptr, 0);
+	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
+	deviceContext->PSSetShader(shaderMesh.pixelShader, nullptr, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &psGlobalsMesh);
+	deviceContext->IASetInputLayout(shaderMesh.layout);
+
+	Color prevColor = Color::None;
+	DebugNode::Mesh prevMesh = DebugNode::None;
+
+	for(vector<DebugNode*>::const_iterator it = nodes.begin(), end = nodes.end(); it != end; ++it)
+	{
+		const DebugNode& node = **it;
+
+		// set color
+		if(node.color != prevColor)
+		{
+			prevColor = node.color;
+			ResourceLock lock(psGlobalsMesh);
+			lock.Get<PsGlobalsMesh>()->color = node.color;
+		}
+
+		// set matrix
+		{
+			ResourceLock lock(vsGlobals);
+			lock.Get<VsGlobals>()->matCombined = node.mat.Transpose();
+		}
+
+		if(node.mesh == DebugNode::TriMesh)
+		{
+			node.trimesh->Build();
+
+			uint stride = sizeof(VPos), offset = 0;
+			deviceContext->IASetVertexBuffers(0, 1, &node.trimesh->vb, &stride, &offset);
+			deviceContext->IASetIndexBuffer(node.trimesh->ib, DXGI_FORMAT_R16_UINT, 0);
+
+			deviceContext->DrawIndexed(node.trimesh->indices.size(), 0, 0);
+		}
+		else
+		{
+			Mesh& mesh = *meshes[node.mesh];
+			if(node.mesh != prevMesh)
+			{
+				uint stride = sizeof(VPos), offset = 0;
+				deviceContext->IASetVertexBuffers(0, 1, &mesh.vb, &stride, &offset);
+				deviceContext->IASetIndexBuffer(mesh.ib, DXGI_FORMAT_R16_UINT, 0);
+			}
+
+			for(Mesh::Submesh& sub : mesh.subs)
+				deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, 0);
+		}
+	}
 }
 
 //=================================================================================================
 void BasicShader::Prepare(const Camera& camera)
 {
-	mat_view_proj = camera.mat_view_proj;
+	app::render->SetBlendState(Render::BLEND_ADD);
+	app::render->SetDepthState(Render::DEPTH_READ);
+	app::render->SetRasterState(Render::RASTER_NO_CULLING);
 
-	app::render->SetAlphaBlend(true);
-	app::render->SetAlphaTest(false);
-	app::render->SetNoZWrite(false);
-	app::render->SetNoCulling(true);
-	V(device->SetVertexDeclaration(app::render->GetVertexDeclaration(VDI_COLOR)));
-	if(vb)
-		V(device->SetStreamSource(0, vb, 0, sizeof(VColor)));
+	// setup shader
+	deviceContext->VSSetShader(shaderColor.vertexShader, nullptr, 0);
+	deviceContext->VSSetConstantBuffers(0, 1, &vsGlobals);
+	deviceContext->PSSetShader(shaderColor.pixelShader, nullptr, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &psGlobalsColor);
+	uint size = sizeof(VColor), offset = 0;
+	deviceContext->IASetInputLayout(shaderColor.layout);
+	deviceContext->IASetVertexBuffers(0, 1, &vb, &size, &offset);
+	deviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R16_UINT, 0);
+
+	// set matrix
+	{
+		ResourceLock lock(vsGlobals);
+		VsGlobals& vsg = *lock.Get<VsGlobals>();
+		vsg.matCombined = camera.mat_view_proj.Transpose();
+	}
 }
 
 //=================================================================================================
-void BasicShader::BeginBatch()
+void BasicShader::SetAreaParams(const Vec3& playerPos, float range, float falloff)
 {
-	assert(!batch);
-	batch = true;
+	assert(vertices.empty());
+
+	ResourceLock lock(psGlobalsColor);
+	PsGlobalsColor& psg = *lock.Get<PsGlobalsColor>();
+	psg.playerPos = playerPos;
+	psg.range = range;
+	psg.falloff = falloff;
 }
 
 //=================================================================================================
-void BasicShader::AddQuad(const Vec3(&pts)[4], const Vec4& color)
+void BasicShader::ReserveVertexBuffer(uint vertexCount)
 {
-	verts.push_back(VColor(pts[0], color));
-	verts.push_back(VColor(pts[1], color));
-	verts.push_back(VColor(pts[2], color));
-	verts.push_back(VColor(pts[2], color));
-	verts.push_back(VColor(pts[1], color));
-	verts.push_back(VColor(pts[3], color));
-}
-
-//=================================================================================================
-void BasicShader::EndBatch()
-{
-	assert(batch);
-	batch = false;
-
-	if(verts.empty())
+	if(vertexCount <= vbSize)
 		return;
 
-	if(!vb || verts.size() > vb_size)
+	SafeRelease(vb);
+	vbSize = vertexCount;
+
+	D3D11_BUFFER_DESC desc = {};
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.ByteWidth = sizeof(VColor) * vertexCount;
+	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	V(app::render->GetDevice()->CreateBuffer(&desc, nullptr, &vb));
+	SetDebugName(vb, "BasicVb");
+
+	uint size = sizeof(VColor), offset = 0;
+	deviceContext->IASetVertexBuffers(0, 1, &vb, &size, &offset);
+}
+
+//=================================================================================================
+void BasicShader::ReserveIndexBuffer(uint indexCount)
+{
+	if(indexCount <= ibSize)
+		return;
+
+	SafeRelease(ib);
+	ibSize = indexCount;
+
+	D3D11_BUFFER_DESC desc = {};
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.ByteWidth = sizeof(word) * indexCount;
+	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	V(app::render->GetDevice()->CreateBuffer(&desc, nullptr, &ib));
+	SetDebugName(ib, "BasicIb");
+
+	deviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R16_UINT, 0);
+}
+
+//=================================================================================================
+void BasicShader::DrawQuad(const Vec3(&pts)[4], Color color)
+{
+	Vec4 col = color;
+	uint offset = vertices.size();
+	for(int i=0; i<4; ++i)
+		vertices.push_back(VColor(pts[i], col));
+	indices.push_back(offset + 0);
+	indices.push_back(offset + 1);
+	indices.push_back(offset + 2);
+	indices.push_back(offset + 2);
+	indices.push_back(offset + 1);
+	indices.push_back(offset + 3);
+}
+
+//=================================================================================================
+void BasicShader::DrawArea(const vector<Vec3>& vertices, const vector<word>& indices, Color color)
+{
+	Vec4 col = color;
+	uint offset = this->vertices.size();
+	for(const Vec3& pos : vertices)
+		this->vertices.push_back(VColor(pos, col));
+	for(word idx : indices)
+		this->indices.push_back(idx + offset);
+}
+
+//=================================================================================================
+void BasicShader::Draw()
+{
+	if(vertices.empty())
+		return;
+
+	// copy vertices
 	{
-		SafeRelease(vb);
-		V(device->CreateVertexBuffer(verts.size() * sizeof(VColor), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb, nullptr));
-		vb_size = verts.size();
-		V(device->SetStreamSource(0, vb, 0, sizeof(VColor)));
+		ReserveVertexBuffer(vertices.size());
+		ResourceLock lock(vb);
+		memcpy(lock.Get(), vertices.data(), sizeof(VColor) * vertices.size());
 	}
 
-	void* ptr;
-	V(vb->Lock(0, 0, &ptr, D3DLOCK_DISCARD));
-	memcpy(ptr, verts.data(), verts.size() * sizeof(VColor));
-	V(vb->Unlock());
+	// copy indices
+	{
+		ReserveIndexBuffer(indices.size());
+		ResourceLock lock(ib);
+		memcpy(lock.Get(), indices.data(), sizeof(word) * indices.size());
+	}
 
-	uint passes;
+	// draw
+	deviceContext->DrawIndexed(indices.size(), 0, 0);
 
-	V(effect->SetTechnique(techSimple));
-	V(effect->Begin(&passes, 0));
-	V(effect->BeginPass(0));
-
-	V(effect->SetMatrix(hMatCombined, (const D3DXMATRIX*)&mat_view_proj));
-	V(effect->CommitChanges());
-
-	V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, verts.size() / 3));
-
-	V(effect->EndPass());
-	V(effect->End());
-
-	verts.clear();
+	vertices.clear();
+	indices.clear();
 }

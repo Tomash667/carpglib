@@ -20,6 +20,7 @@ NASTÊPNA WERSJA:
 struct Mesh : public Resource
 {
 	static const ResourceType Type = ResourceType::Mesh;
+	static constexpr int MAX_BONES = 32;
 
 	enum MESH_FLAGS
 	{
@@ -146,7 +147,7 @@ struct Mesh : public Resource
 	~Mesh();
 
 	void SetupBoneMatrices();
-	void Load(StreamReader& stream, IDirect3DDevice9* device);
+	void Load(StreamReader& stream, ID3D11Device* device);
 	void LoadMetadata(StreamReader& stream);
 	void LoadHeader(StreamReader& stream);
 	void SetVertexSizeDecl();
@@ -179,8 +180,8 @@ struct Mesh : public Resource
 	Point* FindNextPoint(cstring name, Point* point);
 
 	Header head;
-	VB vb;
-	IB ib;
+	ID3D11Buffer* vb;
+	ID3D11Buffer* ib;
 	VertexDeclarationId vertex_decl;
 	uint vertex_size;
 	vector<Submesh> subs;
@@ -190,4 +191,18 @@ struct Mesh : public Resource
 	vector<Point> attach_points;
 	vector<BoneGroup> groups;
 	vector<Split> splits;
+};
+
+//-----------------------------------------------------------------------------
+struct SimpleMesh
+{
+	SimpleMesh() : vb(nullptr), ib(nullptr) {}
+	~SimpleMesh();
+	void Build();
+	void Clear();
+
+	ID3D11Buffer* vb;
+	ID3D11Buffer* ib;
+	vector<Vec3> vertices;
+	vector<word> indices;
 };

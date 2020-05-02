@@ -1,8 +1,9 @@
 #include "Pch.h"
 #include "Mesh.h"
-#include "ResourceManager.h"
-#include "File.h"
+
 #include "DirectX.h"
+#include "File.h"
+#include "ResourceManager.h"
 
 //---------------------------
 Matrix mat_zero;
@@ -39,7 +40,7 @@ Mesh::~Mesh()
 //=================================================================================================
 // Wczytywanie modelu z pliku
 //=================================================================================================
-void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
+void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 {
 	assert(device);
 
@@ -52,16 +53,30 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 	if(!stream.Ensure(size))
 		throw "Failed to read vertex buffer.";
 
-	// create vertex buffer
-	HRESULT hr = device->CreateVertexBuffer(size, 0, 0, D3DPOOL_MANAGED, &vb, nullptr);
-	if(FAILED(hr))
-		throw Format("Failed to create vertex buffer (%d).", hr);
-
 	// read
-	void* ptr;
-	V(vb->Lock(0, size, &ptr, 0));
-	stream.Read(ptr, size);
-	V(vb->Unlock());
+	vector<byte>* buf = BufPool.Get();
+	buf->resize(size);
+	stream.Read(buf->data(), size);
+
+	// create vertex buffer
+	D3D11_BUFFER_DESC desc;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.ByteWidth = size;
+	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA data = {};
+	data.pSysMem = buf->data();
+
+	HRESULT result = device->CreateBuffer(&desc, &data, &vb);
+	if(FAILED(result))
+	{
+		BufPool.Free(buf);
+		throw Format("Failed to create vertex buffer (%u).", result);
+	}
+	SetDebugName(vb, Format("VB:%s", path.c_str()));
 
 	// ----- triangles
 	// ensure size
@@ -69,15 +84,25 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 	if(!stream.Ensure(size))
 		throw "Failed to read index buffer.";
 
-	// create index buffer
-	hr = device->CreateIndexBuffer(size, 0, D3DFMT_INDEX16, D3DPOOL_MANAGED, &ib, nullptr);
-	if(FAILED(hr))
-		throw Format("Failed to create index buffer (%d).", hr);
-
 	// read
-	V(ib->Lock(0, size, &ptr, 0));
-	stream.Read(ptr, size);
-	V(ib->Unlock());
+	buf->resize(size);
+	stream.Read(buf->data(), size);
+
+	// create index buffer
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.ByteWidth = size;
+	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+
+	data.pSysMem = buf->data();
+
+	result = device->CreateBuffer(&desc, &data, &ib);
+	BufPool.Free(buf);
+	if(FAILED(result))
+		throw Format("Failed to create index buffer (%u).", result);
+	SetDebugName(ib, Format("IB:%s", path.c_str()));
 
 	// ----- submeshes
 	size = Submesh::MIN_SIZE * head.n_subs;
@@ -259,7 +284,7 @@ void Mesh::LoadHeader(StreamReader& stream)
 		throw Format("Invalid file version '%u'.", head.version);
 	if(head.version < 20)
 		throw Format("Unsupported file version '%u'.", head.version);
-	if(head.n_bones >= 32)
+	if(head.n_bones >= MAX_BONES)
 		throw Format("Too many bones (%u).", head.n_bones);
 	if(head.n_subs == 0)
 		throw "Missing model mesh!";
@@ -607,4 +632,53 @@ Mesh::Point* Mesh::FindNextPoint(cstring name, Point* point)
 
 	assert(0);
 	return nullptr;
+}
+
+
+SimpleMesh::~SimpleMesh()
+{
+	SafeRelease(vb);
+	SafeRelease(ib);
+}
+
+void SimpleMesh::Build()
+{
+	if(vb)
+		return;
+
+	// create vertex buffer
+	D3D11_BUFFER_DESC desc;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.ByteWidth = sizeof(Vec3) * vertices.size();
+	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA data = {};
+	data.pSysMem = vertices.data();
+
+	V(app::render->GetDevice()->CreateBuffer(&desc, &data, &vb));
+	SetDebugName(vb, "SimpleMeshVb");
+
+	// create index buffer
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.ByteWidth = sizeof(word) * indices.size();
+	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+
+	data.pSysMem = indices.data();
+
+	V(app::render->GetDevice()->CreateBuffer(&desc, &data, &ib));
+	SetDebugName(ib, "SimpleMeshIb");
+}
+
+void SimpleMesh::Clear()
+{
+	SafeRelease(vb);
+	SafeRelease(ib);
+	vertices.clear();
+	indices.clear();
 }

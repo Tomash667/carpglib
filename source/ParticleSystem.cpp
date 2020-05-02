@@ -1,7 +1,8 @@
 #include "Pch.h"
-#include "ResourceManager.h"
 #include "ParticleSystem.h"
+
 #include "File.h"
+#include "ResourceManager.h"
 
 bool EntitySystem::clear;
 EntityType<ParticleEmitter>::Impl EntityType<ParticleEmitter>::impl;

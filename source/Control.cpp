@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "Control.h"
+
 #include "Overlay.h"
-#include "DirectX.h"
 
 Gui* Control::gui;
 Input* Control::input;

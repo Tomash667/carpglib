@@ -1,12 +1,20 @@
 #include "Pch.h"
 #include "Texture.h"
-#include "Render.h"
+
 #include "DirectX.h"
+#include "Render.h"
 
 //=================================================================================================
 Texture::~Texture()
 {
 	SafeRelease(tex);
+}
+
+//=================================================================================================
+void Texture::Release()
+{
+	SafeRelease(tex);
+	state = ResourceState::NotLoaded;
 }
 
 //=================================================================================================
@@ -28,69 +36,38 @@ void Texture::ResizeImage(Int2& new_size, Int2& img_size, Vec2& scale)
 Int2 Texture::GetSize(TEX tex)
 {
 	assert(tex);
-	D3DSURFACE_DESC desc;
-	V(tex->GetLevelDesc(0, &desc));
-	return Int2(desc.Width, desc.Height);
+	ID3D11Texture2D* res;
+	tex->GetResource(reinterpret_cast<ID3D11Resource**>(&res));
+	D3D11_TEXTURE2D_DESC desc;
+	res->GetDesc(&desc);
+	Int2 size(desc.Width, desc.Height);
+	res->Release();
+	return size;
 }
 
 //=================================================================================================
-void DynamicTexture::OnReset()
+DynamicTexture::~DynamicTexture()
 {
 	SafeRelease(tex);
+	SafeRelease(texResource);
+	SafeRelease(texStaging);
 }
 
 //=================================================================================================
-void DynamicTexture::OnReload()
+void DynamicTexture::Lock()
 {
-	app::render->CreateDynamicTexture(this);
-	if(reload)
-		reload();
+	D3D11_MAPPED_SUBRESOURCE subresource;
+	V(app::render->GetDeviceContext()->Map(texStaging, 0, D3D11_MAP_READ_WRITE, 0, &subresource));
+	data = static_cast<byte*>(subresource.pData);
+	pitch = subresource.RowPitch;
 }
 
 //=================================================================================================
-void DynamicTexture::OnRelease()
+void DynamicTexture::Unlock(bool generateMipmaps)
 {
-	delete this;
-}
-
-//=================================================================================================
-TextureLock::TextureLock(TEX tex) : tex(tex)
-{
-	assert(tex);
-	D3DLOCKED_RECT lock;
-	V(tex->LockRect(0, &lock, nullptr, 0));
-	data = static_cast<byte*>(lock.pBits);
-	pitch = lock.Pitch;
-}
-
-//=================================================================================================
-TextureLock::~TextureLock()
-{
-	if(tex)
-		V(tex->UnlockRect(0));
-}
-
-//=================================================================================================
-void TextureLock::Fill(Color color)
-{
-	Int2 size = Texture::GetSize(tex);
-	for(int y = 0; y < size.y; ++y)
-	{
-		uint* line = operator [](y);
-		for(int x = 0; x < size.x; ++x)
-		{
-			*line = color;
-			++line;
-		}
-	}
-	GenerateMipSubLevels();
-}
-
-//=================================================================================================
-void TextureLock::GenerateMipSubLevels()
-{
-	assert(tex);
-	V(tex->UnlockRect(0));
-	tex->GenerateMipSubLevels();
-	tex = nullptr;
+	ID3D11DeviceContext* deviceContext = app::render->GetDeviceContext();
+	deviceContext->Unmap(texStaging, 0);
+	deviceContext->CopyResource(texResource, texStaging);
+	if(generateMipmaps)
+		deviceContext->GenerateMips(tex);
 }

@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "Layout.h"
+
 #include "ResourceManager.h"
 
 Layout::Layout(Gui* gui) : gui(gui)

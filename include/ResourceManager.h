@@ -93,6 +93,7 @@ class ResourceManager
 	bool HaveTasks() const { return !tasks.empty(); }
 	int GetLoadTasksCount() const { return to_load; }
 	bool IsLoadScreen() const { return mode != Mode::Instant; }
+	uint VerifyResources();
 
 	// Return resource or null if missing
 	template<typename T>
@@ -142,6 +143,8 @@ class ResourceManager
 	}
 	void LoadInstant(Resource* res);
 	void LoadMeshMetadata(Mesh* mesh);
+	TEX LoadRawTexture(cstring path);
+	TEX LoadRawTexture(Buffer* buf);
 
 private:
 	struct TaskDetail
@@ -172,6 +175,7 @@ private:
 	void LoadVertexData(VertexData* vd);
 	void LoadSoundOrMusic(Sound* sound);
 	void LoadTexture(Texture* tex);
+	void LoadBuiltinMesh(cstring name, byte* data, uint size);
 
 	Mode mode;
 	ResourceContainer resources;

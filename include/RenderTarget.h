@@ -4,25 +4,19 @@
 #include "Texture.h"
 
 //-----------------------------------------------------------------------------
-class RenderTarget : public Texture, public ManagedResource
+class RenderTarget : public Texture
 {
 	friend class Render;
 
-	RenderTarget() : tmp_surf(false) {}
-	~RenderTarget() {}
 public:
-	void OnReset() override;
-	void OnReload() override;
-	void OnRelease() override;
-	void SaveToFile(cstring filename);
-	uint SaveToFile(FileWriter& f);
-	void Resize(const Int2& new_size);
-	void FreeSurface();
-	SURFACE GetSurface();
+	~RenderTarget();
 	const Int2& GetSize() const { return size; }
+	ID3D11DepthStencilView* GetDepthStencilView() { return depthStencilView; }
+	ID3D11RenderTargetView* GetRenderTargetView() { return renderTargetView; }
 
 private:
-	SURFACE surf;
+	ID3D11RenderTargetView* renderTargetView;
+	ID3D11DepthStencilView* depthStencilView;
 	Int2 size;
-	bool tmp_surf;
+	bool useWindowSize;
 };

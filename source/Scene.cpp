@@ -1,9 +1,10 @@
 #include "Pch.h"
 #include "Scene.h"
-#include "SceneNode.h"
-#include "SceneManager.h"
-#include "Camera.h"
+
 #include "Algorithm.h"
+#include "Camera.h"
+#include "SceneManager.h"
+#include "SceneNode.h"
 
 //=================================================================================================
 Scene::Scene() : clear_color(Color::Black), ambient_color(0.4f, 0.4f, 0.4f), light_color(Color::White), fog_color(Color::Gray), use_light_dir(false),

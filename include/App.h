@@ -12,5 +12,5 @@ public:
 	virtual void OnDraw() {}
 	virtual void OnResize() {}
 	virtual void OnUpdate(float dt) {}
-	virtual void OnFocus(bool focus, const Int2& activation_point) {}
+	virtual void OnFocus(bool focus, const Int2& activationPoint) {}
 };

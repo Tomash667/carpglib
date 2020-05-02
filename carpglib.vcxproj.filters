@@ -223,9 +223,6 @@
     <ClInclude Include="include\Key.h">
       <Filter>const</Filter>
     </ClInclude>
-    <ClInclude Include="include\FileFormat.h">
-      <Filter>const</Filter>
-    </ClInclude>
     <ClInclude Include="include\VertexDeclaration.h">
       <Filter>const</Filter>
     </ClInclude>
@@ -292,8 +289,20 @@
     <ClInclude Include="include\Pch.h" />
     <ClInclude Include="include\Common.h" />
     <ClInclude Include="include\CarpgLib.h" />
-    <ClInclude Include="include\ManagedResource.h">
+    <ClInclude Include="include\WICTextureLoader.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\FontLoader.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ScreenGrab.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DebugNode.h">
       <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ImageFormat.h">
+      <Filter>const</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -538,6 +547,24 @@
       <Filter>components</Filter>
     </ClCompile>
     <ClCompile Include="source\Pch.cpp" />
+    <ClCompile Include="source\WICTextureLoader.cpp">
+      <Filter>resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\FontLoader.cpp">
+      <Filter>resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ScreenGrab.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\VertexDeclaration.cpp">
+      <Filter>const</Filter>
+    </ClCompile>
+    <ClCompile Include="source\BuiltinMesh.cpp">
+      <Filter>resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ImageFormat.cpp">
+      <Filter>const</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

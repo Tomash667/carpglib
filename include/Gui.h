@@ -126,7 +126,7 @@ public:
 	void SetText(cstring ok, cstring yes, cstring no, cstring cancel);
 	void Draw(bool draw_layers, bool draw_dialogs);
 	bool AddFont(cstring filename);
-	Font* CreateFont(cstring name, int size, int weight, int outline = 0);
+	Font* GetFont(cstring name, int size, int weight = 4, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)
 	zwraca false je¿eli by³ clipping od do³u (nie kontuuj tekstu w flow)
 	Znak $ oznacza jak¹œ specjaln¹ czynnoœæ (o ile jest ustawiona flaga DTF_PARSE_SPECIAL):
@@ -158,14 +158,11 @@ public:
 	void DrawSpriteRect(Texture* t, const Rect& rect, Color color = Color::White);
 	bool HaveDialog(cstring name);
 	bool HaveDialog(DialogBox* dialog);
-	IDirect3DDevice9* GetDevice() { return device; }
 	bool AnythingVisible() const;
 	void OnResize();
 	void DrawSpriteRectPart(Texture* t, const Rect& rect, const Rect& part, Color color = Color::White);
 	void DrawSpriteTransform(Texture* t, const Matrix& mat, Color color = Color::White);
-	void DrawLine(const Vec2* lines, uint count, Color color = Color::Black, bool strip = true);
-	void LineBegin();
-	void LineEnd();
+	void DrawLine(const Vec2& from, const Vec2& to, Color color = Color::Black, float width = 1.f);
 	bool NeedCursor();
 	bool DrawText3D(Font* font, Cstring text, uint flags, Color color, const Vec3& pos, Rect* text_rect = nullptr);
 	bool To2dPoint(const Vec3& pos, Int2& pt);
@@ -222,31 +219,35 @@ public:
 	float mouse_wheel;
 
 private:
-	void DrawTextLine(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color, Vec4& color, int x, int y, const Rect* clipping,
-		HitboxContext* hc, bool parse_special, const Vec2& scale);
-	void DrawTextOutline(Font* font, cstring text, uint line_begin, uint line_end, int x, int y, const Rect* clipping, bool parse_special, const Vec2& scale);
-	int Clip(int x, int y, int w, int h, const Rect* clipping);
-	void Lock(bool outline = false);
-	void Flush(bool lock = false);
-	void SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc);
-	void CreateFontInternal(Font* font, ID3DXFont* dx_font, const Int2& tex_size, int outline, int max_outline);
-	bool TryCreateFontInternal(Font* font, ID3DXFont* dx_font, const Int2& tex_size, int outline, int max_outline);
-	void AddRect(const Vec2& left_top, const Vec2& right_bottom, const Vec4& color);
+	struct DrawLineContext
+	{
+		Font* font;
+		HitboxContext* hc;
+		cstring text;
+		VGui* v;
+		VGui* v2;
+		uint inBuffer;
+		uint inBuffer2;
+		Vec4 defColor;
+		Vec4 currentColor;
+		Vec2 scale;
+		bool parseSpecial;
+	};
 
+	void DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int x, int y, const Rect* clipping);
+	void DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, int x, int y, const Rect* clipping);
+	int Clip(int x, int y, int w, int h, const Rect* clipping);
+	void SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc);
+	void AddRect(VGui*& v, const Vec2& left_top, const Vec2& right_bottom, const Vec4& color);
+
+	FontLoader* fontLoader;
 	GuiShader* shader;
-	IDirect3DDevice9* device;
-	ID3DXSprite* sprite;
-	RenderTarget* rtFontTarget;
-	TEX tSet, tCurrent, tCurrent2, tPixel;
 	vector<DialogBox*> created_dialogs;
 	Container* layer, *dialog_layer;
-	VParticle* v, *v2;
-	uint in_buffer, in_buffer2;
-	Vec4 color_table[6];
+	VGui vBuf[256 * 6], vBuf2[256 * 6];
 	HitboxContext tmpHitboxContext;
 	vector<OnCharHandler*> on_char;
-	bool vb2_locked, grayscale, use_outline;
-	float outline_alpha;
+	bool grayscale;
 	Layout* master_layout;
 	layout::Gui* layout;
 	Overlay* overlay;

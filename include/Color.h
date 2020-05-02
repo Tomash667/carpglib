@@ -7,9 +7,9 @@ struct Color
 		uint value;
 		struct
 		{
-			byte b;
-			byte g;
 			byte r;
+			byte g;
+			byte b;
 			byte a;
 		};
 	};

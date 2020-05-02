@@ -1,7 +1,8 @@
 #include "Pch.h"
 #include "MenuBar.h"
-#include "MenuStrip.h"
+
 #include "Input.h"
+#include "MenuStrip.h"
 
 MenuBar::MenuBar() : selected(nullptr), handler(nullptr)
 {

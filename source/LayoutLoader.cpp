@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "LayoutLoader.h"
-#include "ResourceManager.h"
-// controls
+
 #include "Button.h"
 #include "CheckBox.h"
 #include "CheckBoxGroup.h"
@@ -18,6 +17,7 @@
 #include "Panel.h"
 #include "PickFileDialog.h"
 #include "PickItemDialog.h"
+#include "ResourceManager.h"
 #include "Scrollbar.h"
 #include "Slider.h"
 #include "SplitPanel.h"
@@ -173,7 +173,7 @@ void LayoutLoader::ParseFont(const string& name)
 	if(font_name.empty() || size < 1)
 		t.Throw("Font name or size not set.");
 
-	Font* font = gui->CreateFont(font_name.c_str(), size, weight * 100, outline);
+	Font* font = gui->GetFont(font_name.c_str(), size, weight, outline);
 	fonts[n] = font;
 }
 

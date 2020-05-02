@@ -1041,11 +1041,11 @@ public:
 	LocalVector3()
 	{
 		buf = BufPool.Get();
+		buf->clear();
 	}
 
 	~LocalVector3()
 	{
-		buf->clear();
 		BufPool.Free(buf);
 	}
 
@@ -1456,6 +1456,32 @@ struct BufferHandle
 
 private:
 	Buffer* buf;
+};
+
+//-----------------------------------------------------------------------------
+struct Buf
+{
+	Buf()
+	{
+		buf = BufPool.Get();
+	}
+	~Buf()
+	{
+		BufPool.Free(buf);
+	}
+	template<typename T>
+	T* Get(uint size)
+	{
+		buf->resize(size);
+		return reinterpret_cast<T*>(buf->data());
+	}
+	void* Get()
+	{
+		return buf->data();
+	}
+
+private:
+	vector<byte>* buf;
 };
 
 //-----------------------------------------------------------------------------
