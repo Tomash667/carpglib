@@ -4,7 +4,6 @@
 struct Resolution
 {
 	Int2 size;
-	uint hz;
 
 	bool operator < (const Resolution& r) const
 	{
@@ -15,10 +14,6 @@ struct Resolution
 		else if(size.y > r.size.y)
 			return false;
 		else if(size.y < r.size.y)
-			return true;
-		else if(hz > r.hz)
-			return false;
-		else if(hz < r.hz)
 			return true;
 		else
 			return false;
@@ -71,7 +66,7 @@ public:
 	void Init();
 	void OnChangeResolution();
 
-	bool CheckDisplay(const Int2& size, uint& hz) const; // for hz=0 return best hz available
+	bool CheckDisplay(const Int2& size) const;
 	void Clear(const Vec4& color);
 	Texture* CopyToTexture(RenderTarget* target);
 	TEX CopyToTextureRaw(RenderTarget* target);
@@ -101,7 +96,6 @@ public:
 	ID3D11DeviceContext* GetDeviceContext() const { return deviceContext; }
 	void GetMultisampling(int& ms, int& msq) const { ms = multisampling; msq = multisamplingQuality; }
 	const vector<Int2>& GetMultisamplingModes() const { return multisampleLevels; }
-	uint GetRefreshRate() const { return refreshHz; }
 	RenderTarget* GetRenderTarget() const { return currentTarget; }
 	ID3D11RenderTargetView* GetRenderTargetView() const { return renderTargetView; }
 	const vector<Resolution>& GetResolutions() const { return resolutions; }
@@ -113,7 +107,6 @@ public:
 	void SetDepthState(DepthState depthState);
 	bool SetFeatureLevel(const string& level);
 	void SetRasterState(RasterState rasterState);
-	void SetRefreshRateInternal(uint refreshHz) { this->refreshHz = refreshHz; }
 	int SetMultisampling(int type, int quality);
 	void SetShadersDir(cstring dir) { shaders_dir = dir; }
 	void SetRenderTarget(RenderTarget* target);
@@ -153,7 +146,6 @@ private:
 	vector<Int2> multisampleLevels;
 	RenderTarget* currentTarget;
 	string shaders_dir;
-	uint refreshHz;
 	int usedAdapter, multisampling, multisamplingQuality, forceFeatureLevel;
 	BlendState blendState;
 	DepthState depthState;

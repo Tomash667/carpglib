@@ -15,7 +15,7 @@ Render* app::render;
 static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 //=================================================================================================
-Render::Render() : initialized(false), vsync(true), shaders_dir("shaders"), refreshHz(0), usedAdapter(0), multisampling(0), multisamplingQuality(0),
+Render::Render() : initialized(false), vsync(true), shaders_dir("shaders"), usedAdapter(0), multisampling(0), multisamplingQuality(0),
 factory(nullptr), adapter(nullptr), swapChain(nullptr), device(nullptr), deviceContext(nullptr), renderTargetView(nullptr), depthStencilView(nullptr),
 blendStates(), depthStates(), rasterStates(), blendState(BLEND_NO), depthState(DEPTH_YES), rasterState(RASTER_NORMAL), currentTarget(nullptr),
 forceFeatureLevel(0), defaultSampler(nullptr)
@@ -63,7 +63,7 @@ Render::~Render()
 //=================================================================================================
 void Render::Init()
 {
-	wndSize = app::engine->GetWindowSize();
+	wndSize = app::engine->GetClientSize();
 
 	CreateAdapter();
 	CreateDevice();
@@ -88,7 +88,7 @@ void Render::OnChangeResolution()
 	if(!swapChain)
 		return;
 
-	wndSize = app::engine->GetWindowSize();
+	wndSize = app::engine->GetClientSize();
 
 	SafeRelease(rasterStates);
 	SafeRelease(depthStencilView);
@@ -388,49 +388,27 @@ void Render::LogAndSelectResolution()
 
 	// list all resolutions
 	Int2 wndSize = app::engine->GetWindowSize();
-	int bestDefHz = 0, bestHz = 0;
-	bool resValid = false, hzValid = false;
+	Int2 prevRes = Int2::Zero;
+	bool resValid = false;
 	for(uint i = 0; i < count; ++i)
 	{
 		DXGI_MODE_DESC& mode = modes[i];
-		if(mode.Width < (uint)Engine::MIN_WINDOW_SIZE.x || mode.Height < (uint)Engine::MIN_WINDOW_SIZE.y)
+		if(mode.Width < (uint)Engine::MIN_WINDOW_SIZE.x || mode.Height < (uint)Engine::MIN_WINDOW_SIZE.y
+			|| (prevRes.x == mode.Width && prevRes.y == mode.Height))
 			continue;
-		uint hz = mode.RefreshRate.Numerator / mode.RefreshRate.Denominator;
-		resolutions.push_back({ Int2(mode.Width, mode.Height), hz });
-		if(mode.Width == (uint)Engine::DEFAULT_WINDOW_SIZE.x && mode.Height == (uint)Engine::DEFAULT_WINDOW_SIZE.y)
-		{
-			if(hz > (uint)bestDefHz)
-				bestDefHz = hz;
-		}
-		if(mode.Width == wndSize.x && mode.Height == wndSize.y)
-		{
+		prevRes = Int2(mode.Width, mode.Height);
+		resolutions.push_back({ prevRes });
+		if(wndSize == prevRes)
 			resValid = true;
-			if(hz == refreshHz)
-				hzValid = true;
-			if((int)hz > bestHz)
-				bestHz = hz;
-		}
 	}
 	std::sort(resolutions.begin(), resolutions.end());
 
 	// pretty print
-	int cw = 0, ch = 0;
-	LocalString str = "Render: Available display modes:";
+	LocalString str = "Render: Available display modes: ";
 	for(vector<Resolution>::iterator it = resolutions.begin(), end = resolutions.end(); it != end; ++it)
-	{
-		Resolution& r = *it;
-		if(r.size.x != cw || r.size.y != ch)
-		{
-			if(it != resolutions.begin())
-				str += " Hz)";
-			str += Format("\n\t%dx%d (%u", r.size.x, r.size.y, r.hz);
-			cw = r.size.x;
-			ch = r.size.y;
-		}
-		else
-			str += Format(", %d", r.hz);
-	}
-	str += " Hz)";
+		str += Format("%dx%d, ", it->size.x, it->size.y);
+	str.pop(2);
+	str += ".";
 	Info(str->c_str());
 
 	// adjust selected resolution
@@ -438,21 +416,12 @@ void Render::LogAndSelectResolution()
 	{
 		if(wndSize.x != 0)
 		{
-			Warn("Render: Resolution %dx%d is not valid, defaulting to %dx%d (%d Hz).", wndSize.x, wndSize.y,
-				Engine::DEFAULT_WINDOW_SIZE.x, Engine::DEFAULT_WINDOW_SIZE.y, bestDefHz);
+			Warn("Render: Resolution %dx%d is not valid, defaulting to %dx%d.", wndSize.x, wndSize.y,
+				Engine::DEFAULT_WINDOW_SIZE.x, Engine::DEFAULT_WINDOW_SIZE.y);
 		}
 		else
-			Info("Render: Defaulting resolution to %dx%dx (%d Hz).", Engine::DEFAULT_WINDOW_SIZE.x, Engine::DEFAULT_WINDOW_SIZE.y, bestDefHz);
-		refreshHz = bestDefHz;
+			Info("Render: Defaulting resolution to %dx%dx.", Engine::DEFAULT_WINDOW_SIZE.x, Engine::DEFAULT_WINDOW_SIZE.y);
 		app::engine->SetWindowSizeInternal(Engine::DEFAULT_WINDOW_SIZE);
-	}
-	else if(!hzValid)
-	{
-		if(refreshHz != 0)
-			Warn("Render: Refresh rate %d Hz is not valid, defaulting to %d Hz.", refreshHz, bestHz);
-		else
-			Info("Render: Defaulting refresh rate to %d Hz.", bestHz);
-		refreshHz = bestHz;
 	}
 }
 
@@ -520,38 +489,19 @@ void Render::Present()
 }
 
 //=================================================================================================
-bool Render::CheckDisplay(const Int2& size, uint& hz) const
+bool Render::CheckDisplay(const Int2& size) const
 {
 	// check minimum resolution
 	if(size.x < Engine::MIN_WINDOW_SIZE.x || size.y < Engine::MIN_WINDOW_SIZE.y)
 		return false;
 
-	if(hz == 0)
+	for(const Resolution& resolution : resolutions)
 	{
-		bool valid = false;
-
-		for(const Resolution& resolution : resolutions)
-		{
-			if(resolution.size == size)
-			{
-				valid = true;
-				if(hz < resolution.hz)
-					hz = resolution.hz;
-			}
-		}
-
-		return valid;
+		if(resolution.size == size)
+			return true;
 	}
-	else
-	{
-		for(const Resolution& resolution : resolutions)
-		{
-			if(resolution.size == size && resolution.hz == hz)
-				return true;
-		}
 
-		return false;
-	}
+	return false;
 }
 
 //=================================================================================================

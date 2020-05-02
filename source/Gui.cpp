@@ -37,7 +37,7 @@ void Gui::Init()
 {
 	Control::input = app::input;
 	Control::gui = this;
-	wnd_size = app::engine->GetWindowSize();
+	wnd_size = app::engine->GetClientSize();
 	cursor_pos = wnd_size / 2;
 
 	layer = new Container;
@@ -743,7 +743,7 @@ void Gui::Draw(bool draw_layers, bool draw_dialogs)
 {
 	PROFILER_BLOCK("DrawGui");
 
-	wnd_size = app::engine->GetWindowSize();
+	wnd_size = app::engine->GetClientSize();
 
 	if(!draw_layers && !draw_dialogs)
 		return;
@@ -1558,7 +1558,7 @@ bool Gui::AnythingVisible() const
 //=================================================================================================
 void Gui::OnResize()
 {
-	wnd_size = app::engine->GetWindowSize();
+	wnd_size = app::engine->GetClientSize();
 	cursor_pos = wnd_size / 2;
 	app::engine->SetUnlockPoint(cursor_pos);
 	layer->Event(GuiEvent_WindowResize);

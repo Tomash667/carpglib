@@ -82,7 +82,7 @@ void GuiShader::Prepare()
 
 	// vertex shader constants
 	ResourceLock lock(vsGlobals);
-	lock.Get<VsGlobals>()->size = Vec2(app::engine->GetWindowSize());
+	lock.Get<VsGlobals>()->size = Vec2(app::engine->GetClientSize());
 
 	SetGrayscale(0.f);
 	texCurrent = nullptr;

@@ -68,7 +68,7 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 	ReleaseDC(nullptr, hdc);
 
 	// calculate texture size
-	const int padding = outline ? outline + 2 : 1;
+	const int padding = outline + 2;
 	Int2 texSize(padding * 2, padding * 2 + font->height);
 	for(int i = 32; i <= 255; ++i)
 	{
@@ -140,7 +140,7 @@ TEX FontLoader::CreateFontTexture(Font* font, const Int2& texSize, int outline, 
 		DeleteObject(winapiFont);
 		throw Format("Failed to create texture (%ux%u, result %u).", texSize.x, texSize.y, result);
 	}
-	
+
 	// get texture bitmap
 	IDXGISurface1* surface;
 	V(tex->QueryInterface(__uuidof(IDXGISurface1), (void**)&surface));

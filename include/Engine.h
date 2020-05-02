@@ -14,9 +14,6 @@ public:
 	Engine();
 	~Engine();
 
-	FIXME;
-	//bool ChangeMode(bool fullscreen);
-	//bool ChangeMode(Int2 size, bool fullscreen, uint hz = 0);
 	void DoPseudotick(bool msg_only = false);
 	void Shutdown();
 	void FatalError(cstring err);
@@ -32,10 +29,11 @@ public:
 	bool IsShutdown() const { return shutdown; }
 	bool IsFullscreen() const { return fullscreen; }
 
+	const Int2& GetClientSize() const { return client_size; }
 	float GetFps() const { return fps; }
 	float GetWindowAspect() const { return float(client_size.x) / client_size.y; }
 	HWND GetWindowHandle() const { return hwnd; }
-	const Int2& GetWindowSize() const { return client_size; }
+	const Int2& GetWindowSize() const { return wnd_size; }
 	CustomCollisionWorld* GetPhysicsWorld() { return phy_world; }
 
 	void SetFullscreen(bool fullscreen);
@@ -47,8 +45,6 @@ public:
 private:
 	void Init();
 	void AdjustWindowSize();
-	//void ChangeMode();
-	FIXME;
 	void Cleanup();
 	void DoTick(bool update_game);
 	long HandleEvent(HWND hwnd, uint msg, uint wParam, long lParam);
