@@ -39,8 +39,6 @@ public:
 		DEPTH_NO,
 		DEPTH_READ,
 		DEPTH_YES,
-		DEPTH_STENCIL_REPLACE,
-		DEPTH_STENCIL_KEEP,
 		DEPTH_MAX
 	};
 
@@ -75,7 +73,7 @@ public:
 	TEX CreateImmutableTexture(const Int2& size, const Color* fill);
 	ID3D11InputLayout* CreateInputLayout(VertexDeclarationId decl, ID3DBlob* vsBlob, cstring name);
 	ID3D11PixelShader* CreatePixelShader(cstring filename, cstring entry = "PsMain");
-	RenderTarget* CreateRenderTarget(const Int2& size, bool createDepthStencilView = true);
+	RenderTarget* CreateRenderTarget(const Int2& size, int flags = 0);
 	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP, bool disableMipmap = false);
 	void CreateShader(cstring filename, VertexDeclarationId decl, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader,
 		ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr, cstring vsEntry = "VsMain", cstring psEntry = "PsMain");
@@ -119,7 +117,7 @@ private:
 	void CreateSwapChain();
 	void CreateSizeDependentResources();
 	void CreateRenderTargetView();
-	ID3D11DepthStencilView* CreateDepthStencilView(const Int2& size);
+	ID3D11DepthStencilView* CreateDepthStencilView(const Int2& size, bool useMs = true);
 	void CreateBlendStates();
 	void CreateDepthStates();
 	void CreateRasterStates();
@@ -127,6 +125,7 @@ private:
 	void LogAndSelectMultisampling();
 	ID3DBlob* CompileShader(cstring filename, cstring entry, bool isVertex, D3D_SHADER_MACRO* macro);
 	void RecreateRenderTarget(RenderTarget* target);
+	void CreateRenderTargetInternal(RenderTarget* target);
 
 	IDXGIFactory* factory;
 	IDXGIAdapter* adapter;

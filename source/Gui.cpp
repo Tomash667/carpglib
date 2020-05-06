@@ -1663,10 +1663,54 @@ void Gui::DrawSpriteTransform(Texture* t, const Matrix& mat, Color color)
 //=================================================================================================
 void Gui::DrawLine(const Vec2& from, const Vec2& to, Color color, float width)
 {
-	VGui* v = vBuf;
-	const Vec4 col = color;
+	assert(width >= 1.f);
 
-	const Vec2 dirY = (to - from).Normalized() * (width * 0.5f);
+	VGui* v = vBuf;
+	const Vec2 dir = (to - from).Normalized();
+	int parts = 1;
+
+	if(width < 2.f)
+	{
+		Vec4 col = color;
+		col.w /= 2;
+		const Vec2 dirY = dir * width * 1.5f;
+		const Vec2 dirX = Vec2(dirY.y, -dirY.x);
+
+		v->pos = from - dirY - dirX;
+		v->color = col;
+		v->tex = Vec2(0, 0);
+		++v;
+
+		v->pos = to + dirY - dirX;
+		v->color = col;
+		v->tex = Vec2(0, 1);
+		++v;
+
+		v->pos = from - dirY + dirX;
+		v->color = col;
+		v->tex = Vec2(1, 0);
+		++v;
+
+		v->pos = from - dirY + dirX;
+		v->color = col;
+		v->tex = Vec2(1, 0);
+		++v;
+
+		v->pos = to + dirY - dirX;
+		v->color = col;
+		v->tex = Vec2(0, 1);
+		++v;
+
+		v->pos = to + dirY + dirX;
+		v->color = col;
+		v->tex = Vec2(1, 1);
+		++v;
+
+		++parts;
+	}
+
+	const Vec4 col = color;
+	const Vec2 dirY = dir * (width * 0.5f);
 	const Vec2 dirX = Vec2(dirY.y, -dirY.x);
 
 	v->pos = from - dirY - dirX;
@@ -1699,7 +1743,7 @@ void Gui::DrawLine(const Vec2& from, const Vec2& to, Color color, float width)
 	v->tex = Vec2(1, 1);
 	++v;
 
-	shader->Draw(nullptr, vBuf, 1);
+	shader->Draw(nullptr, vBuf, parts);
 }
 
 //=================================================================================================

@@ -220,8 +220,10 @@ void Render::CreateRenderTargetView()
 }
 
 //=================================================================================================
-ID3D11DepthStencilView* Render::CreateDepthStencilView(const Int2& size)
+ID3D11DepthStencilView* Render::CreateDepthStencilView(const Int2& size, bool useMs)
 {
+	useMs = useMs && multisampling;
+
 	// create depth texture
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.Width = size.x;
@@ -229,8 +231,13 @@ ID3D11DepthStencilView* Render::CreateDepthStencilView(const Int2& size)
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	desc.SampleDesc.Count = max(multisampling, 1);
-	desc.SampleDesc.Quality = multisamplingQuality;
+	if(useMs)
+	{
+		desc.SampleDesc.Count = max(multisampling, 1);
+		desc.SampleDesc.Quality = multisamplingQuality;
+	}
+	else
+		desc.SampleDesc.Count = 1;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
@@ -240,7 +247,7 @@ ID3D11DepthStencilView* Render::CreateDepthStencilView(const Int2& size)
 	// create depth stencil view from texture
 	D3D11_DEPTH_STENCIL_VIEW_DESC viewDesc = {};
 	viewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	viewDesc.ViewDimension = multisampling ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
+	viewDesc.ViewDimension = useMs ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 
 	ID3D11DepthStencilView* view;
 	V(device->CreateDepthStencilView(tex, &viewDesc, &view));
@@ -329,24 +336,6 @@ void Render::CreateDepthStates()
 	desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 	V(device->CreateDepthStencilState(&desc, &depthStates[DEPTH_READ]));
-
-	// create stencil write depth state
-	desc.StencilEnable = true;
-	desc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
-	desc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-	desc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
-	desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-	desc.BackFace = desc.FrontFace;
-
-	V(device->CreateDepthStencilState(&desc, &depthStates[DEPTH_STENCIL_REPLACE]));
-
-	// create stencil block depth state
-	desc.FrontFace.StencilFunc = D3D11_COMPARISON_EQUAL;
-	desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	desc.BackFace = desc.FrontFace;
-	V(device->CreateDepthStencilState(&desc, &depthStates[DEPTH_STENCIL_KEEP]));
 }
 
 //=================================================================================================
@@ -472,12 +461,12 @@ void Render::Clear(const Vec4& color)
 	if(currentTarget)
 	{
 		deviceContext->ClearRenderTargetView(currentTarget->renderTargetView, (const float*)color);
-		deviceContext->ClearDepthStencilView(currentTarget->depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
+		deviceContext->ClearDepthStencilView(currentTarget->depthStencilView, D3D11_CLEAR_DEPTH, 1.f, 0);
 	}
 	else
 	{
 		deviceContext->ClearRenderTargetView(renderTargetView, (const float*)color);
-		deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
+		deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.f, 0);
 	}
 }
 
@@ -601,56 +590,17 @@ TEX Render::CreateImmutableTexture(const Int2& size, const Color* fill)
 }
 
 //=================================================================================================
-RenderTarget* Render::CreateRenderTarget(const Int2& size, bool createDepthStencilView)
+RenderTarget* Render::CreateRenderTarget(const Int2& size, int flags)
 {
 	assert(size <= wndSize);
 	assert((size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y)) || size == Int2::Zero);
 	RenderTarget* target = new RenderTarget;
 	if(size == Int2::Zero)
-	{
-		target->useWindowSize = true;
-		target->size = wndSize;
-	}
-	else
-	{
-		target->useWindowSize = false;
-		target->size = size;
-	}
+		flags |= RenderTarget::F_USE_WINDOW_SIZE;
+	target->size = size;
+	target->flags = flags;
 	target->state = ResourceState::Loaded;
-
-	// create texture
-	D3D11_TEXTURE2D_DESC desc = {};
-	desc.Width = target->size.x;
-	desc.Height = target->size.y;
-	desc.MipLevels = 1;
-	desc.ArraySize = 1;
-	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.SampleDesc.Count = max(multisampling, 1);
-	desc.SampleDesc.Quality = multisamplingQuality;
-	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
-
-	ID3D11Texture2D* texResource;
-	V(device->CreateTexture2D(&desc, nullptr, &texResource));
-
-	// create render target view
-	V(device->CreateRenderTargetView(texResource, nullptr, &target->renderTargetView));
-
-	// create srv
-	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
-	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	viewDesc.ViewDimension = multisampling ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
-	viewDesc.Texture2D.MipLevels = 1;
-	V(device->CreateShaderResourceView(texResource, &viewDesc, &target->tex));
-
-	// create depth stencil view
-	if(createDepthStencilView)
-		target->depthStencilView = CreateDepthStencilView(target->size);
-	else
-		target->depthStencilView = nullptr;
-
-	texResource->Release();
+	CreateRenderTargetInternal(target);
 	renderTargets.push_back(target);
 	return target;
 }
@@ -658,15 +608,21 @@ RenderTarget* Render::CreateRenderTarget(const Int2& size, bool createDepthStenc
 //=================================================================================================
 void Render::RecreateRenderTarget(RenderTarget* target)
 {
-	bool haveDepthStencilView = (target->depthStencilView != nullptr);
-	if(target->useWindowSize)
-		target->size = wndSize;
-
-	// release old texture
-	target->tex->Release();
-	if(haveDepthStencilView)
+	if(target->tex)
+		target->tex->Release();
+	if(target->depthStencilView)
 		target->depthStencilView->Release();
 	target->renderTargetView->Release();
+	CreateRenderTargetInternal(target);
+}
+
+//=================================================================================================
+void Render::CreateRenderTargetInternal(RenderTarget* target)
+{
+	bool ms = multisampling && !IsSet(target->flags, RenderTarget::F_NO_MS);
+
+	if(IsSet(target->flags, RenderTarget::F_USE_WINDOW_SIZE))
+		target->size = wndSize;
 
 	// create texture
 	D3D11_TEXTURE2D_DESC desc = {};
@@ -675,8 +631,13 @@ void Render::RecreateRenderTarget(RenderTarget* target)
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.SampleDesc.Count = max(multisampling, 1);
-	desc.SampleDesc.Quality = multisamplingQuality;
+	if(ms)
+	{
+		desc.SampleDesc.Count = multisampling;
+		desc.SampleDesc.Quality = multisamplingQuality;
+	}
+	else
+		desc.SampleDesc.Count = 1;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
@@ -687,18 +648,39 @@ void Render::RecreateRenderTarget(RenderTarget* target)
 	// create render target view
 	V(device->CreateRenderTargetView(texResource, nullptr, &target->renderTargetView));
 
-	// create srv
-	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
-	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	viewDesc.ViewDimension = multisampling ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
-	viewDesc.Texture2D.MipLevels = 1;
-	V(device->CreateShaderResourceView(texResource, &viewDesc, &target->tex));
+	if(IsSet(target->flags, RenderTarget::F_NO_DRAW))
+		target->tex = nullptr;
+	else
+	{
+		// create non multisampled texture
+		// (multisampled texture can't be used to draw so it will be first copied to normal texture)
+		if(ms)
+		{
+			texResource->Release();
+			ms = false;
+
+			desc.SampleDesc.Count = 1;
+			desc.SampleDesc.Quality = 0;
+			desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+			desc.MiscFlags = 0;
+
+			V(device->CreateTexture2D(&desc, nullptr, &texResource));
+		}
+
+		// create srv
+		D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
+		viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		viewDesc.ViewDimension = ms ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
+		viewDesc.Texture2D.MipLevels = 1;
+		V(device->CreateShaderResourceView(texResource, &viewDesc, &target->tex));
+	}
+	texResource->Release();
 
 	// create depth stencil view
-	if(haveDepthStencilView)
-		target->depthStencilView = CreateDepthStencilView(target->size);
-
-	texResource->Release();
+	if(IsSet(target->flags, RenderTarget::F_NO_DEPTH))
+		target->depthStencilView = nullptr;
+	else
+		target->depthStencilView = CreateDepthStencilView(target->size, !IsSet(target->flags, RenderTarget::F_NO_MS));
 }
 
 //=================================================================================================
@@ -719,7 +701,10 @@ TEX Render::CopyToTextureRaw(RenderTarget* target)
 
 	// get render target texture data
 	ID3D11Texture2D* res;
-	target->tex->GetResource(reinterpret_cast<ID3D11Resource**>(&res));
+	if(target->tex)
+		target->tex->GetResource(reinterpret_cast<ID3D11Resource**>(&res));
+	else
+		target->GetRenderTargetView()->GetResource(reinterpret_cast<ID3D11Resource**>(&res));
 
 	D3D11_TEXTURE2D_DESC texDesc;
 	res->GetDesc(&texDesc);
@@ -740,7 +725,10 @@ TEX Render::CopyToTextureRaw(RenderTarget* target)
 	V(device->CreateTexture2D(&desc, nullptr, &tex));
 
 	// copy texture
-	deviceContext->CopyResource(tex, res);
+	if(texDesc.SampleDesc.Count > 1)
+		deviceContext->ResolveSubresource(tex, 0, res, 0, desc.Format);
+	else
+		deviceContext->CopyResource(tex, res);
 
 	// create view
 	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
@@ -774,7 +762,7 @@ void Render::SetDepthState(DepthState depthState)
 	if(this->depthState != depthState)
 	{
 		this->depthState = depthState;
-		deviceContext->OMSetDepthStencilState(depthStates[depthState], depthState == DEPTH_STENCIL_REPLACE ? 1 : 0);
+		deviceContext->OMSetDepthStencilState(depthStates[depthState], 0);
 	}
 }
 
@@ -841,6 +829,17 @@ void Render::SetRenderTarget(RenderTarget* target)
 	}
 	else
 	{
+		if(currentTarget && multisampling && !IsSet(currentTarget->flags, RenderTarget::F_NO_DRAW))
+		{
+			// copy ms texture to normal
+			ID3D11Texture2D* texMS, *texNormal;
+			currentTarget->renderTargetView->GetResource(reinterpret_cast<ID3D11Resource**>(&texMS));
+			currentTarget->tex->GetResource(reinterpret_cast<ID3D11Resource**>(&texNormal));
+			deviceContext->ResolveSubresource(texNormal, 0, texMS, 0, DXGI_FORMAT_R8G8B8A8_UNORM);
+			texMS->Release();
+			texNormal->Release();
+		}
+
 		deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
 		SetViewport(wndSize);
 
@@ -902,9 +901,6 @@ ID3D11SamplerState* Render::CreateSampler(TextureAddressMode mode, bool disableM
 void Render::CreateShader(cstring filename, VertexDeclarationId decl, ID3D11VertexShader*& vertexShader,
 	ID3D11PixelShader*& pixelShader, ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro, cstring vsEntry, cstring psEntry)
 {
-
-	VertexDeclaration& vertDecl = VertexDeclaration::decl[(int)decl];
-
 	try
 	{
 		CPtr<ID3DBlob> vsBuf = CompileShader(filename, vsEntry, true, macro);
@@ -917,6 +913,7 @@ void Render::CreateShader(cstring filename, VertexDeclarationId decl, ID3D11Vert
 		if(FAILED(result))
 			throw Format("Failed to create pixel shader (%u).", result);
 
+		VertexDeclaration& vertDecl = VertexDeclaration::decl[(int)decl];
 		result = device->CreateInputLayout(vertDecl.desc, vertDecl.count, vsBuf->GetBufferPointer(), vsBuf->GetBufferSize(), &layout);
 		if(FAILED(result))
 			throw Format("Failed to create input layout (%u).", result);

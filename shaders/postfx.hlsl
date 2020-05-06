@@ -9,6 +9,7 @@ cbuffer PsGlobals : register(b0)
 };
 
 Texture2D texDiffuse : register(t0);
+Texture2D texDiffuse2 : register(t1);
 SamplerState samplerDiffuse;
 
 //******************************************************************************
@@ -128,4 +129,15 @@ float4 PsBlurY(VS_OUTPUT In) : SV_TARGET
 	c += texDiffuse.Sample(samplerDiffuse, float2(tex.x, tex.y + 3.f*skill[1])) * 0.09f;
 	c += texDiffuse.Sample(samplerDiffuse, float2(tex.x, tex.y + 4.f*skill[1])) * 0.05f;
 	return lerp(texDiffuse.Sample(samplerDiffuse, tex), c, power);
+}
+
+//******************************************************************************
+float4 PsMask(VS_OUTPUT In) : SV_TARGET
+{
+	float4 tex = texDiffuse.Sample(samplerDiffuse, In.tex);
+	float4 mask = texDiffuse2.Sample(samplerDiffuse, In.tex);
+	if(mask.w != 0)
+		return float4(0,0,0,0);
+	else
+		return tex;
 }

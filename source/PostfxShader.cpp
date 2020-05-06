@@ -16,7 +16,7 @@ struct PsGlobals
 
 //=================================================================================================
 PostfxShader::PostfxShader() : deviceContext(app::render->GetDeviceContext()), vertexShader(nullptr), pixelShaders(), layout(nullptr), psGlobals(nullptr),
-sampler(nullptr), targets(), vb(nullptr)
+sampler(nullptr), vb(nullptr)
 {
 }
 
@@ -30,14 +30,11 @@ void PostfxShader::OnInit()
 	pixelShaders[POSTFX_DREAM] = app::render->CreatePixelShader("postfx.hlsl", "PsDream");
 	pixelShaders[POSTFX_BLUR_X] = app::render->CreatePixelShader("postfx.hlsl", "PsBlurX");
 	pixelShaders[POSTFX_BLUR_Y] = app::render->CreatePixelShader("postfx.hlsl", "PsBlurY");
+	pixelShaders[POSTFX_MASK] = app::render->CreatePixelShader("postfx.hlsl", "PsMask");
 	layout = app::render->CreateInputLayout(VDI_TEX, vsBlob, "PostfxLayout");
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "PostfxPsGlobals");
 	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 	vsBlob->Release();
-
-	// create render targets
-	for(int i = 0; i < 3; ++i)
-		targets[i] = app::render->CreateRenderTarget(Int2::Zero, false);
 
 	// create fullscreen vertex buffer
 	const VTex v[] = {
@@ -67,24 +64,85 @@ void PostfxShader::OnRelease()
 	SafeRelease(layout);
 	SafeRelease(psGlobals);
 	SafeRelease(sampler);
-	SafeRelease(targets);
 	SafeRelease(vb);
 }
 
 //=================================================================================================
-void PostfxShader::Prepare(bool dual)
+void PostfxShader::SetTarget()
 {
+	TEX texEmpty[] = { nullptr, nullptr };
+	deviceContext->PSSetShaderResources(0, 2, texEmpty);
+
 	prevTarget = app::render->GetRenderTarget();
-	ID3D11RenderTargetView* renderTargetView = targets[dual ? 2 : 0]->GetRenderTargetView();
+	activeTarget = GetTarget(true);
+	ID3D11RenderTargetView* renderTargetView = activeTarget->GetRenderTargetView();
 	deviceContext->OMSetRenderTargets(1, &renderTargetView, app::render->GetDepthStencilView());
-	app::render->SetViewport(targets[0]->GetSize());
+	app::render->SetViewport(activeTarget->GetSize());
 }
 
 //=================================================================================================
-int PostfxShader::Draw(const vector<PostEffect>& effects, bool finalStage, bool useTexB)
+RenderTarget* PostfxShader::GetTarget(bool ms)
 {
-	assert(!effects.empty());
+	if(ms && app::render->IsMultisamplingEnabled())
+	{
+		if(targetsMS.empty())
+			return app::render->CreateRenderTarget(Int2::Zero, RenderTarget::F_NO_DEPTH | RenderTarget::F_NO_DRAW);
+		RenderTarget* target = targetsMS.back();
+		targetsMS.pop_back();
+		return target;
+	}
+	else
+	{
+		if(targets.empty())
+			return app::render->CreateRenderTarget(Int2::Zero, RenderTarget::F_NO_DEPTH | RenderTarget::F_NO_MS);
+		RenderTarget* target = targets.back();
+		targets.pop_back();
+		return target;
+	}
+}
 
+//=================================================================================================
+void PostfxShader::FreeTarget(RenderTarget* target)
+{
+	if(IsSet(target->GetFlags(), RenderTarget::F_NO_DRAW))
+		targetsMS.push_back(target);
+	else
+		targets.push_back(target);
+}
+
+//=================================================================================================
+RenderTarget* PostfxShader::RequestActiveTarget()
+{
+	assert(activeTarget);
+	RenderTarget* target = activeTarget;
+	activeTarget = nullptr;
+	return target;
+}
+
+//=================================================================================================
+RenderTarget* PostfxShader::ResolveTarget(RenderTarget* target)
+{
+	if(IsSet(target->GetFlags(), RenderTarget::F_NO_DRAW))
+	{
+		RenderTarget* targetNormal = GetTarget(false);
+		ID3D11Texture2D* texMS, *texNormal;
+		target->GetRenderTargetView()->GetResource(reinterpret_cast<ID3D11Resource**>(&texMS));
+		targetNormal->tex->GetResource(reinterpret_cast<ID3D11Resource**>(&texNormal));
+		deviceContext->ResolveSubresource(texNormal, 0, texMS, 0, DXGI_FORMAT_R8G8B8A8_UNORM);
+		texMS->Release();
+		texNormal->Release();
+		if(activeTarget == target)
+			activeTarget = targetNormal;
+		FreeTarget(target);
+		return targetNormal;
+	}
+	else
+		return target;
+}
+
+//=================================================================================================
+void PostfxShader::Prepare()
+{
 	app::render->SetBlendState(Render::BLEND_NO);
 	app::render->SetDepthState(Render::DEPTH_NO);
 	app::render->SetRasterState(Render::RASTER_NORMAL);
@@ -95,8 +153,22 @@ int PostfxShader::Draw(const vector<PostEffect>& effects, bool finalStage, bool 
 	uint stride = sizeof(VTex), offset = 0;
 	deviceContext->IASetInputLayout(layout);
 	deviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+}
 
-	bool useTexA = !useTexB;
+//=================================================================================================
+RenderTarget* PostfxShader::Draw(const vector<PostEffect>& effects, RenderTarget* input, bool finalStage)
+{
+	assert(!effects.empty());
+
+	// resolve MS if required
+	if(!input)
+		input = activeTarget;
+	input = ResolveTarget(input);
+	assert(input);
+
+	RenderTarget* currentInput = input;
+	RenderTarget* tmpTarget = nullptr;
+	RenderTarget* tmpSource = nullptr;
 
 	for(uint i = 0, count = effects.size(); i < count; ++i)
 	{
@@ -111,55 +183,69 @@ int PostfxShader::Draw(const vector<PostEffect>& effects, bool finalStage, bool 
 			psg.skill = effect.skill;
 		}
 
-		TEX texEmpty = nullptr;
-		deviceContext->PSSetShaderResources(0, 1, &texEmpty);
+		TEX tex[] = { nullptr, nullptr };
+		deviceContext->PSSetShaderResources(0, 2, tex);
 		if(isLast && finalStage)
+		{
+			if(tmpTarget)
+			{
+				FreeTarget(tmpTarget);
+				tmpTarget = nullptr;
+			}
 			app::render->SetRenderTarget(prevTarget);
+		}
 		else
 		{
-			ID3D11RenderTargetView* renderTargetView = targets[useTexA ? 1 : 0]->GetRenderTargetView();
-			deviceContext->OMSetRenderTargets(1, &renderTargetView, app::render->GetDepthStencilView());
+			tmpTarget = GetTarget(false);
+			ID3D11RenderTargetView* renderTargetView = tmpTarget->GetRenderTargetView();
+			deviceContext->OMSetRenderTargets(1, &renderTargetView, nullptr);
 		}
+		tex[0] = currentInput->tex;
+		tex[1] = effect.tex;
 		deviceContext->PSSetShader(pixelShaders[effect.id], nullptr, 0);
-		deviceContext->PSSetShaderResources(0, 1, &targets[useTexA ? 0 : 1]->tex);
+		deviceContext->PSSetShaderResources(0, 2, tex);
 
 		deviceContext->Draw(6, 0);
 
-		useTexA = !useTexA;
+		if(tmpTarget)
+		{
+			if(tmpSource)
+				FreeTarget(tmpSource);
+			tmpSource = tmpTarget;
+			tmpTarget = nullptr;
+			currentInput = tmpSource;
+		}
 	}
 
-	if(finalStage)
-		return -1;
-	else
-		return useTexA ? 0 : 1;
+	if(tmpSource && finalStage)
+	{
+		FreeTarget(tmpSource);
+		tmpSource = nullptr;
+	}
+	if(activeTarget)
+		FreeTarget(activeTarget);
+	return tmpSource;
 }
 
 //=================================================================================================
-void PostfxShader::Merge(int targetA, int targetB, int output)
+void PostfxShader::Merge(RenderTarget* inputA, RenderTarget* inputB, RenderTarget* output)
 {
-	assert(InRange(targetA, 0, 2));
-	assert(InRange(targetB, 0, 2));
-	assert(InRange(output, -1, 2));
-	assert(targetA != targetB && targetA != output);
-
-	app::render->SetBlendState(Render::BLEND_NO);
-	app::render->SetDepthState(Render::DEPTH_NO);
-	app::render->SetRasterState(Render::RASTER_NORMAL);
+	assert(inputA && inputB);
 
 	ID3D11RenderTargetView* renderTargetView;
-	int tmpOutput;
-	if(output == -1)
+	RenderTarget* tmpTarget = nullptr;
+	if(!output)
 	{
 		if(prevTarget)
 		{
-			tmpOutput = GetFreeTarget(targetA, targetB);
-			renderTargetView = targets[tmpOutput]->GetRenderTargetView();
+			tmpTarget = GetTarget(false);
+			renderTargetView = tmpTarget->GetRenderTargetView();
 		}
 		else
 			renderTargetView = app::render->GetRenderTargetView();
 	}
 	else
-		renderTargetView = targets[output]->GetRenderTargetView();
+		renderTargetView = output->GetRenderTargetView();
 
 	deviceContext->VSSetShader(vertexShader, nullptr, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
@@ -167,46 +253,34 @@ void PostfxShader::Merge(int targetA, int targetB, int output)
 	uint stride = sizeof(VTex), offset = 0;
 	deviceContext->IASetInputLayout(layout);
 	deviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
-	TEX texEmpty = nullptr;
-	deviceContext->PSSetShaderResources(0, 1, &texEmpty);
-	deviceContext->OMSetRenderTargets(1, &renderTargetView, app::render->GetDepthStencilView());
+	TEX tex[] = { nullptr, nullptr };
+	deviceContext->PSSetShaderResources(0, 2, tex);
+	deviceContext->OMSetRenderTargets(1, &renderTargetView, nullptr);
 	deviceContext->PSSetShader(pixelShaders[POSTFX_EMPTY], nullptr, 0);
 
-	deviceContext->PSSetShaderResources(0, 1, &targets[targetA]->tex);
+	tex[0] = inputA->tex;
+	deviceContext->PSSetShaderResources(0, 2, tex);
 	deviceContext->Draw(6, 0);
 
 	app::render->SetBlendState(Render::BLEND_ADD_ONE2);
-	app::render->SetDepthState(Render::DEPTH_STENCIL_KEEP);
-	deviceContext->PSSetShaderResources(0, 1, &targets[targetB]->tex);
+	tex[0] = inputB->tex;
+	deviceContext->PSSetShaderResources(0, 2, tex);
 	deviceContext->Draw(6, 0);
+	app::render->SetBlendState(Render::BLEND_NO);
 
-	if(prevTarget && output == -1)
+	if(tmpTarget)
 	{
 		renderTargetView = prevTarget->GetRenderTargetView();
 		deviceContext->OMSetRenderTargets(1, &renderTargetView, prevTarget->GetDepthStencilView());
-		deviceContext->PSSetShaderResources(0, 1, &targets[tmpOutput]->tex);
+		tex[0] = tmpTarget->tex;
+		deviceContext->PSSetShaderResources(0, 2, tex);
 		app::render->SetViewport(prevTarget->GetSize());
 
-		app::render->SetBlendState(Render::BLEND_NO);
-		app::render->SetDepthState(Render::DEPTH_NO);
-
 		deviceContext->Draw(6, 0);
+		FreeTarget(tmpTarget);
 	}
-}
-
-//=================================================================================================
-int PostfxShader::GetFreeTarget(int targetA, int targetB)
-{
-	switch(targetA + targetB)
-	{
-	case 1: // 0,1 used
-		return 2;
-	case 2: // 0,2 used
-		return 1;
-	case 3: // 1,2 used
-		return 0;
-	default:
-		assert(0);
-		return 0;
-	}
+	else if(output)
+		activeTarget = output;
+	else
+		app::render->SetRenderTarget(nullptr);
 }

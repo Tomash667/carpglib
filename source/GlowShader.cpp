@@ -69,43 +69,60 @@ void GlowShader::OnRelease()
 //=================================================================================================
 void GlowShader::Draw(Camera& camera, const vector<GlowNode>& glowNodes, bool usePostfx)
 {
+	// resolve MS if required
+	RenderTarget* targetScene = postfxShader->RequestActiveTarget();
+	targetScene = postfxShader->ResolveTarget(targetScene);
+
 	// set render target, reuse depth from normal scene
-	RenderTarget* nextTarget = postfxShader->GetTarget(1);
-	ID3D11RenderTargetView* renderTargetView = nextTarget->GetRenderTargetView();
+	RenderTarget* targetGlow = postfxShader->GetTarget(true);
+	ID3D11RenderTargetView* renderTargetView = targetGlow->GetRenderTargetView();
 	deviceContext->OMSetRenderTargets(1, &renderTargetView, app::render->GetDepthStencilView());
 	deviceContext->ClearRenderTargetView(renderTargetView, (const float*)Vec4::Zero);
 
 	// draw glow nodes to texture
 	DrawGlowNodes(camera, glowNodes);
 
-	// apply blur
+	// resolve MS if required
+	targetGlow = postfxShader->ResolveTarget(targetGlow);
+
+	// apply effects
 	const float baseRange = 2.5f;
 	const float rangeX = (baseRange / 1024.f);
 	const float rangeY = (baseRange / 768.f);
 	vector<PostEffect> effects;
+	// blur by X
 	PostEffect effect;
 	effect.id = POSTFX_BLUR_X;
 	effect.power = 1.f;
 	effect.skill = Vec4(rangeX, rangeY, 0, 0);
 	effects.push_back(effect);
+	// blur by Y
 	effect.id = POSTFX_BLUR_Y;
 	effects.push_back(effect);
-	int activeTarget = postfxShader->Draw(effects, false, true);
+	// mask glow & blur to keep only outline
+	effect.id = POSTFX_MASK;
+	effect.tex = targetGlow->tex;
+	effects.push_back(effect);
+	postfxShader->Prepare();
+	RenderTarget* targetBlurred = postfxShader->Draw(effects, targetGlow, false);
+	postfxShader->FreeTarget(targetGlow);
 
 	// combine render targets
-	int output;
+	RenderTarget* targetFinal;
 	if(usePostfx)
-		output = activeTarget == 0 ? 1 : 0;
+		targetFinal = postfxShader->GetTarget(false);
 	else
-		output = -1;
-	postfxShader->Merge(2, activeTarget, output);
+		targetFinal = nullptr;
+	postfxShader->Merge(targetScene, targetBlurred, targetFinal);
+	postfxShader->FreeTarget(targetScene);
+	postfxShader->FreeTarget(targetBlurred);
 }
 
 //=================================================================================================
 void GlowShader::DrawGlowNodes(Camera& camera, const vector<GlowNode>& glowNodes)
 {
 	app::render->SetBlendState(Render::BLEND_NO);
-	app::render->SetDepthState(Render::DEPTH_STENCIL_REPLACE);
+	app::render->SetDepthState(Render::DEPTH_READ);
 	app::render->SetRasterState(Render::RASTER_NORMAL);
 
 	// setup shader
@@ -157,7 +174,6 @@ void GlowShader::DrawGlowNodes(Camera& camera, const vector<GlowNode>& glowNodes
 			vsg.matCombined = (glow.node->mat * camera.mat_view_proj).Transpose();
 			if(isAnimated)
 			{
-				glow.node->mesh_inst->SetupBones();
 				for(uint i = 0; i < glow.node->mesh_inst->mesh->head.n_bones; ++i)
 					vsg.matBones[i] = glow.node->mesh_inst->mat_bones[i].Transpose();
 			}
