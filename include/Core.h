@@ -411,11 +411,19 @@ struct FileTime
 {
 	uint64 time;
 
-	bool operator == (const FileTime& file_time) const;
-	bool operator != (const FileTime& file_time) const
+	bool operator == (const FileTime& fileTime) const
 	{
-		return !operator ==(file_time);
+		return Compare(fileTime) == 0;
 	}
+	bool operator != (const FileTime& fileTime) const
+	{
+		return Compare(fileTime) != 0;
+	}
+	bool operator >= (const FileTime& fileTime) const
+	{
+		return Compare(fileTime) >= 0;
+	}
+	int Compare(const FileTime& fileTime) const;
 };
 
 //-----------------------------------------------------------------------------

@@ -32,7 +32,14 @@ vsGlobals(nullptr), psGlobals(nullptr), sampler(nullptr)
 //=================================================================================================
 void TerrainShader::OnInit()
 {
-	app::render->CreateShader("terrain.hlsl", VDI_TERRAIN, vertexShader, pixelShader, layout);
+	Render::ShaderParams params;
+	params.name = "terrain";
+	params.decl = VDI_TERRAIN;
+	params.vertexShader = &vertexShader;
+	params.pixelShader = &pixelShader;
+	params.layout = &layout;
+	app::render->CreateShader(params);
+
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "TerrainVsGlobals");
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "TerrainPsGlobals");
 	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);

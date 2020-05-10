@@ -21,7 +21,14 @@ vsGlobals(nullptr), vb(nullptr), texEmpty(nullptr), particleCount(0)
 //=================================================================================================
 void ParticleShader::OnInit()
 {
-	app::render->CreateShader("particle.hlsl", VDI_PARTICLE, vertexShader, pixelShader, layout);
+	Render::ShaderParams params;
+	params.name = "particle";
+	params.decl = VDI_PARTICLE;
+	params.vertexShader = &vertexShader;
+	params.pixelShader = &pixelShader;
+	params.layout = &layout;
+	app::render->CreateShader(params);
+
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
 	texEmpty = app::render->CreateImmutableTexture(Int2(1, 1), &Color::White);
 

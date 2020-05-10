@@ -25,7 +25,13 @@ psGlobals(nullptr), samplerNormal(nullptr), samplerWrap(nullptr), vb(nullptr), t
 //=================================================================================================
 void GuiShader::OnInit()
 {
-	app::render->CreateShader("gui.hlsl", VDI_GUI, vertexShader, pixelShader, layout);
+	Render::ShaderParams params;
+	params.name = "gui";
+	params.decl = VDI_GUI;
+	params.vertexShader = &vertexShader;
+	params.pixelShader = &pixelShader;
+	params.layout = &layout;
+	app::render->CreateShader(params);
 
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "GuiVsGlobals");
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "GuiPsGlobals");

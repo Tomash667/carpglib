@@ -59,6 +59,26 @@ public:
 		TEX_ADR_MIRRORONCE = 5
 	};
 
+	struct ShaderParams
+	{
+		cstring name;
+		cstring cacheName;
+		cstring vsEntry;
+		cstring psEntry;
+		const string* code;
+		VertexDeclarationId decl;
+		ID3D11VertexShader** vertexShader;
+		ID3D11PixelShader** pixelShader;
+		ID3D11InputLayout** layout;
+		D3D_SHADER_MACRO* macro;
+		ID3DBlob** vsBlob;
+
+		ShaderParams() : name(nullptr), cacheName(nullptr), vsEntry("VsMain"), psEntry("PsMain"), code(nullptr), vertexShader(nullptr),
+			pixelShader(nullptr), layout(nullptr), macro(nullptr), vsBlob(nullptr)
+		{
+		}
+	};
+
 	Render();
 	~Render();
 	void Init();
@@ -72,12 +92,9 @@ public:
 	DynamicTexture* CreateDynamicTexture(const Int2& size);
 	TEX CreateImmutableTexture(const Int2& size, const Color* fill);
 	ID3D11InputLayout* CreateInputLayout(VertexDeclarationId decl, ID3DBlob* vsBlob, cstring name);
-	ID3D11PixelShader* CreatePixelShader(cstring filename, cstring entry = "PsMain");
 	RenderTarget* CreateRenderTarget(const Int2& size, int flags = 0);
 	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP, bool disableMipmap = false);
-	void CreateShader(cstring filename, VertexDeclarationId decl, ID3D11VertexShader*& vertexShader, ID3D11PixelShader*& pixelShader,
-		ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro = nullptr, cstring vsEntry = "VsMain", cstring psEntry = "PsMain");
-	ID3D11VertexShader* CreateVertexShader(cstring filename, cstring entry = "VsMain", ID3DBlob** vsBlob = nullptr);
+	void CreateShader(ShaderParams& params);
 	void Present();
 	void RegisterShader(ShaderHandler* shader);
 	void ReloadShaders();
@@ -123,7 +140,7 @@ private:
 	void CreateRasterStates();
 	void LogAndSelectResolution();
 	void LogAndSelectMultisampling();
-	ID3DBlob* CompileShader(cstring filename, cstring entry, bool isVertex, D3D_SHADER_MACRO* macro);
+	ID3DBlob* CompileShader(ShaderParams& params, bool isVertex);
 	void RecreateRenderTarget(RenderTarget* target);
 	void CreateRenderTargetInternal(RenderTarget* target);
 

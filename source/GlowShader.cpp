@@ -32,19 +32,26 @@ void GlowShader::OnInit()
 {
 	ID3DBlob* vsBlob;
 
-	vertexShaderMesh = app::render->CreateVertexShader("glow.hlsl", "VsMesh", &vsBlob);
+	Render::ShaderParams params;
+	params.name = "glow";
+	params.vertexShader = &vertexShaderMesh;
+	params.vsEntry = "VsMesh";
+	params.vsBlob = &vsBlob;
+	params.pixelShader = &pixelShader;
+	app::render->CreateShader(params);
 	layoutMesh = app::render->CreateInputLayout(VDI_DEFAULT, vsBlob, "GlowMeshLayout");
 	layoutMeshTangent = app::render->CreateInputLayout(VDI_TANGENT, vsBlob, "GlowMeshTangentLayout");
 	layoutMeshWeight = app::render->CreateInputLayout(VDI_ANIMATED, vsBlob, "GlowMeshWeightLayout");
 	layoutMeshTangentWeight = app::render->CreateInputLayout(VDI_ANIMATED_TANGENT, vsBlob, "GlowMeshTangentWeightLayout");
 	vsBlob->Release();
 
-	vertexShaderAni = app::render->CreateVertexShader("glow.hlsl", "VsAni", &vsBlob);
+	params.vertexShader = &vertexShaderAni;
+	params.vsEntry = "VsAni";
+	params.pixelShader = nullptr;
+	app::render->CreateShader(params);
 	layoutAni = app::render->CreateInputLayout(VDI_ANIMATED, vsBlob, "GlowAniLayout");
 	layoutAniTangent = app::render->CreateInputLayout(VDI_ANIMATED_TANGENT, vsBlob, "GlowAniTangentLayout");
 	vsBlob->Release();
-
-	pixelShader = app::render->CreatePixelShader("glow.hlsl");
 
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "GlowVsGlobals");
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "GlowPsGlobals");

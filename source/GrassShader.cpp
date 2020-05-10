@@ -29,7 +29,14 @@ vsGlobals(nullptr), psGlobals(nullptr), vb(nullptr), vbSize(0)
 //=================================================================================================
 void GrassShader::OnInit()
 {
-	app::render->CreateShader("grass.hlsl", VDI_GRASS, vertexShader, pixelShader, layout);
+	Render::ShaderParams params;
+	params.name = "grass";
+	params.decl = VDI_GRASS;
+	params.vertexShader = &vertexShader;
+	params.pixelShader = &pixelShader;
+	params.layout = &layout;
+	app::render->CreateShader(params);
+
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals));
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals));
 }

@@ -21,7 +21,6 @@ class SuperShader : public ShaderHandler
 
 	struct Shader
 	{
-		uint id;
 		ID3D11VertexShader* vertexShader;
 		ID3D11PixelShader* pixelShader;
 		ID3D11InputLayout* layout;
@@ -49,7 +48,7 @@ private:
 	void DrawSubmesh(SceneNode* node, uint index);
 
 	ID3D11DeviceContext* deviceContext;
-	vector<Shader> shaders;
+	std::unordered_map<uint, Shader> shaders;
 	ID3D11Buffer* vsGlobals;
 	ID3D11Buffer* vsLocals;
 	ID3D11Buffer* psGlobals;
@@ -59,8 +58,9 @@ private:
 	ID3D11Buffer* vbDecal;
 	ID3D11Buffer* ibDecal;
 
+	string code;
 	Scene* scene;
 	Camera* camera;
-	bool applyBones, applyLights, applyNormalMap, applySpecularMap;
 	Mesh* prevMesh;
+	bool applyBones, applyLights, applyNormalMap, applySpecularMap;
 };

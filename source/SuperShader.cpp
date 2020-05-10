@@ -3,6 +3,7 @@
 
 #include "Camera.h"
 #include "DirectX.h"
+#include "File.h"
 #include "Light.h"
 #include "Mesh.h"
 #include "Render.h"
@@ -63,6 +64,11 @@ void SuperShader::OnInit()
 	texEmptyNormalMap = app::render->CreateImmutableTexture(Int2(1, 1), &Color(128, 128, 255));
 	texEmptySpecularMap = app::render->CreateImmutableTexture(Int2(1, 1), &Color::None);
 
+	// load shader code
+	cstring path = Format("%s/super.hlsl", app::render->GetShadersDir().c_str());
+	if(!io::LoadFileToString(path, code))
+		throw Format("Failed to load '%s'.", path);
+
 	// create decal vertex buffer
 	D3D11_BUFFER_DESC desc = {};
 	desc.Usage = D3D11_USAGE_DYNAMIC;
@@ -90,8 +96,9 @@ void SuperShader::OnInit()
 //=================================================================================================
 void SuperShader::OnRelease()
 {
-	for(Shader& shader : shaders)
+	for(auto& it : shaders)
 	{
+		Shader& shader = it.second;
 		SafeRelease(shader.pixelShader);
 		SafeRelease(shader.vertexShader);
 		SafeRelease(shader.layout);
@@ -136,11 +143,9 @@ uint SuperShader::GetShaderId(bool have_weights, bool have_tangents, bool animat
 //=================================================================================================
 SuperShader::Shader& SuperShader::GetShader(uint id)
 {
-	for(Shader& shader : shaders)
-	{
-		if(shader.id == id)
-			return shader;
-	}
+	auto it = shaders.find(id);
+	if(it != shaders.end())
+		return it->second;
 
 	// not found, compile
 	return CompileShader(id);
@@ -223,10 +228,20 @@ SuperShader::Shader& SuperShader::CompileShader(uint id)
 
 	// compile
 	Shader shader;
-	shader.id = id;
-	app::render->CreateShader("super.hlsl", vertDecl, shader.vertexShader, shader.pixelShader, shader.layout, macros);
-	shaders.push_back(shader);
-	return shaders.back();
+
+	Render::ShaderParams params;
+	params.name = "super";
+	params.cacheName = Format("super%u", id);
+	params.code = &code;
+	params.decl = vertDecl;
+	params.vertexShader = &shader.vertexShader;
+	params.pixelShader = &shader.pixelShader;
+	params.layout = &shader.layout;
+	params.macro = macros;
+	app::render->CreateShader(params);
+
+	shaders[id] = shader;
+	return shaders[id];
 }
 
 //=================================================================================================

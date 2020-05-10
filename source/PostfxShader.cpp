@@ -23,18 +23,39 @@ sampler(nullptr), vb(nullptr)
 //=================================================================================================
 void PostfxShader::OnInit()
 {
-	ID3DBlob* vsBlob;
-	vertexShader = app::render->CreateVertexShader("postfx.hlsl", "VsEmpty", &vsBlob);
-	pixelShaders[POSTFX_EMPTY] = app::render->CreatePixelShader("postfx.hlsl", "PsEmpty");
-	pixelShaders[POSTFX_MONOCHROME] = app::render->CreatePixelShader("postfx.hlsl", "PsMonochrome");
-	pixelShaders[POSTFX_DREAM] = app::render->CreatePixelShader("postfx.hlsl", "PsDream");
-	pixelShaders[POSTFX_BLUR_X] = app::render->CreatePixelShader("postfx.hlsl", "PsBlurX");
-	pixelShaders[POSTFX_BLUR_Y] = app::render->CreatePixelShader("postfx.hlsl", "PsBlurY");
-	pixelShaders[POSTFX_MASK] = app::render->CreatePixelShader("postfx.hlsl", "PsMask");
-	layout = app::render->CreateInputLayout(VDI_TEX, vsBlob, "PostfxLayout");
+	Render::ShaderParams params;
+	params.name = "postfx";
+	params.decl = VDI_TEX;
+	params.vertexShader = &vertexShader;
+	params.pixelShader = &pixelShaders[POSTFX_EMPTY];
+	params.layout = &layout;
+	params.vsEntry = "VsEmpty";
+	params.psEntry = "PsEmpty";
+	app::render->CreateShader(params);
+
+	params.vertexShader = nullptr;
+	params.pixelShader = &pixelShaders[POSTFX_MONOCHROME];
+	params.psEntry = "PsMonochrome";
+	app::render->CreateShader(params);
+
+	params.pixelShader = &pixelShaders[POSTFX_DREAM];
+	params.psEntry = "PsDream";
+	app::render->CreateShader(params);
+
+	params.pixelShader = &pixelShaders[POSTFX_BLUR_X];
+	params.psEntry = "PsBlurX";
+	app::render->CreateShader(params);
+
+	params.pixelShader = &pixelShaders[POSTFX_BLUR_Y];
+	params.psEntry = "PsBlurY";
+	app::render->CreateShader(params);
+
+	params.pixelShader = &pixelShaders[POSTFX_MASK];
+	params.psEntry = "PsMask";
+	app::render->CreateShader(params);
+
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "PostfxPsGlobals");
 	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
-	vsBlob->Release();
 
 	// create fullscreen vertex buffer
 	const VTex v[] = {

@@ -41,8 +41,23 @@ vb(nullptr), ib(nullptr), vbSize(0), ibSize(0)
 //=================================================================================================
 void BasicShader::OnInit()
 {
-	app::render->CreateShader("basic.hlsl", VDI_POS, shaderMesh.vertexShader, shaderMesh.pixelShader, shaderMesh.layout, nullptr, "VsMesh", "PsMesh");
-	app::render->CreateShader("basic.hlsl", VDI_COLOR, shaderColor.vertexShader, shaderColor.pixelShader, shaderColor.layout, nullptr, "VsColor", "PsColor");
+	Render::ShaderParams params;
+	params.name = "basic";
+	params.decl = VDI_POS;
+	params.vertexShader = &shaderMesh.vertexShader;
+	params.pixelShader = &shaderMesh.pixelShader;
+	params.layout = &shaderMesh.layout;
+	params.vsEntry = "VsMesh";
+	params.psEntry = "PsMesh";
+	app::render->CreateShader(params);
+
+	params.decl = VDI_COLOR;
+	params.vertexShader = &shaderColor.vertexShader;
+	params.pixelShader = &shaderColor.pixelShader;
+	params.layout = &shaderColor.layout;
+	params.vsEntry = "VsColor";
+	params.psEntry = "PsColor";
+	app::render->CreateShader(params);
 
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "BasicVsGlobals");
 	psGlobalsMesh = app::render->CreateConstantBuffer(sizeof(PsGlobalsMesh), "BasicPsGlobalsMesh");

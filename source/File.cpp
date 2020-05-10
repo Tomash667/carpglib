@@ -14,11 +14,11 @@ char BUF[256];
 //-----------------------------------------------------------------------------
 static_assert(sizeof(uint64) == sizeof(FILETIME), "Invalid FileTime size.");
 
-bool FileTime::operator == (const FileTime& file_time) const
+int FileTime::Compare(const FileTime& fileTime) const
 {
 	FILETIME ft1 = union_cast<FILETIME>(time);
-	FILETIME ft2 = union_cast<FILETIME>(file_time);
-	return CompareFileTime(&ft1, &ft2) == 0;
+	FILETIME ft2 = union_cast<FILETIME>(fileTime);
+	return CompareFileTime(&ft1, &ft2);
 }
 
 
@@ -132,9 +132,9 @@ uint FileReader::GetPos() const
 
 FileTime FileReader::GetTime() const
 {
-	FILETIME file_time;
-	GetFileTime((HANDLE)file, nullptr, nullptr, &file_time);
-	return union_cast<FileTime>(file_time);
+	FILETIME fileTime;
+	GetFileTime((HANDLE)file, nullptr, nullptr, &fileTime);
+	return union_cast<FileTime>(fileTime);
 }
 
 bool FileReader::SetPos(uint pos)
@@ -253,9 +253,9 @@ void FileWriter::operator = (FileWriter& f)
 	f.file = INVALID_FILE_HANDLE;
 }
 
-void FileWriter::SetTime(FileTime file_time)
+void FileWriter::SetTime(FileTime fileTime)
 {
-	FILETIME ft = union_cast<FILETIME>(file_time);
+	FILETIME ft = union_cast<FILETIME>(fileTime);
 	SetFileTime((HANDLE)file, nullptr, nullptr, &ft);
 }
 
@@ -317,6 +317,25 @@ bool io::FileExists(cstring filename)
 		return false;
 
 	return !IsSet(attrib, FILE_ATTRIBUTE_DIRECTORY);
+}
+
+//=================================================================================================
+FileTime io::GetFileTime(cstring filename)
+{
+	assert(filename);
+
+	HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	if(file == INVALID_HANDLE_VALUE)
+	{
+		FileTime fileTime;
+		fileTime.time = 0;
+		return fileTime;
+	}
+
+	FILETIME fileTime;
+	GetFileTime(file, nullptr, nullptr, &fileTime);
+	CloseHandle(file);
+	return union_cast<FileTime>(fileTime);
 }
 
 //=================================================================================================

@@ -20,7 +20,14 @@ vsGlobals(nullptr), sampler(nullptr)
 //=================================================================================================
 void SkyboxShader::OnInit()
 {
-	app::render->CreateShader("skybox.hlsl", VDI_DEFAULT, vertexShader, pixelShader, layout);
+	Render::ShaderParams params;
+	params.name = "skybox";
+	params.decl = VDI_DEFAULT;
+	params.vertexShader = &vertexShader;
+	params.pixelShader = &pixelShader;
+	params.layout = &layout;
+	app::render->CreateShader(params);
+
 	vsGlobals = app::render->CreateConstantBuffer(sizeof(VsGlobals), "SkyboxVsGlobals");
 	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 }

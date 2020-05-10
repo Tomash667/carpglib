@@ -898,111 +898,95 @@ ID3D11SamplerState* Render::CreateSampler(TextureAddressMode mode, bool disableM
 }
 
 //=================================================================================================
-void Render::CreateShader(cstring filename, VertexDeclarationId decl, ID3D11VertexShader*& vertexShader,
-	ID3D11PixelShader*& pixelShader, ID3D11InputLayout*& layout, D3D_SHADER_MACRO* macro, cstring vsEntry, cstring psEntry)
+void Render::CreateShader(ShaderParams& params)
 {
 	try
 	{
-		CPtr<ID3DBlob> vsBuf = CompileShader(filename, vsEntry, true, macro);
-		HRESULT result = device->CreateVertexShader(vsBuf->GetBufferPointer(), vsBuf->GetBufferSize(), nullptr, &vertexShader);
-		if(FAILED(result))
-			throw Format("Failed to create vertex shader (%u).", result);
+		if(params.vertexShader)
+		{
+			CPtr<ID3DBlob> vsBlob = CompileShader(params, true);
+			HRESULT result = device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, params.vertexShader);
+			if(FAILED(result))
+				throw Format("Failed to create vertex shader (%u).", result);
+			SetDebugName(*params.vertexShader, Format("%s/%s", params.name, params.vsEntry));
 
-		CPtr<ID3DBlob> psBuf = CompileShader(filename, psEntry, false, macro);
-		result = device->CreatePixelShader(psBuf->GetBufferPointer(), psBuf->GetBufferSize(), nullptr, &pixelShader);
-		if(FAILED(result))
-			throw Format("Failed to create pixel shader (%u).", result);
+			if(params.layout)
+			{
+				VertexDeclaration& vertDecl = VertexDeclaration::decl[(int)params.decl];
+				result = device->CreateInputLayout(vertDecl.desc, vertDecl.count, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), params.layout);
+				if(FAILED(result))
+					throw Format("Failed to create input layout (%u).", result);
+				SetDebugName(*params.layout, Format("%s/layout", params.name));
+			}
 
-		VertexDeclaration& vertDecl = VertexDeclaration::decl[(int)decl];
-		result = device->CreateInputLayout(vertDecl.desc, vertDecl.count, vsBuf->GetBufferPointer(), vsBuf->GetBufferSize(), &layout);
-		if(FAILED(result))
-			throw Format("Failed to create input layout (%u).", result);
+			if(params.vsBlob)
+				*params.vsBlob = vsBlob.Pin();
+		}
 
-		SetDebugName(vertexShader, Format("%s/%s", filename, vsEntry));
-		SetDebugName(pixelShader, Format("%s/%s", filename, psEntry));
-		SetDebugName(layout, Format("%s/layout", filename));
+		if(params.pixelShader)
+		{
+			CPtr<ID3DBlob> psBlob = CompileShader(params, false);
+			HRESULT result = device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, params.pixelShader);
+			if(FAILED(result))
+				throw Format("Failed to create pixel shader (%u).", result);
+			SetDebugName(*params.pixelShader, Format("%s/%s", params.name, params.psEntry));
+		}
 	}
 	catch(cstring err)
 	{
-		throw Format("Failed to create shader '%s': %s", filename, err);
+		throw Format("Failed to create shader '%s': %s", params.name, err);
 	}
 }
 
 //=================================================================================================
-ID3D11VertexShader* Render::CreateVertexShader(cstring filename, cstring entry, ID3DBlob** vsBlob)
+ID3DBlob* Render::CompileShader(ShaderParams& params, bool isVertex)
 {
-	try
-	{
-		ID3D11VertexShader* vertexShader;
-
-		CPtr<ID3DBlob> vsBuf = CompileShader(filename, entry, true, nullptr);
-		HRESULT result = device->CreateVertexShader(vsBuf->GetBufferPointer(), vsBuf->GetBufferSize(), nullptr, &vertexShader);
-		if(FAILED(result))
-			throw Format("Error %u.", result);
-
-		SetDebugName(vertexShader, Format("%s/%s", filename, entry));
-
-		if(vsBlob)
-			*vsBlob = vsBuf.Pin();
-
-		return vertexShader;
-	}
-	catch(cstring err)
-	{
-		throw Format("Failed to create vertex shader '%s': %s", filename, err);
-	}
-}
-
-//=================================================================================================
-ID3D11PixelShader* Render::CreatePixelShader(cstring filename, cstring entry)
-{
-	try
-	{
-		ID3D11PixelShader* pixelShader;
-
-		CPtr<ID3DBlob> psBuf = CompileShader(filename, entry, false, nullptr);
-		HRESULT result = device->CreatePixelShader(psBuf->GetBufferPointer(), psBuf->GetBufferSize(), nullptr, &pixelShader);
-		if(FAILED(result))
-			throw Format("Error %u.", result);
-
-		SetDebugName(pixelShader, Format("%s/%s", filename, entry));
-
-		return pixelShader;
-	}
-	catch(cstring err)
-	{
-		throw Format("Failed to create pixel shader '%s': %s", filename, err);
-	}
-}
-
-//=================================================================================================
-ID3DBlob* Render::CompileShader(cstring filename, cstring entry, bool isVertex, D3D_SHADER_MACRO* macro)
-{
-	assert(filename && entry);
-
-	cstring target;
+	cstring entry, target;
 	if(isVertex)
+	{
+		entry = params.vsEntry;
 		target = useV4Shaders ? "vs_4_0" : "vs_5_0";
+	}
 	else
+	{
+		entry = params.psEntry;
 		target = useV4Shaders ? "ps_4_0" : "ps_5_0";
+	}
 
 	uint flags = D3DCOMPILE_ENABLE_STRICTNESS;
 #ifdef _DEBUG
 	flags |= D3DCOMPILE_DEBUG;
 #endif
 
-	cstring path = Format("%s/%s", shaders_dir.c_str(), filename);
-	ID3DBlob* shader_blob = nullptr;
-	ID3DBlob* error_blob = nullptr;
-	HRESULT result = D3DCompileFromFile(ToWString(path), macro, nullptr, entry, target, flags, 0, &shader_blob, &error_blob);
+	cstring path = Format("%s/%s.hlsl", shaders_dir.c_str(), params.name);
+	FileTime fileTime = io::GetFileTime(path);
+
+	// try to load from cache
+	ID3DBlob* shaderBlob = nullptr;
+	HRESULT result;
+	cstring cache = Format("cache/%s_%s.%s", params.cacheName ? params.cacheName : params.name, entry, target);
+	FileTime cacheTime = io::GetFileTime(cache);
+	if(cacheTime >= fileTime)
+	{
+		result = D3DReadFileToBlob(ToWString(cache), &shaderBlob);
+		if(SUCCEEDED(result))
+			return shaderBlob;
+	}
+
+	// compile from file or string
+	ID3DBlob* errorBlob = nullptr;
+	if(params.code)
+		result = D3DCompile(params.code->data(), params.code->length(), params.name, params.macro, nullptr, entry, target, flags, 0, &shaderBlob, &errorBlob);
+	else
+		result = D3DCompileFromFile(ToWString(path), params.macro, nullptr, entry, target, flags, 0, &shaderBlob, &errorBlob);
 	if(FAILED(result))
 	{
-		SafeRelease(shader_blob);
-		if(error_blob)
+		SafeRelease(shaderBlob);
+		if(errorBlob)
 		{
-			cstring err = (cstring)error_blob->GetBufferPointer();
+			cstring err = (cstring)errorBlob->GetBufferPointer();
 			cstring msg = Format("Failed to compile function %s: %s (code %u).", entry, err, result);
-			error_blob->Release();
+			errorBlob->Release();
 			throw msg;
 		}
 		else if(result == D3D11_ERROR_FILE_NOT_FOUND || result == HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND))
@@ -1011,14 +995,18 @@ ID3DBlob* Render::CompileShader(cstring filename, cstring entry, bool isVertex, 
 			throw Format("Failed to compile function %s (code %u).", entry, result);
 	}
 
-	if(error_blob)
+	// write warning
+	if(errorBlob)
 	{
-		cstring err = (cstring)error_blob->GetBufferPointer();
-		Warn("Shader '%s' warnings: %s", path, err);
-		error_blob->Release();
+		cstring err = (cstring)errorBlob->GetBufferPointer();
+		Warn("Shader '%s' warnings: %s", params.name, err);
+		errorBlob->Release();
 	}
 
-	return shader_blob;
+	// save to cache
+	V(D3DWriteBlobToFile(shaderBlob, ToWString(cache), true));
+
+	return shaderBlob;
 }
 
 //=================================================================================================
