@@ -15,6 +15,7 @@ public:
 	};
 
 	ComboBox();
+	~ComboBox();
 	void Draw(ControlDrawData* = nullptr) override;
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;

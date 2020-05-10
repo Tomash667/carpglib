@@ -8,6 +8,17 @@ ComboBox::ComboBox() : menu_changed(false), selected(-1)
 }
 
 //=================================================================================================
+ComboBox::~ComboBox()
+{
+	if(destructor)
+	{
+		for(GuiElement* e : menu.items)
+			destructor(e);
+		menu.items.clear();
+	}
+}
+
+//=================================================================================================
 void ComboBox::Draw(ControlDrawData*)
 {
 	TextBox::Draw();
