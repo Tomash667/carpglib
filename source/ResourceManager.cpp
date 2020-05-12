@@ -688,9 +688,10 @@ void ResourceManager::LoadBuiltinMesh(cstring name, byte* data, uint size)
 
 	Mesh* mesh = new Mesh;
 	mesh->type = ResourceType::Mesh;
-	mesh->path = name;
-	mesh->filename = mesh->path.c_str();
+	mesh->path = Format("builtin/%s", name);
+	mesh->filename = mesh->path.c_str() + 8;
 	mesh->state = ResourceState::Loaded;
+	mesh->pak = nullptr;
 
 	try
 	{

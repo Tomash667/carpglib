@@ -367,7 +367,14 @@ void Render::LogAndSelectResolution()
 	V(adapter->EnumOutputs(0, &output));
 
 	uint count;
-	V(output->GetDisplayModeList(DISPLAY_FORMAT, 0, &count, nullptr));
+	HRESULT result = output->GetDisplayModeList(DISPLAY_FORMAT, 0, &count, nullptr);
+	if(result == DXGI_ERROR_NOT_CURRENTLY_AVAILABLE)
+	{
+		// temporary workaround, resolutions are only required for fullscreen exclusive
+		resolutions.push_back({ Engine::DEFAULT_WINDOW_SIZE });
+		return;
+	}
+	V(result);
 
 	Buf buf;
 	DXGI_MODE_DESC* modes = buf.Get<DXGI_MODE_DESC>(sizeof(DXGI_MODE_DESC) * count);
