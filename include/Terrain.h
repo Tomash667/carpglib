@@ -73,7 +73,7 @@ public:
 	float GetH(float x, float z) const;
 	float GetH(const Vec3& v) const { return GetH(v.x, v.z); }
 	float GetH(const Vec2& v) const { return GetH(v.x, v.y); }
-	void SetH(Vec3& v) const { v.y = GetH(v.x, v.z); }
+	void SetY(Vec3& v) const { v.y = GetH(v.x, v.z); }
 	void GetAngle(float x, float z, Vec3& angle) const;
 	uint GetPartsCount() const { return n_parts2; }
 	DynamicTexture& GetSplatTexture() { return *texSplat; }
