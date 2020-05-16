@@ -304,6 +304,9 @@
     <ClInclude Include="include\ImageFormat.h">
       <Filter>const</Filter>
     </ClInclude>
+    <ClInclude Include="include\TileGrid.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">
@@ -564,6 +567,9 @@
     </ClCompile>
     <ClCompile Include="source\ImageFormat.cpp">
       <Filter>const</Filter>
+    </ClCompile>
+    <ClCompile Include="source\TileGrid.cpp">
+      <Filter>gui controls</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
