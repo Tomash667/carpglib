@@ -500,11 +500,12 @@ namespace tokenizer
 			if(!IsKeywordGroup(group))
 				Unexpected(T_KEYWORD_GROUP, &group);
 		}
-		void AssertKeywordGroup(std::initializer_list<int> const & groups)
+		int AssertKeywordGroup(std::initializer_list<int> const & groups)
 		{
 			int group = IsKeywordGroup(groups);
 			if(group == MISSING_GROUP)
 				StartUnexpected().AddList(T_KEYWORD_GROUP, groups).Throw();
+			return group;
 		}
 		void AssertText() const
 		{
