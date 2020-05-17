@@ -7,7 +7,7 @@
 
 //=================================================================================================
 ListBox::ListBox(bool is_new) : Control(is_new), scrollbar(false, is_new), selected(-1), event_handler(nullptr), event_handler2(nullptr), menu(nullptr), menu_strip(nullptr),
-force_img_size(0, 0), item_height(20), require_scrollbar(false), flags(DTF_SINGLELINE)
+forceImgSize(0, 0), itemHeight(20), requireScrollbar(false), textFlags(DTF_SINGLELINE)
 {
 	SetOnCharHandler(true);
 }
@@ -35,57 +35,63 @@ void ListBox::Draw(ControlDrawData*)
 			gui->DrawText(layout->font, items[selected]->ToString(), DTF_SINGLELINE, Color::Black, rc, &rc);
 		}
 
-		// obrazek
+		// image
 		gui->DrawSprite(layout->down_arrow, Int2(global_pos.x + size.x - 10, global_pos.y + (size.y - 10) / 2));
-
-		// powinno byæ tu ale wtedy by³a by z³a kolejnoœæ rysowania
-		//if(menu->visible)
-		//	menu->Draw();
 	}
 	else
 	{
 		// box
-		gui->DrawArea(Box2d::Create(global_pos, real_size), layout->box);
+		gui->DrawArea(Box2d::Create(global_pos, realSize), layout->box);
 
-		// zaznaczenie
-		Rect rc = { global_pos.x, global_pos.y, global_pos.x + real_size.x, global_pos.y + real_size.y };
+		// selection
+		Rect rc = { global_pos.x, global_pos.y, global_pos.x + realSize.x, global_pos.y + realSize.y };
 		if(selected != -1)
 		{
-			Rect rs = { global_pos.x + 2, global_pos.y - int(scrollbar.offset) + 2 + selected * item_height, global_pos.x + real_size.x - 2, 0 };
-			rs.Bottom() = rs.Top() + item_height;
+			int offsetY;
+			if(itemHeight == -1)
+			{
+				offsetY = 0;
+				for(int i = 0; i < selected; ++i)
+					offsetY += items[i]->height;
+			}
+			else
+				offsetY = selected * itemHeight;
+
+			Rect rs = { global_pos.x + 2, global_pos.y - int(scrollbar.offset) + 2 + offsetY, global_pos.x + realSize.x - 2, 0 };
+			rs.Bottom() = rs.Top() + items[selected]->height;
 			Rect out;
 			if(Rect::Intersect(rs, rc, out))
 				gui->DrawArea(Box2d(out), layout->selection);
 		}
 
-		// elementy
+		// elements
 		Rect r;
-		r.Right() = global_pos.x + real_size.x - 2;
+		r.Right() = global_pos.x + realSize.x - 2;
 		r.Top() = global_pos.y - int(scrollbar.offset) + 2;
-		r.Bottom() = r.Top() + item_height;
+		r.Bottom() = r.Top() + itemHeight;
 		int orig_x = global_pos.x + 2;
 		Matrix mat;
 		for(GuiElement* e : items)
 		{
+			r.Bottom() = r.Top() + e->height;
 			if(e->tex)
 			{
-				Int2 required_size = force_img_size, img_size;
+				Int2 required_size = forceImgSize, img_size;
 				Vec2 scale;
 				e->tex->ResizeImage(required_size, img_size, scale);
-				mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &Vec2((float)orig_x, float(r.Top() + (item_height - required_size.y) / 2)));
+				mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &Vec2((float)orig_x, float(r.Top() + (e->height - required_size.y) / 2)));
 				gui->DrawSprite2(e->tex, mat, nullptr, &rc, Color::White);
 				r.Left() = orig_x + required_size.x;
 			}
 			else
 				r.Left() = orig_x;
-			if(!gui->DrawText(layout->font, e->ToString(), flags, Color::Black, r, &rc))
+			if(!gui->DrawText(layout->font, e->ToString(), textFlags, Color::Black, r, &rc))
 				break;
-			r.Top() += item_height;
-			r.Bottom() += item_height;
+			r.Top() += e->height;
 		}
 
-		// pasek przewijania
-		if(require_scrollbar)
+		// scrollbar
+		if(requireScrollbar)
 			scrollbar.Draw();
 	}
 }
@@ -112,8 +118,6 @@ void ListBox::Update(float dt)
 		{
 			if(menu->visible)
 			{
-				// powinno byæ aktualizowane tu ale niestety wed³ug kolejnoœci musi byæ na samym pocz¹tku
-				//menu->Update(dt);
 				if(!menu->focus)
 					menu->visible = false;
 			}
@@ -129,35 +133,30 @@ void ListBox::Update(float dt)
 	}
 	else
 	{
-		if(is_new)
+		if(focus && selected != -1)
 		{
-			if(focus)
-			{
-				int dir = 0;
-				if(input->DownRepeat(Key::Up))
-					dir = -1;
-				else if(input->DownRepeat(Key::Down))
-					dir = 1;
-				else if(input->PressedRelease(Key::Escape) && selected == -1 && !items.empty())
-					ChangeIndexEvent(0, false, true);
+			int newSelected = -1;
+			if(input->DownRepeat(Key::Up))
+				newSelected = selected - 1;
+			else if(input->DownRepeat(Key::Down))
+				newSelected = selected + 1;
+			else if(input->Pressed(Key::PageUp))
+				newSelected = 0;
+			else if(input->Pressed(Key::PageDown))
+				newSelected = items.size() - 1;
 
-				if(dir != 0)
-				{
-					int new_index = Modulo(selected + dir, items.size());
-					if(new_index != selected)
-						ChangeIndexEvent(new_index, false, true);
-				}
-			}
-
-			if(require_scrollbar)
-			{
-				if(mouse_focus)
-					scrollbar.ApplyMouseWheel();
-				UpdateControl(&scrollbar, dt);
-			}
+			if(newSelected != selected && newSelected >= 0 && newSelected < (int)items.size())
+				ChangeIndexEvent(newSelected, false, true);
 		}
 
-		if(mouse_focus && input->Focus() && PointInRect(gui->cursor_pos, global_pos, real_size))
+		if(is_new && requireScrollbar)
+		{
+			if(mouse_focus)
+				scrollbar.ApplyMouseWheel();
+			UpdateControl(&scrollbar, dt);
+		}
+
+		if(mouse_focus && input->Focus() && PointInRect(gui->cursor_pos, global_pos, realSize))
 		{
 			int bt = 0;
 
@@ -225,11 +224,11 @@ void ListBox::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_Initialize)
 	{
-		real_size = size;
+		realSize = size;
 		scrollbar.pos = Int2(size.x - 16, 0);
 		scrollbar.size = Int2(16, size.y);
 		scrollbar.offset = 0.f;
-		scrollbar.total = items.size() * item_height;
+		scrollbar.total = CalculateItemsHeight();
 		scrollbar.part = size.y - 4;
 
 		if(collapsed)
@@ -257,8 +256,9 @@ void ListBox::Event(GuiEvent e)
 		scrollbar.pos = Int2(size.x - 16, 0);
 		scrollbar.size = Int2(16, size.y);
 		scrollbar.offset = 0.f;
-		scrollbar.total = items.size() * item_height;
+		scrollbar.total = CalculateItemsHeight();
 		scrollbar.part = size.y - 4;
+		scrollbar.global_pos = global_pos + scrollbar.pos;
 
 		UpdateScrollbarVisibility();
 	}
@@ -305,8 +305,9 @@ void ListBox::OnChar(char c)
 void ListBox::Add(GuiElement* e)
 {
 	assert(e);
+	CalculateItemHeight(e);
 	items.push_back(e);
-	scrollbar.total += item_height;
+	scrollbar.total += e->height;
 	UpdateScrollbarVisibility();
 }
 
@@ -315,24 +316,54 @@ void ListBox::ScrollTo(int index, bool center)
 {
 	const int count = (int)items.size();
 	assert(index >= 0 && index < count);
-	if(center)
+	if(itemHeight == -1)
 	{
-		int n = int(real_size.y / item_height);
-		if(index < n)
-			scrollbar.offset = 0.f;
-		else if(index > count - n)
-			scrollbar.offset = float(scrollbar.total - scrollbar.part);
+		const int selectedItemHeight = items[index]->height;
+		int posy = 0;
+		for(int i = 0; i < index; ++i)
+			posy += items[i]->height;
+
+		if(center)
+		{
+			if(scrollbar.part >= scrollbar.total)
+				scrollbar.offset = 0.f;
+			else
+			{
+				scrollbar.offset = float(posy - (scrollbar.part - selectedItemHeight) / 2);
+				if((int)scrollbar.offset + scrollbar.part > scrollbar.total)
+					scrollbar.offset = float(scrollbar.total - scrollbar.part);
+			}
+		}
 		else
-			scrollbar.offset = float((index - n) * item_height);
+		{
+			const int offsety = posy - (int)scrollbar.offset;
+			if(offsety < 0)
+				scrollbar.offset = (float)posy;
+			else if(offsety + selectedItemHeight > scrollbar.part)
+				scrollbar.offset = float(selectedItemHeight + posy - scrollbar.part);
+		}
 	}
 	else
 	{
-		int posy = index * item_height;
-		int offsety = posy - (int)scrollbar.offset;
-		if(offsety < 0)
-			scrollbar.offset = (float)posy;
-		else if(offsety + item_height > size.y)
-			scrollbar.offset = (float)(item_height + posy - size.y);
+		if(center)
+		{
+			const int n = scrollbar.part / itemHeight;
+			if(index < n)
+				scrollbar.offset = 0.f;
+			else if(index > count - n)
+				scrollbar.offset = float(scrollbar.total - scrollbar.part);
+			else
+				scrollbar.offset = float((index - n) * itemHeight);
+		}
+		else
+		{
+			const int posy = index * itemHeight;
+			const int offsety = posy - (int)scrollbar.offset;
+			if(offsety < 0)
+				scrollbar.offset = (float)posy;
+			else if(offsety + itemHeight > scrollbar.part)
+				scrollbar.offset = float(itemHeight + posy - scrollbar.part);
+		}
 	}
 }
 
@@ -445,8 +476,9 @@ void ListBox::Insert(GuiElement* e, int index)
 		Add(e);
 		return;
 	}
+	CalculateItemHeight(e);
 	items.insert(items.begin() + index, e);
-	scrollbar.total += item_height;
+	scrollbar.total += e->height;
 	if(selected >= index)
 		++selected;
 	UpdateScrollbarVisibility();
@@ -470,15 +502,34 @@ void ListBox::Remove(int index)
 //=================================================================================================
 int ListBox::PosToIndex(int y)
 {
-	int n = (y - global_pos.y + int(scrollbar.offset)) / item_height;
-	if(n >= 0 && n < (int)items.size())
-		return n;
+	const int realY = (y - global_pos.y + int(scrollbar.offset));
+	int index;
+	if(itemHeight == -1)
+	{
+		index = -1;
+		int total = 0;
+		int tmpIndex = 0;
+		for(GuiElement* e : items)
+		{
+			if(realY >= total && realY < total + e->height)
+			{
+				index = tmpIndex;
+				break;
+			}
+			total += e->height;
+			++tmpIndex;
+		}
+	}
+	else
+		index = realY / itemHeight;
+	if(index >= 0 && index < (int)items.size())
+		return index;
 	else
 		return -1;
 }
 
 //=================================================================================================
-bool ListBox::ChangeIndexEvent(int index, bool force, bool scroll_to)
+bool ListBox::ChangeIndexEvent(int index, bool force, bool scrollTo)
 {
 	if(!force && event_handler2)
 	{
@@ -493,7 +544,7 @@ bool ListBox::ChangeIndexEvent(int index, bool force, bool scroll_to)
 	if(event_handler2)
 		event_handler2(A_INDEX_CHANGED, selected);
 
-	if(scroll_to && !collapsed)
+	if(scrollTo && !collapsed)
 		ScrollTo(index);
 
 	return true;
@@ -514,9 +565,39 @@ void ListBox::UpdateScrollbarVisibility()
 {
 	if(!initialized)
 		return;
-	require_scrollbar = scrollbar.IsRequired();
-	if(require_scrollbar)
-		real_size = Int2(size.x - 15, size.y);
+	requireScrollbar = scrollbar.IsRequired();
+	if(requireScrollbar)
+		realSize = Int2(size.x - 15, size.y);
 	else
-		real_size = size;
+		realSize = size;
+}
+
+//=================================================================================================
+void ListBox::CalculateItemHeight(GuiElement* e)
+{
+	if(itemHeight == -1)
+	{
+		Int2 required_size = forceImgSize, img_size;
+		Vec2 scale;
+		e->tex->ResizeImage(required_size, img_size, scale);
+
+		int allowedWidth = size.x - 19 - required_size.x; // remove scrollbar, padding & image width
+		e->height = layout->font->CalculateSize(e->ToString(), allowedWidth).y + layout->auto_padding;
+	}
+	else
+		e->height = itemHeight;
+}
+
+//=================================================================================================
+int ListBox::CalculateItemsHeight()
+{
+	if(itemHeight == -1)
+		return itemHeight * items.size();
+	else
+	{
+		int height = 0;
+		for(GuiElement* e : items)
+			height += e->height;
+		return height;
+	}
 }

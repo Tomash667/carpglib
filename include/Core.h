@@ -254,20 +254,25 @@ class Ptr
 {
 	static_assert(std::is_base_of<IAllocator<T>, Allocator>::value, "Allocator must inherit from IAllocator.");
 public:
-	Ptr(nullptr_t) : ptr(nullptr)
+	Ptr(nullptr_t) : ptr(nullptr), owned(false)
 	{
 	}
-	Ptr(T* ptr) : ptr(ptr)
+	Ptr(T* ptr, bool owned = true) : ptr(ptr), owned(owned)
 	{
+		if(!ptr)
+		{
+			this->ptr = allocator.Create();
+			this->owned = true;
+		}
 	}
 	template<typename U = T>
-	Ptr(typename std::enable_if<!std::is_abstract<U>::value && std::is_default_constructible<U>::value>::type* = nullptr)
+	Ptr(typename std::enable_if<!std::is_abstract<U>::value && std::is_default_constructible<U>::value>::type* = nullptr) : owned(true)
 	{
 		ptr = allocator.Create();
 	}
 	~Ptr()
 	{
-		if(ptr)
+		if(ptr && owned)
 			allocator.Destroy(ptr);
 	}
 	void operator = (T* new_ptr)
@@ -287,7 +292,10 @@ public:
 	void Ensure()
 	{
 		if(!ptr)
+		{
 			ptr = allocator.Create();
+			owned = true;
+		}
 	}
 	T* Pin()
 	{
@@ -303,6 +311,7 @@ public:
 private:
 	T* ptr;
 	Allocator allocator;
+	bool owned;
 };
 
 //-----------------------------------------------------------------------------

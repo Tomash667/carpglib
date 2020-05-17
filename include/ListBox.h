@@ -14,6 +14,7 @@ namespace layout
 		AreaLayout selection;
 		Texture* down_arrow;
 		Font* font;
+		int auto_padding;
 	};
 }
 
@@ -51,28 +52,13 @@ public:
 	void ForceSelect(int index);
 	void Insert(GuiElement* e, int index);
 	void Remove(int index);
-	void SetIndex(int index)
-	{
-		assert(index >= -1 && index < (int)items.size());
-		selected = index;
-	}
-	void SetItemHeight(int height)
-	{
-		assert(height > 0);
-		item_height = height;
-	}
-	void SetForceImageSize(const Int2& _size)
-	{
-		assert(_size.x >= 0 && _size.y >= 0);
-		force_img_size = _size;
-	}
 	void Reset();
 
 	int GetIndex() const { return selected; }
 	GuiElement* GetItem() const { return selected == -1 ? nullptr : items[selected]; }
 	template<typename T> T* GetItemCast() const { return (T*)GetItem(); }
-	int GetItemHeight() const { return item_height; }
-	const Int2& GetForceImageSize() const { return force_img_size; }
+	int GetItemHeight() const { return itemHeight; }
+	const Int2& GetForceImageSize() const { return forceImgSize; }
 	vector<GuiElement*>& GetItems() { return items; }
 	template<typename T> vector<T*>& GetItemsCast() { return (vector<T*>&)items; }
 	uint GetCount() const { return items.size(); }
@@ -80,25 +66,46 @@ public:
 	bool IsCollapsed() { return collapsed; }
 	bool IsEmpty() const { return items.empty(); }
 
-	void SetCollapsed(bool new_collapsed) { assert(!initialized); collapsed = new_collapsed; }
+	void SetCollapsed(bool collapsed)
+	{
+		assert(!initialized);
+		this->collapsed = collapsed;
+	}
+	void SetIndex(int index)
+	{
+		assert(index >= -1 && index < (int)items.size());
+		selected = index;
+	}
+	void SetItemHeight(int height)
+	{
+		assert(height >= -1);
+		itemHeight = height;
+	}
+	void SetForceImageSize(const Int2& size)
+	{
+		assert(size.x >= 0 && size.y >= 0);
+		forceImgSize = size;
+	}
 
 	MenuList* menu;
 	MenuStrip* menu_strip;
 	DialogEvent event_handler;
 	Handler event_handler2;
-	int flags;
+	int textFlags;
 
 private:
 	int PosToIndex(int y);
 	void OnSelect(int index);
-	bool ChangeIndexEvent(int index, bool force, bool scroll_to);
+	bool ChangeIndexEvent(int index, bool force, bool scrollTo);
 	void UpdateScrollbarVisibility();
+	void CalculateItemHeight(GuiElement* e);
+	int CalculateItemsHeight();
 
 	Scrollbar scrollbar;
 	vector<GuiElement*> items;
 	int selected; // index of selected item or -1, default -1
-	int item_height; // height of item, default 20
-	Int2 real_size;
-	Int2 force_img_size; // forced image size, Int2(0,0) if not forced, default Int2(0,0)
-	bool collapsed, require_scrollbar;
+	int itemHeight; // height of item, default 20, -1 is auto
+	Int2 realSize;
+	Int2 forceImgSize; // forced image size, Int2(0,0) if not forced, default Int2(0,0)
+	bool collapsed, requireScrollbar;
 };

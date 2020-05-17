@@ -431,6 +431,7 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("selection", Entry::AreaLayout, offsetof(layout::ListBox, selection));
 	c->AddEntry("down_arrow", Entry::Image, offsetof(layout::ListBox, down_arrow));
 	c->AddEntry("font", Entry::Font, offsetof(layout::ListBox, font));
+	c->AddEntry("auto_padding", Entry::Int, offsetof(layout::ListBox, auto_padding));
 
 	c = AddControl<layout::MenuBar>("MenuBar");
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::MenuBar, background));

@@ -10,7 +10,7 @@ public:
 	virtual ~GuiElement() {}
 	virtual cstring ToString() = 0;
 
-	int value;
+	int value, height;
 	Texture* tex;
 };
 
