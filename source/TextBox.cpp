@@ -191,7 +191,7 @@ void TextBox::Update(float dt)
 				last_y_move = -1;
 
 				// double click select whole word
-				if(input->DoubleClick(Key::LeftButton) && !input->Down(Key::Shift) && prev_index == caret_index)
+				if(gui->DoubleClick(Key::LeftButton) && !input->Down(Key::Shift) && prev_index == caret_index)
 				{
 					cstring whitespace = " \t\n\r";
 					char c = text[char_index];

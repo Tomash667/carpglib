@@ -18,7 +18,7 @@ Gui* app::gui;
 
 //=================================================================================================
 Gui::Gui() : cursor_mode(CURSOR_NORMAL), focused_ctrl(nullptr), master_layout(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), shader(nullptr),
-fontLoader(nullptr)
+fontLoader(nullptr), lastClick(Key::LeftButton), lastClickTimer(1.f)
 {
 }
 
@@ -931,6 +931,33 @@ void Gui::Update(float dt, float mouse_speed)
 	}
 	else
 		app::engine->SetUnlockPoint(wnd_size / 2);
+
+	// handle double click
+	for(int i = 0; i < 5; ++i)
+		doubleclk[i] = false;
+	bool handled = false;
+	for(int i = 0; i < 5; ++i)
+	{
+		const Key key = Key(i + 1);
+		if(app::input->Pressed(key))
+		{
+			if(lastClick == key && lastClickTimer <= 0.5f && abs(cursor_pos.x - lastClickPos.x) <= 4 && abs(cursor_pos.y - lastClickPos.y) <= 4)
+			{
+				doubleclk[i] = true;
+				lastClickTimer = 1.f;
+			}
+			else
+			{
+				lastClick = key;
+				lastClickTimer = 0.f;
+				lastClickPos = cursor_pos;
+			}
+			handled = true;
+			break;
+		}
+	}
+	if(!handled)
+		lastClickTimer += dt;
 
 	layer->focus = dialog_layer->Empty();
 

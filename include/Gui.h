@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "Font.h"
 #include "VertexDeclaration.h"
+#include "Key.h"
 
 //-----------------------------------------------------------------------------
 // Gui events (in comment is new gui meaning)
@@ -210,6 +211,11 @@ public:
 		}
 	};
 	bool DrawText2(DrawTextOptions& options);
+	bool DoubleClick(Key key)
+	{
+		assert(key >= Key::LeftButton && key <= Key::X2Button);
+		return doubleclk[(int)key - 1];
+	}
 
 	Matrix mViewProj;
 	Int2 cursor_pos, prev_cursor_pos, wnd_size;
@@ -247,7 +253,10 @@ private:
 	VGui vBuf[256 * 6], vBuf2[256 * 6];
 	HitboxContext tmpHitboxContext;
 	vector<OnCharHandler*> on_char;
-	bool grayscale;
+	bool grayscale, doubleclk[5];
+	Key lastClick;
+	float lastClickTimer;
+	Int2 lastClickPos;
 	Layout* master_layout;
 	layout::Gui* layout;
 	Overlay* overlay;

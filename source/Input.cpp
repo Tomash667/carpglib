@@ -24,8 +24,6 @@ void Input::Update()
 			--keystate[i];
 		keyrepeat[i] = false;
 	}
-	for(uint i = 0; i < 5; ++i)
-		doubleclk[i] = false;
 	if(printscreen == IS_PRESSED)
 		SetState(Key::PrintScreen, IS_RELEASED);
 	for(Key k : to_release)
@@ -54,8 +52,6 @@ void Input::ReleaseKeys()
 		if(keystate[i] & 0x2)
 			keystate[i] = IS_RELEASED;
 	}
-	for(uint i = 0; i < 5; ++i)
-		doubleclk[i] = false;
 	to_release.clear();
 }
 
@@ -89,13 +85,4 @@ void Input::Process(Key key, bool down)
 	}
 	else
 		k = IS_PRESSED;
-}
-
-//=================================================================================================
-void Input::ProcessDoubleClick(Key key)
-{
-	assert(key >= Key::LeftButton && key <= Key::X2Button);
-	Process(key, true);
-	if(!key_callback)
-		doubleclk[(int)key] = true;
 }

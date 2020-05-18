@@ -160,7 +160,7 @@ void ListBox::Update(float dt)
 		{
 			int bt = 0;
 
-			if(event_handler2 && input->DoubleClick(Key::LeftButton))
+			if(event_handler2 && gui->DoubleClick(Key::LeftButton))
 			{
 				int new_index = PosToIndex(gui->cursor_pos.y);
 				if(new_index != -1 && new_index == selected)

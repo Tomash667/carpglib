@@ -245,6 +245,10 @@ long Engine::HandleEvent(HWND in_hwnd, uint msg, uint wParam, long lParam)
 	case WM_RBUTTONUP:
 	case WM_MBUTTONUP:
 	case WM_XBUTTONUP:
+	case WM_LBUTTONDBLCLK:
+	case WM_RBUTTONDBLCLK:
+	case WM_MBUTTONDBLCLK:
+	case WM_XBUTTONDBLCLK:
 		{
 			byte key;
 			int result;
@@ -269,19 +273,6 @@ long Engine::HandleEvent(HWND in_hwnd, uint msg, uint wParam, long lParam)
 			}
 
 			app::input->Process((Key)key, down);
-			return result;
-		}
-
-	// handle double click
-	case WM_LBUTTONDBLCLK:
-	case WM_RBUTTONDBLCLK:
-	case WM_MBUTTONDBLCLK:
-	case WM_XBUTTONDBLCLK:
-		{
-			byte key;
-			int result = 0;
-			MsgToKey(msg, wParam, key, result);
-			app::input->ProcessDoubleClick((Key)key);
 			return result;
 		}
 
@@ -317,30 +308,30 @@ bool Engine::MsgToKey(uint msg, uint wParam, byte& key, int& result)
 		assert(0);
 		break;
 	case WM_LBUTTONDOWN:
+	case WM_LBUTTONDBLCLK:
 		down = true;
 	case WM_LBUTTONUP:
-	case WM_LBUTTONDBLCLK:
 		key = VK_LBUTTON;
 		result = 0;
 		break;
 	case WM_RBUTTONDOWN:
+	case WM_RBUTTONDBLCLK:
 		down = true;
 	case WM_RBUTTONUP:
-	case WM_RBUTTONDBLCLK:
 		key = VK_RBUTTON;
 		result = 0;
 		break;
 	case WM_MBUTTONDOWN:
+	case WM_MBUTTONDBLCLK:
 		down = true;
 	case WM_MBUTTONUP:
-	case WM_MBUTTONDBLCLK:
 		key = VK_MBUTTON;
 		result = 0;
 		break;
 	case WM_XBUTTONDOWN:
+	case WM_XBUTTONDBLCLK:
 		down = true;
 	case WM_XBUTTONUP:
-	case WM_XBUTTONDBLCLK:
 		key = (GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2);
 		result = TRUE;
 		break;

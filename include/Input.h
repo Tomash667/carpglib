@@ -101,7 +101,6 @@ public:
 	void UpdateShortcuts();
 	void ReleaseKeys();
 	void Process(Key key, bool down);
-	void ProcessDoubleClick(Key key);
 
 	byte* GetKeystateData()
 	{
@@ -141,12 +140,6 @@ public:
 		return Down(key) && keyrepeat[(int)key];
 	}
 
-	bool DoubleClick(Key key)
-	{
-		assert(key >= Key::LeftButton && key <= Key::X2Button);
-		return doubleclk[(int)key];
-	}
-
 	float GetMouseWheel() const { return mouse_wheel; }
 	const Int2& GetMouseDif() const { return mouse_dif; }
 	void UpdateMouseWheel(float mouse_wheel) { this->mouse_wheel = mouse_wheel; }
@@ -158,7 +151,6 @@ private:
 	vector<Key> to_release;
 	byte keystate[MAX_KEY];
 	bool keyrepeat[MAX_KEY];
-	bool doubleclk[5];
 	Int2 mouse_dif;
 	float mouse_wheel;
 	int shortcut_state;
