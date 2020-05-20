@@ -135,7 +135,7 @@ void PreLogger::Flush()
 //-----------------------------------------------------------------------------
 void WarnOnce(int id, cstring msg)
 {
-	if(once_id.find(id) != once_id.end())
+	if(once_id.find(id) == once_id.end())
 	{
 		once_id.insert(id);
 		Warn(msg);

@@ -73,7 +73,7 @@ void Mesh::Load(cstring path)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Format("Invalid file signature '%.4s'.", head.format);
-	if(head.version < 12 || head.version > 21)
+	if(head.version < 12 || head.version > 22)
 		throw Format("Invalid file version '%d'.", head.version);
 	if(head.n_bones >= 32)
 		throw Format("Too many bones (%d).", head.n_bones);
@@ -269,6 +269,10 @@ void Mesh::Load(cstring path)
 		//	throw "Failed to read animations.";
 		anims.resize(head.n_anims);
 
+		uint keyframeBoneSize = sizeof(KeyframeBone);
+		if(head.version < 22)
+			keyframeBoneSize -= sizeof(float) * 4;
+
 		for(byte i = 0; i < head.n_anims; ++i)
 		{
 			Animation& anim = anims[i];
@@ -282,12 +286,21 @@ void Mesh::Load(cstring path)
 			//	throw format("Failed to read animation %u data.", i);
 
 			anim.frames.resize(anim.n_frames);
-
-			for(word j = 0; j < anim.n_frames; ++j)
+			for(Keyframe& frame : anim.frames)
 			{
-				f.Read(anim.frames[j].time);
-				anim.frames[j].bones.resize(head.n_bones);
-				f.Read(anim.frames[j].bones.data(), sizeof(KeyframeBone) * head.n_bones);
+				f >> frame.time;
+				frame.bones.resize(head.n_bones);
+				if(head.version >= 22)
+					f.Read(frame.bones.data(), sizeof(KeyframeBone) * head.n_bones);
+				else
+				{
+					for(KeyframeBone& frameBone : frame.bones)
+					{
+						f >> frameBone.pos;
+						f >> frameBone.rot;
+						frameBone.scale.x = frameBone.scale.y = frameBone.scale.z = f.Read<float>();
+					}
+				}
 			}
 		}
 
@@ -344,7 +357,7 @@ void Mesh::Load(cstring path)
 	}
 
 	old_ver = head.version;
-	head.version = 21;
+	head.version = 22;
 }
 
 void Mesh::LoadBoneGroups(FileReader& f)

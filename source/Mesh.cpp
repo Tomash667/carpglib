@@ -217,6 +217,10 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 			throw "Failed to read animations.";
 		anims.resize(head.n_anims);
 
+		uint keyframeBoneSize = sizeof(KeyframeBone);
+		if(head.version < 22)
+			keyframeBoneSize -= sizeof(float) * 2;
+
 		for(byte i = 0; i < head.n_anims; ++i)
 		{
 			Animation& anim = anims[i];
@@ -225,17 +229,26 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 			stream.Read(anim.length);
 			stream.Read(anim.n_frames);
 
-			size = anim.n_frames * (4 + sizeof(KeyframeBone) * head.n_bones);
+			size = anim.n_frames * (4 + keyframeBoneSize * head.n_bones);
 			if(!stream.Ensure(size))
 				throw Format("Failed to read animation %u data.", i);
 
 			anim.frames.resize(anim.n_frames);
-
-			for(word j = 0; j < anim.n_frames; ++j)
+			for(Keyframe& frame : anim.frames)
 			{
-				stream.Read(anim.frames[j].time);
-				anim.frames[j].bones.resize(head.n_bones);
-				stream.Read(anim.frames[j].bones.data(), sizeof(KeyframeBone) * head.n_bones);
+				stream >> frame.time;
+				frame.bones.resize(head.n_bones);
+				if(head.version >= 22)
+					stream.Read(frame.bones.data(), sizeof(KeyframeBone) * head.n_bones);
+				else
+				{
+					for(KeyframeBone& frameBone : frame.bones)
+					{
+						stream >> frameBone.pos;
+						stream >> frameBone.rot;
+						frameBone.scale.x = frameBone.scale.y = frameBone.scale.z = stream.Read<float>();
+					}
+				}
 			}
 		}
 
@@ -280,7 +293,7 @@ void Mesh::LoadHeader(StreamReader& stream)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Format("Invalid file signature '%.4s'.", head.format);
-	if(head.version < 12 || head.version > 21)
+	if(head.version < 12 || head.version > 22)
 		throw Format("Invalid file version '%u'.", head.version);
 	if(head.version < 20)
 		throw Format("Unsupported file version '%u'.", head.version);
@@ -503,7 +516,7 @@ void Mesh::KeyframeBone::Interpolate(Mesh::KeyframeBone& out, const Mesh::Keyfra
 {
 	out.rot = Quat::Slerp(k.rot, k2.rot, t);
 	out.pos = Vec3::Lerp(k.pos, k2.pos, t);
-	out.scale = Lerp(k.scale, k2.scale, t);
+	out.scale = Vec3::Lerp(k.scale, k2.scale, t);
 }
 
 //=================================================================================================

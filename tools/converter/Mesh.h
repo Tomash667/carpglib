@@ -169,7 +169,7 @@ struct Mesh
 	{
 		Vec3 pos;
 		Quat rot;
-		float scale;
+		Vec3 scale;
 
 		bool operator == (const KeyframeBone& keyframe_bone) const
 		{

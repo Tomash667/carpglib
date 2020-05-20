@@ -7,7 +7,7 @@
 const float DEFAULT_BLENDING = 0.33f;
 const int BLEND_TO_BIND_POSE = -1;
 void(*MeshInstance::Predraw)(void*, Matrix*, int) = nullptr;
-Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, 1.f);
+Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, Vec3::One);
 
 //=================================================================================================
 // Konstruktor instancji Mesh

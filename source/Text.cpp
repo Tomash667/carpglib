@@ -127,15 +127,17 @@ TextHelper::ParseResult TextHelper::ToNumber(cstring s, int64& i, float& f)
 	if(i > std::numeric_limits<uint>::max())
 		return Broken;
 
-	if(sign)
-		i = -i;
-	f = (float)i;
-
 	// end of string, this is int
 	if(c == 0)
+	{
+		if(sign)
+			i = -i;
+		f = (float)i;
 		return Int;
+	}
 
 	// parse fraction part
+	f = (float)i;
 	while((c = *s) != 0)
 	{
 		if(c == 'f')
@@ -153,6 +155,12 @@ TextHelper::ParseResult TextHelper::ToNumber(cstring s, int64& i, float& f)
 		else
 			return Broken;
 		++s;
+	}
+
+	if(sign)
+	{
+		i = -i;
+		f = -f;
 	}
 	return Float;
 }

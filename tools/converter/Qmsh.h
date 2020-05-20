@@ -55,7 +55,7 @@ struct QMSH_KEYFRAME_BONE
 {
 	Vec3 Translation;
 	Quat Rotation;
-	float Scaling;
+	Vec3 Scaling;
 };
 
 struct QMSH_KEYFRAME
@@ -112,5 +112,5 @@ struct QMSH
 	Box BoundingBox;
 	Vec3 camera_pos, camera_target, camera_up;
 
-	static const uint VERSION = 21u;
+	static const uint VERSION = 22u;
 };

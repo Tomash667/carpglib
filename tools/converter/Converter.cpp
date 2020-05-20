@@ -585,13 +585,13 @@ void Converter::TmpToQmsh_Animation(QMSH_ANIMATION *OutAnimation, const tmp::ACT
 					}
 					else if(TmpCurve->Name == "ScaleY")
 					{
-						BoneChannelPointers[bi].SizeX = TmpCurve;
+						BoneChannelPointers[bi].SizeY = TmpCurve;
 						if(!TmpCurve->Points.empty())
 							EarliestNextFrame = std::min(EarliestNextFrame, TmpCurve->Points[0].x);
 					}
-					else if(TmpCurve->Name == "ScaleW")
+					else if(TmpCurve->Name == "ScaleZ")
 					{
-						BoneChannelPointers[bi].SizeX = TmpCurve;
+						BoneChannelPointers[bi].SizeZ = TmpCurve;
 						if(!TmpCurve->Points.empty())
 							EarliestNextFrame = std::min(EarliestNextFrame, TmpCurve->Points[0].x);
 					}
@@ -630,19 +630,17 @@ void Converter::TmpToQmsh_Animation(QMSH_ANIMATION *OutAnimation, const tmp::ACT
 		Keyframe->Bones.resize(BoneCount);
 		for(uint bi = 0; bi < BoneCount; bi++)
 		{
-			Keyframe->Bones[bi].Translation.x = CalcTmpCurveValue(0.f, BoneChannelPointers[bi].LocX, &BoneChannelPointers[bi].LocX_index, EarliestNextFrame, &NextNext);
-			Keyframe->Bones[bi].Translation.z = CalcTmpCurveValue(0.f, BoneChannelPointers[bi].LocY, &BoneChannelPointers[bi].LocY_index, EarliestNextFrame, &NextNext);
-			Keyframe->Bones[bi].Translation.y = CalcTmpCurveValue(0.f, BoneChannelPointers[bi].LocZ, &BoneChannelPointers[bi].LocZ_index, EarliestNextFrame, &NextNext);
-			Keyframe->Bones[bi].Rotation.x = CalcTmpCurveValue(0.f, BoneChannelPointers[bi].QuatX, &BoneChannelPointers[bi].QuatX_index, EarliestNextFrame, &NextNext);
-			Keyframe->Bones[bi].Rotation.z = CalcTmpCurveValue(0.f, BoneChannelPointers[bi].QuatY, &BoneChannelPointers[bi].QuatY_index, EarliestNextFrame, &NextNext);
-			Keyframe->Bones[bi].Rotation.y = CalcTmpCurveValue(0.f, BoneChannelPointers[bi].QuatZ, &BoneChannelPointers[bi].QuatZ_index, EarliestNextFrame, &NextNext);
-			Keyframe->Bones[bi].Rotation.w = -CalcTmpCurveValue(1.f, BoneChannelPointers[bi].QuatW, &BoneChannelPointers[bi].QuatW_index, EarliestNextFrame, &NextNext);
-			float ScalingX = CalcTmpCurveValue(1.f, BoneChannelPointers[bi].SizeX, &BoneChannelPointers[bi].SizeX_index, EarliestNextFrame, &NextNext);
-			float ScalingY = CalcTmpCurveValue(1.f, BoneChannelPointers[bi].SizeY, &BoneChannelPointers[bi].SizeY_index, EarliestNextFrame, &NextNext);
-			float ScalingZ = CalcTmpCurveValue(1.f, BoneChannelPointers[bi].SizeZ, &BoneChannelPointers[bi].SizeZ_index, EarliestNextFrame, &NextNext);
-			if(!Equal(ScalingX, ScalingY) || !Equal(ScalingY, ScalingZ))
-				WarnOnce(537536, "Non uniform scaling of bone in animation IPO not supported.");
-			Keyframe->Bones[bi].Scaling = (ScalingX + ScalingY + ScalingZ) / 3.f;
+			QMSH_KEYFRAME_BONE& keyframeBone = Keyframe->Bones[bi];
+			keyframeBone.Translation.x = CalcTmpCurveValue(0.f, BoneChannelPointers[bi].LocX, &BoneChannelPointers[bi].LocX_index, EarliestNextFrame, &NextNext);
+			keyframeBone.Translation.z = CalcTmpCurveValue(0.f, BoneChannelPointers[bi].LocY, &BoneChannelPointers[bi].LocY_index, EarliestNextFrame, &NextNext);
+			keyframeBone.Translation.y = CalcTmpCurveValue(0.f, BoneChannelPointers[bi].LocZ, &BoneChannelPointers[bi].LocZ_index, EarliestNextFrame, &NextNext);
+			keyframeBone.Rotation.x = CalcTmpCurveValue(0.f, BoneChannelPointers[bi].QuatX, &BoneChannelPointers[bi].QuatX_index, EarliestNextFrame, &NextNext);
+			keyframeBone.Rotation.z = CalcTmpCurveValue(0.f, BoneChannelPointers[bi].QuatY, &BoneChannelPointers[bi].QuatY_index, EarliestNextFrame, &NextNext);
+			keyframeBone.Rotation.y = CalcTmpCurveValue(0.f, BoneChannelPointers[bi].QuatZ, &BoneChannelPointers[bi].QuatZ_index, EarliestNextFrame, &NextNext);
+			keyframeBone.Rotation.w = -CalcTmpCurveValue(1.f, BoneChannelPointers[bi].QuatW, &BoneChannelPointers[bi].QuatW_index, EarliestNextFrame, &NextNext);
+			keyframeBone.Scaling.x = CalcTmpCurveValue(1.f, BoneChannelPointers[bi].SizeX, &BoneChannelPointers[bi].SizeX_index, EarliestNextFrame, &NextNext);
+			keyframeBone.Scaling.z = CalcTmpCurveValue(1.f, BoneChannelPointers[bi].SizeY, &BoneChannelPointers[bi].SizeY_index, EarliestNextFrame, &NextNext);
+			keyframeBone.Scaling.y = CalcTmpCurveValue(1.f, BoneChannelPointers[bi].SizeZ, &BoneChannelPointers[bi].SizeZ_index, EarliestNextFrame, &NextNext);
 		}
 		OutAnimation->Keyframes.push_back(Keyframe);
 

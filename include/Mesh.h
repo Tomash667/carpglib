@@ -84,10 +84,10 @@ struct Mesh : public Resource
 	{
 		Vec3 pos;
 		Quat rot;
-		float scale;
+		Vec3 scale;
 
 		KeyframeBone() {}
-		KeyframeBone(const Vec3& pos, const Quat& rot, float scale) : pos(pos), rot(rot), scale(scale) {}
+		KeyframeBone(const Vec3& pos, const Quat& rot, const Vec3& scale) : pos(pos), rot(rot), scale(scale) {}
 		void Mix(Matrix& out, const Matrix& mul) const;
 		static void Interpolate(KeyframeBone& out, const KeyframeBone& k, const KeyframeBone& k2, float t);
 	};

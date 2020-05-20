@@ -5,7 +5,7 @@
 #include <conio.h>
 #include <Windows.h>
 
-const char* CONVERTER_VERSION = "21.3";
+const char* CONVERTER_VERSION = "22";
 
 string group_file, output_file;
 GROUP_OPTION gopt;
