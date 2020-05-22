@@ -4,6 +4,10 @@ Minor updates have changes only in exporter/converer, don't affect qmsh file.
 v22:
 MESH (v22):
 + keyframe bone scale is Vec3
+IMPORTER:
++ mesh v22 support
+CONVERTER:
++ infodir method
 
 v21.3:
 CONVERTER:

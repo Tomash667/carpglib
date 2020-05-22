@@ -102,8 +102,8 @@ void Mesh::Load(cstring path)
 			f.Read(cam_up);
 		else
 			cam_up = Vec3(0, 1, 0);
-		//if(!stream)
-		//	throw "Missing camera data.";
+		if(!f)
+			throw "Missing camera data.";
 	}
 	else
 	{
@@ -136,8 +136,8 @@ void Mesh::Load(cstring path)
 	// ------ vertices
 	// ensure size
 	vdata_size = vertex_size * head.n_verts;
-	//if(!f.Ensure(vdata_size))
-	//	throw "Failed to read vertex buffer.";
+	if(!f.Ensure(vdata_size))
+		throw "Failed to read vertex buffer.";
 
 	// create vertex buffer
 	vdata = new byte[vdata_size];
@@ -148,8 +148,8 @@ void Mesh::Load(cstring path)
 	// ----- triangles
 	// ensure size
 	fdata_size = sizeof(word) * head.n_tris * 3;
-	//if(!f.Ensure(size))
-	//	throw "Failed to read index buffer.";
+	if(!f.Ensure(size))
+		throw "Failed to read index buffer.";
 
 	// create index buffer
 	fdata = new byte[fdata_size];
@@ -158,9 +158,9 @@ void Mesh::Load(cstring path)
 	f.Read(fdata, fdata_size);
 
 	// ----- submeshes
-	//size = Submesh::MIN_SIZE * head.n_subs;
-	//if(!f.Ensure(size))
-	//	throw "Failed to read submesh data.";
+	size = Submesh::MIN_SIZE * head.n_subs;
+	if(!f.Ensure(size))
+		throw "Failed to read submesh data.";
 	subs.resize(head.n_subs);
 
 	for(word i = 0; i < head.n_subs; ++i)
@@ -217,8 +217,8 @@ void Mesh::Load(cstring path)
 			sub.specular_hardness = DefaultSpecularHardness;
 		}
 
-		//if(!stream)
-		//	throw format("Failed to read submesh %u.", i);
+		if(!f)
+			throw Format("Failed to read submesh %u.", i);
 	}
 
 	// animation data
@@ -226,10 +226,9 @@ void Mesh::Load(cstring path)
 	{
 		// bones
 		size = Bone::MIN_SIZE * head.n_bones;
-		//if(!f.Ensure(size))
-		//	throw "Failed to read bones.";
+		if(!f.Ensure(size))
+			throw "Failed to read bones.";
 		bones.resize(head.n_bones);
-
 
 		for(byte i = 0; i < head.n_bones; ++i)
 		{
@@ -256,17 +255,17 @@ void Mesh::Load(cstring path)
 			}
 		}
 
-		//if(!stream)
-		//	throw "Failed to read bones data.";
+		if(!f)
+			throw "Failed to read bones data.";
 
 		// bone groups
 		if(head.version >= 21)
 			LoadBoneGroups(f);
 
 		// animations
-		//size = Animation::MIN_SIZE * head.n_anims;
-		//if(!f.Ensure(size))
-		//	throw "Failed to read animations.";
+		size = Animation::MIN_SIZE * head.n_anims;
+		if(!f.Ensure(size))
+			throw "Failed to read animations.";
 		anims.resize(head.n_anims);
 
 		uint keyframeBoneSize = sizeof(KeyframeBone);
@@ -281,9 +280,9 @@ void Mesh::Load(cstring path)
 			f.Read(anim.length);
 			f.Read(anim.n_frames);
 
-			//size = anim.n_frames * (4 + sizeof(KeyframeBone) * head.n_bones);
-			//if(!f.Ensure(size))
-			//	throw format("Failed to read animation %u data.", i);
+			size = anim.n_frames * (4 + keyframeBoneSize * head.n_bones);
+			if(!f.Ensure(size))
+				throw Format("Failed to read animation %u data.", i);
 
 			anim.frames.resize(anim.n_frames);
 			for(Keyframe& frame : anim.frames)
@@ -309,9 +308,9 @@ void Mesh::Load(cstring path)
 	}
 
 	// points
-	//uint size = Point::MIN_SIZE * head.n_points;
-	//if(!f.Ensure(size))
-	//	throw "Failed to read points.";
+	size = Point::MIN_SIZE * head.n_points;
+	if(!f.Ensure(size))
+		throw "Failed to read points.";
 	attach_points.resize(head.n_points);
 	for(word i = 0; i < head.n_points; ++i)
 	{
@@ -350,8 +349,8 @@ void Mesh::Load(cstring path)
 	if(IsSet(head.flags, F_SPLIT))
 	{
 		size = sizeof(Split) * head.n_subs;
-		//if(!f.Ensure(size))
-		//	throw "Failed to read mesh splits.";
+		if(!f.Ensure(size))
+			throw "Failed to read mesh splits.";
 		splits.resize(head.n_subs);
 		f.Read(splits.data(), size);
 	}
@@ -378,8 +377,8 @@ void Mesh::LoadBoneGroups(FileReader& f)
 	}
 	else
 	{
-		//if(!f.Ensure(BoneGroup::MIN_SIZE * head.n_groups))
-		//	throw "Failed to read bone groups.";
+		if(!f.Ensure(BoneGroup::MIN_SIZE * head.n_groups))
+			throw "Failed to read bone groups.";
 		groups.resize(head.n_groups);
 		for(word i = 0; i < head.n_groups; ++i)
 		{

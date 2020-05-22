@@ -59,6 +59,22 @@ inline bool operator != (const Cstring& s1, cstring s2)
 }
 
 //-----------------------------------------------------------------------------
+struct CstringComparer
+{
+	bool operator() (cstring s1, cstring s2) const
+	{
+		return _stricmp(s1, s2) > 0;
+	}
+};
+struct CstringEqualComparer
+{
+	bool operator() (cstring s1, cstring s2) const
+	{
+		return strcmp(s1, s2) == 0;
+	}
+};
+
+//-----------------------------------------------------------------------------
 cstring Format(cstring fmt, ...);
 cstring FormatList(cstring fmt, va_list lis);
 void FormatStr(string& str, cstring fmt, ...);
@@ -86,21 +102,16 @@ inline bool EndsWith(std::string const& value, std::string const& ending)
 }
 void MakeDoubleZeroTerminated(char* dest, Cstring src);
 bool StringContainsStringI(cstring s1, cstring s2);
-
 // return index of character in cstring
-inline int StrCharIndex(cstring chrs, char c)
-{
-	int index = 0;
-	do
-	{
-		if(*chrs == c)
-			return index;
-		++index;
-		++chrs;
-	} while(*chrs);
-
-	return -1;
-}
+int StrCharIndex(cstring chrs, char c);
+char StrContains(cstring s, cstring chrs);
+char CharInStr(char c, cstring chrs);
+// convert \r \r\n -> \n or remove all
+void RemoveEndOfLine(string& str, bool remove);
+uint FindClosingPos(const string& str, uint pos, char start = '(', char end = ')');
+string UrlEncode(const string& s);
+// replace all occurrences of 'from' with 'to'
+cstring ReplaceAll(cstring str, cstring from, cstring to);
 
 namespace TextHelper
 {
@@ -163,65 +174,8 @@ inline void Join(const vector<T>& v, string& s, cstring separator, Pred pred)
 	}
 }
 
-inline char StrContains(cstring s, cstring chrs)
-{
-	assert(s && chrs);
-
-	while(true)
-	{
-		char c = *s++;
-		if(c == 0)
-			return 0;
-		cstring ch = chrs;
-		while(true)
-		{
-			char c2 = *ch++;
-			if(c2 == 0)
-				break;
-			if(c == c2)
-				return c;
-		}
-	}
-}
-
-inline char CharInStr(char c, cstring chrs)
-{
-	assert(chrs);
-
-	while(true)
-	{
-		char c2 = *chrs++;
-		if(c2 == 0)
-			return 0;
-		if(c == c2)
-			return c;
-	}
-}
-
-//-----------------------------------------------------------------------------
-struct CstringComparer
-{
-	bool operator() (cstring s1, cstring s2) const
-	{
-		return _stricmp(s1, s2) > 0;
-	}
-};
-struct CstringEqualComparer
-{
-	bool operator() (cstring s1, cstring s2) const
-	{
-		return strcmp(s1, s2) == 0;
-	}
-};
-
-// convert \r \r\n -> \n or remove all
-void RemoveEndOfLine(string& str, bool remove);
-
 template<int N>
 inline cstring RandomString(cstring(&strs)[N])
 {
 	return strs[Rand() % N];
 }
-
-uint FindClosingPos(const string& str, uint pos, char start = '(', char end = ')');
-string UrlEncode(const string& s);

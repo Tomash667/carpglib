@@ -166,6 +166,7 @@ int main(int argc, char **argv)
 					"-phy - export only physic mesh (default extension .phy)\n"
 					"-normal - export normal mesh\n"
 					"-info FILE - show information about mesh (version etc)\n"
+					"-infodir DIR - show information about all meshes\n"
 					"-details OPTIONS FILE - like info but more details\n"
 					"-compare FILE FILE2 - compare two meshes and show differences\n"
 					"-upgrade FILE - upgrade mesh to newest version\n"
@@ -235,6 +236,16 @@ int main(int argc, char **argv)
 				else
 					printf("Missing FILE for '-info'!\n");
 			}
+			else if(str == "-infodir")
+			{
+				if(i + 1 < argc)
+				{
+					++i;
+					MeshInfoDir(argv[i], check_subdir);
+				}
+				else
+					printf("Missing DIR for '-infodir'!\n");
+			}
 			else if(str == "-details")
 			{
 				if(i + 2 < argc)
@@ -279,7 +290,7 @@ int main(int argc, char **argv)
 					UpgradeDir(argv[i], force_update, check_subdir);
 				}
 				else
-					printf("Missing FILE for '-upgradedir'!\n");
+					printf("Missing DIR for '-upgradedir'!\n");
 			}
 			else if(str == "-subdir")
 				check_subdir = true;

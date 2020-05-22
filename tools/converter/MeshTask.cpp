@@ -13,6 +13,7 @@
 #include "Mesh.h"
 #include <cassert>
 #include <conio.h>
+#include <File.h>
 #include <Windows.h>
 
 void LoadQmshTmp(QMSH *Out, ConversionData& cs )
@@ -183,6 +184,51 @@ void MeshInfo(const char* path, const char* options)
 	}
 
 	delete mesh;
+}
+
+void MeshInfoDir(const char* path, bool subdir, std::map<int, int>& files)
+{
+	io::FindFiles(Format("%s/*", path), [&](const io::FileInfo& info)
+	{
+		string dir = Format("%s/%s", path, info.filename);
+		if(info.is_dir && subdir)
+			MeshInfoDir(dir.c_str(), subdir, files);
+		else
+		{
+			Mesh* mesh = new Mesh;
+			int ver = 0;
+
+			try
+			{
+				mesh->LoadSafe(dir.c_str());
+				ver = mesh->old_ver;
+			}
+			catch(cstring err)
+			{
+				Error("Failed to load '%s': %s\n", dir.c_str(), err);
+			}
+
+			delete mesh;
+			files[ver]++;
+		}
+		return true;
+	});
+}
+
+void MeshInfoDir(const char* path, bool subdir)
+{
+	std::map<int, int> files;
+
+	MeshInfoDir(path, subdir, files);
+
+	printf("INFODIR COMPLETE\n");
+	int total = 0;
+	for(auto& it : files)
+	{
+		printf("v %d: %d\n", it.first, it.second);
+		total += it.second;
+	}
+	printf("Total: %d\n", total);
 }
 
 void Compare(const char* path1, const char* path2)
@@ -717,7 +763,6 @@ bool EndsWith(cstring str, cstring end)
 	}
 	return true;
 }
-
 
 void UpgradeDir(const char* path, bool force, bool subdir, int& upgraded, int& ok, int& failed)
 {

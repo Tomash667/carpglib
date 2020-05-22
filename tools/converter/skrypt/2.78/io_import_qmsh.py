@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Qmsh",
     "author": "Tomashu",
-    "version": (0, 21, 1),
+    "version": (0, 22, 0),
     "blender": (2, 7, 8),
     "location": "File > Import > Qmsh",
     "description": "Import from Qmsh",
@@ -208,7 +208,7 @@ class Qmsh:
 			self.cam_up = ConvertVec3(f.ReadVec3())
 			if self.sign != b"QMSH":
 				raise ImporterException("Invalid file signature " + str(self.sign))
-			if self.version < 20 or self.version > 21:
+			if self.version < 20 or self.version > 22:
 				raise ImporterException("Invalid file version " + str(self.version))
 			if self.n_bones >= 32:
 				raise ImporterException("Too many bones (" + str(self.n_bones) + ")")
@@ -313,12 +313,16 @@ class Qmsh:
 					bone = Qmsh.Animation.Keyframe.KeyframeBone()
 					bone.pos = ConvertVec3(f.ReadVec3())
 					bone.rot = f.ReadQuaternion()
-					bone.scale = f.ReadFloat()
+					if head.version >= 22:
+						bone.scale = ConvertVec3(f.ReadVec3())
+					else:
+						scale = f.ReadFloat()
+						bone.scale = (scale, scale, scale)
 					frame.bones.append(bone)
 				self.frames.append(frame)
 		def UseScale(self, bone_i):
 			for frame in self.frames:
-				if frame.bones[bone_i].scale != 1:
+				if frame.bones[bone_i].scale != (1, 1, 1):
 					return True
 			return False
 	##-------------------------------------------------------------------------
@@ -798,9 +802,9 @@ class Importer:
 				self.curves['rotation_quaternion2'].keyframe_points[i].co = (time, framebone.rot[2]) # Y
 				self.curves['rotation_quaternion3'].keyframe_points[i].co = (time, framebone.rot[1]) # Z
 				if self.use_scale:
-					self.curves['scale0'].keyframe_points[i].co = (time, framebone.scale)
-					self.curves['scale1'].keyframe_points[i].co = (time, framebone.scale)
-					self.curves['scale2'].keyframe_points[i].co = (time, framebone.scale)
+					self.curves['scale0'].keyframe_points[i].co = (time, framebone.scale[0])
+					self.curves['scale1'].keyframe_points[i].co = (time, framebone.scale[1])
+					self.curves['scale2'].keyframe_points[i].co = (time, framebone.scale[2])
 			def Update(self):
 				for name, curve in self.curves.items():
 					curve.update()

@@ -4,6 +4,7 @@
 
 void Convert(ConversionData& data);
 void MeshInfo(const char* path, const char* options = nullptr);
+void MeshInfoDir(const char* path, bool subir);
 void Compare(const char* path1, const char* path2);
 int Upgrade(const char* path, bool force);
 void UpgradeDir(const char* path, bool force, bool subdir);

@@ -463,6 +463,59 @@ bool StringContainsStringI(cstring s1, cstring s2)
 }
 
 //=================================================================================================
+int StrCharIndex(cstring chrs, char c)
+{
+	int index = 0;
+	do
+	{
+		if(*chrs == c)
+			return index;
+		++index;
+		++chrs;
+	}
+	while(*chrs);
+
+	return -1;
+}
+
+//=================================================================================================
+char StrContains(cstring s, cstring chrs)
+{
+	assert(s && chrs);
+
+	while(true)
+	{
+		char c = *s++;
+		if(c == 0)
+			return 0;
+		cstring ch = chrs;
+		while(true)
+		{
+			char c2 = *ch++;
+			if(c2 == 0)
+				break;
+			if(c == c2)
+				return c;
+		}
+	}
+}
+
+//=================================================================================================
+char CharInStr(char c, cstring chrs)
+{
+	assert(chrs);
+
+	while(true)
+	{
+		char c2 = *chrs++;
+		if(c2 == 0)
+			return 0;
+		if(c == c2)
+			return c;
+	}
+}
+
+//=================================================================================================
 cstring ToString(const wchar_t* wstr)
 {
 	assert(wstr);
@@ -595,4 +648,61 @@ string UrlEncode(const string& s)
 		}
 	}
 	return e.str();
+}
+
+//=================================================================================================
+bool StartsWith(cstring str, cstring start)
+{
+	while(true)
+	{
+		char c = *start;
+		if(c == 0)
+			return true;
+		if(c != *str)
+			return false;
+		++str;
+		++start;
+	}
+}
+
+//=================================================================================================
+cstring ReplaceAll(cstring str, cstring from, cstring to)
+{
+	assert(str && from && to);
+
+	cstring start = strstr(str, from);
+	if(!start)
+		return str;
+
+	const int fromLen = strlen(from);
+
+	char* cbuf = GetFormatString();
+	char* out = cbuf;
+	int count = start - str;
+	for(int i = 0; i < count; ++i)
+		*out++ = *str++;
+
+	char c2;
+	while((c2 = *str) != 0)
+	{
+		if(StartsWith(str, from))
+		{
+			cstring s = to;
+			char c;
+			while((c = *s) != 0)
+			{
+				*out++ = c;
+				++s;
+			}
+			str += fromLen;
+		}
+		else
+		{
+			*out++ = c2;
+			++str;
+		}
+	}
+
+	*out = 0;
+	return cbuf;
 }
