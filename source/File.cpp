@@ -471,7 +471,7 @@ void io::Crypt(char* inp, uint inplen, cstring key, uint keylen)
 //=================================================================================================
 cstring io::FilenameFromPath(const string& path)
 {
-	uint pos = path.find_last_of('/');
+	uint pos = path.find_last_of("/\\");
 	if(pos == string::npos)
 		return path.c_str();
 	else
@@ -482,7 +482,7 @@ cstring io::FilenameFromPath(const string& path)
 cstring io::FilenameFromPath(cstring path)
 {
 	assert(path);
-	cstring filename = strrchr(path, '/');
+	cstring filename = FindLastOf(path, "/\\");
 	if(filename)
 		return filename + 1;
 	else

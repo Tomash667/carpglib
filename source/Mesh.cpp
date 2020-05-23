@@ -480,6 +480,19 @@ Mesh::Animation* Mesh::GetAnimation(cstring name)
 }
 
 //=================================================================================================
+int Mesh::GetAnimationIndex(Animation* anim) const
+{
+	int index = 0;
+	for(const Animation& a : anims)
+	{
+		if(anim == &a)
+			return index;
+		++index;
+	}
+	return -1;
+}
+
+//=================================================================================================
 // Zwraca indeks ramki i czy dok³adne trafienie
 //=================================================================================================
 int Mesh::Animation::GetFrameIndex(float time, bool& hit)

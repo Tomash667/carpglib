@@ -65,6 +65,8 @@ void Render::Init()
 {
 	wndSize = app::engine->GetClientSize();
 
+	io::CreateDirectory("cache");
+
 	CreateAdapter();
 	CreateDevice();
 	LogAndSelectResolution();

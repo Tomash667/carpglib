@@ -114,7 +114,7 @@ struct MeshInstance
 		assert(InRange(group, 0, mesh->head.n_groups - 1));
 		return groups[group].GetProgress();
 	}
-	void ClearBones();
+	void DisableAnimations();
 	void SetToEnd(cstring anim)
 	{
 		Mesh::Animation* a = mesh->GetAnimation(anim);

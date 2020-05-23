@@ -706,3 +706,23 @@ cstring ReplaceAll(cstring str, cstring from, cstring to)
 	*out = 0;
 	return cbuf;
 }
+
+cstring FindLastOf(cstring str, cstring chars)
+{
+	assert(str && chars);
+	size_t len = strlen(str);
+	cstring s = str + len - 1;
+	while(s != str)
+	{
+		char c = *s;
+		char c2;
+		cstring ch = chars;
+		while((c2 = *ch++) != 0)
+		{
+			if(c == c2)
+				return s;
+		}
+		--s;
+	}
+	return s;
+}

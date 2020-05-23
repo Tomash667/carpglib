@@ -112,6 +112,7 @@ uint FindClosingPos(const string& str, uint pos, char start = '(', char end = ')
 string UrlEncode(const string& s);
 // replace all occurrences of 'from' with 'to'
 cstring ReplaceAll(cstring str, cstring from, cstring to);
+cstring FindLastOf(cstring str, cstring chars);
 
 namespace TextHelper
 {

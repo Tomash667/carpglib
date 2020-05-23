@@ -24,7 +24,7 @@ void Scene::ListNodes(SceneBatch& batch)
 	FrustumPlanes frustum(batch.camera->mat_view_proj);
 	for(SceneNode* node : nodes)
 	{
-		if(frustum.SphereToFrustum(node->center, node->radius))
+		if(node->mesh && frustum.SphereToFrustum(node->center, node->radius))
 		{
 			if(batch.gather_lights)
 				GatherLights(batch, node);

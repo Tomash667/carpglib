@@ -528,11 +528,13 @@ int MeshInstance::GetUsableGroup(uint group)
 }
 
 //=================================================================================================
-// Czyœci koœci tak ¿e jest bazowa poza, pozwala na renderowanie skrzyni bez animacji,
-// Przyda³a by siê lepsza nazwa tej funkcji i u¿ywanie jej w czasie odtwarzania animacji
-//=================================================================================================
-void MeshInstance::ClearBones()
+void MeshInstance::DisableAnimations()
 {
+	for(Group& group : groups)
+	{
+		group.anim = nullptr;
+		group.state = 0;
+	}
 	for(int i = 0; i < mesh->head.n_bones; ++i)
 		mat_bones[i] = Matrix::IdentityMatrix;
 	need_update = false;

@@ -7,6 +7,9 @@
 #endif
 
 #include <Windows.h>
+#ifdef INCLUDE_COMMON_DIALOGS
+#include <commdlg.h>
+#endif
 
 #undef CreateFont
 #undef CreateDirectory
