@@ -329,16 +329,15 @@ def ProcessObject(data,obj):
 ################################################################################
 # zwraca nazwe krzywej taka jak kiedys PosX,QuatW,ScaleZ
 def ConvertFCurve(channel):
-	name = 0
-	parts = channel.data_path.split('.')
-	ile = len(parts)
-	str2 = parts[ile-1]
-	if str2 == "location":
-		name = "Loc"
-	elif str2 == "rotation_quaternion":
-		name = "Quat"
-	else:
-		name = "Scale"
+	part = channel.data_path.split('.')[-1]
+	switcher = {
+		"location": "Loc",
+		"rotation_quaternion": "Quat",
+		"scale": "Scale"
+	}
+	name = switcher.get(part, "invalid")
+	if name == "invalid":
+		raise ExporterException("Invalid channel type '%s' (euler rotation is not supported)." % part)
 	index = channel.array_index
 	if name == "Quat":
 		if index == 0:
@@ -395,7 +394,6 @@ def ProcessParams(data,scene):
 ################################################################################
 # Eksportuj model
 def ExportQmsh(data):
-	#Blender.Window.WaitCursor(True)
 	print("Exporting to QMSH...")
 	data.file = open(data.path, "w")
 	try:
@@ -423,14 +421,13 @@ def ExportQmsh(data):
 			else:
 				sEndMessage = "Succeeded with %i warnings." % data.warnings
 			print(sEndMessage)
-			return True
 		except ExporterException:
 			try:
 				data.file.close()
 				os.remove(data.path)
 			except Exception:
 				pass
-			return False
+			raise
 	finally:
 		try:
 			data.file.close()
@@ -446,8 +443,7 @@ def RunExport(filepath, config):
 	elif filepath.endswith('.qmsh'):
 		filepath += '.tmp'
 	data = ExporterData(filepath, config.textureNames, config.useExistingArmature, config.applyModifiers, config.forceTangents)
-	if not ExportQmsh(data):
-		return False
+	ExportQmsh(data)
 	if config.runConverter:
 		cmd = '"' + config.converterPath + '" "' + filepath + '"'
 		print("Command: %s" % cmd)
@@ -548,11 +544,12 @@ class QmshExporterOperator(bpy.types.Operator, ExportHelper):
 		self.config.Save()
 		try:
 			RunExport(self.properties.filepath, self.config)
+			return {"FINISHED"}
 		except ExporterException as error:
 			msg = 'Exporter error: ' +str(error)
 			print("ERROR: " + msg)
-			bpy.ops.error.message('INVOKE_DEFAULT', message = msg)
-		return {"FINISHED"}
+			self.report({"ERROR"}, msg)
+			return {"CANCELLED"}
 
 ################################################################################
 # funkcje pluginu
