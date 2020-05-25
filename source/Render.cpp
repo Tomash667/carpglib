@@ -43,16 +43,17 @@ Render::~Render()
 
 	if(device)
 	{
-		// write to output directx leaks
-#ifdef _DEBUG
-		ID3D11Debug* debug;
-		device->QueryInterface(__uuidof(ID3D11Debug), (void**)&debug);
-		if(debug)
+		if(IsDebug())
 		{
-			debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
-			debug->Release();
+			// write to output directx leaks
+			ID3D11Debug* debug;
+			device->QueryInterface(__uuidof(ID3D11Debug), (void**)&debug);
+			if(debug)
+			{
+				debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
+				debug->Release();
+			}
 		}
-#endif
 		device->Release();
 	}
 
@@ -144,10 +145,7 @@ cstring GetFeatureLevelString(int value)
 //=================================================================================================
 void Render::CreateDevice()
 {
-	int flags = 0;
-#ifdef _DEBUG
-	flags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
+	const int flags = IsDebug() ? D3D11_CREATE_DEVICE_DEBUG : 0;
 	D3D_FEATURE_LEVEL featureLevel;
 
 	if(forceFeatureLevel != 0)
@@ -467,16 +465,13 @@ void Render::LogAndSelectMultisampling()
 //=================================================================================================
 void Render::Clear(const Vec4& color)
 {
-	if(currentTarget)
-	{
-		deviceContext->ClearRenderTargetView(currentTarget->renderTargetView, (const float*)color);
-		deviceContext->ClearDepthStencilView(currentTarget->depthStencilView, D3D11_CLEAR_DEPTH, 1.f, 0);
-	}
-	else
-	{
-		deviceContext->ClearRenderTargetView(renderTargetView, (const float*)color);
-		deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.f, 0);
-	}
+	ID3D11RenderTargetView* renderTargetView;
+	ID3D11DepthStencilView* depthStencilView;
+	deviceContext->OMGetRenderTargets(1, &renderTargetView, &depthStencilView);
+	deviceContext->ClearRenderTargetView(renderTargetView, (const float*)color);
+	deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.f, 0);
+	renderTargetView->Release();
+	depthStencilView->Release();
 }
 
 //=================================================================================================
@@ -962,11 +957,7 @@ ID3DBlob* Render::CompileShader(ShaderParams& params, bool isVertex)
 		target = useV4Shaders ? "ps_4_0" : "ps_5_0";
 	}
 
-	uint flags = D3DCOMPILE_ENABLE_STRICTNESS;
-#ifdef _DEBUG
-	flags |= D3DCOMPILE_DEBUG;
-#endif
-
+	const uint flags = D3DCOMPILE_ENABLE_STRICTNESS | (IsDebug() ? D3DCOMPILE_DEBUG : 0);
 	cstring path = Format("%s/%s.hlsl", shaders_dir.c_str(), params.name);
 	FileTime fileTime = io::GetFileTime(path);
 

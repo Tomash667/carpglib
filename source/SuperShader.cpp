@@ -497,7 +497,10 @@ void SuperShader::DrawDecal(const Decal& decal)
 		v[2].tex = Vec2(1, 0);
 		v[3].tex = Vec2(1, 1);
 		for(int i = 0; i < 4; ++i)
+		{
+			v[i].pos.y = 0;
 			v[i].normal = decal.normal;
+		}
 		if(decal.normal.Equal(Vec3(0, 1, 0)))
 		{
 			v[0].pos.x = decal.scale * sin(decal.rot + 5.f / 4 * PI);

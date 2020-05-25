@@ -1,12 +1,12 @@
 bl_info = {
-    "name": "Qmsh",
-    "author": "Tomashu",
-    "version": (0, 22, 0),
-    "blender": (2, 7, 8),
-    "location": "File > Import > Qmsh",
-    "description": "Import from Qmsh",
-    "warning": "",
-    "category": "Import-Export"}
+	"name": "Qmsh",
+	"author": "Tomashu",
+	"version": (0, 22, 0),
+	"blender": (2, 78, 0),
+	"location": "File > Import > Qmsh",
+	"description": "Import from Qmsh",
+	"warning": "",
+	"category": "Import-Export"}
 
 import bpy
 from bpy.props import StringProperty, BoolProperty

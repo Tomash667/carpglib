@@ -1912,7 +1912,8 @@ void Gui::CloseDialogs()
 			dialog->Event(GuiEvent_Close);
 		if(dialog->need_delete)
 		{
-			DEBUG_DO(RemoveElementTry(created_dialogs, dialog));
+			if(IsDebug())
+				RemoveElementTry(created_dialogs, dialog);
 			delete dialog;
 		}
 	}
