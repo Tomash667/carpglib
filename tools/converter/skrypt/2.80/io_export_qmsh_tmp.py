@@ -1,13 +1,13 @@
 bl_info = {
-    "name": "Qmsh.tmp",
-    "author": "Tomashu",
-    "version": (0, 19, 1),
-    "blender": (2, 7, 2),
-    "location": "File > Export > Qmsh.tmp",
-    "description": "Export to Qmsh.tmp",
-    "warning": "",
-    "category": "Import-Export"}
-    
+	"name": "Qmsh.tmp",
+	"author": "Tomashu",
+	"version": (0, 22, 0),
+	"blender": (2, 80, 0),
+	"location": "File > Export > Qmsh.tmp",
+	"description": "Export to Qmsh.tmp",
+	"warning": "",
+	"category": "Import-Export"}
+
 # UWAGI
 # - zaznacz tylko to co chcesz wyeksprtowac
 # - eksportujac punkty (Empty) ustaw animacje na 'base'
@@ -17,10 +17,14 @@ bl_info = {
 
 import bpy
 from bpy.props import StringProperty, BoolProperty
+import subprocess
 import mathutils
+import os
+from bpy_extras.io_utils import ExportHelper
+import configparser
 
 ################################################################################
-class MyException(Exception):
+class ExporterException(Exception):
 	pass
 
 ################################################################################
@@ -43,8 +47,7 @@ class ExporterData:
 		self.warnings = self.warnings + 1
 		print("Warning: " + msg)
 	def Error(self,msg):
-		print("Error: " + msg)
-		raise MyException
+		raise ExporterException(msg)
 
 ################################################################################
 def QuoteString(s):
@@ -89,7 +92,7 @@ def ProcessMeshObject(data,obj):
 	v = obj.scale
 	data.file.write("\t\tscale %f,%f,%f\n" % (v[0], v[1], v[2]))
 	# Parent Armature i Parent Bone
-	if obj.parent == None:
+	if obj.parent is None:
 		sParent = ""
 	else:
 		if obj.parent.type != "ARMATURE":
@@ -102,7 +105,7 @@ def ProcessMeshObject(data,obj):
 	data.file.write("\t\tmaterials %i {\n" % len(mats))
 	for mat2 in mats:
 		mat = mat2.material
-		if mat == None:
+		if mat is None:
 			data.file.write("\t\t\tmaterial %s { }\n" % QuoteString(""))
 		else:
 			data.file.write("\t\t\tmaterial %s {\n" % QuoteString(mat.name))
@@ -143,7 +146,6 @@ def ProcessMeshObject(data,obj):
 			else:
 				sSmooth = "0"
 			data.file.write("\t\t\t%i %i %s" % (len(f.vertices), f.material_index, sSmooth))
-			ii = 0
 			for v in f.vertices:
 				data.file.write(" %i 0,0" % (v))
 			data.file.write(" %f,%f,%f\n" % (f.normal.x,f.normal.y,f.normal.z))
@@ -203,28 +205,46 @@ def ProcessArmatureObject(data,obj):
 	Scaling = obj.scale
 	data.file.write("\t\t%f,%f,%f\n" % (Scaling[0], Scaling[1], Scaling[2]))
 	
-	# Dla kolejnych kosci
+	# Bone groups
+	pose = obj.pose
+	bone_groups = {}
+	for bone_group in obj.pose.bone_groups:
+		s = bone_group.name.split('#')
+		if len(s) == 2:
+			name = s[0]
+			parent = s[1]
+		else:
+			name = s[0]
+			parent = ''
+		data.file.write("\t\tgroup %s {\n\t\t\tparent %s\n\t\t}\n" % (QuoteString(name), QuoteString(parent)))
+		bone_groups[bone_group] = name
+	
+	# Bones
 	for bone in armature.bones:
-		# Poczatek
 		data.file.write("\t\tbone %s {\n" % QuoteString(bone.name))
 		# Parent
-		if bone.parent == None:
+		if bone.parent is None:
 			sBoneParent = ""
 		else:
 			sBoneParent = bone.parent.name
-		data.file.write("\t\t\t%s\n" % QuoteString(sBoneParent))
+		data.file.write("\t\t\tparent %s\n" % QuoteString(sBoneParent))
+		# Group
+		foundPoseBone = None
+		for poseBone in pose.bones:
+			if poseBone.name == bone.name:
+				foundPoseBone = poseBone
+				break
+		if foundPoseBone is None or foundPoseBone.bone_group is None:
+			sBoneGroup = ""
+		else:
+			sBoneGroup = bone_groups[foundPoseBone.bone_group]
+		data.file.write("\t\t\tgroup %s\n" % QuoteString(sBoneGroup))
 		# Head
-		data.file.write("\t\t\thead %f,%f,%f %f,%f,%f %f\n" % (bone.head[0], bone.head[1], bone.head[2], bone.head_local[0], bone.head_local[1], bone.head_local[2], bone.head_radius))
+		data.file.write("\t\t\thead %f,%f,%f %f\n" % (bone.head_local[0], bone.head_local[1], bone.head_local[2], bone.head_radius))
 		# Tail
-		data.file.write("\t\t\ttail %f,%f,%f %f,%f,%f %f\n" % (bone.tail[0], bone.tail[1], bone.tail[2], bone.tail_local[0], bone.tail_local[1], bone.tail_local[2], bone.tail_radius))
-		# Length
-		data.file.write("\t\t\t%f\n" % bone.length)
-		# Pusta linia
-		data.file.write("\n")
-		# Macierz w BONESPACE (jest 3x3)
-		m = bone.matrix.transposed()
-		for iRow in range(3):
-			data.file.write("\t\t\t%f, %f, %f\n" % (m[iRow][0], m[iRow][1], m[iRow][2]))
+		data.file.write("\t\t\ttail %f,%f,%f %f\n" % (bone.tail_local[0], bone.tail_local[1], bone.tail_local[2], bone.tail_radius))
+		# Is connected
+		data.file.write("\t\t\t%d\n" % int(bone.use_connect))
 		# Pusta linia
 		data.file.write("\n")
 		# Macierz w ARMATURESPACE (jest 4x4)
@@ -241,9 +261,9 @@ def ProcessArmatureObject(data,obj):
 ################################################################################
 # Zapisuje pusty obiekt (uzywane do oznaczania roznych rzeczy w grze)
 def ProcessEmpty(data,empty):
-	type = empty.empty_draw_type
+	empty_type = empty.empty_draw_type
 	print("Exporting %s.\n" % empty.name)
-	if type == 'Image':
+	if empty_type == 'Image':
 		Warning("Empty of Image type not supported, object "+empty.name+" ignored.")
 	else:
 		data.file.write("\tempty %s {\n" % QuoteString(empty.name))
@@ -255,11 +275,10 @@ def ProcessEmpty(data,empty):
 		else:
 			bone = "NULL"
 		data.file.write("\t\tbone %s\n" % QuoteString(bone))
-		data.file.write("\t\ttype %s\n" % QuoteString(type))
+		data.file.write("\t\ttype %s\n" % QuoteString(empty_type))
 		data.file.write("\t\tsize %f,%f,%f\n" % (empty.scale[0],empty.scale[1],empty.scale[2]))
 		data.file.write("\t\tscale %f\n" % empty.empty_draw_size)
-		# w wersji 2.62 zmienila sie kolejnosc matrix, trzeba obracac
-		m = empty.matrix_local.transposed()
+		m = empty.matrix_world.transposed()
 		data.file.write("\t\tmatrix\n")
 		for n in m:
 			data.file.write("\t\t\t%f,%f,%f,%f\n" % (n[0],n[1],n[2],n[3]))
@@ -268,7 +287,7 @@ def ProcessEmpty(data,empty):
 		empty.rotation_mode = 'QUATERNION'
 		data.file.write("\t\trot %f,%f,%f\n" % (empty.rotation_euler.x, empty.rotation_euler.y, empty.rotation_euler.z))
 		empty.rotation_mode = mode
-		data.file.write("\t}\n")	
+		data.file.write("\t}\n")
 
 ################################################################################
 # Zapisuje kamere
@@ -292,52 +311,51 @@ def ProcessCamera(data,camera):
 ################################################################################
 # Sprawdza co to za obiekt i wykonuje odpowiednie czynnosci
 def ProcessObject(data,obj):
-	type = obj.type
-	print("Object %s is %s" % (data, type))
-	if type == "MESH":
+	obj_type = obj.type
+	print("Object %s is %s" % (data, obj_type))
+	if obj_type == "MESH":
 		ProcessMeshObject(data,obj)
-	elif type == "ARMATURE":
+	elif obj_type == "ARMATURE":
 		ProcessArmatureObject(data,obj)
-	elif type == "EMPTY":
+	elif obj_type == "EMPTY":
 		ProcessEmpty(data,obj)
-	elif type == "CAMERA":
+	elif obj_type == "CAMERA":
 		ProcessCamera(data,obj)
 	# typy, ktore sa ignorowane i wyswietlaja ostrzezenie
-	elif (type == "Curve") or (type == "Lattice") or (type == "MBall") or (type == "Surf"):
-		data.Warning("Object \"" + obj.name + "\" of type \"" + type + "\" ignored.")
+	elif (obj_type == "Curve") or (obj_type == "Lattice") or (obj_type == "MBall") or (obj_type == "Surf"):
+		data.Warning("Object \"" + obj.name + "\" of type \"" + obj_type + "\" ignored.")
 	# pozostale typy sa ignorowane
 
 ################################################################################
 # zwraca nazwe krzywej taka jak kiedys PosX,QuatW,ScaleZ
 def ConvertFCurve(channel):
-	str = 0
-	parts = channel.data_path.split('.')
-	ile = len(parts)
-	str2 = parts[ile-1]
-	if str2 == "location":
-		str = "Loc"
-	elif str2 == "rotation_quaternion":
-		str = "Quat"
-	else:
-		str = "Scale"
+	part = channel.data_path.split('.')[-1]
+	switcher = {
+		"location": "Loc",
+		"rotation_quaternion": "Quat",
+		"scale": "Scale"
+	}
+	name = switcher.get(part, "invalid")
+	if name == "invalid":
+		raise ExporterException("Invalid channel type '%s' (euler rotation is not supported)." % part)
 	index = channel.array_index
-	if str == "Quat":
+	if name == "Quat":
 		if index == 0:
-			str += 'W'
+			name += 'W'
 		elif index == 1:
-			str += 'X'
+			name += 'X'
 		elif index == 2:
-			str += 'Y'
+			name += 'Y'
 		else:
-			str += 'Z'
+			name += 'Z'
 	else:
 		if index == 0:
-			str += 'X'
+			name += 'X'
 		elif index == 1:
-			str += 'Y'
+			name += 'Y'
 		else:
-			str += 'Z'
-	return str		
+			name += 'Z'
+	return name
 
 ################################################################################
 # Zapisuje akcje do pliku
@@ -376,13 +394,12 @@ def ProcessParams(data,scene):
 ################################################################################
 # Eksportuj model
 def ExportQmsh(data):
-	#Blender.Window.WaitCursor(True)
 	print("Exporting to QMSH...")
 	data.file = open(data.path, "w")
 	try:
 		try:
 			# Zapis do pliku naglowka
-			data.file.write("QMSH TMP 19\n")
+			data.file.write("QMSH TMP 21\n")
 			# Przetworz wszystkie obiekty biezacej sceny
 			print("Saving objects %d" % len(bpy.context.selected_objects))
 			data.file.write("objects {\n")
@@ -404,105 +421,148 @@ def ExportQmsh(data):
 			else:
 				sEndMessage = "Succeeded with %i warnings." % data.warnings
 			print(sEndMessage)
-		except MyException:
+		except ExporterException:
 			try:
 				data.file.close()
-				os.remove(g_sFileName)
-			except:
+				os.remove(data.path)
+			except Exception:
 				pass
-			bpy.ops.error.message('INVOKE_DEFAULT', message = 'Exporter error, check console.')
+			raise
 	finally:
 		try:
 			data.file.close()
-		except:
+		except Exception:
 			pass
-	print()
 	
 ################################################################################
-# Okno z bledem
-class MessageOperator(bpy.types.Operator):
-    bl_idname = "error.message"
-    bl_label = "Message"
-    message = StringProperty()
- 
-    def execute(self, context):
-        self.report({'INFO'}, self.message)
-        print(self.message)
-        return {'FINISHED'}
- 
-    def invoke(self, context, event):
-        wm = context.window_manager
-        return wm.invoke_popup(self, width=400, height=200)
- 
-    def draw(self, context):
-        self.layout.label("A message has arrived")
-        self.layout.prop(self, "message")
-        self.layout.operator("error.ok")
-class OkOperator(bpy.types.Operator):
-    bl_idname = "error.ok"
-    bl_label = "OK"
-    def execute(self, context):
-        return {'FINISHED'}
+def RunExport(filepath, config):
+	if config.runConverter and not os.path.isfile(config.converterPath):
+		raise ExporterException("Invalid converter path.")
+	if filepath.endswith('.qmsh.tmp.qmsh'):
+		filepath = filepath[:-4]
+	elif filepath.endswith('.qmsh'):
+		filepath += '.tmp'
+	data = ExporterData(filepath, config.textureNames, config.useExistingArmature, config.applyModifiers, config.forceTangents)
+	ExportQmsh(data)
+	if config.runConverter:
+		cmd = '"' + config.converterPath + '" "' + filepath + '"'
+		print("Command: %s" % cmd)
+		sub = subprocess.Popen(cmd)
+		if sub.wait() != 0:
+			return False
+		os.remove(data.path)
+	return True
+
+################################################################################
+class Config:
+	def __init__(self):
+		config_path = bpy.utils.user_resource('CONFIG', path='scripts', create=True)
+		self.filepath = os.path.join(config_path, 'io_export_qmsh_tmp.cfg')
+		self.config = configparser.ConfigParser()
+		self.config.read(self.filepath)
+		self.Init()
+		s = self.config['settings']
+		self.textureNames = s.getboolean('textureNames')
+		self.useExistingArmature = s.getboolean('useExistingArmature')
+		self.applyModifiers = s.getboolean('applyModifiers')
+		self.forceTangents = s.getboolean('forceTangents')
+		self.runConverter = s.getboolean('runConverter')
+		self.converterPath = s['converterPath']
+	def Init(self):
+		sett = {'textureNames': 'True',
+				'useExistingArmature': 'False',
+				'applyModifiers': 'True',
+				'forceTangents': 'False',
+				'runConverter': 'True',
+				'converterPath': 'D:\\carpg\\other\\mesh\\converter.exe'}
+		if not self.config.has_section('settings'):
+			self.config['settings'] = sett
+			return
+		s = self.config['settings']
+		for k, v in sett.items():
+			if not self.config.has_option('settings', k):
+				s[k] = v
+	def Save(self):
+		s = self.config['settings']
+		s['textureNames'] = str(self.textureNames)
+		s['useExistingArmature'] = str(self.useExistingArmature)
+		s['applyModifiers'] = str(self.applyModifiers)
+		s['forceTangents'] = str(self.forceTangents)
+		s['runConverter'] = str(self.runConverter)
+		s['converterPath'] = self.converterPath
+		with open(self.filepath, 'w') as configfile:
+			self.config.write(configfile)
 
 ################################################################################
 # Klasa eksportera
-class QmshExporter(bpy.types.Operator):
+class QmshExporterOperator(bpy.types.Operator, ExportHelper):
 	"""Export to the Qmsh temporary format (.qmsh.tmp)"""
 	
 	bl_idname = "export.qmsh"
-	bl_label = "Export QMSH.TMP"
+	bl_label = "Export QMSH"
+	filename_ext = ".qmsh"
+	filter_glob: StringProperty(default="*.qmsh;*.qmsh.tmp", options={'HIDDEN'})
 	
-	filepath = StringProperty(subtype='FILE_PATH')
+	config = Config()
 	
-	TextureNames = BoolProperty(
+	TextureNames: BoolProperty(
 		name="Export texture names",
 		description="File will contain texture names, otherwise only material name",
-		default=True)
+		default=config.textureNames)
 	
-	UseExistingArmature = BoolProperty(
+	UseExistingArmature: BoolProperty(
 		name="Use existing armature",
 		description="Don't export armature and animations, only vertex groups",
-		default=False)
+		default=config.useExistingArmature)
 	
-	ApplyModifiers = BoolProperty(
+	ApplyModifiers: BoolProperty(
 		name="Apply modifiers",
 		description="Apply mesh modifiers before exporting mesh",
-		default=True)
+		default=config.applyModifiers)
 	
-	ForceTangents = BoolProperty(
+	ForceTangents: BoolProperty(
 		name="Force tangents",
 		description="Force export tangents, by default exported only if mesh use normal map",
-		default=False)
-	
+		default=config.forceTangents)
+		
+	RunConverter: BoolProperty(
+		name="Run converter",
+		description="Run converter to process qmsh.tmp into qmsh",
+		default=config.runConverter)
+		
+	ConverterPath: StringProperty(
+		name="Converter path",
+		default=config.converterPath)
+		
 	def execute(self, context):
-		data = ExporterData(self.filepath,self.TextureNames,self.UseExistingArmature,self.ApplyModifiers,self.ForceTangents)
-		ExportQmsh(data)
-		return {"FINISHED"}
-	
-	def invoke(self, context, event):
-		mode = bpy.context.mode
-		if mode == "EDIT_MESH" or mode == "EDIT_ARMATURE":
-			mode = "OBJECT"
-		if not self.filepath:
-			self.filepath = bpy.path.ensure_ext(bpy.data.filepath, ".qmsh.tmp")
-		WindowManager = context.window_manager
-		WindowManager.fileselect_add(self)
-		return {"RUNNING_MODAL"}
+		self.config.textureNames = self.TextureNames
+		self.config.useExistingArmature = self.UseExistingArmature
+		self.config.applyModifiers = self.ApplyModifiers
+		self.config.forceTangents = self.ForceTangents
+		self.config.runConverter = self.RunConverter
+		self.config.converterPath = self.ConverterPath
+		self.config.Save()
+		try:
+			RunExport(self.properties.filepath, self.config)
+			return {"FINISHED"}
+		except ExporterException as error:
+			msg = 'Exporter error: ' +str(error)
+			print("ERROR: " + msg)
+			self.report({"ERROR"}, msg)
+			return {"CANCELLED"}
 
 ################################################################################
 # funkcje pluginu
 def menu_func(self, context):
-    self.layout.operator(QmshExporter.bl_idname, text="Qmsh (.qmsh.tmp)")
+	self.layout.operator(QmshExporterOperator.bl_idname, text="Qmsh (.qmsh.tmp)")
 
 def register():
-    bpy.utils.register_module(__name__)
-    bpy.types.INFO_MT_file_export.append(menu_func)
+	bpy.utils.register_class(QmshExporterOperator)
+	bpy.types.TOPBAR_MT_file_export.append(menu_func)
 
 def unregister():
-    bpy.utils.unregister_module(__name__)
-    bpy.types.INFO_MT_file_export.remove(menu_func)
+	bpy.utils.unregister_class(QmshExporterOperator)
+	bpy.types.TOPBAR_MT_file_export.remove(menu_func)
 
 if __name__ == "__main__":
-		bpy.utils.register_class(OkOperator)
-		bpy.utils.register_class(MessageOperator)
-		register()
+	register()

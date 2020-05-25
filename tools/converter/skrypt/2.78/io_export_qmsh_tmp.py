@@ -1,8 +1,8 @@
 bl_info = {
     "name": "Qmsh.tmp",
     "author": "Tomashu",
-    "version": (0, 21, 1),
-    "blender": (2, 7, 8),
+    "version": (0, 22, 0),
+    "blender": (2, 78, 0),
     "location": "File > Export > Qmsh.tmp",
     "description": "Export to Qmsh.tmp",
     "warning": "",
