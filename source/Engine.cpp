@@ -636,13 +636,18 @@ void Engine::SetFullscreen(bool fullscreen)
 	if(!hwnd)
 		return;
 	in_resize = true;
+	HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO monitorInfo;
+	monitorInfo.cbSize = sizeof(MONITORINFO);
+	GetMonitorInfoA(monitor, &monitorInfo);
+	Rect& monitorRect = *reinterpret_cast<Rect*>(&monitorInfo.rcMonitor);
 	if(fullscreen)
 	{
-		client_size = Int2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+		client_size = monitorRect.Size();
 		real_size = client_size;
 		SetWindowLong((HWND)hwnd, GWL_STYLE, FULLSCREEN_FLAGS);
 		SetWindowPos((HWND)hwnd, HWND_NOTOPMOST,
-			0, 0,
+			monitorRect.Left(), monitorRect.Top(),
 			client_size.x, client_size.y,
 			SWP_FRAMECHANGED | SWP_NOACTIVATE);
 		ShowWindow((HWND)hwnd, SW_MAXIMIZE);
@@ -653,8 +658,8 @@ void Engine::SetFullscreen(bool fullscreen)
 		AdjustWindowSize();
 		SetWindowLong((HWND)hwnd, GWL_STYLE, WINDOWED_FLAGS);
 		SetWindowPos((HWND)hwnd, HWND_NOTOPMOST,
-			(GetSystemMetrics(SM_CXSCREEN) - real_size.x) / 2,
-			(GetSystemMetrics(SM_CYSCREEN) - real_size.y) / 2,
+			monitorRect.Left() + (monitorRect.SizeX() - real_size.x) / 2,
+			monitorRect.Top() + (monitorRect.SizeY() - real_size.y) / 2,
 			real_size.x, real_size.y,
 			SWP_FRAMECHANGED | SWP_NOACTIVATE);
 		ShowWindow((HWND)hwnd, SW_NORMAL);
