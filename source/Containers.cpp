@@ -47,9 +47,9 @@ ObjectPoolLeakManager::~ObjectPoolLeakManager()
 			CallStackEntry& cs = *pcs.second;
 			for(uint i = 0; i < CallStackEntry::MAX_FRAMES; ++i)
 			{
-				SymFromAddr(handle, (DWORD64)cs.frames[i], &displacement, &symbol);
+				SymFromAddr(handle, (DWORD64)(uint)cs.frames[i], &displacement, &symbol);
 				DWORD disp;
-				SymGetLineFromAddr64(handle, (DWORD64)cs.frames[i], &disp, &line);
+				SymGetLineFromAddr64(handle, (DWORD64)(uint)cs.frames[i], &disp, &line);
 				OutputDebugString(Format("\t%s (%d): %s\n", line.FileName, line.LineNumber, symbol.Name));
 				if(cs.frames[i] == nullptr)
 					break;

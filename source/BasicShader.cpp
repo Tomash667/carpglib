@@ -141,6 +141,8 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 			for(Mesh::Submesh& sub : mesh.subs)
 				deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, 0);
 		}
+
+		prevMesh = node.mesh;
 	}
 }
 

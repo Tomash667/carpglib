@@ -30,6 +30,5 @@ private:
 	void CalculateSize();
 
 	string text;
-	Rect rect;
 	bool auto_size, own_custom_layout;
 };

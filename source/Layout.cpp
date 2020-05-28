@@ -20,16 +20,6 @@ layout::Control* Layout::Get(const type_info& type)
 }
 
 
-Box2d AreaLayout::CalculateRegion(const Int2& pos, const Int2& region)
-{
-	Box2d box;
-	box.v1.x = (float)pos.x + (region.x - size.x) / 2;
-	box.v1.y = (float)pos.y + (region.y - size.y) / 2;
-	box.v2.x = box.v1.x + size.x;
-	box.v2.y = box.v1.y + size.y;
-	return box;
-}
-
 void AreaLayout::SetFromArea(const Rect* area)
 {
 	if(!tex->IsLoaded())

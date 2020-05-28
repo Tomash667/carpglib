@@ -19,7 +19,6 @@ void MenuBar::Draw(ControlDrawData*)
 	gui->DrawArea(rect, layout->background);
 
 	// items
-	Rect rect;
 	for(Item* item : items)
 	{
 		AreaLayout* area_layout;

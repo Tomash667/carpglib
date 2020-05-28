@@ -62,8 +62,6 @@ struct AreaLayout
 		return *this;
 	}
 
-	Box2d CalculateRegion(const Int2& pos, const Int2& region);
-
 private:
 	void SetFromArea(const Rect* area);
 };
