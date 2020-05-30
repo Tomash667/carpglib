@@ -102,13 +102,17 @@ enum class Key : byte
 	RightControl = 0xA3,
 	LeftAlt = 0xA4,
 	RightAlt = 0xA5,
-	Semicolon = 0xBA, // ;: [???]
+	Semicolon = 0xBA, // ;:
 	Plus = 0xBB, // =+
 	Comma = 0xBC, // ,<
 	Minus = 0xBD, // -_
 	Period = 0xBE, // .>
 	Slash = 0xBF, // /?
 	Tilde = 0xC0, // ~
+	OpenSquareBracket = 0xDB, // [{
+	Backslash = 0xDC, // \\|
+	CloseSquareBracket = 0xDD, // ]}
+	Quote = 0xDE, // '"
 
 	Max = 0xFF
 };
