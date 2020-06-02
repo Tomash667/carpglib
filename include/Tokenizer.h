@@ -119,7 +119,7 @@ namespace tokenizer
 				return *this;
 			}
 
-			Formatter& AddList(TOKEN token, std::initializer_list<int> const & items)
+			Formatter& AddList(TOKEN token, std::initializer_list<int> const& items)
 			{
 				if(count > 0)
 					s += ", ";
@@ -301,9 +301,9 @@ namespace tokenizer
 			groups.push_back(new_group);
 		}
 		// Add keyword for group in format {name, id}
-		void AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register, cstring group_name = nullptr);
+		void AddKeywords(int group, std::initializer_list<KeywordToRegister> const& to_register, cstring group_name = nullptr);
 		template<typename T>
-		void AddKeywords(int group, std::initializer_list<KeywordToRegisterEnum<T>> const & to_register, cstring group_name = nullptr)
+		void AddKeywords(int group, std::initializer_list<KeywordToRegisterEnum<T>> const& to_register, cstring group_name = nullptr)
 		{
 			AddKeywords(group, (std::initializer_list<KeywordToRegister> const&)to_register, group_name);
 		}
@@ -439,7 +439,7 @@ namespace tokenizer
 			}
 			return -1;
 		}
-		int IsKeywordGroup(std::initializer_list<int> const & groups) const;
+		int IsKeywordGroup(std::initializer_list<int> const& groups) const;
 		bool IsBool() const { return IsInt() && (normal_seek._int == 0 || normal_seek._int == 1); }
 		bool IsItemOrString() const { return IsItem() || IsString(); }
 
@@ -500,7 +500,7 @@ namespace tokenizer
 			if(!IsKeywordGroup(group))
 				Unexpected(T_KEYWORD_GROUP, &group);
 		}
-		int AssertKeywordGroup(std::initializer_list<int> const & groups)
+		int AssertKeywordGroup(std::initializer_list<int> const& groups)
 		{
 			int group = IsKeywordGroup(groups);
 			if(group == MISSING_GROUP)
@@ -738,7 +738,7 @@ namespace tokenizer
 			return GetKeywordGroup(id);
 		}
 		template<typename T>
-		T MustGetKeywordGroup(std::initializer_list<T> const & groups)
+		T MustGetKeywordGroup(std::initializer_list<T> const& groups)
 		{
 			int group = IsKeywordGroup(groups);
 			if(group == MISSING_GROUP)

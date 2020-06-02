@@ -105,7 +105,7 @@ bool Font::SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_ou
 			// jeœli siê zmieœci lub
 			// to jest pierwszy znak (zabezpieczenie przed nieskoñczonym zapêtleniem dla width < szerokoœæ pierwszego znaku) -
 			// dolicz go i ju¿
-			if(/*Flags & FLAG_WRAP_NORMAL ||*/ out_width + char_width <= width || in_out_index == out_begin)
+			if(out_width + char_width <= width || in_out_index == out_begin)
 			{
 				// Jeœli to spacja - zapamiêtaj dane
 				if(c == ' ')
@@ -137,19 +137,16 @@ bool Font::SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_ou
 				}
 
 				// Zawijanie wierszy na granicy s³owa
-				if(1/*Flags & FLAG_WRAP_WORD*/)
+				// By³a jakaœ spacja
+				if(last_space_index != string::npos)
 				{
-					// By³a jakaœ spacja
-					if(last_space_index != string::npos)
-					{
-						// Koniec bêdzie na tej spacji
-						out_end = last_space_index;
-						in_out_index = last_space_index + 1;
-						out_width = width_when_last_space;
-						break;
-					}
-					// Nie by³o spacji - trudno, zawinie siê jak na granicy znaku
+					// Koniec bêdzie na tej spacji
+					out_end = last_space_index;
+					in_out_index = last_space_index + 1;
+					out_width = width_when_last_space;
+					break;
 				}
+				// Nie by³o spacji - trudno, zawinie siê jak na granicy znaku
 
 				out_end = in_out_index;
 				break;

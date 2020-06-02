@@ -82,7 +82,8 @@ struct TrailParticleEmitter : public EntityType<TrailParticleEmitter>
 
 	TrailParticleEmitter() : tex(nullptr), width(0.1f), destroy(false), manual(false) {}
 	void Init(int maxp);
-	bool Update(float dt, Vec3* pt);
+	bool Update(float dt);
+	void AddPoint(const Vec3& pt);
 	void Save(FileWriter& f);
 	void Load(FileReader& f, int version = 2);
 };

@@ -702,7 +702,7 @@ const KeywordGroup* Tokenizer::FindKeywordGroup(int group) const
 }
 
 //=================================================================================================
-void Tokenizer::AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register, cstring group_name)
+void Tokenizer::AddKeywords(int group, std::initializer_list<KeywordToRegister> const& to_register, cstring group_name)
 {
 	for(const KeywordToRegister& k : to_register)
 		AddKeyword(k.name, k.id, group);
@@ -960,13 +960,13 @@ void Tokenizer::ParseFlags(int group, int& flags)
 }
 
 //=================================================================================================
-void Tokenizer::ParseFlags(std::initializer_list<FlagGroup> const & flags)
+void Tokenizer::ParseFlags(std::initializer_list<FlagGroup> const& flags)
 {
 	if(IsSymbol('|'))
 		Next();
 	else
 	{
-		for(FlagGroup const & f : flags)
+		for(FlagGroup const& f : flags)
 			*f.flags = 0;
 	}
 
@@ -983,7 +983,7 @@ void Tokenizer::ParseFlags(std::initializer_list<FlagGroup> const & flags)
 			if(neg)
 				Next();
 
-			for(FlagGroup const & f : flags)
+			for(FlagGroup const& f : flags)
 			{
 				if(IsKeywordGroup(f.group))
 				{
@@ -1012,7 +1012,7 @@ void Tokenizer::ParseFlags(std::initializer_list<FlagGroup> const & flags)
 		if(neg)
 			Next();
 
-		for(FlagGroup const & f : flags)
+		for(FlagGroup const& f : flags)
 		{
 			if(IsKeywordGroup(f.group))
 			{
@@ -1033,7 +1033,7 @@ void Tokenizer::ParseFlags(std::initializer_list<FlagGroup> const & flags)
 	{
 		auto& formatter = StartUnexpected();
 
-		for(FlagGroup const & f : flags)
+		for(FlagGroup const& f : flags)
 		{
 			int g = f.group;
 			formatter.Add(T_KEYWORD_GROUP, &g);
@@ -1352,7 +1352,7 @@ cstring Tokenizer::GetTokenValue(const SeekData& s) const
 }
 
 //=================================================================================================
-int Tokenizer::IsKeywordGroup(std::initializer_list<int> const & groups) const
+int Tokenizer::IsKeywordGroup(std::initializer_list<int> const& groups) const
 {
 	if(!IsKeyword())
 		return MISSING_GROUP;

@@ -85,7 +85,13 @@ bool ParticleEmitter::Update(float dt)
 		destroy = true;
 
 	if(destroy && alive == 0)
+	{
+		if(manual_delete == 0)
+			delete this;
+		else
+			manual_delete = 2;
 		return true;
+	}
 
 	// aktualizuj cz¹steczki
 	for(vector<Particle>::iterator it2 = particles.begin(), end2 = particles.end(); it2 != end2; ++it2)
@@ -213,12 +219,19 @@ void TrailParticleEmitter::Init(int maxp)
 }
 
 //=================================================================================================
-bool TrailParticleEmitter::Update(float dt, Vec3* pt)
+bool TrailParticleEmitter::Update(float dt)
 {
 	if(manual)
-		return destroy;
+	{
+		if(destroy)
+		{
+			delete this;
+			return true;
+		}
+		return false;
+	}
 
-	if(first != -1 && dt > 0.f)
+	if(first != -1)
 	{
 		int id = first;
 
@@ -242,7 +255,19 @@ bool TrailParticleEmitter::Update(float dt, Vec3* pt)
 
 	timer += dt;
 
-	if(pt && (timer >= 1.f / parts.size() || first == -1))
+	if(destroy && alive == 0)
+	{
+		delete this;
+		return true;
+	}
+	else
+		return false;
+}
+
+//=================================================================================================
+void TrailParticleEmitter::AddPoint(const Vec3& pt)
+{
+	if(timer >= 1.f / parts.size() || first == -1)
 	{
 		timer = 0.f;
 
@@ -252,7 +277,7 @@ bool TrailParticleEmitter::Update(float dt, Vec3* pt)
 			tp.t = fade;
 			tp.exists = true;
 			tp.next = -1;
-			tp.pt = *pt;
+			tp.pt = pt;
 			first = 0;
 			last = 0;
 			++alive;
@@ -260,7 +285,7 @@ bool TrailParticleEmitter::Update(float dt, Vec3* pt)
 		else
 		{
 			if(alive == (int)parts.size())
-				return false;
+				return;
 
 			int id = 0;
 			while(parts[id].exists)
@@ -270,18 +295,13 @@ bool TrailParticleEmitter::Update(float dt, Vec3* pt)
 			tp.t = fade;
 			tp.exists = true;
 			tp.next = -1;
-			tp.pt = *pt;
+			tp.pt = pt;
 
 			parts[last].next = id;
 			last = id;
 			++alive;
 		}
 	}
-
-	if(destroy && alive == 0)
-		return true;
-	else
-		return false;
 }
 
 //=================================================================================================

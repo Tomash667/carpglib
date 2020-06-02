@@ -2163,8 +2163,7 @@ void Gui::UseGrayscale(bool grayscale)
 //=================================================================================================
 bool Gui::DrawText2(DrawTextOptions& options)
 {
-	uint line_begin, line_end, line_index = 0;
-	int line_width, width = options.rect.SizeX();
+	const int width = options.rect.SizeX();
 	bool bottom_clip = false;
 
 	DrawLineContext ctx;
@@ -2195,6 +2194,8 @@ bool Gui::DrawText2(DrawTextOptions& options)
 		if(!options.lines)
 		{
 			// tekst pionowo po œrodku lub na dole
+			uint line_begin, line_end, line_index = 0;
+			int line_width;
 			while(options.font->SplitLine(line_begin, line_end, line_width, line_index, options.str, options.str_length, options.flags, width))
 			{
 				// pocz¹tkowa pozycja x w tej linijce
@@ -2281,6 +2282,8 @@ bool Gui::DrawText2(DrawTextOptions& options)
 			lines_data.clear();
 
 			// oblicz wszystkie linijki
+			uint line_begin, line_end, line_index = 0;
+			int line_width;
 			while(options.font->SplitLine(line_begin, line_end, line_width, line_index, options.str, options.str_length, options.flags, width))
 				lines_data.push_back(TextLine(line_begin, line_end, line_width));
 
