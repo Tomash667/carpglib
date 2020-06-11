@@ -785,10 +785,33 @@ struct rvector
 		InnerIt it;
 	};
 
+	struct const_iter
+	{
+		typedef typename vector<T*>::const_iterator InnerIt;
+
+		bool operator != (const const_iter& it2)
+		{
+			return it != it2.it;
+		}
+		const_iter& operator ++ ()
+		{
+			++it;
+			return *this;
+		}
+		const T& operator * ()
+		{
+			return **it;
+		}
+
+		InnerIt it;
+	};
+
 	T& operator [](uint index) { return *ptrs[index]; }
 
 	iter begin() { return iter{ ptrs.begin() }; }
+	const_iter begin() const { return const_iter{ ptrs.begin() }; }
 	iter end() { return iter{ ptrs.end() }; }
+	const_iter end() const { return const_iter{ ptrs.end() }; }
 	uint size() const { return ptrs.size(); }
 	void push_back(T* ptr)
 	{
@@ -800,6 +823,7 @@ struct rvector
 	void erase(iter start, iter end) { ptrs.erase(start.it, end.it); }
 	void clear() { ptrs.clear(); }
 	T& front() { return *ptrs.front(); }
+	const T& front() const { return *ptrs.front(); }
 
 	vector<T*> ptrs;
 };

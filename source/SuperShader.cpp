@@ -323,6 +323,7 @@ void SuperShader::SetTexture(const TexOverride* texOverride, Mesh* mesh, uint in
 		tex = texOverride[index].diffuse->tex;
 	else
 		tex = mesh->subs[index].tex->tex;
+	assert(tex);
 	deviceContext->PSSetShaderResources(0, 1, &tex);
 
 	if(applyNormalMap)
