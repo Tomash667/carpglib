@@ -268,8 +268,8 @@ Config::Result Config::Load(cstring filename)
 			if(!exists)
 			{
 				Entry& e = Add1(entries);
-				e.name = item;
-				e.value = value;
+				e.name = (string&)item;
+				e.value = (string&)value;
 			}
 
 			t.Next();

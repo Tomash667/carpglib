@@ -27,6 +27,7 @@ public:
 	void Event(GuiEvent e) override;
 
 	void Init();
+	void Reset();
 	void AddItem(GuiElement* e);
 	void AddItem(cstring text) { AddItem(new DefaultGuiElement(text)); }
 	void AddItems(vector<GuiElement*>& items, bool items_owner = true);

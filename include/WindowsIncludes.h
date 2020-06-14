@@ -10,6 +10,10 @@
 #ifdef INCLUDE_COMMON_DIALOGS
 #include <commdlg.h>
 #endif
+#ifdef INCLUDE_DEVICE_API
+#include <initguid.h>
+#include <mmdeviceapi.h>
+#endif
 
 #undef CreateFont
 #undef CreateDirectory

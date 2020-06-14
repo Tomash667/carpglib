@@ -726,3 +726,87 @@ cstring FindLastOf(cstring str, cstring chars)
 	}
 	return s;
 }
+
+// Simple converter utf8 -> Windows-1250
+void Utf8ToAscii(string& str)
+{
+	byte* input = (byte*)(str.c_str());
+	byte* output = input;
+	const byte* end = input + str.length();
+	while(input != end)
+	{
+		const byte b = *input++;
+		if(b >= 128)
+		{
+			const byte b2 = *input++;
+			const word code = (((word)b) << 8) | b2;
+			byte r;
+			switch(code)
+			{
+			case 0xC484:
+				r = '¥';
+				break;
+			case 0xC486:
+				r = 'Æ';
+				break;
+			case 0xC498:
+				r = 'Ê';
+				break;
+			case 0xC581:
+				r = '£';
+				break;
+			case 0xC583:
+				r = 'Ñ';
+				break;
+			case 0xC393:
+				r = 'Ó';
+				break;
+			case 0xC59A:
+				r = 'Œ';
+				break;
+			case 0xC5B9:
+				r = '';
+				break;
+			case 0xC5BB:
+				r = '¯';
+				break;
+			case 0xC485:
+				r = '¹';
+				break;
+			case 0xC487:
+				r = 'æ';
+				break;
+			case 0xC499:
+				r = 'ê';
+				break;
+			case 0xC582:
+				r = '³';
+				break;
+			case 0xC584:
+				r = 'ñ';
+				break;
+			case 0xC3B3:
+				r = 'ó';
+				break;
+			case 0xC59B:
+				r = 'œ';
+				break;
+			case 0xC5BA:
+				r = 'Ÿ';
+				break;
+			case 0xC5BC:
+				r = '¿';
+				break;
+			default:
+				assert(0);
+				r = '?';
+				break;
+			}
+			*output++ = r;
+		}
+		else
+			*output++ = b;
+	}
+
+	str.resize(str.length() - (end - output));
+}

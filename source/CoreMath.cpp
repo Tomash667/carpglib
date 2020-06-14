@@ -40,6 +40,9 @@ const Matrix Matrix::IdentityMatrix = {
 
 const Quat Quat::Identity = { 0.f, 0.f, 0.f, 1.f };
 
+const Guid Guid::Empty = Guid(0, 0, 0, 0);
+const string Guid::EmptyString = "00000000-0000-0000-0000-000000000000";
+
 //=================================================================================================
 // Random number generator
 //=================================================================================================
@@ -1091,4 +1094,27 @@ int Hash(cstring str)
 
 	assert(hash != 0u);
 	return union_cast<int>(hash);
+}
+
+cstring Guid::ToString() const
+{
+	return Format("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+		data1, data2, data3, data4[0], data4[1],
+		data4[2], data4[3], data4[4], data4[5], data4[6], data4[7]);
+}
+
+bool Guid::TryParse(const string& str)
+{
+	uint _data2, _data3, _data4[8];
+	if(sscanf_s(str.c_str(), "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+		&data1, &_data2, &_data3, &_data4[0], &_data4[1],
+		&_data4[2], &_data4[3], &_data4[4], &_data4[5], &_data4[6], &_data4[7]) == 11)
+	{
+		data2 = _data2;
+		data3 = _data3;
+		for(int i = 0; i < 8; ++i)
+			data4[i] = _data4[i];
+		return true;
+	}
+	return false;
 }

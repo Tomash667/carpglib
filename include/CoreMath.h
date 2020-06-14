@@ -16,6 +16,7 @@ struct Oob;
 struct Matrix;
 struct Quat;
 struct Plane;
+struct Guid;
 
 //-----------------------------------------------------------------------------
 // Global constants
@@ -1380,6 +1381,34 @@ struct Plane : public XMFLOAT4
 	static Plane Transform(const Plane& plane, const Matrix& M);
 	static void Transform(const Plane& plane, const Quat& rotation, Plane& result);
 	static Plane Transform(const Plane& plane, const Quat& rotation);
+};
+
+//-----------------------------------------------------------------------------
+struct Guid
+{
+	union
+	{
+		uint data[4];
+		struct
+		{
+			uint data1;
+			word data2;
+			word data3;
+			byte data4[8];
+		};
+	};
+
+	Guid() {}
+	Guid(uint data0, uint data1, uint data2, uint data3) : data{ data0, data1, data2, data3 } {}
+
+	bool operator == (const Guid& guid) const;
+	bool operator != (const Guid& guid) const;
+
+	cstring ToString() const;
+	bool TryParse(const string& str);
+
+	static const Guid Empty;
+	static const string EmptyString;
 };
 
 //-----------------------------------------------------------------------------

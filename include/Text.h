@@ -113,6 +113,7 @@ string UrlEncode(const string& s);
 // replace all occurrences of 'from' with 'to'
 cstring ReplaceAll(cstring str, cstring from, cstring to);
 cstring FindLastOf(cstring str, cstring chars);
+void Utf8ToAscii(string& str);
 
 namespace TextHelper
 {

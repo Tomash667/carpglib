@@ -2,20 +2,97 @@
 #include "SoundManager.h"
 
 #include "ResourceManager.h"
+#define INCLUDE_DEVICE_API
 #include "WindowsIncludes.h"
 
 #include <fmod.hpp>
 
 SoundManager* app::sound_mgr;
 
+class DefaultDeviceHandler : public IMMNotificationClient
+{
+public:
+	DefaultDeviceHandler(IMMDeviceEnumerator* enumerator) : enumerator(enumerator)
+	{
+		enumerator->RegisterEndpointNotificationCallback(this);
+	}
+
+	virtual ~DefaultDeviceHandler()
+	{
+		enumerator->UnregisterEndpointNotificationCallback(this);
+		enumerator->Release();
+	}
+
+	HRESULT STDMETHODCALLTYPE OnDefaultDeviceChanged(EDataFlow flow, ERole role, LPCWSTR)
+	{
+		if(flow == EDataFlow::eRender && role == ERole::eConsole)
+			app::sound_mgr->HandleDefaultDeviceChange(GetDefaultDevice());
+		return S_OK;
+	}
+
+	Guid GetDefaultDevice()
+	{
+		IMMDevice* device;
+		HRESULT hr = enumerator->GetDefaultAudioEndpoint(EDataFlow::eRender, ERole::eConsole, &device);
+		assert(SUCCEEDED(hr));
+
+		IPropertyStore* props;
+		hr = device->OpenPropertyStore(STGM_READ, &props);
+		assert(SUCCEEDED(hr));
+
+		PROPVARIANT prop;
+		PropVariantInit(&prop);
+		hr = props->GetValue(PKEY_AudioEndpoint_GUID, &prop);
+		assert(SUCCEEDED(hr));
+
+		CLSID guid;
+		Guid deviceGuid;
+		CLSIDFromString(prop.pwszVal, &guid);
+		memcpy(&deviceGuid, &guid, sizeof(Guid));
+
+		PropVariantClear(&prop);
+		props->Release();
+		device->Release();
+		return deviceGuid;
+	}
+
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, VOID** ppvInterface)
+	{
+		if(IID_IUnknown == riid)
+			*ppvInterface = (IUnknown*)this;
+		else if(__uuidof(IMMNotificationClient) == riid)
+			*ppvInterface = (IMMNotificationClient*)this;
+		else
+		{
+			*ppvInterface = nullptr;
+			return E_NOINTERFACE;
+		}
+		return S_OK;
+	}
+
+	// not implemented
+	HRESULT STDMETHODCALLTYPE OnDeviceAdded(LPCWSTR) { return S_OK; }
+	HRESULT STDMETHODCALLTYPE OnDeviceRemoved(LPCWSTR) { return S_OK; }
+	HRESULT STDMETHODCALLTYPE OnDeviceStateChanged(LPCWSTR, DWORD) { return S_OK; }
+	HRESULT STDMETHODCALLTYPE OnPropertyValueChanged(LPCWSTR, const PROPERTYKEY) { return S_OK; }
+	ULONG STDMETHODCALLTYPE AddRef() { return 1; }
+	ULONG STDMETHODCALLTYPE Release() { return 0; }
+
+private:
+	IMMDeviceEnumerator* enumerator;
+};
+
 //=================================================================================================
-SoundManager::SoundManager() : system(nullptr), current_music(nullptr), music_ended(false), nosound(false), nomusic(false), sound_volume(50), music_volume(50)
+SoundManager::SoundManager() : system(nullptr), handler(nullptr), device(Guid::Empty), newDevice(Guid::Empty), current_music(nullptr), music_ended(false),
+nosound(false), nomusic(false), sound_volume(50), music_volume(50)
 {
 }
 
 //=================================================================================================
 SoundManager::~SoundManager()
 {
+	delete handler;
+	criticalSection.Free();
 	if(system)
 		system->release();
 }
@@ -29,46 +106,61 @@ void SoundManager::Init()
 	// if disabled, log it
 	if(disabled_sound)
 	{
-		Info("Engine: Sound and music is disabled.");
+		Info("SoundMgr: Sound and music is disabled.");
 		return;
 	}
 
 	// create FMOD system
 	FMOD_RESULT result = FMOD::System_Create(&system);
 	if(result != FMOD_OK)
-		throw Format("Engine: Failed to create FMOD system (%d).", result);
+		throw Format("SoundMgr: Failed to create FMOD system (%d).", result);
 
-	// get number of drivers
+	// get number of devices
 	int count;
 	result = system->getNumDrivers(&count);
 	if(result != FMOD_OK)
-		throw Format("Engine: Failed to get FMOD number of drivers (%d).", result);
+		throw Format("SoundMgr: Failed to get number of devices (%d).", result);
 	if(count == 0)
 	{
-		Warn("Engine: No sound drivers.");
+		Warn("SoundMgr: No sound devices found.");
 		disabled_sound = true;
 		return;
 	}
 
-	// log drivers
-	Info("Engine: Sound drivers (%d):", count);
-	string str;
-	str.resize(256);
+	// log devices
+	Info("SoundMgr: Sound devices (%d):", count);
+	LocalString str;
+	str->resize(256);
+	bool deviceOk = false;
 	for(int i = 0; i < count; ++i)
 	{
-		result = system->getDriverInfo(i, const_cast<char*>(str.c_str()), 256, nullptr, nullptr, nullptr, nullptr);
+		Guid guid;
+		result = system->getDriverInfo(i, str.data(), 256, reinterpret_cast<FMOD_GUID*>(&guid), nullptr, nullptr, nullptr);
 		if(result == FMOD_OK)
-			Info("Engine: Driver %d - %s", i, str.c_str());
+		{
+			Utf8ToAscii(str);
+			Info("SoundMgr: Device %d - %s", i, str->c_str());
+			if(guid == device)
+			{
+				deviceOk = true;
+				system->setDriver(i);
+			}
+		}
 		else
-			Error("Engine: Failed to get driver %d info (%d).", i, result);
+			Error("SoundMgr: Failed to get device %d info (%d).", i, result);
 	}
 
-	// get info about selected driver and output device
-	int driver;
+	// get info about selected device and output device
+	int selectedDriver;
 	FMOD_OUTPUTTYPE output;
-	system->getDriver(&driver);
+	system->getDriver(&selectedDriver);
 	system->getOutput(&output);
-	Info("Engine: Using driver %d and output type %d.", driver, output);
+	Info("SoundMgr: Using device %d and output type %d.", selectedDriver, output);
+	if(!deviceOk && device != Guid::Empty)
+	{
+		Warn("SoundMgr: Selected device not found, using system default.");
+		device = Guid::Empty;
+	}
 
 	// initialize FMOD system
 	bool ok = false;
@@ -77,7 +169,7 @@ void SoundManager::Init()
 		result = system->init(128, FMOD_INIT_NORMAL, nullptr);
 		if(result != FMOD_OK)
 		{
-			Error("Engine: Failed to initialize FMOD system (%d).", result);
+			Error("SoundMgr: Failed to initialize FMOD system (%d).", result);
 			Sleep(100);
 		}
 		else
@@ -88,7 +180,7 @@ void SoundManager::Init()
 	}
 	if(!ok)
 	{
-		Error("Engine: Failed to initialize FMOD, disabling sound!");
+		Error("SoundMgr: Failed to initialize FMOD, disabling sound!");
 		disabled_sound = true;
 		return;
 	}
@@ -99,7 +191,15 @@ void SoundManager::Init()
 	group_default->setVolume(float(nosound ? 0 : sound_volume) / 100);
 	group_music->setVolume(float(nomusic ? 0 : music_volume) / 100);
 
-	Info("Engine: FMOD sound system created.");
+	// register change default device handler
+	IMMDeviceEnumerator* enumerator;
+	HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_INPROC_SERVER, __uuidof(IMMDeviceEnumerator), (void**)&enumerator);
+	assert(SUCCEEDED(hr));
+	criticalSection.Create();
+	handler = new DefaultDeviceHandler(enumerator);
+	defaultDevice = handler->GetDefaultDevice();
+
+	Info("SoundMgr: FMOD sound system created.");
 }
 
 //=================================================================================================
@@ -151,6 +251,50 @@ void SoundManager::Update(float dt)
 	}
 
 	system->update();
+
+	if(handler)
+	{
+		Guid changeDevice;
+		criticalSection.Enter();
+		changeDevice = newDevice;
+		newDevice = Guid::Empty;
+		criticalSection.Leave();
+		if(changeDevice != Guid::Empty)
+		{
+			defaultDevice = changeDevice;
+
+			if(device == Guid::Empty)
+			{
+				FMOD_OUTPUTTYPE output;
+				system->getOutput(&output);
+				system->setOutput(FMOD_OUTPUTTYPE_NOSOUND);
+				system->setOutput(output);
+
+				int count;
+				FMOD_RESULT result = system->getNumDrivers(&count);
+				assert(result == FMOD_OK && count > 0);
+
+				LocalString str;
+				str->resize(256);
+				for(int i = 0; i < count; ++i)
+				{
+					Guid guid;
+					result = system->getDriverInfo(i, str.data(), 256, reinterpret_cast<FMOD_GUID*>(&guid), nullptr, nullptr, nullptr);
+					if(result == FMOD_OK)
+					{
+						if(guid == defaultDevice)
+						{
+							Utf8ToAscii(str);
+							Info("SoundMgr: Default device changed to '%s'.", str->c_str());
+							system->setDriver(i);
+							return;
+						}
+					}
+				}
+				Error("SoundMgr: Default device change to invalid device '%s'.", defaultDevice.ToString());
+			}
+		}
+	}
 }
 
 //=================================================================================================
@@ -331,4 +475,73 @@ bool SoundManager::IsPlaying(FMOD::Channel* channel)
 		return is_playing;
 	else
 		return false;
+}
+
+//=================================================================================================
+void SoundManager::SetDevice(Guid _device)
+{
+	if(device == _device)
+		return;
+	device = _device;
+	if(system)
+	{
+		int count;
+		FMOD_RESULT result = system->getNumDrivers(&count);
+		assert(result == FMOD_OK && count > 0);
+
+		LocalString str;
+		str->resize(256);
+		for(int i = 0; i < count; ++i)
+		{
+			Guid guid;
+			result = system->getDriverInfo(i, str.data(), 256, reinterpret_cast<FMOD_GUID*>(&guid), nullptr, nullptr, nullptr);
+			if(result == FMOD_OK)
+			{
+				if(guid == device || (device == Guid::Empty && guid == defaultDevice))
+				{
+					Utf8ToAscii(str);
+					if(device == Guid::Empty)
+						Info("SoundMgr: Changed device to default '%s'.", str->c_str());
+					else
+						Info("SoundMgr: Changed device to '%s'.", str->c_str());
+					system->setDriver(i);
+					return;
+				}
+			}
+		}
+		Error("SoundMgr: Invalid device id '%s'.", device.ToString());
+	}
+}
+
+//=================================================================================================
+void SoundManager::GetDevices(vector<pair<Guid, string>>& devices) const
+{
+	devices.clear();
+
+	int count;
+	FMOD_RESULT result = system->getNumDrivers(&count);
+	assert(result == FMOD_OK && count > 0);
+
+	devices.resize(count);
+	LocalString str;
+	str->resize(256);
+	for(int i = 0; i < count; ++i)
+	{
+		Guid guid;
+		result = system->getDriverInfo(i, str.data(), 256, reinterpret_cast<FMOD_GUID*>(&guid), nullptr, nullptr, nullptr);
+		if(result == FMOD_OK)
+		{
+			Utf8ToAscii(str);
+			devices[i].first = guid;
+			devices[i].second = (string&)str;
+		}
+	}
+}
+
+//=================================================================================================
+void SoundManager::HandleDefaultDeviceChange(const Guid& device)
+{
+	criticalSection.Enter();
+	newDevice = device;
+	criticalSection.Leave();
 }

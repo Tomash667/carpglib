@@ -582,15 +582,23 @@ struct LocalString
 			StringPool.Free(s);
 	}
 
-	void operator = (cstring str)
-	{
-		*s = str;
-	}
-
-	void operator = (const string& str)
-	{
-		*s = str;
-	}
+	operator cstring () const { return s->c_str(); }
+	operator string& () { return *s; }
+	operator const string& () const { return *s; }
+	string& operator * () { return *s; }
+	string* operator -> () { return s; }
+	const string* operator -> () const { return s; }
+	void operator = (cstring str) { *s = str; }
+	void operator = (const string& str) { *s = str; }
+	void operator += (cstring str) { *s += str; }
+	void operator += (const string& str) { *s += str; }
+	void operator += (char c) { *s += c; }
+	bool operator == (cstring str) const { return *s == str; }
+	bool operator == (const string& str) const { return *s == str; }
+	bool operator == (const LocalString& str) const { return *s == *str.s; }
+	bool operator != (cstring str) const { return *s != str; }
+	bool operator != (const string& str) const { return *s != str; }
+	bool operator != (const LocalString& str) const { return *s != *str.s; }
 
 	char at_back(uint offset) const
 	{
@@ -598,35 +606,15 @@ struct LocalString
 		return s->at(s->size() - 1 - offset);
 	}
 
+	char* data()
+	{
+		return const_cast<char*>(s->c_str());
+	}
+
 	void pop(uint count)
 	{
 		assert(s->size() > count);
 		s->resize(s->size() - count);
-	}
-
-	void operator += (cstring str)
-	{
-		*s += str;
-	}
-
-	void operator += (const string& str)
-	{
-		*s += str;
-	}
-
-	void operator += (char c)
-	{
-		*s += c;
-	}
-
-	operator cstring() const
-	{
-		return s->c_str();
-	}
-
-	string& operator * ()
-	{
-		return *s;
 	}
 
 	string& get_ref()
@@ -637,46 +625,6 @@ struct LocalString
 	string* get_ptr()
 	{
 		return s;
-	}
-
-	string* operator -> ()
-	{
-		return s;
-	}
-
-	const string* operator -> () const
-	{
-		return s;
-	}
-
-	bool operator == (cstring str) const
-	{
-		return *s == str;
-	}
-
-	bool operator == (const string& str) const
-	{
-		return *s == str;
-	}
-
-	bool operator == (const LocalString& str) const
-	{
-		return *s == *str.s;
-	}
-
-	bool operator != (cstring str) const
-	{
-		return *s != str;
-	}
-
-	bool operator != (const string& str) const
-	{
-		return *s != str;
-	}
-
-	bool operator != (const LocalString& str) const
-	{
-		return *s != *str.s;
 	}
 
 	bool empty() const

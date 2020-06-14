@@ -125,7 +125,11 @@ void ListBox::Update(float dt)
 			{
 				menu->global_pos = global_pos + Int2(0, size.y);
 				if(menu->global_pos.y + menu->size.y >= gui->wnd_size.y)
-					menu->global_pos.y = gui->wnd_size.y - menu->size.y;
+				{
+					menu->global_pos.y = global_pos.y - menu->size.y;
+					if(menu->global_pos.y < 0)
+						menu->global_pos.y = gui->wnd_size.y - menu->size.y;
+				}
 				menu->visible = true;
 				menu->focus = true;
 			}
@@ -309,6 +313,9 @@ void ListBox::Add(GuiElement* e)
 	items.push_back(e);
 	scrollbar.total += e->height;
 	UpdateScrollbarVisibility();
+
+	if(menu)
+		menu->AddItem(e);
 }
 
 //=================================================================================================
@@ -558,6 +565,8 @@ void ListBox::Reset()
 	selected = -1;
 	DeleteElements(items);
 	UpdateScrollbarVisibility();
+	if(menu)
+		menu->Reset();
 }
 
 //=================================================================================================

@@ -4244,3 +4244,19 @@ inline Plane Plane::Transform(const Plane& plane, const Quat& rotation)
 	XMStoreFloat4(&result, X);
 	return result;
 }
+
+inline bool Guid::operator == (const Guid& guid) const
+{
+	return data[0] == guid.data[0]
+		&& data[1] == guid.data[1]
+		&& data[2] == guid.data[2]
+		&& data[3] == guid.data[3];
+}
+
+inline bool Guid::operator != (const Guid& guid) const
+{
+	return data[0] != guid.data[0]
+		|| data[1] != guid.data[1]
+		|| data[2] != guid.data[2]
+		|| data[3] != guid.data[3];
+}
