@@ -10,28 +10,21 @@ void(*MeshInstance::Predraw)(void*, Matrix*, int) = nullptr;
 Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, Vec3::One);
 
 //=================================================================================================
-// Konstruktor instancji Mesh
-//=================================================================================================
-MeshInstance::MeshInstance(Mesh* mesh, bool preload) : mesh(mesh), need_update(true), ptr(nullptr), preload(preload), base_speed(1.f), mat_scale(nullptr)
+MeshInstance::MeshInstance(Mesh* mesh) : preload(false), mesh(mesh), need_update(true), ptr(nullptr), base_speed(1.f), mat_scale(nullptr)
 {
-	if(!preload)
-	{
-		assert(mesh && mesh->IsLoaded());
+	assert(mesh && mesh->IsLoaded());
 
-		mat_bones.resize(mesh->head.n_bones);
-		blendb.resize(mesh->head.n_bones);
-		groups.resize(mesh->head.n_groups);
-	}
+	mat_bones.resize(mesh->head.n_bones);
+	blendb.resize(mesh->head.n_bones);
+	groups.resize(mesh->head.n_groups);
 }
 
 //=================================================================================================
-// Odtwarza podan¹ animacjê, szybsze bo nie musi szukaæ nazwy
-//=================================================================================================
-void MeshInstance::Play(Mesh::Animation* anim, int flags, int group)
+void MeshInstance::Play(Mesh::Animation* anim, int flags, uint group)
 {
-	assert(anim && InRange(group, 0, mesh->head.n_groups - 1));
+	assert(anim);
 
-	Group& gr = groups[group];
+	Group& gr = GetGroup(group);
 
 	// ignoruj animacjê
 	if(IsSet(flags, PLAY_IGNORE) && gr.anim == anim)
@@ -82,14 +75,9 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, int group)
 }
 
 //=================================================================================================
-// Wy³¹cz grupê
-//=================================================================================================
-void MeshInstance::Deactivate(int group, bool in_update)
+void MeshInstance::Deactivate(uint group, bool in_update)
 {
-	assert(InRange(group, 0, mesh->head.n_groups - 1));
-
-	Group& gr = groups[group];
-
+	Group& gr = GetGroup(group);
 	if(IsSet(gr.state, FLAG_GROUP_ACTIVE))
 	{
 		SetupBlending(group, true, in_update);
@@ -99,8 +87,6 @@ void MeshInstance::Deactivate(int group, bool in_update)
 	}
 }
 
-//=================================================================================================
-// Aktualizuje animacje
 //=================================================================================================
 void MeshInstance::Update(float dt)
 {
@@ -189,8 +175,6 @@ void MeshInstance::Update(float dt)
 	}
 }
 
-//====================================================================================================
-// Ustawia koœci przed rysowaniem modelu
 //====================================================================================================
 void MeshInstance::SetupBones()
 {
@@ -342,9 +326,7 @@ void MeshInstance::SetupBones()
 }
 
 //=================================================================================================
-// Ustawia blending (przejœcia pomiêdzy animacjami)
-//=================================================================================================
-void MeshInstance::SetupBlending(int bones_group, bool first, bool in_update)
+void MeshInstance::SetupBlending(uint bones_group, bool first, bool in_update)
 {
 	int anim_group;
 	const Group& gr_bones = groups[bones_group];
@@ -449,9 +431,9 @@ void MeshInstance::SetupBlending(int bones_group, bool first, bool in_update)
 	// znajdz podrzêdne grupy które nie s¹ aktywne i ustaw im blending
 	if(first)
 	{
-		for(int group = 0; group < mesh->head.n_groups; ++group)
+		for(uint group = 0; group < mesh->head.n_groups; ++group)
 		{
-			auto& gr = groups[group];
+			Group& gr = groups[group];
 			if(group != bones_group && (!gr.IsActive() || gr.prio < gr_bones.prio))
 			{
 				SetupBlending(group, false);
@@ -472,8 +454,6 @@ void MeshInstance::ClearEndResult()
 }
 
 //=================================================================================================
-// Czy jest jakiœ blending?
-//=================================================================================================
 bool MeshInstance::IsBlending() const
 {
 	for(int i = 0; i < mesh->head.n_groups; ++i)
@@ -484,8 +464,6 @@ bool MeshInstance::IsBlending() const
 	return false;
 }
 
-//=================================================================================================
-// Zwraca najwy¿szy priorytet animacji i jej grupê
 //=================================================================================================
 int MeshInstance::GetHighestPriority(uint& _group)
 {
@@ -503,8 +481,6 @@ int MeshInstance::GetHighestPriority(uint& _group)
 	return best;
 }
 
-//=================================================================================================
-// Zwraca grupê której ma u¿ywaæ dana grupa
 //=================================================================================================
 int MeshInstance::GetUsableGroup(uint group)
 {
@@ -541,16 +517,14 @@ void MeshInstance::DisableAnimations()
 }
 
 //=================================================================================================
-// Ustawia podan¹ animacje na koniec
-//=================================================================================================
-void MeshInstance::SetToEnd(Mesh::Animation* a)
+void MeshInstance::SetToEnd(Mesh::Animation* anim)
 {
-	assert(a);
+	assert(anim);
 
-	groups[0].anim = a;
+	groups[0].anim = anim;
 	groups[0].blend_time = 0.f;
 	groups[0].state = FLAG_GROUP_ACTIVE;
-	groups[0].time = a->length;
+	groups[0].time = anim->length;
 	groups[0].used_group = 0;
 	groups[0].prio = 3;
 
@@ -593,8 +567,6 @@ void MeshInstance::SetToEnd()
 }
 
 //=================================================================================================
-// Resetuje animacjê z blendingiem
-//=================================================================================================
 void MeshInstance::ResetAnimation()
 {
 	SetupBlending(0);
@@ -605,8 +577,6 @@ void MeshInstance::ResetAnimation()
 }
 
 //=================================================================================================
-// Zwraca czas blendingu w przedziale 0..1
-//=================================================================================================
 float MeshInstance::Group::GetBlendT() const
 {
 	if(IsBlending())
@@ -616,9 +586,9 @@ float MeshInstance::Group::GetBlendT() const
 }
 
 //=================================================================================================
-void MeshInstance::Save(FileWriter& f)
+void MeshInstance::Save(FileWriter& f) const
 {
-	for(Group& group : groups)
+	for(const Group& group : groups)
 	{
 		f << group.time;
 		f << group.speed;
@@ -631,6 +601,22 @@ void MeshInstance::Save(FileWriter& f)
 			f.Write0();
 		f << group.frame_end;
 	}
+}
+
+//=================================================================================================
+void MeshInstance::SaveSimple(FileWriter& f) const
+{
+	assert(groups.size() == 1u && mesh->anims.size() == 1u);
+
+	const MeshInstance::Group& group = groups[0];
+	if(group.IsActive())
+	{
+		f << (group.state & ~FLAG_BLENDING);
+		f << group.time;
+		f << group.blend_time;
+	}
+	else
+		f << 0;
 }
 
 //=================================================================================================
@@ -675,6 +661,20 @@ void MeshInstance::Load(FileReader& f, int version)
 }
 
 //=================================================================================================
+void MeshInstance::LoadSimple(FileReader& f)
+{
+	groups.resize(1u);
+	Group& group = groups[0];
+	group.state = f.Read<int>();
+	if(group.state != 0)
+	{
+		group.used_group = 0;
+		f >> group.time;
+		f >> group.blend_time;
+	}
+}
+
+//=================================================================================================
 void MeshInstance::Write(StreamWriter& f) const
 {
 	f.WriteCasted<byte>(groups.size());
@@ -691,6 +691,22 @@ void MeshInstance::Write(StreamWriter& f) const
 			f.Write0();
 		f << group.frame_end;
 	}
+}
+
+//=================================================================================================
+void MeshInstance::WriteSimple(StreamWriter& f) const
+{
+	assert(groups.size() == 1u && mesh->anims.size() == 1u);
+
+	const MeshInstance::Group& group = groups[0];
+	if(group.IsActive())
+	{
+		f << (group.state & ~FLAG_BLENDING);
+		f << group.time;
+		f << group.blend_time;
+	}
+	else
+		f << 0;
 }
 
 //=================================================================================================
@@ -744,7 +760,21 @@ bool MeshInstance::Read(StreamReader& f)
 }
 
 //=================================================================================================
-bool MeshInstance::ApplyPreload(Mesh* mesh)
+void MeshInstance::ReadSimple(StreamReader& f)
+{
+	groups.resize(1u);
+	Group& group = groups[0];
+	group.state = f.Read<int>();
+	if(group.state != 0)
+	{
+		group.used_group = 0;
+		f >> group.time;
+		f >> group.blend_time;
+	}
+}
+
+//=================================================================================================
+bool MeshInstance::ApplyPreload(Mesh* mesh, bool simple)
 {
 	assert(mesh
 		&& preload
@@ -756,19 +786,28 @@ bool MeshInstance::ApplyPreload(Mesh* mesh)
 	mat_bones.resize(mesh->head.n_bones);
 	blendb.resize(mesh->head.n_bones);
 
-	for(auto& group : groups)
+	if(simple)
 	{
-		string* str = (string*)group.anim;
-		if(str)
+		Group& group = groups[0];
+		if(group.state != 0)
+			group.anim = &mesh->anims[0];
+	}
+	else
+	{
+		for(Group& group : groups)
 		{
-			group.anim = mesh->GetAnimation(str->c_str());
-			if(!group.anim)
+			string* str = (string*)group.anim;
+			if(str)
 			{
-				Error("Invalid animation '%s' for mesh '%s'.", str->c_str(), mesh->path.c_str());
+				group.anim = mesh->GetAnimation(str->c_str());
+				if(!group.anim)
+				{
+					Error("Invalid animation '%s' for mesh '%s'.", str->c_str(), mesh->path.c_str());
+					StringPool.Free(str);
+					return false;
+				}
 				StringPool.Free(str);
-				return false;
 			}
-			StringPool.Free(str);
 		}
 	}
 

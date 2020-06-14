@@ -67,44 +67,20 @@ struct MeshInstance
 	};
 	typedef vector<byte>::const_iterator BoneIter;
 
-	explicit MeshInstance(Mesh* mesh, bool preload = false);
-	// kontynuuj odtwarzanie animacji
-	void Play(int group = 0)
-	{
-		SetBit(groups[group].state, FLAG_PLAYING);
-	}
-	// odtwarzaj animacjê
-	void Play(Mesh::Animation* anim, int flags, int group);
-	// odtwarzaj animacjê o podanej nazwie
-	void Play(cstring name, int flags, int group = 0)
+	explicit MeshInstance(nullptr_t) : preload(true), mesh(nullptr), need_update(true), ptr(nullptr), base_speed(1.f), mat_scale(nullptr) {}
+	explicit MeshInstance(Mesh* mesh);
+	void Play(Mesh::Animation* anim, int flags, uint group = 0);
+	void Play(cstring name, int flags, uint group = 0)
 	{
 		Mesh::Animation* anim = mesh->GetAnimation(name);
 		assert(anim);
 		Play(anim, flags, group);
 	}
-	// zatrzymaj animacjê
-	void Stop(int group = 0)
-	{
-		ClearBit(groups[group].state, FLAG_PLAYING);
-	}
-	// deazktywój grupê
-	void Deactivate(int group = 0, bool in_update = false);
-	// aktualizacja animacji
+	void Play(uint group = 0) { SetBit(GetGroup(group).state, FLAG_PLAYING); }
+	void Stop(uint group = 0) { ClearBit(GetGroup(group).state, FLAG_PLAYING); }
+	void Deactivate(uint group = 0, bool in_update = false);
 	void Update(float dt);
-	// ustawianie blendingu
-	void SetupBlending(int grupa, bool first = true, bool in_update = false);
-	// ustawianie koœci
 	void SetupBones();
-	float GetProgress(int group = 0) const
-	{
-		assert(InRange(group, 0, mesh->head.n_groups - 1));
-		return groups[group].GetProgress();
-	}
-	void SetProgress(float progress, int group = 0)
-	{
-		assert(InRange(group, 0, mesh->head.n_groups - 1));
-		groups[group].SetProgress(progress);
-	}
 	void DisableAnimations();
 	void SetToEnd(cstring anim)
 	{
@@ -114,20 +90,41 @@ struct MeshInstance
 	void SetToEnd(Mesh::Animation* anim);
 	void SetToEnd();
 	void ResetAnimation();
-	void Save(FileWriter& f);
+	void Save(FileWriter& f) const;
+	void SaveSimple(FileWriter& f) const;
 	void Load(FileReader& f, int version);
+	void LoadSimple(FileReader& f);
 	void Write(StreamWriter& f) const;
+	void WriteSimple(StreamWriter& f) const;
 	bool Read(StreamReader& f);
-	bool ApplyPreload(Mesh* mesh);
+	void ReadSimple(StreamReader& f);
+	bool ApplyPreload(Mesh* mesh, bool simple = false);
+	void ClearEndResult();
+
+	Group& GetGroup(uint group)
+	{
+		assert(group < mesh->head.n_groups);
+		return groups[group];
+	}
+	const Group& GetGroup(uint group) const
+	{
+		assert(group < mesh->head.n_groups);
+		return groups[group];
+	}
 	int GetHighestPriority(uint& group);
 	int GetUsableGroup(uint group);
-	void ClearEndResult();
-	bool IsEnded(uint g = 0) const
-	{
-		return groups[g].frame_end;
-	}
-	bool IsBlending() const;
+	float GetProgress(uint group = 0) const { return GetGroup(group).GetProgress(); }
 
+	bool IsActive(uint group = 0) const { return GetGroup(group).IsActive(); }
+	bool IsBlending() const;
+	bool IsEnded(uint group = 0) const { return GetGroup(group).frame_end; }
+
+	void SetProgress(float progress, uint group = 0) { GetGroup(group).SetProgress(progress); }
+
+private:
+	void SetupBlending(uint group, bool first = true, bool in_update = false);
+
+public:
 	Mesh* mesh;
 	float base_speed;
 	bool need_update, preload;
