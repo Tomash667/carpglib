@@ -4,12 +4,13 @@
 #include "Qmsh.h"
 #include <conio.h>
 #include <Windows.h>
+#include <locale>
 
-const char* CONVERTER_VERSION = "22";
+const char* CONVERTER_VERSION = "22.1";
 
 string group_file, output_file;
 GROUP_OPTION gopt;
-bool export_phy, force_output;
+bool export_phy, force_output, any_warning;
 
 //=================================================================================================
 // Parsuj plik konfiguracyjny aby wydobyæ nazwê pliku
@@ -54,7 +55,7 @@ void ParseConfig(ConversionData& cs, std::string& filename)
 //=================================================================================================
 // Przygotuj parametry do konwersji
 //=================================================================================================
-bool ConvertToQmsh(std::string& filename)
+int ConvertToQmsh(std::string& filename)
 {
 	ConversionData cs;
 	cs.gopt = GO_ONE;
@@ -115,12 +116,12 @@ bool ConvertToQmsh(std::string& filename)
 		Convert(cs);
 
 		Info("Ok.");
-		return true;
+		return any_warning ? 1 : 0;
 	}
 	catch(cstring err)
 	{
 		Error("B³¹d: %s", err);
-		return false;
+		return 2;
 	}
 }
 
@@ -306,8 +307,7 @@ int main(int argc, char **argv)
 		else
 		{
 			string tstr(cstr);
-			if(!ConvertToQmsh(tstr))
-				result = 1;
+			result = ConvertToQmsh(tstr);
 			group_file.clear();
 			output_file.clear();
 			gopt = GO_ONE;

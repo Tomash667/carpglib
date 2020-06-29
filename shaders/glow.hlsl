@@ -1,7 +1,7 @@
 cbuffer VsGlobals : register(b0)
 {
 	matrix matCombined;
-	matrix matBones[32];
+	matrix matBones[64];
 };
 
 cbuffer PsGlobals : register(b0)

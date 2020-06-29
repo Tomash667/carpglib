@@ -5,6 +5,7 @@
 const Vec3 DefaultSpecularColor(1, 1, 1);
 const float DefaultSpecularIntensity = 0.2f;
 const int DefaultSpecularHardness = 10;
+extern bool any_warning;
 
 // Przechowuje dane na temat wybranej koœci we wsp. globalnych modelu w uk³adzie DirectX
 struct BONE_INTER_DATA
@@ -238,6 +239,7 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 								{
 									Warn("Mesh '%s', material '%s', texture '%s' has diffuse factor %g (only 1.0 is supported).", o.Name.c_str(), m.name.c_str(), t.image.c_str(),
 										t.diffuse_factor);
+									any_warning = true;
 								}
 							}
 							else if(!t.use_diffuse && t.use_normal && !t.use_specular && !t.use_specular_color)
@@ -391,7 +393,10 @@ void Converter::TmpToQmsh_Bones(QMSH *Out, std::vector<BONE_INTER_DATA> *OutBone
 
 	// Sprawdzenie liczby koœci
 	if(Out->Bones.size() != QmshTmp.Armature->Bones.size())
+	{
 		WarnOnce(1, "Skipped %u invalid bones.", QmshTmp.Armature->Bones.size() - Out->Bones.size());
+		any_warning = true;
+	}
 
 	// Policzenie Bone Inter Data
 	OutBoneInterData->resize(Out->Bones.size());
@@ -416,7 +421,10 @@ void Converter::TmpToQmsh_Bones(QMSH *Out, std::vector<BONE_INTER_DATA> *OutBone
 				bid.TailPos = Vec3::Transform(v, ArmatureToWorldMat);
 
 				if(!Equal(TmpArmature.Size.x, TmpArmature.Size.y) || !Equal(TmpArmature.Size.y, TmpArmature.Size.z))
+				{
 					WarnOnce(2342235, "Non uniform scaling of Armature object may give invalid bone envelopes.");
+					any_warning = true;
+				}
 
 				float ScaleFactor = (TmpArmature.Size.x + TmpArmature.Size.y + TmpArmature.Size.z) / 3.f;
 
@@ -618,7 +626,10 @@ void Converter::TmpToQmsh_Animation(QMSH_ANIMATION *OutAnimation, const tmp::ACT
 
 	// Ostrze¿enia
 	if(WarningInterpolation)
+	{
 		WarnOnce(2352634, "Constant IPO interpolation mode not supported.");
+		any_warning = true;
+	}
 
 	// Wygenerowanie klatek kluczowych
 	// (Nie ma ani jednej krzywej albo ¿adna nie ma punktów - nie bêdzie klatek kluczowych)
@@ -649,7 +660,11 @@ void Converter::TmpToQmsh_Animation(QMSH_ANIMATION *OutAnimation, const tmp::ACT
 
 	// Czas trwania animacji, skalowanie czasu
 	if(OutAnimation->Keyframes.empty())
+	{
 		OutAnimation->Length = 0.f;
+		Warn("Animation '%s' have no frames.", OutAnimation->Name.c_str());
+		any_warning = true;
+	}
 	else if(OutAnimation->Keyframes.size() == 1)
 	{
 		OutAnimation->Length = 0.f;
@@ -843,7 +858,10 @@ void Converter::CalcVertexSkinData(std::vector<INTERMEDIATE_VERTEX_SKIN_DATA> *O
 		}
 		// Nie znaleziono
 		if(BoneIndex == 0)
+		{
 			WarnOnce(13497325, "Object parented to non existing bone.");
+			any_warning = true;
+		}
 		// Przypisz t¹ koœæ do wszystkich wierzcho³ków
 		for(uint vi = 0; vi < TmpMesh.Vertices.size(); vi++)
 		{

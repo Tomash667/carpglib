@@ -448,9 +448,11 @@ def RunExport(filepath, config):
 		cmd = '"' + config.converterPath + '" "' + filepath + '"'
 		print("Command: %s" % cmd)
 		sub = subprocess.Popen(cmd)
-		if sub.wait() != 0:
-			return False
+		result = sub.wait()
+		if result == 2:
+			raise ExporterException("Converter error.")
 		os.remove(data.path)
+		return result == 0
 	return True
 
 ################################################################################
@@ -543,7 +545,9 @@ class QmshExporterOperator(bpy.types.Operator, ExportHelper):
 		self.config.converterPath = self.ConverterPath
 		self.config.Save()
 		try:
-			RunExport(self.properties.filepath, self.config)
+			ok = RunExport(self.properties.filepath, self.config)
+			if not ok:
+				self.report({"WARNING"}, "Exported with warnings")
 			return {"FINISHED"}
 		except ExporterException as error:
 			msg = 'Exporter error: ' +str(error)

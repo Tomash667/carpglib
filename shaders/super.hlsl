@@ -19,7 +19,7 @@ cbuffer VsLocals : register(b1)
 {
 	matrix matCombined;
 	matrix matWorld;
-	matrix matBones[32];
+	matrix matBones[64];
 };
 
 cbuffer PsGlobals : register(b0)

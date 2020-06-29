@@ -1,6 +1,11 @@
 CHANGELOG
 Minor updates have changes only in exporter/converer, don't affect qmsh file.
 ---------------------------
+v22.1:
+CONVERTER:
++ return warning information to exporter, check empty animations
++ script to fix animation after import from fbx
+
 v22:
 MESH (v22):
 + keyframe bone scale is Vec3

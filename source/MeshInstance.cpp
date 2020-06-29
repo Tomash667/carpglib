@@ -182,7 +182,7 @@ void MeshInstance::SetupBones()
 		return;
 	need_update = false;
 
-	Matrix BoneToParentPoseMat[32];
+	Matrix BoneToParentPoseMat[Mesh::MAX_BONES];
 	BoneToParentPoseMat[0] = Matrix::IdentityMatrix;
 	Mesh::KeyframeBone tmp_keyf;
 
@@ -298,7 +298,7 @@ void MeshInstance::SetupBones()
 
 	// Macierze przekszta³caj¹ce ze wsp. danej koœci do wsp. modelu w ustalonej pozycji
 	// (To obliczenie nale¿a³oby po³¹czyæ z poprzednim)
-	Matrix BoneToModelPoseMat[32];
+	Matrix BoneToModelPoseMat[Mesh::MAX_BONES];
 	BoneToModelPoseMat[0] = Matrix::IdentityMatrix;
 	for(word i = 1; i < mesh->head.n_bones; ++i)
 	{
