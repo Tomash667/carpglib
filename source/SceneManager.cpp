@@ -3,6 +3,7 @@
 
 #include "Camera.h"
 #include "DirectX.h"
+#include "Gui.h"
 #include "Render.h"
 #include "Scene.h"
 #include "SceneNode.h"
@@ -29,6 +30,15 @@ void SceneManager::SetScene(Scene* scene, Camera* camera)
 	this->scene = scene;
 	this->camera = camera;
 	super_shader->SetScene(scene, camera);
+}
+
+//=================================================================================================
+void SceneManager::Draw()
+{
+	app::render->Clear(scene->clear_color);
+	Draw(nullptr);
+	app::gui->Draw();
+	app::render->Present();
 }
 
 //=================================================================================================

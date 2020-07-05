@@ -24,7 +24,7 @@ void Scene::ListNodes(SceneBatch& batch)
 	FrustumPlanes frustum(batch.camera->mat_view_proj);
 	for(SceneNode* node : nodes)
 	{
-		if(node->mesh && frustum.SphereToFrustum(node->center, node->radius))
+		if(node->mesh && frustum.SphereToFrustum(node->pos, node->radius))
 		{
 			if(batch.gather_lights)
 				GatherLights(batch, node);
@@ -40,7 +40,7 @@ void Scene::GatherLights(SceneBatch& batch, SceneNode* node)
 
 	for(Light& light : lights)
 	{
-		float dist = Vec3::Distance(node->center, light.pos);
+		float dist = Vec3::Distance(node->pos, light.pos);
 		if(dist < light.range + node->radius)
 			best.Add(&light, dist);
 	}

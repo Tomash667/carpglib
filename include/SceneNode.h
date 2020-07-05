@@ -37,11 +37,14 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	float radius, dist;
 	const TexOverride* tex_override;
 	Vec4 tint;
-	Vec3 center;
+	Vec3 pos, rot, scale;
 	array<Light*, 3> lights;
 
+	void OnGet();
+	void OnFree();
 	void SetMesh(Mesh* mesh, MeshInstance* mesh_inst = nullptr);
 	void SetMesh(MeshInstance* mesh_inst);
+	void UpdateMatrix();
 };
 
 //-----------------------------------------------------------------------------

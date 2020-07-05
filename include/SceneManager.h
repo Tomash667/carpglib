@@ -10,6 +10,7 @@ public:
 	SceneManager();
 	void Init();
 	void SetScene(Scene* scene, Camera* camera);
+	void Draw();
 	void Draw(RenderTarget* target);
 	void DrawSceneNodes(SceneBatch& batch);
 	void DrawAlphaSceneNodes(SceneBatch& batch);

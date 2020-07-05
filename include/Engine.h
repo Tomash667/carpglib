@@ -22,6 +22,7 @@ public:
 	void UnlockCursor(bool lock_on_focus = true);
 	void LockCursor();
 	void HideWindow(bool hide);
+	void ToggleFullscreen() { SetFullscreen(!IsFullscreen()); }
 
 	bool IsActive() const { return active; }
 	bool IsCursorLocked() const { return locked_cursor; }
@@ -34,7 +35,6 @@ public:
 	float GetWindowAspect() const { return float(client_size.x) / client_size.y; }
 	HWND GetWindowHandle() const { return hwnd; }
 	const Int2& GetWindowSize() const { return wnd_size; }
-	CustomCollisionWorld* GetPhysicsWorld() { return phy_world; }
 
 	void SetFullscreen(bool fullscreen);
 	void SetTitle(cstring title);
@@ -57,7 +57,6 @@ private:
 	bool IsWindowActive();
 	void SetWindowSizeInternal(const Int2& size);
 
-	CustomCollisionWorld* phy_world;
 	HWND hwnd;
 	Timer timer;
 	string title;

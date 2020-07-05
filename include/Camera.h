@@ -4,6 +4,7 @@
 struct Camera
 {
 	Camera() : znear(0.1f), zfar(50.f) {}
+	void UpdateMatrix();
 
 	Matrix mat_view_proj;
 	Matrix mat_view_inv;
