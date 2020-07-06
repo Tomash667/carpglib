@@ -7,6 +7,7 @@
 #include "Render.h"
 #include "Scene.h"
 #include "SceneNode.h"
+#include "SkyboxShader.h"
 #include "SuperShader.h"
 
 SceneManager* app::scene_mgr;
@@ -21,6 +22,9 @@ void SceneManager::Init()
 {
 	super_shader = new SuperShader;
 	app::render->RegisterShader(super_shader);
+
+	skybox_shader = new SkyboxShader;
+	app::render->RegisterShader(skybox_shader);
 }
 
 //=================================================================================================
@@ -54,6 +58,9 @@ void SceneManager::Draw(RenderTarget* target)
 		app::render->SetRenderTarget(target);
 
 	app::render->Clear(scene->clear_color);
+
+	if(scene->skybox)
+		skybox_shader->Draw(*scene->skybox, *camera);
 
 	super_shader->Prepare();
 

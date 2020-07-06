@@ -23,6 +23,7 @@ struct Scene
 
 	vector<SceneNode*> nodes;
 	vector<Light> lights;
+	Mesh* skybox;
 	Vec3 light_dir;
 	Vec2 fog_range;
 	Color clear_color, ambient_color, light_color, fog_color;

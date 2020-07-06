@@ -15,7 +15,6 @@ public:
 	void DrawSceneNodes(SceneBatch& batch);
 	void DrawAlphaSceneNodes(SceneBatch& batch);
 
-	SuperShader* super_shader;
 	bool use_lighting, use_fog, use_normalmap, use_specularmap;
 
 private:
@@ -25,4 +24,6 @@ private:
 	SceneBatch batch;
 	Scene* scene;
 	Camera* camera;
+	SuperShader* super_shader;
+	SkyboxShader* skybox_shader;
 };

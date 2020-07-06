@@ -8,7 +8,7 @@
 
 //=================================================================================================
 Scene::Scene() : clear_color(Color::Black), ambient_color(0.4f, 0.4f, 0.4f), light_color(Color::White), fog_color(Color::Gray), use_light_dir(false),
-fog_range(50, 100)
+fog_range(50, 100), skybox(nullptr)
 {
 }
 
