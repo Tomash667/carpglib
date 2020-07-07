@@ -149,6 +149,8 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 //=================================================================================================
 void BasicShader::Prepare(const Camera& camera)
 {
+	camPos = camera.from;
+
 	app::render->SetBlendState(Render::BLEND_ADD);
 	app::render->SetDepthState(Render::DEPTH_READ);
 	app::render->SetRasterState(Render::RASTER_NO_CULLING);
@@ -231,7 +233,7 @@ void BasicShader::DrawQuad(const Vec3(&pts)[4], Color color)
 {
 	Vec4 col = color;
 	uint offset = vertices.size();
-	for(int i=0; i<4; ++i)
+	for(int i = 0; i < 4; ++i)
 		vertices.push_back(VColor(pts[i], col));
 	indices.push_back(offset + 0);
 	indices.push_back(offset + 1);
@@ -250,6 +252,26 @@ void BasicShader::DrawArea(const vector<Vec3>& vertices, const vector<word>& ind
 		this->vertices.push_back(VColor(pos, col));
 	for(word idx : indices)
 		this->indices.push_back(idx + offset);
+}
+
+//=================================================================================================
+void BasicShader::DrawLine(const Vec3& from, const Vec3& to, float width, Color color)
+{
+	width /= 2;
+
+	Vec3 line_dir = from - to;
+	Vec3 quad_normal = camPos - (to + from) / 2;
+	Vec3 extrude_dir = line_dir.Cross(quad_normal).Normalize();
+	Vec3 line_normal = line_dir.Normalized() * width;
+
+	const Vec3 pts[4] = {
+		from + extrude_dir * width + line_normal,
+		from - extrude_dir * width + line_normal,
+		to + extrude_dir * width - line_normal,
+		to - extrude_dir * width - line_normal
+	};
+
+	DrawQuad(pts, color);
 }
 
 //=================================================================================================

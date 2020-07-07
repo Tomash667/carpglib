@@ -6,6 +6,7 @@
 #include "Gui.h"
 #include "Render.h"
 #include "Scene.h"
+#include "SceneCallback.h"
 #include "SceneNode.h"
 #include "SkyboxShader.h"
 #include "SuperShader.h"
@@ -69,6 +70,9 @@ void SceneManager::Draw(RenderTarget* target)
 
 	if(!batch.alpha_nodes.empty())
 		DrawAlphaSceneNodes(batch.alpha_nodes);
+
+	for(SceneCallback* callback : scene->callbacks)
+		callback->Draw(*camera);
 
 	if(target)
 		app::render->SetRenderTarget(nullptr);

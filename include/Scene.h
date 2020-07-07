@@ -23,6 +23,7 @@ struct Scene
 
 	vector<SceneNode*> nodes;
 	vector<Light> lights;
+	vector<SceneCallback*> callbacks;
 	Mesh* skybox;
 	Vec3 light_dir;
 	Vec2 fog_range;

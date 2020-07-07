@@ -1,14 +1,7 @@
 #pragma once
 
-#include "Key.h"
-
 //-----------------------------------------------------------------------------
-enum ShortcutKey
-{
-	KEY_SHIFT = 1 << 0,
-	KEY_CONTROL = 1 << 1,
-	KEY_ALT = 1 << 2
-};
+#include "Key.h"
 
 //-----------------------------------------------------------------------------
 // Input handling (keyboard & mouse)

@@ -30,6 +30,7 @@ public:
 	void SetAreaParams(const Vec3& playerPos, float range, float falloff);
 	void DrawQuad(const Vec3(&pts)[4], Color color);
 	void DrawArea(const vector<Vec3>& vertices, const vector<word>& indices, Color color);
+	void DrawLine(const Vec3& from, const Vec3& to, float width, Color color);
 	void Draw();
 
 private:
@@ -47,4 +48,5 @@ private:
 	uint vbSize, ibSize;
 	vector<VColor> vertices;
 	vector<word> indices;
+	Vec3 camPos;
 };
