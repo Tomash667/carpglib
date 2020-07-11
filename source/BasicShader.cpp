@@ -171,6 +171,8 @@ void BasicShader::Prepare(const Camera& camera)
 		VsGlobals& vsg = *lock.Get<VsGlobals>();
 		vsg.matCombined = camera.mat_view_proj.Transpose();
 	}
+
+	SetAreaParams(Vec3::Zero, 1.f, 0.f);
 }
 
 //=================================================================================================

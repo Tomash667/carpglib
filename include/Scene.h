@@ -13,6 +13,7 @@ struct Scene
 		assert(node);
 		nodes.push_back(node);
 	}
+	void Remove(SceneNode* node);
 	void ListNodes(SceneBatch& batch);
 	void GatherLights(SceneBatch& batch, SceneNode* node);
 	Vec4 GetAmbientColor() const;

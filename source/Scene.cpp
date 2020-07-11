@@ -19,12 +19,20 @@ Scene::~Scene()
 }
 
 //=================================================================================================
+void Scene::Remove(SceneNode* node)
+{
+	assert(node);
+	RemoveElement(nodes, node);
+	node->Free();
+}
+
+//=================================================================================================
 void Scene::ListNodes(SceneBatch& batch)
 {
 	FrustumPlanes frustum(batch.camera->mat_view_proj);
 	for(SceneNode* node : nodes)
 	{
-		if(node->mesh && frustum.SphereToFrustum(node->pos, node->radius))
+		if(node->visible && frustum.SphereToFrustum(node->pos, node->radius))
 		{
 			if(batch.gather_lights)
 				GatherLights(batch, node);

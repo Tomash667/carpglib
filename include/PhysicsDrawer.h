@@ -7,7 +7,7 @@
 //-----------------------------------------------------------------------------
 struct PhysicsDrawer : public SceneCallback, public btIDebugDraw
 {
-	PhysicsDrawer() : enabled(false) {}
+	PhysicsDrawer();
 	void Draw(Camera& camera) override;
 
 	void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override;
@@ -21,5 +21,6 @@ struct PhysicsDrawer : public SceneCallback, public btIDebugDraw
 	void setDebugMode(int debugMode) override {}
 	int getDebugMode() const override { return DBG_DrawWireframe; }
 
+	BasicShader* shader;
 	bool enabled;
 };

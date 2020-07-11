@@ -21,11 +21,8 @@ SceneManager::SceneManager() : use_lighting(true), use_fog(true), use_normalmap(
 //=================================================================================================
 void SceneManager::Init()
 {
-	super_shader = new SuperShader;
-	app::render->RegisterShader(super_shader);
-
-	skybox_shader = new SkyboxShader;
-	app::render->RegisterShader(skybox_shader);
+	super_shader = app::render->GetShader<SuperShader>();
+	skybox_shader = app::render->GetShader<SkyboxShader>();
 }
 
 //=================================================================================================
@@ -40,7 +37,6 @@ void SceneManager::SetScene(Scene* scene, Camera* camera)
 //=================================================================================================
 void SceneManager::Draw()
 {
-	app::render->Clear(scene->clear_color);
 	Draw(nullptr);
 	app::gui->Draw();
 	app::render->Present();
