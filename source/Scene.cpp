@@ -27,6 +27,12 @@ void Scene::Remove(SceneNode* node)
 }
 
 //=================================================================================================
+void Scene::Clear()
+{
+	SceneNode::Free(nodes);
+}
+
+//=================================================================================================
 void Scene::ListNodes(SceneBatch& batch)
 {
 	FrustumPlanes frustum(batch.camera->mat_view_proj);

@@ -63,10 +63,10 @@ void BasicShader::OnInit()
 	psGlobalsMesh = app::render->CreateConstantBuffer(sizeof(PsGlobalsMesh), "BasicPsGlobalsMesh");
 	psGlobalsColor = app::render->CreateConstantBuffer(sizeof(PsGlobalsColor), "BasicPsGlobalsColor");
 
-	meshes[(int)DebugNode::Box] = app::res_mgr->Get<Mesh>("box.qmsh");
-	meshes[(int)DebugNode::Sphere] = app::res_mgr->Get<Mesh>("sphere.qmsh");
-	meshes[(int)DebugNode::Capsule] = app::res_mgr->Get<Mesh>("capsule.qmsh");
-	meshes[(int)DebugNode::Cylinder] = app::res_mgr->Get<Mesh>("cylinder.qmsh");
+	meshes[(int)MeshShape::Box] = app::res_mgr->Get<Mesh>("box.qmsh");
+	meshes[(int)MeshShape::Sphere] = app::res_mgr->Get<Mesh>("sphere.qmsh");
+	meshes[(int)MeshShape::Capsule] = app::res_mgr->Get<Mesh>("capsule.qmsh");
+	meshes[(int)MeshShape::Cylinder] = app::res_mgr->Get<Mesh>("cylinder.qmsh");
 }
 
 //=================================================================================================
@@ -84,8 +84,10 @@ void BasicShader::OnRelease()
 }
 
 //=================================================================================================
-void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
+void BasicShader::PrepareForShapes(const Camera& camera)
 {
+	matViewProj = camera.mat_view_proj;
+
 	app::render->SetBlendState(Render::BLEND_NO);
 	app::render->SetDepthState(Render::DEPTH_NO);
 	app::render->SetRasterState(Render::RASTER_WIREFRAME);
@@ -97,9 +99,13 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 	deviceContext->PSSetConstantBuffers(0, 1, &psGlobalsMesh);
 	deviceContext->IASetInputLayout(shaderMesh.layout);
 
-	Color prevColor = Color::None;
-	DebugNode::Mesh prevMesh = DebugNode::None;
+	prevColor = Color::None;
+	prevShape = MeshShape::None;
+}
 
+//=================================================================================================
+void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
+{
 	for(vector<DebugNode*>::const_iterator it = nodes.begin(), end = nodes.end(); it != end; ++it)
 	{
 		const DebugNode& node = **it;
@@ -118,7 +124,7 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 			lock.Get<VsGlobals>()->matCombined = node.mat.Transpose();
 		}
 
-		if(node.mesh == DebugNode::TriMesh)
+		if(node.shape == MeshShape::TriMesh)
 		{
 			node.trimesh->Build();
 
@@ -130,8 +136,8 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 		}
 		else
 		{
-			Mesh& mesh = *meshes[node.mesh];
-			if(node.mesh != prevMesh)
+			Mesh& mesh = *meshes[(int)node.shape];
+			if(node.shape != prevShape)
 			{
 				uint stride = sizeof(VPos), offset = 0;
 				deviceContext->IASetVertexBuffers(0, 1, &mesh.vb, &stride, &offset);
@@ -142,8 +148,42 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 				deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, 0);
 		}
 
-		prevMesh = node.mesh;
+		prevShape = node.shape;
 	}
+}
+
+//=================================================================================================
+void BasicShader::DrawShape(MeshShape shape, const Matrix& m, Color color)
+{
+	assert(shape != MeshShape::None && shape != MeshShape::TriMesh);
+
+	// set color
+	if(color != prevColor)
+	{
+		prevColor = color;
+		ResourceLock lock(psGlobalsMesh);
+		lock.Get<PsGlobalsMesh>()->color = color;
+	}
+
+	// set matrix
+	{
+		ResourceLock lock(vsGlobals);
+		lock.Get<VsGlobals>()->matCombined = (m * matViewProj).Transpose();
+	}
+
+	// set mesh
+	Mesh& mesh = *meshes[(int)shape];
+	if(shape != prevShape)
+	{
+		uint stride = sizeof(VPos), offset = 0;
+		deviceContext->IASetVertexBuffers(0, 1, &mesh.vb, &stride, &offset);
+		deviceContext->IASetIndexBuffer(mesh.ib, DXGI_FORMAT_R16_UINT, 0);
+		prevShape = shape;
+	}
+
+	// draw
+	for(Mesh::Submesh& sub : mesh.subs)
+		deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, 0);
 }
 
 //=================================================================================================

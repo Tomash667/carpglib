@@ -1,6 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "MeshShape.h"
 #include "ShaderHandler.h"
 #include "VertexDeclaration.h"
 
@@ -23,7 +24,9 @@ public:
 	void OnRelease() override;
 
 	// drawing mesh debug nodes
+	void PrepareForShapes(const Camera& camera);
 	void DrawDebugNodes(const vector<DebugNode*>& nodes);
+	void DrawShape(MeshShape shape, const Matrix& m, Color color);
 
 	// drawing vertices
 	void Prepare(const Camera& camera);
@@ -49,4 +52,7 @@ private:
 	vector<VColor> vertices;
 	vector<word> indices;
 	Vec3 camPos;
+	Color prevColor;
+	MeshShape prevShape;
+	Matrix matViewProj;
 };

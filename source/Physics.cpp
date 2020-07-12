@@ -12,6 +12,7 @@ Physics::Physics() : config(nullptr), dispatcher(nullptr), broadphase(nullptr), 
 Physics::~Physics()
 {
 	Reset();
+	DeleteElements(shapes);
 
 	delete world;
 	delete broadphase;
@@ -49,7 +50,6 @@ void Physics::Reset()
 
 	objs.clear();
 	broadphase->resetPool(dispatcher);
-	DeleteElements(shapes);
 }
 
 //=================================================================================================

@@ -310,6 +310,9 @@
     <ClInclude Include="include\PhysicsDrawer.h">
       <Filter>utility</Filter>
     </ClInclude>
+    <ClInclude Include="include\MeshShape.h">
+      <Filter>const</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">

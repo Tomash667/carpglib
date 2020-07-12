@@ -103,6 +103,11 @@ public:
 	void SetFocus(bool f) { focus = f; }
 	bool Focus() const { return focus; }
 
+	bool IsModifier(int modifier) const
+	{
+		return shortcut_state == modifier;
+	}
+
 	// shortcut, checks if other modifiers are not down
 	// for example: Ctrl+A, shift and alt must not be pressed
 	bool Shortcut(int modifier, Key key, bool up = true)
