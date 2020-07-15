@@ -37,7 +37,10 @@ void SceneManager::SetScene(Scene* scene, Camera* camera)
 //=================================================================================================
 void SceneManager::Draw()
 {
-	Draw(nullptr);
+	if(scene && camera)
+		Draw(nullptr);
+	else
+		app::render->Clear(Color::Black);
 	app::gui->Draw();
 	app::render->Present();
 }

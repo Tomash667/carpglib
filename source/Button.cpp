@@ -62,7 +62,7 @@ void Button::Draw(ControlDrawData*)
 			r.Left() += img_size.x;
 		}
 
-		gui->DrawText(layout->font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r, &r);
+		gui->DrawText(layout->font, text, DTF_CENTER | DTF_VCENTER, layout->font_color[real_state], r, &r);
 	}
 	else
 		gui->DrawArea(Box2d::Create(global_pos, size), custom->tex[real_state]);

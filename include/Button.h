@@ -15,6 +15,7 @@ namespace layout
 	struct Button : public Control
 	{
 		AreaLayout tex[4];
+		Color font_color[4];
 		Font* font;
 		int padding;
 	};

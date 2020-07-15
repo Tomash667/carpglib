@@ -381,6 +381,10 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("tex_down", Entry::AreaLayout, offsetof(layout::Button, tex[Button::DOWN]));
 	c->AddEntry("tex_disabled", Entry::AreaLayout, offsetof(layout::Button, tex[Button::DISABLED]));
 	c->AddEntry("font", Entry::Font, offsetof(layout::Button, font));
+	c->AddEntry("font_color", Entry::Color, offsetof(layout::Button, font_color[Button::NONE]));
+	c->AddEntry("font_color_hover", Entry::Color, offsetof(layout::Button, font_color[Button::HOVER]));
+	c->AddEntry("font_color_down", Entry::Color, offsetof(layout::Button, font_color[Button::DOWN]));
+	c->AddEntry("font_color_disabled", Entry::Color, offsetof(layout::Button, font_color[Button::DISABLED]));
 	c->AddEntry("padding", Entry::Int, offsetof(layout::Button, padding));
 
 	c = AddControl<layout::CheckBox>("CheckBox");
