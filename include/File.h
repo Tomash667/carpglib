@@ -34,6 +34,8 @@ namespace io
 	void Crypt(char* inp, uint inplen, cstring key, uint keylen);
 	// open url in default web browser
 	void OpenUrl(Cstring url);
+	// get current directory
+	cstring GetCurrentDirectory();
 
 #ifndef CORE_ONLY
 	// Compress data to buffer

@@ -9,6 +9,7 @@
 #include "GuiShader.h"
 #include "Input.h"
 #include "Layout.h"
+#include "Overlay.h"
 #include "Profiler.h"
 #include "Render.h"
 #include "ResourceManager.h"
@@ -30,6 +31,7 @@ Gui::~Gui()
 	delete layer;
 	delete dialog_layer;
 	delete fontLoader;
+	delete overlay;
 }
 
 //=================================================================================================

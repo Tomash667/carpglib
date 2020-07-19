@@ -282,6 +282,16 @@ bool CircleToRectangle(float circlex, float circley, float radius, float rectx, 
 	return (dx*dx + dy * dy) <= (radius*radius);
 }
 
+bool Vec3::Parse(cstring str)
+{
+	return sscanf_s(str, "%g; %g; %g", &x, &y, &z) == 3;
+}
+
+cstring Vec3::ToString() const
+{
+	return Format("%g; %g; %g", x, y, z);
+}
+
 bool Box2d::IsFullyInside(const Vec2& v, float r) const
 {
 	return v.x - r >= v1.x

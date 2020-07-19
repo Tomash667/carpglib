@@ -19,6 +19,7 @@
 #undef CreateDirectory
 #undef DialogBox
 #undef DrawText
+#undef GetCurrentDirectory
 #undef MoveFile
 #undef far
 #undef near

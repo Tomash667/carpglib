@@ -804,6 +804,8 @@ struct Vec3 : XMFLOAT3
 	Vec3& Normalize();
 	void Normalize(Vec3& result) const;
 	Vec3 Normalized() const;
+	bool Parse(cstring str);
+	cstring ToString() const;
 	Vec2 XY() const;
 	Vec2 XZ() const;
 

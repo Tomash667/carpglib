@@ -32,11 +32,12 @@ void ListBox::Draw(ControlDrawData*)
 		if(selected != -1)
 		{
 			Rect rc = { global_pos.x + 2, global_pos.y + 2, global_pos.x + size.x - 12, global_pos.y + size.y - 2 };
-			gui->DrawText(layout->font, items[selected]->ToString(), DTF_SINGLELINE, Color::Black, rc, &rc);
+			gui->DrawText(layout->font, items[selected]->ToString(), DTF_SINGLELINE, layout->font_color[0], rc, &rc);
 		}
 
 		// image
-		gui->DrawSprite(layout->down_arrow, Int2(global_pos.x + size.x - 10, global_pos.y + (size.y - 10) / 2));
+		int width = layout->down_arrow->GetSize().x;
+		gui->DrawSpriteRect(layout->down_arrow, Rect(global_pos.x + size.x - width, global_pos.y, global_pos.x + size.x, global_pos.y + size.y));
 	}
 	else
 	{
@@ -71,6 +72,7 @@ void ListBox::Draw(ControlDrawData*)
 		r.Bottom() = r.Top() + itemHeight;
 		int orig_x = global_pos.x + 2;
 		Matrix mat;
+		GuiElement* selectedItem = GetItem();
 		for(GuiElement* e : items)
 		{
 			r.Bottom() = r.Top() + e->height;
@@ -85,7 +87,7 @@ void ListBox::Draw(ControlDrawData*)
 			}
 			else
 				r.Left() = orig_x;
-			if(!gui->DrawText(layout->font, e->ToString(), textFlags, Color::Black, r, &rc))
+			if(!gui->DrawText(layout->font, e->ToString(), textFlags, layout->font_color[e == selectedItem ? 1 : 0], r, &rc))
 				break;
 			r.Top() += e->height;
 		}
@@ -99,6 +101,9 @@ void ListBox::Draw(ControlDrawData*)
 //=================================================================================================
 void ListBox::Update(float dt)
 {
+	if(disabled)
+		return;
+
 	if(collapsed)
 	{
 		if(is_new)
@@ -306,7 +311,7 @@ void ListBox::OnChar(char c)
 }
 
 //=================================================================================================
-void ListBox::Add(GuiElement* e)
+void ListBox::Add(GuiElement* e, bool select)
 {
 	assert(e);
 	CalculateItemHeight(e);
@@ -316,6 +321,9 @@ void ListBox::Add(GuiElement* e)
 
 	if(menu)
 		menu->AddItem(e);
+
+	if(select)
+		Select(items.size() - 1, true);
 }
 
 //=================================================================================================
@@ -452,6 +460,28 @@ void ListBox::Select(delegate<bool(GuiElement*)> pred, bool send_event)
 	for(GuiElement* item : items)
 	{
 		if(pred(item))
+		{
+			if(selected != index)
+			{
+				selected = index;
+				if(event_handler)
+					event_handler(selected);
+				if(event_handler2)
+					event_handler2(A_INDEX_CHANGED, selected);
+			}
+			break;
+		}
+		++index;
+	}
+}
+
+//=================================================================================================
+void ListBox::SelectByValue(int value, bool send_event)
+{
+	int index = 0;
+	for(GuiElement* item : items)
+	{
+		if(item->value == value)
 		{
 			if(selected != index)
 			{

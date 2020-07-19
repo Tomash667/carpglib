@@ -41,6 +41,11 @@ public:
 	DialogEvent GetHandler() const { return handler; }
 
 	void SetHandler(DialogEvent new_handler) { handler = new_handler; }
+	void SetDisabled(bool new_disabled) override
+	{
+		state = new_disabled ? DISABLED : NONE;
+		Control::SetDisabled(new_disabled);
+	}
 
 	string text;
 	State state;

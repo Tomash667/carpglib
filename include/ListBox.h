@@ -14,6 +14,7 @@ namespace layout
 		AreaLayout selection;
 		Texture* down_arrow;
 		Font* font;
+		Color font_color[2];
 		int auto_padding;
 	};
 }
@@ -41,7 +42,7 @@ public:
 	void Event(GuiEvent e) override;
 	void OnChar(char c) override;
 
-	void Add(GuiElement* e);
+	void Add(GuiElement* e, bool select = false);
 	void Add(cstring text, int value = 0, Texture* tex = nullptr) { Add(new DefaultGuiElement(text, value, tex)); }
 	void Sort();
 	void ScrollTo(int index, bool center = false);
@@ -49,9 +50,11 @@ public:
 	int FindIndex(int value);
 	void Select(int index, bool send_event = false);
 	void Select(delegate<bool(GuiElement*)> pred, bool send_event = false);
+	void SelectByValue(int value, bool send_event = false);
 	void ForceSelect(int index);
 	void Insert(GuiElement* e, int index);
 	void Remove(int index);
+	void Remove() { if(selected != -1) Remove(selected); }
 	void Reset();
 
 	int GetIndex() const { return selected; }

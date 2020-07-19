@@ -90,6 +90,7 @@ class TreeView;
 // Windows types
 struct HWND__;
 struct _GUID;
+typedef void* HANDLE;
 typedef HWND__* HWND;
 typedef _GUID GUID;
 

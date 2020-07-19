@@ -75,6 +75,7 @@ struct CstringEqualComparer
 };
 
 //-----------------------------------------------------------------------------
+char* GetFormatString();
 cstring Format(cstring fmt, ...);
 cstring FormatList(cstring fmt, va_list lis);
 void FormatStr(string& str, cstring fmt, ...);
@@ -114,6 +115,7 @@ string UrlEncode(const string& s);
 cstring ReplaceAll(cstring str, cstring from, cstring to);
 cstring FindLastOf(cstring str, cstring chars);
 void Utf8ToAscii(string& str);
+bool IsIdentifier(Cstring str);
 
 namespace TextHelper
 {

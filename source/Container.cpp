@@ -13,6 +13,9 @@ void Container::Add(Control* ctrl)
 {
 	assert(ctrl);
 	ctrl->parent = this;
+	ctrl->global_pos = global_pos + ctrl->pos;
+	if(disabled)
+		ctrl->SetDisabled(true);
 	ctrls.push_back(ctrl);
 	inside_loop = false;
 
@@ -151,6 +154,10 @@ void Container::Event(GuiEvent e)
 				c->global_pos = c->pos + global_pos;
 				c->Event(GuiEvent_Moved);
 			}
+			break;
+		default:
+			if(e >= GuiEvent_Custom)
+				parent->Event(e);
 			break;
 		}
 	}
