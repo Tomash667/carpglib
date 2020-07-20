@@ -417,7 +417,7 @@ void ListBox::Sort()
 }
 
 //=================================================================================================
-GuiElement* ListBox::Find(int value)
+GuiElement* ListBox::Find(int value) const
 {
 	for(GuiElement* e : items)
 	{
@@ -429,7 +429,7 @@ GuiElement* ListBox::Find(int value)
 }
 
 //=================================================================================================
-int ListBox::FindIndex(int value)
+int ListBox::FindIndex(int value) const
 {
 	for(int i = 0; i < (int)items.size(); ++i)
 	{
@@ -441,15 +441,30 @@ int ListBox::FindIndex(int value)
 }
 
 //=================================================================================================
+int ListBox::FindIndex(GuiElement* e) const
+{
+	for(int i = 0; i < (int)items.size(); ++i)
+	{
+		if(items[i] == e)
+			return i;
+	}
+
+	return -1;
+}
+
+//=================================================================================================
 void ListBox::Select(int index, bool send_event)
 {
-	if(send_event)
+	if(index != selected)
 	{
-		if(!ChangeIndexEvent(index, false, false))
-			return;
+		if(send_event)
+		{
+			if(!ChangeIndexEvent(index, false, false))
+				return;
+		}
+		else
+			selected = index;
 	}
-	else
-		selected = index;
 	ScrollTo(index);
 }
 
@@ -461,14 +476,7 @@ void ListBox::Select(delegate<bool(GuiElement*)> pred, bool send_event)
 	{
 		if(pred(item))
 		{
-			if(selected != index)
-			{
-				selected = index;
-				if(event_handler)
-					event_handler(selected);
-				if(event_handler2)
-					event_handler2(A_INDEX_CHANGED, selected);
-			}
+			Select(index, send_event);
 			break;
 		}
 		++index;
@@ -483,14 +491,7 @@ void ListBox::SelectByValue(int value, bool send_event)
 	{
 		if(item->value == value)
 		{
-			if(selected != index)
-			{
-				selected = index;
-				if(event_handler)
-					event_handler(selected);
-				if(event_handler2)
-					event_handler2(A_INDEX_CHANGED, selected);
-			}
+			Select(index, send_event);
 			break;
 		}
 		++index;
@@ -527,12 +528,16 @@ void ListBox::Remove(int index)
 	assert(index >= 0 && index < (int)items.size());
 	delete items[index];
 	items.erase(items.begin() + index);
+	bool sendEvent = (index == selected);
 	if(selected > index || (selected == index && selected == (int)items.size()))
 		--selected;
-	if(event_handler)
-		event_handler(selected);
-	if(event_handler2)
-		event_handler2(A_INDEX_CHANGED, selected);
+	if(sendEvent)
+	{
+		if(event_handler)
+			event_handler(selected);
+		if(event_handler2)
+			event_handler2(A_INDEX_CHANGED, selected);
+	}
 	UpdateScrollbarVisibility();
 }
 
@@ -576,13 +581,13 @@ bool ListBox::ChangeIndexEvent(int index, bool force, bool scrollTo)
 
 	selected = index;
 
+	if(scrollTo && !collapsed)
+		ScrollTo(index);
+
 	if(event_handler)
 		event_handler(selected);
 	if(event_handler2)
 		event_handler2(A_INDEX_CHANGED, selected);
-
-	if(scrollTo && !collapsed)
-		ScrollTo(index);
 
 	return true;
 }

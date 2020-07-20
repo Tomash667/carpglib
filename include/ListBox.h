@@ -46,14 +46,16 @@ public:
 	void Add(cstring text, int value = 0, Texture* tex = nullptr) { Add(new DefaultGuiElement(text, value, tex)); }
 	void Sort();
 	void ScrollTo(int index, bool center = false);
-	GuiElement* Find(int value);
-	int FindIndex(int value);
+	GuiElement* Find(int value) const;
+	int FindIndex(int value) const;
+	int FindIndex(GuiElement* e) const;
 	void Select(int index, bool send_event = false);
 	void Select(delegate<bool(GuiElement*)> pred, bool send_event = false);
 	void SelectByValue(int value, bool send_event = false);
 	void ForceSelect(int index);
 	void Insert(GuiElement* e, int index);
 	void Remove(int index);
+	void Remove(GuiElement* e) { Remove(FindIndex(e)); }
 	void Remove() { if(selected != -1) Remove(selected); }
 	void Reset();
 
