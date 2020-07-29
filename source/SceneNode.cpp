@@ -6,6 +6,13 @@
 #include "SceneManager.h"
 
 //=================================================================================================
+void SceneNode::OnGet()
+{
+	tex_override = nullptr;
+	tint = Vec4::One;
+}
+
+//=================================================================================================
 void SceneNode::SetMesh(Mesh* mesh, MeshInstance* mesh_inst)
 {
 	assert(mesh);

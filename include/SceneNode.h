@@ -9,12 +9,6 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	static constexpr int SPLIT_INDEX = 1 << 31;
 	static constexpr int SPLIT_MASK = 0x7FFFFFFF;
 
-	enum Type
-	{
-		NORMAL,
-		BILLBOARD
-	};
-
 	enum Flags
 	{
 		F_CUSTOM = 1 << 0,
@@ -32,7 +26,6 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	Matrix mat;
 	Mesh* mesh;
 	MeshInstance* mesh_inst;
-	Type type;
 	int flags, subs;
 	float radius, dist;
 	const TexOverride* tex_override;
@@ -40,6 +33,7 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	Vec3 center;
 	array<Light*, 3> lights;
 
+	void OnGet();
 	void SetMesh(Mesh* mesh, MeshInstance* mesh_inst = nullptr);
 	void SetMesh(MeshInstance* mesh_inst);
 };
