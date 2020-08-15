@@ -175,7 +175,6 @@
     <ClCompile Include="source\Panel.cpp" />
     <ClCompile Include="source\ParticleShader.cpp" />
     <ClCompile Include="source\ParticleSystem.cpp" />
-    <ClCompile Include="source\Perlin.cpp" />
     <ClCompile Include="source\Physics.cpp" />
     <ClCompile Include="source\PickFileDialog.cpp" />
     <ClCompile Include="source\PickItemDialog.cpp" />

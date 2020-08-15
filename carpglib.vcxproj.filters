@@ -34,9 +34,6 @@
     <ClInclude Include="include\Logger.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="include\Perlin.h">
-      <Filter>core</Filter>
-    </ClInclude>
     <ClInclude Include="include\Profiler.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -304,6 +301,9 @@
     <ClInclude Include="include\ImageFormat.h">
       <Filter>const</Filter>
     </ClInclude>
+    <ClInclude Include="include\Perlin.h">
+      <Filter>core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">
@@ -334,9 +334,6 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="source\Logger.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\Perlin.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="source\Profiler.cpp">
