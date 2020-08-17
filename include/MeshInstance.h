@@ -78,6 +78,7 @@ struct MeshInstance
 	}
 	void Play(uint group = 0) { SetBit(GetGroup(group).state, FLAG_PLAYING); }
 	void Stop(uint group = 0) { ClearBit(GetGroup(group).state, FLAG_PLAYING); }
+	bool IsPlaying(uint group = 0) const { return GetGroup(group).IsPlaying(); }
 	void Deactivate(uint group = 0, bool in_update = false);
 	void Update(float dt);
 	void SetupBones();
@@ -100,6 +101,7 @@ struct MeshInstance
 	void ReadSimple(StreamReader& f);
 	bool ApplyPreload(Mesh* mesh, bool simple = false);
 	void ClearEndResult();
+	void Changed() { need_update = true; }
 
 	Group& GetGroup(uint group)
 	{
