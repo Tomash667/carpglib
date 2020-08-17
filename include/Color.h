@@ -43,9 +43,13 @@ struct Color
 	{
 		return Color(::Lerp(c1.r, c2.r, t), ::Lerp(c1.g, c2.g, t), ::Lerp(c1.b, c2.b, t), ::Lerp(c1.a, c2.a, t));
 	}
-	static Color Alpha(byte a)
+	static Color Alpha(int a)
 	{
 		return Color(255, 255, 255, a);
+	}
+	static Color Alpha(float a)
+	{
+		return Color(255, 255, 255, byte(a * 255));
 	}
 	static constexpr Vec4 Hex(uint h)
 	{

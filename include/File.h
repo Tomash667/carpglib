@@ -218,6 +218,15 @@ public:
 			SkipString<LengthType>();
 	}
 
+	template<typename T, typename LengthType = uint>
+	void SkipVector()
+	{
+		LengthType count = Read<LengthType>();
+		if(!ok || count == 0)
+			return;
+		Skip(sizeof(T) * count);
+	}
+
 	bool Read0()
 	{
 		return Read<byte>() == 0;
