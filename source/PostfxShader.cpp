@@ -54,6 +54,10 @@ void PostfxShader::OnInit()
 	params.psEntry = "PsMask";
 	app::render->CreateShader(params);
 
+	params.pixelShader = &pixelShaders[POSTFX_VIGNETTE];
+	params.psEntry = "PsVignette";
+	app::render->CreateShader(params);
+
 	psGlobals = app::render->CreateConstantBuffer(sizeof(PsGlobals), "PostfxPsGlobals");
 	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 

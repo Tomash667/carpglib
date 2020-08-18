@@ -141,3 +141,16 @@ float4 PsMask(VS_OUTPUT In) : SV_TARGET
 	else
 		return tex;
 }
+
+//******************************************************************************
+float4 PsVignette(VS_OUTPUT In) : SV_TARGET
+{
+	float4 tex = texDiffuse.Sample(samplerDiffuse, In.tex);
+	float weight = dot(tex.xyz, skill.xyz);
+	weight = saturate(1.0f - weight);
+	weight *= power;
+	float mask = texDiffuse2.Sample(samplerDiffuse, In.tex).x;
+	weight *= mask;
+	float4 color = lerp(tex, float4(0,0,0,1), weight);
+	return color;
+}
