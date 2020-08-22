@@ -167,3 +167,10 @@ inline bool IsInside(const vector<Entity<T>>& v, const T* e)
 	}
 	return false;
 }
+
+template<typename T>
+inline void RemoveElement(vector<Entity<T>>& v, T* e)
+{
+	Entity<T> entity(e);
+	RemoveElement(v, entity);
+}
