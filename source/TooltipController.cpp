@@ -93,7 +93,15 @@ void TooltipController::Draw(ControlDrawData*)
 
 	// image
 	if(img)
-		gui->DrawSprite(img, pos + Int2(12, 12), Color::Alpha(a));
+	{
+		if(imgSize == Int2::Zero)
+			gui->DrawSprite(img, pos + Int2(12, 12), Color::Alpha(a));
+		else
+		{
+			const Rect rect = Rect::Create(pos + Int2(12, 12), imgSize);
+			gui->DrawSpriteRect(img, rect, Color::Alpha(a));
+		}
+	}
 
 	Rect r;
 
@@ -134,12 +142,14 @@ void TooltipController::FormatBox(bool refresh)
 
 	Int2 img_size;
 	if(img)
-		img_size = img->GetSize();
-	else
 	{
-		img_size.x = 0;
-		img_size.y = 0;
+		if(imgSize == Int2::Zero)
+			img_size = img->GetSize();
+		else
+			img_size = imgSize;
 	}
+	else
+		imgSize = Int2::Zero;
 
 	// big text
 	if(!big_text.empty())

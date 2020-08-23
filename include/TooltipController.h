@@ -22,8 +22,8 @@ class TooltipController : public Control, public LayoutControl<layout::TooltipCo
 public:
 	typedef delegate<void(TooltipController*, int, int, bool)> Callback;
 
+	TooltipController() : imgSize(Int2::Zero) {}
 	void Draw(ControlDrawData* cdd = nullptr) override;
-
 	void Init(Callback get_text);
 	void Clear();
 	void Refresh() { FormatBox(true); }
@@ -31,6 +31,7 @@ public:
 
 	string big_text, text, small_text;
 	Texture* img;
+	Int2 imgSize;
 	bool anything;
 
 private:
