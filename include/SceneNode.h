@@ -32,6 +32,7 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	Vec4 tint;
 	Vec3 center;
 	array<Light*, 3> lights;
+	bool tmp;
 
 	void OnGet();
 	void SetMesh(Mesh* mesh, MeshInstance* mesh_inst = nullptr);
