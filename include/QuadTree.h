@@ -1,22 +1,5 @@
 #pragma once
 
-struct Object;
-
-struct QuadObj
-{
-	enum Type
-	{
-		OBJECT
-	} type;
-	union
-	{
-		Object* obj;
-		void* ptr;
-	};
-
-	explicit QuadObj(Object* obj) : obj(obj), type(OBJECT) {}
-};
-
 struct QuadNode
 {
 	Box2d box;
@@ -49,12 +32,3 @@ struct QuadTree
 	GetQuadNode get;
 	Nodes tmp_nodes;
 };
-
-struct LevelPart : QuadNode
-{
-	bool generated;
-	vector<QuadObj> objects;
-	vector<Matrix> grass, grass2;
-};
-
-typedef vector<LevelPart*> LevelParts;
