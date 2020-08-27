@@ -9,6 +9,7 @@ EXE COMMANDS
 -k/key pswd - encryption key
 -b/browse filename - display list of files
 -u/unpack filename - unpack files from pak
+-path - store path in file names
 Parameters without '-' are treated as files/directories.
 
 --------------------------------------------------------------------------------

@@ -95,7 +95,8 @@ struct Paker
 		Output,
 		Key,
 		Browse,
-		Unpack
+		Unpack,
+		Path
 	};
 
 	struct File
@@ -114,13 +115,14 @@ struct Paker
 		{"o", Output}, {"output", Output},
 		{"k", Key}, {"key", Key},
 		{"b", Browse}, {"browse", Browse},
-		{"u", Unpack }, {"unpack", Unpack }
+		{"u", Unpack }, {"unpack", Unpack },
+		{"path", Path}
 	};
 
 	vector<File> files;
 	string crypt_key, decrypt_key, output;
 	DWORD tmp;
-	bool compress, encrypt, full_encrypt, subdir, done_anything;
+	bool compress, encrypt, full_encrypt, subdir, done_anything, full_path;
 
 	Paker()
 	{
@@ -130,11 +132,15 @@ struct Paker
 		full_encrypt = false;
 		subdir = true;
 		done_anything = false;
+		full_path = false;
 	}
 
-	void Add(cstring path, vector<File>& files, bool subdir)
+	void Add(cstring path, vector<File>& files, bool subdir, uint pathOffset = 0)
 	{
 		printf("Scanning: %s ...\n", path);
+		if(pathOffset == 0)
+			pathOffset = strlen(path) + 1;
+
 		// start find
 		WIN32_FIND_DATA find_data;
 		HANDLE find = FindFirstFile(path, &find_data);
@@ -156,14 +162,17 @@ struct Paker
 					if(subdir)
 					{
 						new_path += "/*";
-						Add(new_path.c_str(), files, true);
+						Add(new_path.c_str(), files, true, pathOffset);
 					}
 				}
 				else
 				{
 					File f;
 					f.path = new_path;
-					f.name = find_data.cFileName;
+					if(full_path)
+						f.name = new_path.substr(pathOffset);
+					else
+						f.name = find_data.cFileName;
 					f.size = find_data.nFileSizeLow;
 					f.name_offset = 0;
 					files.push_back(f);
@@ -516,6 +525,9 @@ struct Paker
 						UnpackPak(argv[++i]);
 					else
 						printf("ERROR: Missing pak filename.\n");
+					break;
+				case Path:
+					full_path = true;
 					break;
 				default:
 					printf("ERROR: Invalid switch '%s'.\n", argv[i]);
