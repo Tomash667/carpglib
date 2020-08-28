@@ -14,6 +14,10 @@
 #include <initguid.h>
 #include <mmdeviceapi.h>
 #endif
+#ifdef INCLUDE_SHELLAPI
+#include <Shellapi.h>
+#include <Shlobj.h>
+#endif
 
 #undef CreateFont
 #undef CreateDirectory

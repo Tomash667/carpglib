@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "Crc.h"
+#include "File.h"
 
 const uint Crc::m_tab[] = {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
@@ -51,4 +52,36 @@ void Crc::Update(const byte *s, size_t n)
 {
 	for(; n; --n, ++s)
 		m_crc = m_tab[((m_crc) ^ (*s)) & 0xff] ^ ((m_crc) >> 8);
+}
+
+uint Crc::Calculate(Cstring filename)
+{
+	FileReader file(filename);
+	return Calculate(file);
+}
+
+uint Crc::Calculate(FileReader& file)
+{
+	if(!file)
+		return 0u;
+
+	file.SetPos(0);
+
+	const uint chunk = 64 * 1024;
+	Buffer* buf = Buffer::Get();
+	buf->Resize(chunk);
+
+	uint size_left = file.GetSize();
+	Crc crc;
+
+	while(size_left > 0)
+	{
+		uint count = min(chunk, size_left);
+		file.Read(buf->Data(), count);
+		crc.Update((const byte*)buf->Data(), count);
+		size_left -= count;
+	}
+
+	buf->Free();
+	return crc.Get();
 }

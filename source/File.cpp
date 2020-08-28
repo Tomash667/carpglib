@@ -1,9 +1,8 @@
 #include "Pch.h"
 #include "File.h"
 #include <zlib.h>
+#define INCLUDE_SHELLAPI
 #include "WindowsIncludes.h"
-#include <Shellapi.h>
-#pragma comment(lib, "Shell32.lib")
 
 //-----------------------------------------------------------------------------
 static DWORD tmp;
@@ -267,18 +266,32 @@ bool FileWriter::SetPos(uint pos)
 	return true;
 }
 
+bool FileWriter::WriteAll(Cstring filename, Buffer* buf)
+{
+	FileWriter f(filename);
+	if(!f)
+		return false;
+	f.Write(buf->Data(), buf->Size());
+	return true;
+}
+
 
 //=================================================================================================
-void io::CreateDirectory(cstring dir)
+void io::CreateDirectory(Cstring dir)
 {
 	CreateDirectoryA(dir, nullptr);
 }
 
 //=================================================================================================
-bool io::DeleteDirectory(cstring dir)
+void io::CreateDirectories(Cstring dirs)
 {
-	assert(dir);
+	GetFullPathNameA(dirs, 256, BUF, nullptr);
+	SHCreateDirectoryExA(nullptr, BUF, nullptr);
+}
 
+//=================================================================================================
+bool io::DeleteDirectory(Cstring dir)
+{
 	MakeDoubleZeroTerminated(BUF, dir);
 
 	SHFILEOPSTRUCT op = {
@@ -487,6 +500,19 @@ cstring io::FilenameFromPath(cstring path)
 		return filename + 1;
 	else
 		return path;
+}
+
+//=================================================================================================
+// "file.txt" -> ""
+// "dir/file.txt" -> "dir"
+// "path/to/file.txt" -> "path/to"
+string io::PathToDirectory(Cstring path)
+{
+	cstring filename = FindLastOf(path, "/\\");
+	if(filename)
+		return string(path, filename - path);
+	else
+		return "";
 }
 
 //=================================================================================================
