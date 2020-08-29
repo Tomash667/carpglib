@@ -13,8 +13,9 @@ namespace io
 		bool is_dir;
 	};
 
-	void CreateDirectory(cstring dir);
-	bool DeleteDirectory(cstring dir);
+	void CreateDirectory(Cstring dir);
+	void CreateDirectories(Cstring dirs);
+	bool DeleteDirectory(Cstring dir);
 	// Check if directory exists.
 	bool DirectoryExists(cstring dir);
 	// Check if file exists.
@@ -28,6 +29,7 @@ namespace io
 	// get filename from path, returned string use same string as argument
 	cstring FilenameFromPath(const string& path);
 	cstring FilenameFromPath(cstring path);
+	string PathToDirectory(Cstring path);
 	// load text file to string (whole or up to max size)
 	bool LoadFileToString(cstring path, string& str, uint max_size = (uint)-1);
 	// simple encryption (pass encrypted to decrypt data)
@@ -585,6 +587,8 @@ public:
 	void operator = (FileWriter& f);
 	void SetTime(FileTime file_time);
 	bool SetPos(uint pos) override final;
+
+	static bool WriteAll(Cstring filename, Buffer* buf);
 
 protected:
 	FileHandle file;

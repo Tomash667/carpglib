@@ -31,9 +31,6 @@
     <ClCompile Include="source\Logger.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="source\Perlin.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="source\Profiler.cpp">
       <Filter>core</Filter>
     </ClCompile>

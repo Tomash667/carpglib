@@ -57,6 +57,9 @@ public:
 		Update<byte>(1);
 	}
 
+	static uint Calculate(Cstring filename);
+	static uint Calculate(FileReader& file);
+
 private:
 	static const uint CRC32_NEGL = 0xffffffffL;
 	static const uint m_tab[256];

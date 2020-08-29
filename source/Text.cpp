@@ -602,6 +602,7 @@ void MakeDoubleZeroTerminated(char* dest, Cstring src)
 	*dest++ = 0;
 	*dest = 0;
 }
+
 //=================================================================================================
 uint FindClosingPos(const string& str, uint pos, char start, char end)
 {

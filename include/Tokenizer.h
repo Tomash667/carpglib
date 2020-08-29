@@ -12,6 +12,7 @@ namespace tokenizer
 		T_CHAR,
 		T_SYMBOL,
 		T_INT,
+		T_UINT,
 		T_FLOAT,
 		T_KEYWORD,
 		T_KEYWORD_GROUP,
@@ -392,6 +393,7 @@ namespace tokenizer
 		bool IsText() const { return IsItem() || IsString() || IsKeyword(); }
 		bool IsInt() const { return IsToken(T_INT); }
 		bool IsInt(int value) const { return IsInt() && GetInt() == value; }
+		bool IsUint() const { return IsToken(T_UINT) || (IsInt() && GetInt() >= 0); }
 		bool IsFloat() const { return IsToken(T_FLOAT) || IsToken(T_INT); }
 		bool IsKeyword() const { return IsToken(T_KEYWORD); }
 		bool IsKeyword(int id) const
@@ -479,6 +481,11 @@ namespace tokenizer
 				Unexpected(T_SYMBOL, (int*)&c);
 		}
 		void AssertInt() const { AssertToken(T_INT); }
+		void AssertUint() const
+		{
+			if(!IsUint())
+				AssertToken(T_UINT);
+		}
 		void AssertFloat() const
 		{
 			if(!IsFloat())
@@ -558,7 +565,7 @@ namespace tokenizer
 		}
 		uint GetUint() const
 		{
-			assert(IsFloat());
+			assert(IsUint());
 			return normal_seek._uint;
 		}
 		float GetFloat() const
@@ -683,7 +690,7 @@ namespace tokenizer
 		}
 		uint MustGetUint() const
 		{
-			AssertInt();
+			AssertUint();
 			return GetUint();
 		}
 		float MustGetFloat() const

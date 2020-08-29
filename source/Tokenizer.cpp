@@ -328,7 +328,7 @@ redo:
 					return true;
 				}
 			}
-			s.token = T_INT;
+			s.token = (num & 0x80000000) != 0 ? T_UINT : T_INT;
 			s._int = num;
 			s._float = (float)num;
 			s._uint = num;
@@ -434,7 +434,8 @@ bool Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 
 		++pos2;
 		++s.charpos;
-	} while(1);
+	}
+	while(1);
 
 	// parse number
 	int64 val;
@@ -444,9 +445,24 @@ bool Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 		s.token = T_ITEM;
 		return false;
 	}
-	s._int = (int)val;
-	s._uint = (s._int < 0 ? 0 : s._int);
-	s.token = (result == TextHelper::Float ? T_FLOAT : T_INT);
+	if(result == TextHelper::Float)
+	{
+		s.token = T_FLOAT;
+		s._int = (int)val;
+		s._uint = (s._int < 0 ? 0 : s._int);
+	}
+	else if(val > std::numeric_limits<int>::max())
+	{
+		s.token = T_UINT;
+		s._int = (int)val;
+		s._uint = (uint)val;
+	}
+	else
+	{
+		s.token = T_INT;
+		s._int = (int)val;
+		s._uint = (s._int < 0 ? 0 : s._int);
+	}
 	return true;
 }
 
@@ -488,7 +504,8 @@ void Tokenizer::CheckItemOrKeyword(SeekData& s, const string& _item)
 					break;
 				if(it->enabled)
 					s.keyword.push_back(&*it);
-			} while(true);
+			}
+			while(true);
 		}
 		if(s.keyword.empty())
 			s.token = T_ITEM;
@@ -742,7 +759,8 @@ bool Tokenizer::RemoveKeyword(cstring name, int id, int group)
 					keywords.erase(it);
 					return true;
 				}
-			} while(true);
+			}
+			while(true);
 		}
 	}
 
@@ -816,6 +834,8 @@ cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 	case T_INT:
 	case T_BOOL:
 		return Format("%s %d", name, *what);
+	case T_UINT:
+		return Format("%s %u", name, *(uint*)what);
 	case T_FLOAT:
 		return Format("%s %g", name, *(float*)what);
 	case T_KEYWORD:
@@ -945,7 +965,8 @@ void Tokenizer::ParseFlags(int group, int& flags)
 			else
 				flags |= MustGetKeywordId(group);
 			Next();
-		} while(!IsSymbol('}'));
+		}
+		while(!IsSymbol('}'));
 	}
 	else
 	{
@@ -1003,7 +1024,8 @@ void Tokenizer::ParseFlags(std::initializer_list<FlagGroup> const& flags)
 			}
 
 			Next();
-		} while(!IsSymbol('}'));
+		}
+		while(!IsSymbol('}'));
 	}
 	else
 	{
@@ -1258,6 +1280,8 @@ cstring Tokenizer::GetTokenName(TOKEN _tt)
 		return "symbol";
 	case T_INT:
 		return "integer";
+	case T_UINT:
+		return "unsigned";
 	case T_FLOAT:
 		return "float";
 	case T_KEYWORD:
@@ -1295,6 +1319,8 @@ cstring Tokenizer::GetTokenValue(const SeekData& s) const
 		return Format("%s '%c'", name, s._char);
 	case T_INT:
 		return Format("%s %d", name, s._int);
+	case T_UINT:
+		return Format("%s %u", name, s._uint);
 	case T_FLOAT:
 		return Format("%s %g", name, s._float);
 	case T_KEYWORD:
