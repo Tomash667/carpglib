@@ -348,6 +348,13 @@ struct ObjectPool
 		return e;
 	}
 
+	T* Get(const T& val)
+	{
+		T* e = Get();
+		*e = val;
+		return e;
+	}
+
 	void Free(T* e)
 	{
 		assert(e && !destroyed);

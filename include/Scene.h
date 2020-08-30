@@ -24,6 +24,7 @@ struct Scene
 		RemoveElement(nodes, node);
 	}
 	void Clear();
+	void Update(float dt);
 	void ListNodes(SceneBatch& batch);
 	void GatherLights(SceneBatch& batch, SceneNode* node);
 	Vec4 GetAmbientColor() const;

@@ -604,22 +604,6 @@ void MeshInstance::Save(FileWriter& f) const
 }
 
 //=================================================================================================
-void MeshInstance::SaveSimple(FileWriter& f) const
-{
-	assert(groups.size() == 1u && mesh->anims.size() == 1u);
-
-	const MeshInstance::Group& group = groups[0];
-	if(group.IsActive())
-	{
-		f << (group.state & ~FLAG_BLENDING);
-		f << group.time;
-		f << group.blend_time;
-	}
-	else
-		f << 0;
-}
-
-//=================================================================================================
 void MeshInstance::Load(FileReader& f, int version)
 {
 	bool frame_end_info, frame_end_info2;
@@ -661,20 +645,6 @@ void MeshInstance::Load(FileReader& f, int version)
 }
 
 //=================================================================================================
-void MeshInstance::LoadSimple(FileReader& f)
-{
-	groups.resize(1u);
-	Group& group = groups[0];
-	group.state = f.Read<int>();
-	if(group.state != 0)
-	{
-		group.used_group = 0;
-		f >> group.time;
-		f >> group.blend_time;
-	}
-}
-
-//=================================================================================================
 void MeshInstance::Write(StreamWriter& f) const
 {
 	f.WriteCasted<byte>(groups.size());
@@ -691,22 +661,6 @@ void MeshInstance::Write(StreamWriter& f) const
 			f.Write0();
 		f << group.frame_end;
 	}
-}
-
-//=================================================================================================
-void MeshInstance::WriteSimple(StreamWriter& f) const
-{
-	assert(groups.size() == 1u && mesh->anims.size() == 1u);
-
-	const MeshInstance::Group& group = groups[0];
-	if(group.IsActive())
-	{
-		f << (group.state & ~FLAG_BLENDING);
-		f << group.time;
-		f << group.blend_time;
-	}
-	else
-		f << 0;
 }
 
 //=================================================================================================
@@ -760,21 +714,7 @@ bool MeshInstance::Read(StreamReader& f)
 }
 
 //=================================================================================================
-void MeshInstance::ReadSimple(StreamReader& f)
-{
-	groups.resize(1u);
-	Group& group = groups[0];
-	group.state = f.Read<int>();
-	if(group.state != 0)
-	{
-		group.used_group = 0;
-		f >> group.time;
-		f >> group.blend_time;
-	}
-}
-
-//=================================================================================================
-bool MeshInstance::ApplyPreload(Mesh* mesh, bool simple)
+bool MeshInstance::ApplyPreload(Mesh* mesh)
 {
 	assert(mesh
 		&& preload
@@ -786,28 +726,24 @@ bool MeshInstance::ApplyPreload(Mesh* mesh, bool simple)
 	mat_bones.resize(mesh->head.n_bones);
 	blendb.resize(mesh->head.n_bones);
 
-	if(simple)
+	for(Group& group : groups)
 	{
-		Group& group = groups[0];
-		if(group.state != 0)
-			group.anim = &mesh->anims[0];
-	}
-	else
-	{
-		for(Group& group : groups)
+		string* name = group.animName;
+		if(name)
 		{
-			string* str = (string*)group.anim;
-			if(str)
+			group.anim = mesh->GetAnimation(name->c_str());
+			if(!group.anim)
 			{
-				group.anim = mesh->GetAnimation(str->c_str());
-				if(!group.anim)
+				if(*name == "first")
+					group.anim = &mesh->anims[0];
+				else
 				{
-					Error("Invalid animation '%s' for mesh '%s'.", str->c_str(), mesh->path.c_str());
-					StringPool.Free(str);
+					Error("Invalid animation '%s' for mesh '%s'.", name->c_str(), mesh->path.c_str());
+					StringPool.Free(name);
 					return false;
 				}
-				StringPool.Free(str);
 			}
+			StringPool.Free(name);
 		}
 	}
 

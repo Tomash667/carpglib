@@ -26,6 +26,16 @@ void Scene::Clear()
 }
 
 //=================================================================================================
+void Scene::Update(float dt)
+{
+	for(SceneNode* node : nodes)
+	{
+		if(node->mesh_inst)
+			node->mesh_inst->Update(dt);
+	}
+}
+
+//=================================================================================================
 void Scene::ListNodes(SceneBatch& batch)
 {
 	FrustumPlanes frustum(batch.camera->mat_view_proj);
@@ -33,6 +43,8 @@ void Scene::ListNodes(SceneBatch& batch)
 	{
 		if(node->mesh && frustum.SphereToFrustum(node->center, node->radius))
 		{
+			if(node->mesh_inst)
+				node->mesh_inst->SetupBones();
 			if(batch.gather_lights && !IsSet(node->flags, SceneNode::F_NO_LIGHTING))
 				GatherLights(batch, node);
 			batch.Add(node);

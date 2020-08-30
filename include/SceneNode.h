@@ -35,6 +35,7 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	bool tmp;
 
 	void OnGet();
+	void OnFree();
 	void SetMesh(Mesh* mesh, MeshInstance* mesh_inst = nullptr);
 	void SetMesh(MeshInstance* mesh_inst);
 };
