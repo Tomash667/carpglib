@@ -22,6 +22,7 @@ Scene::~Scene()
 void Scene::Clear()
 {
 	SceneNode::Free(nodes);
+	lights.clear();
 }
 
 //=================================================================================================
@@ -32,7 +33,7 @@ void Scene::ListNodes(SceneBatch& batch)
 	{
 		if(node->mesh && frustum.SphereToFrustum(node->center, node->radius))
 		{
-			if(batch.gather_lights)
+			if(batch.gather_lights && !IsSet(node->flags, SceneNode::F_NO_LIGHTING))
 				GatherLights(batch, node);
 			batch.Add(node);
 		}
@@ -44,11 +45,11 @@ void Scene::GatherLights(SceneBatch& batch, SceneNode* node)
 {
 	TopN<Light*, 3, float, std::less<>> best(nullptr, batch.camera->zfar);
 
-	for(Light& light : lights)
+	for(Light* light : lights)
 	{
-		float dist = Vec3::Distance(node->center, light.pos);
-		if(dist < light.range + node->radius)
-			best.Add(&light, dist);
+		float dist = Vec3::Distance(node->center, light->pos);
+		if(dist < light->range + node->radius)
+			best.Add(light, dist);
 	}
 
 	for(int i = 0; i < 3; ++i)
