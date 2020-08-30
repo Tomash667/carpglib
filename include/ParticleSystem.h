@@ -28,8 +28,8 @@ struct ParticleEmitter : public EntityType<ParticleEmitter>
 	};
 
 	TexturePtr tex;
-	float emision_interval, life, particle_life, alpha, size;
-	int emisions, spawn_min, spawn_max, max_particles, mode;
+	float emission_interval, life, particle_life, alpha, size;
+	int emissions, spawn_min, spawn_max, max_particles, mode;
 	Vec3 pos, speed_min, speed_max, pos_min, pos_max;
 	PARTICLE_OP op_size, op_alpha;
 
