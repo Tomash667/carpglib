@@ -41,7 +41,7 @@ void Scene::ListNodes(SceneBatch& batch)
 	FrustumPlanes frustum(batch.camera->mat_view_proj);
 	for(SceneNode* node : nodes)
 	{
-		if(node->mesh && frustum.SphereToFrustum(node->center, node->radius))
+		if(node->visible && node->mesh && frustum.SphereToFrustum(node->center, node->radius))
 		{
 			if(node->mesh_inst)
 				node->mesh_inst->SetupBones();

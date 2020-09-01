@@ -11,6 +11,7 @@ void SceneNode::OnGet()
 	tex_override = nullptr;
 	mesh_inst = nullptr;
 	tint = Vec4::One;
+	visible = true;
 	tmp = true;
 }
 
