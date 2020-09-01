@@ -15,6 +15,7 @@
     <ClInclude Include="include\App.h" />
     <ClInclude Include="include\AppEntry.h" />
     <ClInclude Include="include\Base64.h" />
+    <ClInclude Include="include\BasicScene.h" />
     <ClInclude Include="include\Button.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\CarpgLib.h" />
@@ -83,6 +84,7 @@
     <ClInclude Include="include\PostfxShader.h" />
     <ClInclude Include="include\Profiler.h" />
     <ClInclude Include="include\QuadTree.h" />
+    <ClInclude Include="include\QuadtreeScene.h" />
     <ClInclude Include="include\Render.h" />
     <ClInclude Include="include\RenderTarget.h" />
     <ClInclude Include="include\Resource.h" />
@@ -120,6 +122,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\App.cpp" />
+    <ClCompile Include="source\BasicScene.cpp" />
     <ClCompile Include="source\BoxToBox.cpp" />
     <ClCompile Include="source\Bresenham.cpp" />
     <ClCompile Include="source\BuiltinMesh.cpp" />

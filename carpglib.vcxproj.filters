@@ -304,6 +304,12 @@
     <ClInclude Include="include\Perlin.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="include\BasicScene.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\QuadtreeScene.h">
+      <Filter>entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">
@@ -561,6 +567,9 @@
     </ClCompile>
     <ClCompile Include="source\ImageFormat.cpp">
       <Filter>const</Filter>
+    </ClCompile>
+    <ClCompile Include="source\BasicScene.cpp">
+      <Filter>entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

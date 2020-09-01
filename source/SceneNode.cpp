@@ -13,6 +13,7 @@ void SceneNode::OnGet()
 	tint = Vec4::One;
 	visible = true;
 	tmp = true;
+	dynamic = true;
 }
 
 //=================================================================================================

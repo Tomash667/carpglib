@@ -1,31 +1,19 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Light.h"
-
-//-----------------------------------------------------------------------------
 struct Scene
 {
 	Scene();
-	~Scene();
-	void Add(SceneNode* node)
-	{
-		assert(node);
-		nodes.push_back(node);
-	}
+	virtual ~Scene();
+	virtual void Add(SceneNode* node) = 0;
 	void Add(Light* light)
 	{
 		assert(light);
 		lights.push_back(light);
 	}
-	void Remove(SceneNode* node)
-	{
-		assert(node);
-		RemoveElement(nodes, node);
-	}
-	void Clear();
-	void Update(float dt);
-	void ListNodes(SceneBatch& batch);
+	virtual void Remove(SceneNode* node) = 0;
+	virtual void Clear() = 0;
+	virtual void ListNodes(SceneBatch& batch) = 0;
 	void GatherLights(SceneBatch& batch, SceneNode* node);
 	Vec4 GetAmbientColor() const;
 	Vec4 GetFogColor() const { return fog_color; }
@@ -33,8 +21,7 @@ struct Scene
 	Vec4 GetLightColor() const { return light_color; }
 	Vec4 GetLightDir() const { return Vec4(light_dir, 1); }
 
-private:
-	vector<SceneNode*> nodes;
+protected:
 	vector<Light*> lights;
 public:
 	Vec3 light_dir;

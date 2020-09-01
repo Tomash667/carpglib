@@ -3,6 +3,7 @@
 
 #include "Algorithm.h"
 #include "Camera.h"
+#include "Light.h"
 #include "SceneManager.h"
 #include "SceneNode.h"
 
@@ -16,40 +17,6 @@ fog_range(50, 100)
 Scene::~Scene()
 {
 	Clear();
-}
-
-//=================================================================================================
-void Scene::Clear()
-{
-	SceneNode::Free(nodes);
-	lights.clear();
-}
-
-//=================================================================================================
-void Scene::Update(float dt)
-{
-	for(SceneNode* node : nodes)
-	{
-		if(node->mesh_inst)
-			node->mesh_inst->Update(dt);
-	}
-}
-
-//=================================================================================================
-void Scene::ListNodes(SceneBatch& batch)
-{
-	FrustumPlanes frustum(batch.camera->mat_view_proj);
-	for(SceneNode* node : nodes)
-	{
-		if(node->visible && node->mesh && frustum.SphereToFrustum(node->center, node->radius))
-		{
-			if(node->mesh_inst)
-				node->mesh_inst->SetupBones();
-			if(batch.gather_lights && !IsSet(node->flags, SceneNode::F_NO_LIGHTING))
-				GatherLights(batch, node);
-			batch.Add(node);
-		}
-	}
 }
 
 //=================================================================================================

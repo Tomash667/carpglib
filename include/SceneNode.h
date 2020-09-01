@@ -32,7 +32,7 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	Vec4 tint;
 	Vec3 center;
 	array<Light*, 3> lights;
-	bool visible, tmp;
+	bool visible, tmp, dynamic;
 
 	void OnGet();
 	void OnFree();
