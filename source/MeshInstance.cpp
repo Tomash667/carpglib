@@ -12,7 +12,7 @@ Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, Vec3::One);
 //=================================================================================================
 MeshInstance::MeshInstance(Mesh* mesh) : preload(false), mesh(mesh), need_update(true), ptr(nullptr), base_speed(1.f), mat_scale(nullptr)
 {
-	assert(mesh && mesh->IsLoaded());
+	assert(mesh && mesh->IsLoaded() && mesh->IsAnimated());
 
 	mat_bones.resize(mesh->head.n_bones);
 	blendb.resize(mesh->head.n_bones);
@@ -717,6 +717,7 @@ bool MeshInstance::Read(StreamReader& f)
 bool MeshInstance::ApplyPreload(Mesh* mesh)
 {
 	assert(mesh
+		&& mesh->IsAnimated()
 		&& preload
 		&& !this->mesh
 		&& groups.size() == mesh->head.n_groups);
