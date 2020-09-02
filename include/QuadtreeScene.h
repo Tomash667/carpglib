@@ -7,7 +7,7 @@
 //-----------------------------------------------------------------------------
 struct QuadtreeScene : public Scene
 {
-	struct Node : public QuadNode
+	struct Node : public QuadTree::Node
 	{
 		vector<SceneNode*> nodes;
 	};
@@ -18,7 +18,8 @@ struct QuadtreeScene : public Scene
 	void Remove(SceneNode* node) override;
 	void Clear() override;
 	void ListNodes(SceneBatch& batch) override;
+
 private:
-	vector<SceneNode*> nodes;
 	QuadTree quadtree;
+	Node* root;
 };

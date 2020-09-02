@@ -59,6 +59,7 @@ struct SceneBatch
 	vector<SceneNode*> alpha_nodes;
 	vector<SceneNodeGroup> node_groups;
 	Camera* camera;
+	FrustumPlanes frustum;
 	bool gather_lights;
 
 	void Clear();

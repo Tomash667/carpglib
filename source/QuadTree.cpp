@@ -9,112 +9,113 @@ enum QuadPartType
 	Q_RIGHT_TOP
 };
 
-void QuadTree::Init(QuadNode* node, const Box2d& box, int splits)
+void QuadTree::Init(delegate<Node*()> get, const Box2d& box, int splits)
 {
-	if(node)
+	assert(!root);
+	this->get = get;
+	root = get();
+	Init(root, box, splits);
+}
+
+void QuadTree::Init(Node* node, const Box2d& box, int splits)
+{
+	node->box = box;
+	if(splits > 0)
 	{
-		node->box = box;
-		if(splits > 0)
-		{
-			node->leaf = false;
-			--splits;
-			node->childs[Q_LEFT_BOTTOM] = get();
-			Init(node->childs[Q_LEFT_BOTTOM], box.LeftBottomPart(), splits);
-			node->childs[Q_RIGHT_BOTTOM] = get();
-			Init(node->childs[Q_RIGHT_BOTTOM], box.RightBottomPart(), splits);
-			node->childs[Q_LEFT_TOP] = get();
-			Init(node->childs[Q_LEFT_TOP], box.LeftTopPart(), splits);
-			node->childs[Q_RIGHT_TOP] = get();
-			Init(node->childs[Q_RIGHT_TOP], box.RightTopPart(), splits);
-		}
-		else
-		{
-			node->leaf = true;
-			for(int i = 0; i < 4; ++i)
-				node->childs[i] = nullptr;
-		}
+		node->leaf = false;
+		--splits;
+		node->childs[Q_LEFT_BOTTOM] = get();
+		Init(node->childs[Q_LEFT_BOTTOM], box.LeftBottomPart(), splits);
+		node->childs[Q_RIGHT_BOTTOM] = get();
+		Init(node->childs[Q_RIGHT_BOTTOM], box.RightBottomPart(), splits);
+		node->childs[Q_LEFT_TOP] = get();
+		Init(node->childs[Q_LEFT_TOP], box.LeftTopPart(), splits);
+		node->childs[Q_RIGHT_TOP] = get();
+		Init(node->childs[Q_RIGHT_TOP], box.RightTopPart(), splits);
 	}
 	else
 	{
-		top = get();
-		Init(top, box, splits);
+		node->leaf = true;
+		for(int i = 0; i < 4; ++i)
+			node->childs[i] = nullptr;
 	}
 }
 
-void QuadTree::List(FrustumPlanes& frustum, Nodes& nodes)
+bool QuadTree::List(FrustumPlanes& frustum, delegate<void(Node*)> callback)
 {
-	nodes.clear();
-	tmp_nodes.clear();
-	tmp_nodes.push_back(top);
+	tmpNodes.clear();
+	tmpNodes.push_back(root);
 
-	while(!tmp_nodes.empty())
+	bool any = false;
+	while(!tmpNodes.empty())
 	{
-		QuadNode* node = tmp_nodes.back();
-		tmp_nodes.pop_back();
+		Node* node = tmpNodes.back();
+		tmpNodes.pop_back();
 		if(frustum.BoxToFrustum(node->box))
 		{
-			nodes.push_back(node);
+			any = true;
+			callback(node);
 			if(!node->leaf)
 			{
 				for(int i = 0; i < 4; ++i)
-					tmp_nodes.push_back(node->childs[i]);
+					tmpNodes.push_back(node->childs[i]);
 			}
 		}
 	}
+
+	return any;
 }
 
-void QuadTree::ListLeafs(FrustumPlanes& frustum, Nodes& nodes)
+void QuadTree::ListLeafs(FrustumPlanes& frustum, delegate<void(Node*)> callback)
 {
-	nodes.clear();
-	tmp_nodes.clear();
-	tmp_nodes.push_back(top);
+	tmpNodes.clear();
+	tmpNodes.push_back(root);
 
-	while(!tmp_nodes.empty())
+	while(!tmpNodes.empty())
 	{
-		QuadNode* node = tmp_nodes.back();
-		tmp_nodes.pop_back();
+		Node* node = tmpNodes.back();
+		tmpNodes.pop_back();
 		if(frustum.BoxToFrustum(node->box))
 		{
 			if(!node->leaf)
 			{
 				for(int i = 0; i < 4; ++i)
-					tmp_nodes.push_back(node->childs[i]);
+					tmpNodes.push_back(node->childs[i]);
 			}
 			else
-				nodes.push_back(node);
+				callback(node);
 		}
 	}
 }
 
-void QuadTree::Clear(Nodes& nodes)
+void QuadTree::Clear(delegate<void(Node*)> callback)
 {
-	if(!top)
+	if(!root)
 		return;
 
-	nodes.clear();
-	tmp_nodes.clear();
-	tmp_nodes.push_back(top);
+	tmpNodes.clear();
+	tmpNodes.push_back(root);
 
-	while(!tmp_nodes.empty())
+	while(!tmpNodes.empty())
 	{
-		QuadNode* node = tmp_nodes.back();
-		tmp_nodes.pop_back();
-		nodes.push_back(node);
+		Node* node = tmpNodes.back();
+		tmpNodes.pop_back();
+		callback(node);
 		for(int i = 0; i < 4; ++i)
 		{
 			if(node->childs[i])
-				tmp_nodes.push_back(node->childs[i]);
+				tmpNodes.push_back(node->childs[i]);
 		}
 	}
 
-	top = nullptr;
+	root = nullptr;
 }
 
-QuadNode* QuadTree::GetNode(const Vec2& pos, float radius)
+QuadTree::Node* QuadTree::GetNode(const Vec2& pos, float radius)
 {
-	QuadNode* node = top;
+	Node* node = root;
 	if(!node->box.IsFullyInside(pos, radius))
-		return top;
+		return root;
 
 	while(!node->leaf)
 	{
@@ -142,4 +143,22 @@ QuadNode* QuadTree::GetNode(const Vec2& pos, float radius)
 	}
 
 	return node;
+}
+
+void QuadTree::ForEach(delegate<void(Node*)> callback)
+{
+	tmpNodes.clear();
+	tmpNodes.push_back(root);
+
+	while(!tmpNodes.empty())
+	{
+		Node* node = tmpNodes.back();
+		tmpNodes.pop_back();
+		callback(node);
+		if(!node->leaf)
+		{
+			for(int i = 0; i < 4; ++i)
+				tmpNodes.push_back(node->childs[i]);
+		}
+	}
 }

@@ -22,7 +22,10 @@ struct Scene
 	Vec4 GetLightDir() const { return Vec4(light_dir, 1); }
 
 protected:
+	void ListNodes(SceneBatch& batch, vector<SceneNode*>& nodes);
+
 	vector<Light*> lights;
+
 public:
 	Vec3 light_dir;
 	Vec2 fog_range;

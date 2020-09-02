@@ -36,6 +36,7 @@ void SceneManager::Draw(RenderTarget* target)
 {
 	batch.Clear();
 	batch.camera = camera;
+	batch.frustum = FrustumPlanes(camera->mat_view_proj);
 	batch.gather_lights = use_lighting && !scene->use_light_dir;
 	scene->ListNodes(batch);
 	batch.Process();

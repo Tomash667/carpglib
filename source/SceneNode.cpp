@@ -33,6 +33,8 @@ void SceneNode::SetMesh(Mesh* mesh, MeshInstance* mesh_inst)
 	this->mesh_inst = mesh_inst;
 	flags = mesh_inst ? F_ANIMATED : 0;
 	mesh->EnsureIsLoaded();
+	if(IsSet(mesh->head.flags, Mesh::F_ANIMATED))
+		flags |= F_HAVE_WEIGHTS;
 	if(IsSet(mesh->head.flags, Mesh::F_TANGENTS))
 		flags |= F_HAVE_TANGENTS;
 	radius = mesh->head.radius;
@@ -46,6 +48,8 @@ void SceneNode::SetMesh(MeshInstance* mesh_inst)
 	this->mesh_inst = mesh_inst;
 	flags = F_ANIMATED;
 	mesh->EnsureIsLoaded();
+	if(IsSet(mesh->head.flags, Mesh::F_ANIMATED))
+		flags |= F_HAVE_WEIGHTS;
 	if(IsSet(mesh->head.flags, Mesh::F_TANGENTS))
 		flags |= F_HAVE_TANGENTS;
 	radius = mesh->head.radius;

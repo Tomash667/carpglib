@@ -14,6 +14,35 @@ fog_range(50, 100)
 }
 
 //=================================================================================================
+void Scene::ListNodes(SceneBatch& batch, vector<SceneNode*>& nodes)
+{
+	for(SceneNode* node : nodes)
+	{
+		if(!node->visible)
+			continue;
+		if(node->mesh && batch.frustum.SphereToFrustum(node->center, node->radius))
+		{
+			if(node->mesh_inst)
+				node->mesh_inst->SetupBones();
+			if(batch.gather_lights && !IsSet(node->flags, SceneNode::F_NO_LIGHTING))
+				GatherLights(batch, node);
+			batch.Add(node);
+		}
+		for(SceneNode* child : node->childs)
+		{
+			if(child->mesh && batch.frustum.SphereToFrustum(child->center, child->radius))
+			{
+				if(child->mesh_inst)
+					child->mesh_inst->SetupBones();
+				if(batch.gather_lights && !IsSet(child->flags, SceneNode::F_NO_LIGHTING))
+					GatherLights(batch, child);
+				batch.Add(child);
+			}
+		}
+	}
+}
+
+//=================================================================================================
 void Scene::GatherLights(SceneBatch& batch, SceneNode* node)
 {
 	TopN<Light*, 3, float, std::less<>> best(nullptr, batch.camera->zfar);
