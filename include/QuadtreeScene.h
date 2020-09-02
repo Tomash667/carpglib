@@ -7,7 +7,12 @@
 //-----------------------------------------------------------------------------
 struct QuadtreeScene : public Scene
 {
-	QuadtreeScene();
+	struct Node : public QuadNode
+	{
+		vector<SceneNode*> nodes;
+	};
+
+	QuadtreeScene(const Box2d& box, int splits);
 	~QuadtreeScene();
 	void Add(SceneNode* node) override;
 	void Remove(SceneNode* node) override;

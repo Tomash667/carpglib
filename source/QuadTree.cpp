@@ -9,24 +9,23 @@ enum QuadPartType
 	Q_RIGHT_TOP
 };
 
-void QuadTree::Init(QuadNode* node, const Box2d& box, const Rect& grid_box, int splits)
+void QuadTree::Init(QuadNode* node, const Box2d& box, int splits)
 {
 	if(node)
 	{
 		node->box = box;
-		node->grid_box = grid_box;
 		if(splits > 0)
 		{
 			node->leaf = false;
 			--splits;
 			node->childs[Q_LEFT_BOTTOM] = get();
-			Init(node->childs[Q_LEFT_BOTTOM], box.LeftBottomPart(), grid_box.LeftBottomPart(), splits);
+			Init(node->childs[Q_LEFT_BOTTOM], box.LeftBottomPart(), splits);
 			node->childs[Q_RIGHT_BOTTOM] = get();
-			Init(node->childs[Q_RIGHT_BOTTOM], box.RightBottomPart(), grid_box.RightBottomPart(), splits);
+			Init(node->childs[Q_RIGHT_BOTTOM], box.RightBottomPart(), splits);
 			node->childs[Q_LEFT_TOP] = get();
-			Init(node->childs[Q_LEFT_TOP], box.LeftTopPart(), grid_box.LeftTopPart(), splits);
+			Init(node->childs[Q_LEFT_TOP], box.LeftTopPart(), splits);
 			node->childs[Q_RIGHT_TOP] = get();
-			Init(node->childs[Q_RIGHT_TOP], box.RightTopPart(), grid_box.RightTopPart(), splits);
+			Init(node->childs[Q_RIGHT_TOP], box.RightTopPart(), splits);
 		}
 		else
 		{
@@ -38,7 +37,7 @@ void QuadTree::Init(QuadNode* node, const Box2d& box, const Rect& grid_box, int 
 	else
 	{
 		top = get();
-		Init(top, box, grid_box, splits);
+		Init(top, box, splits);
 	}
 }
 
