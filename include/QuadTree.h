@@ -13,8 +13,8 @@ struct QuadTree
 
 	QuadTree() : root(nullptr) {}
 	void Init(delegate<Node*()> get, const Box2d& box, int splits);
-	bool List(FrustumPlanes& frustum, delegate<void(Node*)> callback);
-	void ListLeafs(FrustumPlanes& frustum, delegate<void(Node*)> callback);
+	bool List(const FrustumPlanes& frustum, delegate<void(Node*)> callback);
+	void ListLeafs(const FrustumPlanes& frustum, delegate<void(Node*)> callback);
 	void Clear(delegate<void(Node*)> callback);
 	Node* GetNode(const Vec2& pos, float radius);
 	Node* GetRoot() { return root; }

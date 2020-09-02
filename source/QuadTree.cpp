@@ -41,7 +41,7 @@ void QuadTree::Init(Node* node, const Box2d& box, int splits)
 	}
 }
 
-bool QuadTree::List(FrustumPlanes& frustum, delegate<void(Node*)> callback)
+bool QuadTree::List(const FrustumPlanes& frustum, delegate<void(Node*)> callback)
 {
 	tmpNodes.clear();
 	tmpNodes.push_back(root);
@@ -66,7 +66,7 @@ bool QuadTree::List(FrustumPlanes& frustum, delegate<void(Node*)> callback)
 	return any;
 }
 
-void QuadTree::ListLeafs(FrustumPlanes& frustum, delegate<void(Node*)> callback)
+void QuadTree::ListLeafs(const FrustumPlanes& frustum, delegate<void(Node*)> callback)
 {
 	tmpNodes.clear();
 	tmpNodes.push_back(root);
