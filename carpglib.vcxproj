@@ -183,6 +183,8 @@
     <ClCompile Include="source\PickItemDialog.cpp" />
     <ClCompile Include="source\PostfxShader.cpp" />
     <ClCompile Include="source\Profiler.cpp" />
+    <ClCompile Include="source\QuadTree.cpp" />
+    <ClCompile Include="source\QuadtreeScene.cpp" />
     <ClCompile Include="source\Render.cpp" />
     <ClCompile Include="source\RenderTarget.cpp" />
     <ClCompile Include="source\Resource.cpp" />

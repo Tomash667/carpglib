@@ -571,6 +571,12 @@
     <ClCompile Include="source\BasicScene.cpp">
       <Filter>entity</Filter>
     </ClCompile>
+    <ClCompile Include="source\QuadtreeScene.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\QuadTree.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
