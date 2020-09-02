@@ -4,7 +4,7 @@
 struct Scene
 {
 	Scene();
-	virtual ~Scene();
+	virtual ~Scene() {}
 	virtual void Add(SceneNode* node) = 0;
 	void Add(Light* light)
 	{

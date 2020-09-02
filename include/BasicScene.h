@@ -6,6 +6,7 @@
 //-----------------------------------------------------------------------------
 struct BasicScene : public Scene
 {
+	~BasicScene();
 	void Add(SceneNode* node) override;
 	void Remove(SceneNode* node) override;
 	void Clear() override;

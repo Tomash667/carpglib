@@ -14,6 +14,7 @@ void SceneNode::OnGet()
 	visible = true;
 	tmp = true;
 	dynamic = true;
+	subs = SPLIT_MASK;
 }
 
 //=================================================================================================
@@ -21,6 +22,7 @@ void SceneNode::OnFree()
 {
 	if(!tmp)
 		delete mesh_inst;
+	SceneNode::Free(childs);
 }
 
 //=================================================================================================
@@ -31,6 +33,8 @@ void SceneNode::SetMesh(Mesh* mesh, MeshInstance* mesh_inst)
 	this->mesh_inst = mesh_inst;
 	flags = mesh_inst ? F_ANIMATED : 0;
 	mesh->EnsureIsLoaded();
+	if(IsSet(mesh->head.flags, Mesh::F_TANGENTS))
+		flags |= F_HAVE_TANGENTS;
 	radius = mesh->head.radius;
 }
 
@@ -42,6 +46,8 @@ void SceneNode::SetMesh(MeshInstance* mesh_inst)
 	this->mesh_inst = mesh_inst;
 	flags = F_ANIMATED;
 	mesh->EnsureIsLoaded();
+	if(IsSet(mesh->head.flags, Mesh::F_TANGENTS))
+		flags |= F_HAVE_TANGENTS;
 	radius = mesh->head.radius;
 }
 
@@ -54,31 +60,26 @@ void SceneBatch::Clear()
 }
 
 //=================================================================================================
-void SceneBatch::Add(SceneNode* node, int sub)
+void SceneBatch::Add(SceneNode* node)
 {
 	assert(node && node->mesh && node->mesh->IsLoaded());
 
 	const Mesh& mesh = *node->mesh;
-	if(sub == -1)
+	if(!IsSet(node->subs, SceneNode::SPLIT_INDEX))
 	{
 		assert(mesh.head.n_subs < 31);
-		if(IsSet(mesh.head.flags, Mesh::F_ANIMATED))
-			node->flags |= SceneNode::F_HAVE_WEIGHTS;
-		if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
-			node->flags |= SceneNode::F_HAVE_TANGENTS;
 		if(app::scene_mgr->use_normalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
 			node->flags |= SceneNode::F_NORMAL_MAP;
 		if(app::scene_mgr->use_specularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))
 			node->flags |= SceneNode::F_SPECULAR_MAP;
-		node->subs = SceneNode::SPLIT_MASK;
 	}
 	else
 	{
-		if(app::scene_mgr->use_normalmap && mesh.subs[sub].tex_normal)
+		int index = (node->subs & ~SceneNode::SPLIT_INDEX);
+		if(app::scene_mgr->use_normalmap && mesh.subs[index].tex_normal)
 			node->flags |= SceneNode::F_NORMAL_MAP;
-		if(app::scene_mgr->use_specularmap && mesh.subs[sub].tex_specular)
+		if(app::scene_mgr->use_specularmap && mesh.subs[index].tex_specular)
 			node->flags |= SceneNode::F_SPECULAR_MAP;
-		node->subs = SceneNode::SPLIT_INDEX | sub;
 	}
 
 	if(IsSet(node->flags, SceneNode::F_ALPHA_BLEND))

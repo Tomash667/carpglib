@@ -14,12 +14,6 @@ fog_range(50, 100)
 }
 
 //=================================================================================================
-Scene::~Scene()
-{
-	Clear();
-}
-
-//=================================================================================================
 void Scene::GatherLights(SceneBatch& batch, SceneNode* node)
 {
 	TopN<Light*, 3, float, std::less<>> best(nullptr, batch.camera->zfar);

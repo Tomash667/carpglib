@@ -32,10 +32,16 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	Vec4 tint;
 	Vec3 center;
 	array<Light*, 3> lights;
+	vector<SceneNode*> childs;
 	bool visible, tmp, dynamic;
 
 	void OnGet();
 	void OnFree();
+	void Add(SceneNode* child)
+	{
+		assert(child);
+		childs.push_back(child);
+	}
 	void SetMesh(Mesh* mesh, MeshInstance* mesh_inst = nullptr);
 	void SetMesh(MeshInstance* mesh_inst);
 };
@@ -56,7 +62,7 @@ struct SceneBatch
 	bool gather_lights;
 
 	void Clear();
-	void Add(SceneNode* node, int sub = -1);
+	void Add(SceneNode* node);
 	void Process();
 };
 
