@@ -20,9 +20,9 @@ void SceneNode::OnGet()
 //=================================================================================================
 void SceneNode::OnFree()
 {
-	if(!tmp)
-		delete mesh_inst;
 	SceneNode::Free(childs);
+	if(!tmp && mesh_inst && mesh_inst->mesh == mesh)
+		delete mesh_inst;
 }
 
 //=================================================================================================
