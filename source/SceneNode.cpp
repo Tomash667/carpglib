@@ -26,6 +26,17 @@ void SceneNode::OnFree()
 }
 
 //=================================================================================================
+SceneNode* SceneNode::GetChild(int id)
+{
+	for(SceneNode* child : childs)
+	{
+		if(child->id == id)
+			return child;
+	}
+	return nullptr;
+}
+
+//=================================================================================================
 void SceneNode::SetMesh(Mesh* mesh, MeshInstance* mesh_inst)
 {
 	assert(mesh);

@@ -26,7 +26,7 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	Matrix mat;
 	Mesh* mesh;
 	MeshInstance* mesh_inst;
-	int flags, subs;
+	int flags, subs, id;
 	float radius, dist;
 	const TexOverride* tex_override;
 	Vec4 tint;
@@ -42,6 +42,7 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 		assert(child);
 		childs.push_back(child);
 	}
+	SceneNode* GetChild(int id);
 	void SetMesh(Mesh* mesh, MeshInstance* mesh_inst = nullptr);
 	void SetMesh(MeshInstance* mesh_inst);
 };

@@ -30,7 +30,7 @@ void Scene::ListNodes(SceneBatch& batch, vector<SceneNode*>& nodes)
 		}
 		for(SceneNode* child : node->childs)
 		{
-			if(child->mesh && batch.frustum.SphereToFrustum(child->center, child->radius))
+			if(child->visible && child->mesh && batch.frustum.SphereToFrustum(child->center, child->radius))
 			{
 				if(child->mesh_inst)
 					child->mesh_inst->SetupBones();
