@@ -6,8 +6,6 @@
 #include "ResourceManager.h"
 
 //---------------------------
-Matrix mat_zero;
-
 struct AVertex
 {
 	Vec3 pos;
@@ -557,6 +555,18 @@ Mesh::Point* Mesh::GetPoint(cstring name)
 	}
 
 	return nullptr;
+}
+
+//=================================================================================================
+bool Mesh::HavePoint(Point* point)
+{
+	assert(point);
+	for(Point& p : attach_points)
+	{
+		if(&p == point)
+			return true;
+	}
+	return false;
 }
 
 //=================================================================================================

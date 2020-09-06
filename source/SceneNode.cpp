@@ -12,7 +12,6 @@ void SceneNode::OnGet()
 	mesh_inst = nullptr;
 	tint = Vec4::One;
 	visible = true;
-	tmp = true;
 	dynamic = true;
 	subs = SPLIT_MASK;
 }
@@ -21,8 +20,18 @@ void SceneNode::OnGet()
 void SceneNode::OnFree()
 {
 	SceneNode::Free(childs);
-	if(!tmp && mesh_inst && mesh_inst->mesh == mesh)
+	if(mesh_inst && mesh_inst->mesh == mesh)
 		delete mesh_inst;
+}
+
+//=================================================================================================
+void SceneNode::Add(SceneNode* child, Mesh::Point* point)
+{
+	assert(child);
+	if(point)
+		assert(mesh->HavePoint(point));
+	child->point = point;
+	childs.push_back(child);
 }
 
 //=================================================================================================
@@ -59,6 +68,28 @@ void SceneNode::SetMesh(MeshInstance* mesh_inst)
 	this->mesh_inst = mesh_inst;
 	flags = F_ANIMATED;
 	mesh->EnsureIsLoaded();
+	if(IsSet(mesh->head.flags, Mesh::F_ANIMATED))
+		flags |= F_HAVE_WEIGHTS;
+	if(IsSet(mesh->head.flags, Mesh::F_TANGENTS))
+		flags |= F_HAVE_TANGENTS;
+	radius = mesh->head.radius;
+}
+
+//=================================================================================================
+// Reuse existing mesh instance if possible
+void SceneNode::ReplaceMesh(Mesh* mesh)
+{
+	assert(mesh);
+	mesh->EnsureIsLoaded();
+	if(mesh_inst)
+	{
+		assert(this->mesh->head.n_groups == mesh->head.n_groups && this->mesh->head.n_bones == mesh->head.n_bones);
+		mesh_inst->mesh = mesh;
+	}
+	else
+		mesh_inst = new MeshInstance(mesh);
+	this->mesh = mesh;
+	flags = F_ANIMATED;
 	if(IsSet(mesh->head.flags, Mesh::F_ANIMATED))
 		flags |= F_HAVE_WEIGHTS;
 	if(IsSet(mesh->head.flags, Mesh::F_TANGENTS))

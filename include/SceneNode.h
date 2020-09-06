@@ -26,6 +26,7 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	Matrix mat;
 	Mesh* mesh;
 	MeshInstance* mesh_inst;
+	Mesh::Point* point;
 	int flags, subs, id;
 	float radius, dist;
 	const TexOverride* tex_override;
@@ -33,18 +34,15 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	Vec3 center;
 	array<Light*, 3> lights;
 	vector<SceneNode*> childs;
-	bool visible, tmp, dynamic;
+	bool visible, dynamic;
 
 	void OnGet();
 	void OnFree();
-	void Add(SceneNode* child)
-	{
-		assert(child);
-		childs.push_back(child);
-	}
+	void Add(SceneNode* child, Mesh::Point* point = nullptr);
 	SceneNode* GetChild(int id);
 	void SetMesh(Mesh* mesh, MeshInstance* mesh_inst = nullptr);
 	void SetMesh(MeshInstance* mesh_inst);
+	void ReplaceMesh(Mesh* mesh);
 };
 
 //-----------------------------------------------------------------------------
