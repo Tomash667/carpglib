@@ -119,7 +119,9 @@ public:
 	const Int2& GetSize() const { return size; }
 	void Initialize();
 	void SetSize(const Int2& size);
+	void SetSize(int w, int h) { SetSize(Int2(w, h)); }
 	void SetPosition(const Int2& pos);
+	void SetPosition(int x, int y) { SetPosition(Int2(x, y)); }
 	void SetDocked(bool docked);
 	void TakeFocus(bool pressed = false);
 	void SetFocus();

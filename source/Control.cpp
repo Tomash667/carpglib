@@ -88,10 +88,9 @@ void Control::UpdateControl(Control* ctrl, float dt)
 	{
 		ctrl->mouse_focus = true;
 		ctrl->Update(dt);
-		if(!ctrl->mouse_focus)
-			mouse_focus = false;
-		else
+		if(ctrl->mouse_focus)
 			ctrl->TakeFocus();
+		mouse_focus = false;
 	}
 	else
 	{

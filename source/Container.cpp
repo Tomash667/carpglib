@@ -209,3 +209,14 @@ void Container::Remove(Control* ctrl)
 
 	inside_loop = false;
 }
+
+//=================================================================================================
+Control* Container::HitTest()
+{
+	for(Control* ctrl : ctrls)
+	{
+		if(ctrl->visible && ctrl->IsInside(gui->cursor_pos))
+			return ctrl;
+	}
+	return nullptr;
+}

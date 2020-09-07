@@ -84,6 +84,7 @@ void Overlay::Update(float dt)
 		if(focused)
 		{
 			focused->focus = false;
+			focused->Event(GuiEvent_LostFocus);
 			if(focused->IsOnCharHandler())
 				gui->RemoveOnCharHandler(dynamic_cast<OnCharHandler*>(focused));
 		}
