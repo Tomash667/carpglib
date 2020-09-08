@@ -60,10 +60,10 @@ public:
 		BACKGROUND
 	};
 
-	Grid();
-
+	explicit Grid(bool isNew = false);
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
+	void Event(GuiEvent e) override;
 
 	void Init();
 	void Move(Int2& global_pos);

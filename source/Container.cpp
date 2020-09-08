@@ -11,7 +11,7 @@ Container::~Container()
 //=================================================================================================
 void Container::Add(Control* ctrl)
 {
-	assert(ctrl);
+	assert(ctrl && ctrl != this);
 	ctrl->parent = this;
 	ctrl->global_pos = global_pos + ctrl->pos;
 	if(disabled)

@@ -4,7 +4,8 @@
 #include "Input.h"
 
 //=================================================================================================
-Grid::Grid() : items(0), height(20), selected(-1), selection_type(COLOR), selection_color(Color::White), single_line(false), select_event(nullptr)
+Grid::Grid(bool isNew) : Control(isNew), items(0), height(20), selected(-1), selection_type(COLOR), selection_color(Color::White), single_line(false),
+select_event(nullptr)
 {
 }
 
@@ -201,7 +202,7 @@ void Grid::Draw(ControlDrawData*)
 //=================================================================================================
 void Grid::Update(float dt)
 {
-	if(input->Focus() && focus)
+	if((is_new && mouse_focus) || (!is_new && input->Focus() && focus))
 	{
 		if(gui->cursor_pos.x >= global_pos.x && gui->cursor_pos.x < global_pos.x + total_width
 			&& gui->cursor_pos.y >= global_pos.y + height && gui->cursor_pos.y < global_pos.y + size.y)
@@ -251,13 +252,22 @@ void Grid::Update(float dt)
 }
 
 //=================================================================================================
+void Grid::Event(GuiEvent e)
+{
+	if(e == GuiEvent_Initialize && is_new)
+		Init();
+}
+
+//=================================================================================================
 void Grid::Init()
 {
 	scroll.pos = Int2(size.x - 16, height);
 	scroll.size = Int2(16, size.y - height);
-	scroll.total = height*items;
+	scroll.total = height * items;
 	scroll.part = scroll.size.y;
 	scroll.offset = 0;
+	if(is_new)
+		scroll.global_pos = global_pos + scroll.pos;
 
 	total_width = 0;
 	for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it)
@@ -285,15 +295,14 @@ void Grid::AddColumn(Type type, int width, cstring title)
 void Grid::AddItem()
 {
 	++items;
-	scroll.total = items*height;
+	scroll.total = items * height;
 }
 
 //=================================================================================================
 void Grid::AddItems(int count)
 {
-	assert(count > 0);
 	items += count;
-	scroll.total = items*height;
+	scroll.total = items * height;
 }
 
 //=================================================================================================
@@ -312,7 +321,7 @@ void Grid::RemoveItem(int id, bool keepSelection)
 	else if(selected > id)
 		--selected;
 	--items;
-	scroll.total = items*height;
+	scroll.total = items * height;
 	const float s = float(scroll.total - scroll.part);
 	if(scroll.offset > s)
 		scroll.offset = s;

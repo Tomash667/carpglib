@@ -32,8 +32,8 @@ public:
 		F_ON_CHAR_HANDLER = 1 << 1
 	};
 
-	Control(bool is_new = false) : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false),
-		initialized(false), is_new(is_new), disabled(false), flags(0) {}
+	explicit Control(bool is_new = false) : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false),
+		focusable(false), initialized(false), is_new(is_new), disabled(false), flags(0) {}
 	virtual ~Control() {}
 
 	static Gui* gui;
