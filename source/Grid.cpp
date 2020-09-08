@@ -297,10 +297,18 @@ void Grid::AddItems(int count)
 }
 
 //=================================================================================================
-void Grid::RemoveItem(int id)
+void Grid::RemoveItem(int id, bool keepSelection)
 {
 	if(selected == id)
-		selected = -1;
+	{
+		if(keepSelection)
+		{
+			if(selected + 1 == items)
+				--selected;
+		}
+		else
+			selected = -1;
+	}
 	else if(selected > id)
 		--selected;
 	--items;

@@ -71,7 +71,7 @@ public:
 	void AddColumn(Type type, int width, cstring title = nullptr);
 	void AddItem();
 	void AddItems(int count);
-	void RemoveItem(int id);
+	void RemoveItem(int id, bool keepSelection = false);
 	void Reset();
 
 	vector<Column> columns;

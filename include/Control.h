@@ -105,6 +105,15 @@ public:
 		}
 	}
 
+	void Show(bool visible)
+	{
+		if(this->visible != visible)
+		{
+			this->visible = visible;
+			Event(visible ? GuiEvent_Show : GuiEvent_Hide);
+		}
+	}
+
 	void Hide()
 	{
 		if(visible)
