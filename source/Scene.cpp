@@ -27,6 +27,13 @@ void Scene::Remove(SceneNode* node)
 }
 
 //=================================================================================================
+void Scene::Detach(SceneNode* node)
+{
+	assert(node);
+	RemoveElement(nodes, node);
+}
+
+//=================================================================================================
 void Scene::Clear()
 {
 	SceneNode::Free(nodes);

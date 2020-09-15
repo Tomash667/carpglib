@@ -28,10 +28,10 @@ void SceneManager::Init()
 //=================================================================================================
 void SceneManager::SetScene(Scene* scene, Camera* camera)
 {
-	assert(scene && camera);
 	this->scene = scene;
 	this->camera = camera;
-	super_shader->SetScene(scene, camera);
+	if(scene && camera)
+		super_shader->SetScene(scene, camera);
 }
 
 //=================================================================================================
