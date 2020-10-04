@@ -330,8 +330,8 @@ cstring Escape(Cstring s, char quote)
 	cstring str = s.s;
 	char* out = GetFormatString();
 	char* out_buf = out;
-	cstring from = "\n\t\r";
-	cstring to = "ntr";
+	cstring from = "\n\t\r\\";
+	cstring to = "ntr\\";
 
 	char c;
 	while((c = *str) != 0)

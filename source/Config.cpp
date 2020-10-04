@@ -300,7 +300,7 @@ Config::Result Config::Save(cstring filename)
 	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 	{
 		cstring s;
-		if(it->value[0] != '{' && it->value.find_first_of(" \t,./;'[]-=<>?:\"{}!@#$%^&*()_+") != string::npos)
+		if(it->value[0] != '{' && it->value.find_first_of(" \n\t\\,./;'[]-=<>?:\"{}!@#$%^&*()_+") != string::npos)
 			s = Format("%s = \"%s\"\n", it->name.c_str(), Escape(it->value));
 		else
 			s = Format("%s = %s\n", it->name.c_str(), it->value.c_str());
