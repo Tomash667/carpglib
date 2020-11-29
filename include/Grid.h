@@ -5,19 +5,12 @@
 #include "Scrollbar.h"
 
 //-----------------------------------------------------------------------------
-struct TextColor
+struct Cell
 {
 	cstring text;
 	Color color;
-};
-
-//-----------------------------------------------------------------------------
-union Cell
-{
-	cstring text;
 	vector<Texture*>* imgset;
 	Texture* img;
-	TextColor* text_color;
 };
 
 //-----------------------------------------------------------------------------
@@ -41,8 +34,8 @@ public:
 	enum Type
 	{
 		TEXT,
-		TEXT_COLOR,
 		IMG,
+		IMG_TEXT,
 		IMGSET
 	};
 
@@ -51,6 +44,7 @@ public:
 		Type type;
 		int width;
 		string title;
+		Int2 size;
 	};
 
 	enum SelectionType
@@ -68,11 +62,13 @@ public:
 	void Init();
 	void Move(Int2& global_pos);
 	void LostFocus() { scroll.LostFocus(); }
-	void AddColumn(Type type, int width, cstring title = nullptr);
+	Column& AddColumn(Type type, int width, cstring title = nullptr);
 	void AddItem();
 	void AddItems(int count);
 	void RemoveItem(int id);
 	void Reset();
+	Int2 GetCell(const Int2& pos) const;
+	int GetImgIndex(const Int2& pos, const Int2& cell) const;
 
 	vector<Column> columns;
 	int items, height, selected, total_width;

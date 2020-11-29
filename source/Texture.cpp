@@ -21,13 +21,13 @@ void Texture::Release()
 void Texture::ResizeImage(Int2& new_size, Int2& img_size, Vec2& scale)
 {
 	img_size = GetSize();
-	if(new_size == Int2(0, 0))
+	if(new_size == Int2::Zero)
 	{
 		new_size = img_size;
-		scale = Vec2(1, 1);
+		scale = Vec2::One;
 	}
 	else if(new_size == img_size)
-		scale = Vec2(1, 1);
+		scale = Vec2::One;
 	else
 		scale = Vec2(float(new_size.x) / img_size.x, float(new_size.y) / img_size.y);
 }
@@ -43,6 +43,16 @@ Int2 Texture::GetSize(TEX tex)
 	Int2 size(desc.Width, desc.Height);
 	res->Release();
 	return size;
+}
+
+//=================================================================================================
+Vec2 Texture::GetScale(const Int2& imgSize, const Int2& requiredSize)
+{
+	assert(imgSize.x > 0 && imgSize.y > 0 && requiredSize.x > 0 && requiredSize.y > 0);
+	if(imgSize == requiredSize)
+		return Vec2::One;
+	else
+		return Vec2(float(requiredSize.x) / imgSize.x, float(requiredSize.y) / imgSize.y);
 }
 
 //=================================================================================================

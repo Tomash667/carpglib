@@ -16,6 +16,7 @@ struct Texture : public Resource
 	void ResizeImage(Int2& new_size, Int2& img_size, Vec2& scale);
 	Int2 GetSize() const { return GetSize(tex); }
 	static Int2 GetSize(TEX tex);
+	static Vec2 GetScale(const Int2& imgSize, const Int2& requiredSize);
 };
 
 //-----------------------------------------------------------------------------

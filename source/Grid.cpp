@@ -15,20 +15,20 @@ void Grid::Draw(ControlDrawData*)
 	Rect r = { 0,y,0,y + height };
 
 	// box i nag³ówki
-	for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it)
+	for(const Column& column : columns)
 	{
 		// box nag³ówka
-		gui->DrawArea(Box2d::Create(Int2(x, y), Int2(it->width, height)), layout->box);
+		gui->DrawArea(Box2d::Create(Int2(x, y), Int2(column.width, height)), layout->box);
 		// box zawartoœci
-		gui->DrawArea(Box2d::Create(Int2(x, y + height), Int2(it->width, size.y - height)), layout->box);
+		gui->DrawArea(Box2d::Create(Int2(x, y + height), Int2(column.width, size.y - height)), layout->box);
 		// tekst nag³ówka
-		if(!it->title.empty())
+		if(!column.title.empty())
 		{
 			r.Left() = x;
-			r.Right() = x + it->width;
-			gui->DrawText(layout->font, it->title, DTF_CENTER | DTF_VCENTER, Color::Black, r, &r);
+			r.Right() = x + column.width;
+			gui->DrawText(layout->font, column.title, DTF_CENTER | DTF_VCENTER, Color::Black, r, &r);
 		}
-		x += it->width;
+		x += column.width;
 	}
 
 	// zawartoœæ
@@ -74,123 +74,123 @@ void Grid::Draw(ControlDrawData*)
 				gui->DrawArea(selection_color, r2);
 		}
 
-		for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it, ++n)
+		for(const Column& column : columns)
 		{
-			if(it->type == TEXT || it->type == TEXT_COLOR)
+			Rect* clipping = nullptr;
+			if(clip_state != 0)
 			{
-				Color color;
-				cstring text;
-
-				if(it->type == TEXT)
+				clipping = &clip_r;
+				clip_r.Left() = 0;
+				clip_r.Right() = gui->wnd_size.x;
+				if(clip_state == 1)
 				{
-					color = Color::Black;
-					event(i, n, cell);
-					text = cell.text;
+					clip_r.Top() = global_pos.y + height;
+					clip_r.Bottom() = gui->wnd_size.y;
 				}
 				else
 				{
-					TextColor tc;
-					cell.text_color = &tc;
+					clip_r.Top() = 0;
+					clip_r.Bottom() = global_pos.y + size.y;
+				}
+			}
+
+			switch(column.type)
+			{
+			case TEXT:
+				{
+					cell.color = Color::Black;
+					if(selection_type == COLOR && i == selected)
+						cell.color = selection_color;
 					event(i, n, cell);
-					text = tc.text;
-					color = tc.color;
+
+					r = Rect(x, y, x + column.width, y + height);
+					gui->DrawText(layout->font, cell.text, text_flags, cell.color, r, clipping);
 				}
+				break;
 
-				if(selection_type == COLOR && i == selected)
-					color = selection_color;
-
-				r = Rect(x, y, x + it->width, y + height);
-
-				if(clip_state == 0)
-					gui->DrawText(layout->font, text, text_flags, color, r, &r);
-				else
+			case IMG:
 				{
-					clip_r.Left() = r.Left();
-					clip_r.Right() = r.Right();
-					if(clip_state == 1)
-					{
-						clip_r.Top() = global_pos.y + height;
-						clip_r.Bottom() = r.Bottom();
-					}
+					event(i, n, cell);
+
+					const Int2 imgSize = cell.img->GetSize();
+					if(column.size == Int2::Zero)
+						gui->DrawSprite(cell.img, Int2(x + (column.width - imgSize.x) / 2, y + (height - imgSize.y) / 2), Color::White, clipping);
 					else
 					{
-						clip_r.Top() = r.Top();
-						clip_r.Bottom() = global_pos.y + size.y;
-					}
-					gui->DrawText(layout->font, text, text_flags, color, r, &clip_r);
-				}
-			}
-			else if(it->type == IMG)
-			{
-				event(i, n, cell);
-				Rect* clipping = nullptr;
-				if(clip_state != 0)
-				{
-					clipping = &clip_r;
-					clip_r.Left() = 0;
-					clip_r.Right() = gui->wnd_size.x;
-					if(clip_state == 1)
-					{
-						clip_r.Top() = global_pos.y + height;
-						clip_r.Bottom() = gui->wnd_size.y;
-					}
-					else
-					{
-						clip_r.Top() = 0;
-						clip_r.Bottom() = global_pos.y + size.y;
+						const Vec2 scale = Texture::GetScale(imgSize, column.size);
+						const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f,
+							&Vec2(float(x + (column.width - column.size.x) / 2), float(y + (height - column.size.y) / 2)));
+						gui->DrawSprite2(cell.img, mat, nullptr, clipping, Color::White);
 					}
 				}
+				break;
 
-				gui->DrawSprite(cell.img, Int2(x + (it->width - 16) / 2, y + (height - 16) / 2), Color::White, clipping);
-			}
-			else //if(it->type == IMGSET)
-			{
-				cell.imgset = &imgset;
-				imgset.clear();
-				event(i, n, cell);
-				if(!imgset.empty())
+			case IMG_TEXT:
 				{
-					int img_total_width = 16 * imgset.size();
-					int y2 = y + (height - 16) / 2;
-					int dist, startx;
-					if(img_total_width > it->width && imgset.size() > 1)
-					{
-						dist = 16 - (img_total_width - it->width) / (imgset.size() - 1);
-						startx = 0;
-					}
+					cell.color = Color::Black;
+					if(selection_type == COLOR && i == selected)
+						cell.color = selection_color;
+					event(i, n, cell);
+
+					// calculate image & text pos
+					const int textWidth = layout->font->CalculateSize(cell.text).x;
+					const Int2 imgSize = cell.img->GetSize();
+					const Int2 requiredSize = column.size == Int2::Zero ? imgSize : column.size;
+					int totalWidth = requiredSize.x + 2 + textWidth;
+					int imgOffset = (column.width - totalWidth) / 2;
+					if(imgOffset < 1)
+						imgOffset = 1;
+
+					// image
+					if(column.size == Int2::Zero)
+						gui->DrawSprite(cell.img, Int2(x + imgOffset, y + (height - imgSize.y) / 2), Color::White, clipping);
 					else
 					{
-						dist = 16;
-						startx = (it->width - img_total_width) / 2;
+						const Vec2 scale = Texture::GetScale(imgSize, column.size);
+						const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f,
+							&Vec2(float(x + imgOffset), float(y + (height - column.size.y) / 2)));
+						gui->DrawSprite2(cell.img, mat, nullptr, clipping, Color::White);
 					}
 
-					Rect* clipping = nullptr;
-					if(clip_state != 0)
+					// text
+					r = Rect(x + imgOffset + requiredSize.x + 2, y, x + column.width, y + height);
+					gui->DrawText(layout->font, cell.text, DTF_LEFT, cell.color, r, clipping);
+				}
+				break;
+
+			case IMGSET:
+				{
+					cell.imgset = &imgset;
+					imgset.clear();
+					event(i, n, cell);
+					if(!imgset.empty())
 					{
-						clipping = &clip_r;
-						clip_r.Left() = 0;
-						clip_r.Right() = gui->wnd_size.x;
-						if(clip_state == 1)
+						int img_total_width = 16 * imgset.size();
+						int y2 = y + (height - 16) / 2;
+						int dist, startx;
+						if(img_total_width > column.width && imgset.size() > 1)
 						{
-							clip_r.Top() = global_pos.y + height;
-							clip_r.Bottom() = gui->wnd_size.y;
+							dist = 16 - (img_total_width - column.width) / (imgset.size() - 1);
+							startx = 0;
 						}
 						else
 						{
-							clip_r.Top() = 0;
-							clip_r.Bottom() = global_pos.y + size.y;
+							dist = 16;
+							startx = (column.width - img_total_width) / 2;
+						}
+
+						int x2 = x + startx;
+						for(uint j = 0; j < imgset.size(); ++j)
+						{
+							gui->DrawSprite(imgset[j], Int2(x2, y2), Color::White, clipping);
+							x2 += dist;
 						}
 					}
-
-					int x2 = x + startx;
-					for(uint j = 0; j < imgset.size(); ++j)
-					{
-						gui->DrawSprite(imgset[j], Int2(x2, y2), Color::White, clipping);
-						x2 += dist;
-					}
 				}
+				break;
 			}
-			x += it->width;
+			x += column.width;
+			++n;
 		}
 		y += height;
 	}
@@ -255,13 +255,13 @@ void Grid::Init()
 {
 	scroll.pos = Int2(size.x - 16, height);
 	scroll.size = Int2(16, size.y - height);
-	scroll.total = height*items;
+	scroll.total = height * items;
 	scroll.part = scroll.size.y;
 	scroll.offset = 0;
 
 	total_width = 0;
-	for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it)
-		total_width += it->width;
+	for(const Column& column : columns)
+		total_width += column.width;
 }
 
 //=================================================================================================
@@ -272,20 +272,22 @@ void Grid::Move(Int2& _global_pos)
 }
 
 //=================================================================================================
-void Grid::AddColumn(Type type, int width, cstring title)
+Grid::Column& Grid::AddColumn(Type type, int width, cstring title)
 {
 	Column& c = Add1(columns);
 	c.type = type;
 	c.width = width;
 	if(title)
 		c.title = title;
+	c.size = Int2::Zero;
+	return c;
 }
 
 //=================================================================================================
 void Grid::AddItem()
 {
 	++items;
-	scroll.total = items*height;
+	scroll.total = items * height;
 }
 
 //=================================================================================================
@@ -293,7 +295,7 @@ void Grid::AddItems(int count)
 {
 	assert(count > 0);
 	items += count;
-	scroll.total = items*height;
+	scroll.total = items * height;
 }
 
 //=================================================================================================
@@ -304,7 +306,7 @@ void Grid::RemoveItem(int id)
 	else if(selected > id)
 		--selected;
 	--items;
-	scroll.total = items*height;
+	scroll.total = items * height;
 	const float s = float(scroll.total - scroll.part);
 	if(scroll.offset > s)
 		scroll.offset = s;
@@ -320,4 +322,57 @@ void Grid::Reset()
 	scroll.total = 0;
 	scroll.part = size.y;
 	scroll.offset = 0;
+}
+
+//=================================================================================================
+// Return cell(row, column) under cursor, don't return header row
+Int2 Grid::GetCell(const Int2& _pos) const
+{
+	Int2 p = _pos - global_pos;
+	if(p.x < 0 || p.y < 0 || p.x >= size.x || p.y >= size.y)
+		return Int2(-1, -1);
+
+	int row = (p.y - int(scroll.offset)) / height;
+	if(row == 0 || row > items)
+		return Int2(-1, -1);
+
+	--row;
+
+	int col = -1, index = 0, x = 0;
+	for(const Column& column : columns)
+	{
+		if(p.x < x + column.width)
+		{
+			col = index;
+			break;
+		}
+		index++;
+		x += column.width;
+	}
+
+	return Int2(row, col);
+}
+
+//=================================================================================================
+int Grid::GetImgIndex(const Int2& pos, const Int2& cell) const
+{
+	if(cell.x < 0 || cell.x >= items || cell.y < 0 || cell.y >= (int)columns.size())
+		return -1;
+
+	Column& column = columns[cell.y];
+	switch(column.type)
+	{
+	case TEXT:
+		return -1;
+
+	case IMG:
+
+	case IMG_TEXT:
+
+	case IMGSET:
+
+	default:
+		assert(0);
+		return -1;
+	}
 }
