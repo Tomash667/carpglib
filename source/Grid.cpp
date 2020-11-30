@@ -354,22 +354,83 @@ Int2 Grid::GetCell(const Int2& _pos) const
 }
 
 //=================================================================================================
-int Grid::GetImgIndex(const Int2& pos, const Int2& cell) const
+int Grid::GetImgIndex(const Int2& _pos, const Int2& cellPt) const
 {
-	if(cell.x < 0 || cell.x >= items || cell.y < 0 || cell.y >= (int)columns.size())
+	if(cellPt.x < 0 || cellPt.x >= items || cellPt.y < 0 || cellPt.y >= (int)columns.size())
 		return -1;
 
-	Column& column = columns[cell.y];
+	int x = 0;
+	for(int i = 0; i < cellPt.y; ++i)
+		x += columns[i].width;
+	int y = (cellPt.x + 1) * height;
+	Int2 p = _pos - global_pos;
+	const Column& column = columns[cellPt.y];
 	switch(column.type)
 	{
 	case TEXT:
 		return -1;
 
 	case IMG:
+		{
+			Cell cell;
+			event(cellPt.x, cellPt.y, cell);
+
+			const Int2 requiredSize = column.size != Int2::Zero ? column.size : cell.img->GetSize();
+			const int cx = x + (column.width - requiredSize.x) / 2;
+			const int cy = y + (height - requiredSize.y) / 2;
+			return (p.x >= cx && p.x < cx + requiredSize.x && p.y >= cy && p.y < cy + requiredSize.y) ? 0 : -1;
+		}
+		break;
 
 	case IMG_TEXT:
+		{
+			Cell cell;
+			event(cellPt.x, cellPt.y, cell);
+
+			const int textWidth = layout->font->CalculateSize(cell.text).x;
+			const Int2 requiredSize = column.size == Int2::Zero ? cell.img->GetSize() : column.size;
+			int totalWidth = requiredSize.x + 2 + textWidth;
+			int imgOffset = (column.width - totalWidth) / 2;
+			if(imgOffset < 1)
+				imgOffset = 1;
+
+			const int cx = x + imgOffset;
+			const int cy = y + (height - requiredSize.y) / 2;
+			return (p.x >= cx && p.x < cx + requiredSize.x && p.y >= cy && p.y < cy + requiredSize.y) ? 0 : -1;
+		}
 
 	case IMGSET:
+		{
+			Cell cell;
+			cell.imgset = &imgset;
+			imgset.clear();
+			event(cellPt.x, cellPt.y, cell);
+			if(!imgset.empty())
+			{
+				int img_total_width = 16 * imgset.size();
+				int y2 = y + (height - 16) / 2;
+				int dist, startx;
+				if(img_total_width > column.width && imgset.size() > 1)
+				{
+					dist = 16 - (img_total_width - column.width) / (imgset.size() - 1);
+					startx = 0;
+				}
+				else
+				{
+					dist = 16;
+					startx = (column.width - img_total_width) / 2;
+				}
+
+				int x2 = x + startx;
+				for(uint j = 0; j < imgset.size(); ++j)
+				{
+					if(p.x >= x2 && p.x < x2 + 16 && p.y >= y2 && p.y < y2 + 16)
+						return j;
+					x2 += dist;
+				}
+			}
+			return -1;
+		}
 
 	default:
 		assert(0);

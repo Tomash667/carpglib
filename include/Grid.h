@@ -74,9 +74,11 @@ public:
 	int items, height, selected, total_width;
 	GridEvent event;
 	Scrollbar scroll;
-	vector<Texture*> imgset;
 	SelectionType selection_type;
 	Color selection_color;
 	SelectGridEvent select_event;
 	bool single_line;
+
+private:
+	mutable vector<Texture*> imgset;
 };
