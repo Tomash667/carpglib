@@ -14,11 +14,11 @@ void DrawBox::Draw(ControlDrawData*)
 
 	if(tex)
 	{
-		Matrix m;
-		Vec2 scaled_tex_size = Vec2(tex_size) * scale;
-		Vec2 max_pos = scaled_tex_size - Vec2(size);
-		Vec2 p = Vec2(max_pos.x * -move.x / 100, max_pos.y * -move.y / 100) + Vec2(global_pos);
-		m = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &p);
+		const Vec2 scaled_tex_size = Vec2(tex_size) * scale;
+		const Vec2 max_pos = scaled_tex_size - Vec2(size);
+		const Vec2 p = Vec2(max_pos.x * -move.x / 100, max_pos.y * -move.y / 100) + Vec2(global_pos);
+		const Vec2 scaleV = Vec2(scale, scale);
+		const Matrix m = Matrix::Transform2D(nullptr, 0.f, &scaleV, nullptr, 0.f, &p);
 		gui->DrawSprite2(tex, m, nullptr, &r);
 	}
 }

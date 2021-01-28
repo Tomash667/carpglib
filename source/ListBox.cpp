@@ -70,7 +70,6 @@ void ListBox::Draw(ControlDrawData*)
 		r.Top() = global_pos.y - int(scrollbar.offset) + 2;
 		r.Bottom() = r.Top() + itemHeight;
 		int orig_x = global_pos.x + 2;
-		Matrix mat;
 		for(GuiElement* e : items)
 		{
 			r.Bottom() = r.Top() + e->height;
@@ -79,7 +78,8 @@ void ListBox::Draw(ControlDrawData*)
 				Int2 required_size = forceImgSize, img_size;
 				Vec2 scale;
 				e->tex->ResizeImage(required_size, img_size, scale);
-				mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &Vec2((float)orig_x, float(r.Top() + (e->height - required_size.y) / 2)));
+				const Vec2 pos((float)orig_x, float(r.Top() + (e->height - required_size.y) / 2));
+				const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 				gui->DrawSprite2(e->tex, mat, nullptr, &rc, Color::White);
 				r.Left() = orig_x + required_size.x;
 			}

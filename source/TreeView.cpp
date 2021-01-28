@@ -408,13 +408,14 @@ void TreeView::Draw(TreeNode* node)
 		// text
 		if(node != edited)
 		{
-			Rect r = {
+			const Rect r = {
 				global_pos.x + node->pos.x + offsetx,
 				global_pos.y + offsety,
 				global_pos.x + size.x,
 				global_pos.y + item_height + offsety
 			};
-			gui->DrawText(layout->font, node->text, DTF_LEFT | DTF_VCENTER | DTF_SINGLELINE, layout->font_color, r, &Rect(clip_rect));
+			const Rect clipRect(clip_rect);
+			gui->DrawText(layout->font, node->text, DTF_LEFT | DTF_VCENTER | DTF_SINGLELINE, layout->font_color, r, &clipRect);
 		}
 	}
 

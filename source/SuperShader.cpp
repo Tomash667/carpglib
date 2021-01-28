@@ -61,7 +61,8 @@ void SuperShader::OnInit()
 	psLocals = app::render->CreateConstantBuffer(sizeof(PsLocals), "SuperPsLocals");
 	psMaterial = app::render->CreateConstantBuffer(sizeof(PsMaterial), "SuperPsMaterial");
 
-	texEmptyNormalMap = app::render->CreateImmutableTexture(Int2(1, 1), &Color(128, 128, 255));
+	const Color emptyNormalMapColor = Color(128, 128, 255);
+	texEmptyNormalMap = app::render->CreateImmutableTexture(Int2(1, 1), &emptyNormalMapColor);
 	texEmptySpecularMap = app::render->CreateImmutableTexture(Int2(1, 1), &Color::None);
 
 	// load shader code

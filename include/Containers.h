@@ -903,12 +903,12 @@ public:
 
 		friend class LocalVector3;
 
-		T& operator * ()
+		T& operator * () const
 		{
 			assert(offset < (int)v->size());
 			return v->at(offset);
 		}
-		T& operator [](difference_type n)
+		T& operator [](difference_type n) const
 		{
 			const int pos = offset + n;
 			assert(pos >= 0 && pos < (int)v->size());

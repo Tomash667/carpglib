@@ -179,7 +179,8 @@ void FlowContainer::Draw(ControlDrawData*)
 				continue;
 
 			const AreaLayout& area = button_tex[fi->tex_id].tex[fi->state];
-			gui->DrawArea(Box2d::Create(global_pos + fi->pos - Int2(0, offset), area.size), area, &Box2d(clip));
+			const Box2d clipRect(clip);
+			gui->DrawArea(Box2d::Create(global_pos + fi->pos - Int2(0, offset), area.size), area, &clipRect);
 		}
 	}
 }
