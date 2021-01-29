@@ -14,6 +14,7 @@ constexpr int Bit(int a) { return 1 << a; }
 constexpr bool IsSet(int flags, int bit) { return (flags & bit) != 0; }
 constexpr bool IsClear(int flags, int bit) { return (flags & bit) == 0; }
 constexpr bool IsAllSet(int flags, int bits) { return (flags & bits) == bits; }
+constexpr bool IsAnySet(int flags, int bits) { return (flags & bits) != 0 && (flags & ~bits) == 0; }
 constexpr void SetBit(int& flags, int bit) { flags |= bit; }
 constexpr void ClearBit(int& flags, int bit) { flags &= ~bit; }
 constexpr void SetBitValue(int& flags, int bit, bool value) { if(value) SetBit(flags, bit); else ClearBit(flags, bit); }

@@ -795,3 +795,13 @@ void Terrain::SetHeightMap(float* _h)
 
 	h = _h;
 }
+
+//=================================================================================================
+void Terrain::ListVisibleParts(vector<uint>& outParts, const FrustumPlanes& frustum) const
+{
+	for(uint i = 0; i < n_parts2; ++i)
+	{
+		if(frustum.BoxToFrustum(parts[i].box))
+			outParts.push_back(i);
+	}
+}

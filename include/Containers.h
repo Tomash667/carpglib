@@ -234,6 +234,11 @@ inline T& RandomItem(vector<T>& v)
 {
 	return v[Rand() % v.size()];
 }
+template<typename T>
+inline const T& RandomItem(const vector<T>& v)
+{
+	return v[Rand() % v.size()];
+}
 
 template<typename T>
 inline T RandomItemPop(vector<T>& v)
