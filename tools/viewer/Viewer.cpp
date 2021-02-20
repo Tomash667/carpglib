@@ -14,7 +14,7 @@
 #define INCLUDE_COMMON_DIALOGS
 #include <WindowsIncludes.h>
 
-Viewer::Viewer() : scene(nullptr), camera(nullptr), lastMeshInst(nullptr), dist(1)
+Viewer::Viewer() : scene(nullptr), camera(nullptr), lastMeshInst(nullptr), dist(1), details(false)
 {
 	app::engine->SetTitle("Mesh viewer");
 
@@ -69,7 +69,7 @@ void Viewer::OnDraw()
 void Viewer::Draw(ControlDrawData*)
 {
 	Rect r = { 0,0,500,500 };
-	string text = Format("Fps: %g\nF1 - open mesh", app::engine->GetFps());
+	string text = Format("Fps: %g\nF1 - open mesh, F2 - toggle details", app::engine->GetFps());
 	if(node->mesh)
 	{
 		text += Format("\nMesh: %s (v %d)", node->mesh->filename, node->mesh->head.version);
@@ -85,6 +85,12 @@ void Viewer::Draw(ControlDrawData*)
 				text += Format("\nTime: %g/%g (%d/%d)", FLT10(group.time), FLT10(anim->length), group.GetFrameIndex(hit) + 1, anim->n_frames);
 			}
 		}
+	}
+	if(details)
+	{
+		text += Format("\nVerts: %u   Tris: %u   Subs: %u\nBones: %u   Groups: %u   Anims: %u   Points: %u",
+			node->mesh->head.n_verts, node->mesh->head.n_tris, node->mesh->head.n_subs,
+			node->mesh->head.n_bones, node->mesh->head.n_groups, node->mesh->head.n_anims, node->mesh->head.n_points);
 	}
 	gui->DrawText(font, text, 0, Color::Black, r);
 }
@@ -188,7 +194,7 @@ void Viewer::OnUpdate(float dt)
 				Mesh* mesh = app::res_mgr->Load<Mesh>(filename);
 				if(node->mesh_inst)
 					delete node->mesh_inst;
-				if(mesh->IsAnimated())
+				if(mesh->IsAnimated() && !mesh->IsStatic())
 				{
 					MeshInstance* meshInst = new MeshInstance(mesh);
 					node->SetMesh(meshInst);
@@ -210,6 +216,9 @@ void Viewer::OnUpdate(float dt)
 
 		app::engine->LockCursor();
 	}
+
+	if(app::input->Pressed(Key::F2))
+		details = !details;
 
 	if(app::input->Pressed(Key::N1))
 	{
