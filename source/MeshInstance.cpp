@@ -641,7 +641,7 @@ void MeshInstance::SaveV2(StreamWriter& f) const
 //=================================================================================================
 void MeshInstance::SaveOptional(StreamWriter& f, MeshInstance* meshInst)
 {
-	if(!meshInst)
+	if(!meshInst || !meshInst->IsActive())
 		f.Write0();
 	else
 		meshInst->SaveV2(f);
