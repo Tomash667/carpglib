@@ -918,7 +918,7 @@ void Gui::Update(float dt, float mouse_speed)
 	prev_cursor_pos = cursor_pos;
 	if(NeedCursor() && mouse_speed > 0)
 	{
-		cursor_pos += app::input->GetMouseDif() * mouse_speed;
+		cursor_pos += app::input->GetMouseDiff() * mouse_speed;
 		if(cursor_pos.x < 0)
 			cursor_pos.x = 0;
 		if(cursor_pos.y < 0)

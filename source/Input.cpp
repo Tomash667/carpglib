@@ -4,7 +4,7 @@
 Input* app::input;
 
 //=================================================================================================
-Input::Input() : mouse_wheel(0), mouse_dif(0, 0), key_callback(nullptr)
+Input::Input() : mouse_wheel(0), mouse_diff(0, 0), key_callback(nullptr)
 {
 }
 

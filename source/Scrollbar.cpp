@@ -62,8 +62,8 @@ void Scrollbar::Update(float dt)
 		{
 			if(hscrollbar)
 			{
-				int dif = cpos.x - click_pt.x;
-				float move = float(dif)*total / size.x;
+				int diff = cpos.x - click_pt.x;
+				float move = float(diff)*total / size.x;
 				bool changed = true;
 				if(offset + move < 0)
 					move = -offset;
@@ -79,8 +79,8 @@ void Scrollbar::Update(float dt)
 			}
 			else
 			{
-				int dif = cpos.y - click_pt.y;
-				float move = float(dif)*total / size.y;
+				int diff = cpos.y - click_pt.y;
+				float move = float(diff)*total / size.y;
 				bool changed = true;
 				if(offset + move < 0)
 					move = -offset;

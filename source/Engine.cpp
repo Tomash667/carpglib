@@ -114,7 +114,7 @@ void Engine::DoTick(bool update_game)
 	UpdateActivity(is_active);
 
 	// handle cursor movement
-	Int2 mouse_dif = Int2::Zero;
+	Int2 mouse_diff = Int2::Zero;
 	if(active)
 	{
 		if(locked_cursor)
@@ -126,14 +126,14 @@ void Engine::DoTick(bool update_game)
 				POINT pt;
 				GetCursorPos(&pt);
 				ScreenToClient(hwnd, &pt);
-				mouse_dif = Int2(pt.x, pt.y) - client_size / 2;
+				mouse_diff = Int2(pt.x, pt.y) - client_size / 2;
 			}
 			PlaceCursor();
 		}
 	}
 	else if(!locked_cursor && lock_on_focus)
 		locked_cursor = true;
-	app::input->UpdateMouseDif(mouse_dif);
+	app::input->UpdateMouseDiff(mouse_diff);
 
 	// update keyboard shortcuts info
 	app::input->UpdateShortcuts();
@@ -402,7 +402,7 @@ void Engine::InitWindow()
 
 	// reset cursor
 	replace_cursor = true;
-	app::input->UpdateMouseDif(Int2::Zero);
+	app::input->UpdateMouseDiff(Int2::Zero);
 	unlock_point = real_size / 2;
 
 	Info("Engine: Window created.");

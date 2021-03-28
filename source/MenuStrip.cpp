@@ -268,7 +268,7 @@ MenuStrip::Item* MenuStrip::FindItem(int action)
 	return nullptr;
 }
 
-void MenuStrip::ChangeIndex(int dif)
+void MenuStrip::ChangeIndex(int diff)
 {
 	if(items.empty())
 		return;
@@ -282,13 +282,13 @@ void MenuStrip::ChangeIndex(int dif)
 	else
 	{
 		selected->hover = false;
-		selected = &items[Modulo(selected->index + dif, items.size())];
+		selected = &items[Modulo(selected->index + diff, items.size())];
 		start = selected->index;
 	}
 
 	while(!selected->enabled)
 	{
-		selected = &items[Modulo(selected->index + dif, items.size())];
+		selected = &items[Modulo(selected->index + diff, items.size())];
 		if(selected->index == start)
 		{
 			// all items disabled

@@ -208,9 +208,9 @@ void TooltipController::FormatBox(bool refresh)
 		int img_bot = img_size.y + 24;
 		if(r_small_text.Top() < img_bot)
 		{
-			int dif = r_small_text.SizeY();
+			int diff = r_small_text.SizeY();
 			r_small_text.Top() = img_bot;
-			r_small_text.Bottom() = img_bot + dif;
+			r_small_text.Bottom() = img_bot + diff;
 			h = r_small_text.Bottom();
 		}
 	}

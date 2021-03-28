@@ -141,9 +141,9 @@ public:
 	}
 
 	float GetMouseWheel() const { return mouse_wheel; }
-	const Int2& GetMouseDif() const { return mouse_dif; }
+	const Int2& GetMouseDiff() const { return mouse_diff; }
 	void UpdateMouseWheel(float mouse_wheel) { this->mouse_wheel = mouse_wheel; }
-	void UpdateMouseDif(const Int2& mouse_dif) { this->mouse_dif = mouse_dif; }
+	void UpdateMouseDiff(const Int2& mouse_diff) { this->mouse_diff = mouse_diff; }
 	void SetCallback(Callback clbk) { key_callback = clbk; }
 
 private:
@@ -151,7 +151,7 @@ private:
 	vector<Key> to_release;
 	byte keystate[MAX_KEY];
 	bool keyrepeat[MAX_KEY];
-	Int2 mouse_dif;
+	Int2 mouse_diff;
 	float mouse_wheel;
 	int shortcut_state;
 	bool focus;

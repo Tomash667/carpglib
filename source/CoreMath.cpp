@@ -692,10 +692,10 @@ bool CircleToRotatedRectangle(float cx, float cy, float radius, float rx, float 
 	// transform circle so rectangle don't need rotation
 	float sina = sin(rot),
 		cosa = cos(rot),
-		difx = cx - rx,
-		dify = cy - ry,
-		x = cosa * difx - sina * dify + rx,
-		y = sina * difx + cosa * dify + ry;
+		diffx = cx - rx,
+		diffy = cy - ry,
+		x = cosa * diffx - sina * diffy + rx,
+		y = sina * diffx + cosa * diffy + ry;
 	return CircleToRectangle(x, y, radius, rx, ry, w, h);
 }
 

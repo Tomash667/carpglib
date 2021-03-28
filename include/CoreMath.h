@@ -1041,9 +1041,9 @@ struct Box2d
 
 	void Move(const Vec2& pos)
 	{
-		Vec2 dif = pos - v1;
-		v1 += dif;
-		v2 += dif;
+		Vec2 diff = pos - v1;
+		v1 += diff;
+		v2 += diff;
 	}
 
 	Vec3 GetRandomPos3(float y = 0.f) const

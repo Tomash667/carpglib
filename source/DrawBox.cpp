@@ -65,9 +65,9 @@ void DrawBox::Update(float dt)
 			clicked = false;
 		else
 		{
-			Int2 dif = click_point - gui->cursor_pos;
+			Int2 diff = click_point - gui->cursor_pos;
 			gui->cursor_pos = click_point;
-			move -= Vec2(dif) / 2;
+			move -= Vec2(diff) / 2;
 			move.x = Clamp(move.x, 0.f, 100.f);
 			move.y = Clamp(move.y, 0.f, 100.f);
 		}
