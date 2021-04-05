@@ -293,11 +293,11 @@ void Mesh::LoadHeader(StreamReader& stream)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Format("Invalid file signature '%.4s'.", head.format);
-	if(head.version < 12 || head.version > 22)
+	if(head.version < 12 || head.version > 23)
 		throw Format("Invalid file version '%u'.", head.version);
 	if(head.version < 20)
 		throw Format("Unsupported file version '%u'.", head.version);
-	if(head.n_bones >= MAX_BONES)
+	if(head.n_bones > MAX_BONES)
 		throw Format("Too many bones (%u).", head.n_bones);
 	if(head.n_subs == 0)
 		throw "Missing model mesh!";

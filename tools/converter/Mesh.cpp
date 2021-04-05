@@ -73,9 +73,9 @@ void Mesh::Load(cstring path)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Format("Invalid file signature '%.4s'.", head.format);
-	if(head.version < 12 || head.version > 22)
+	if(head.version < 12 || head.version > 23)
 		throw Format("Invalid file version '%d'.", head.version);
-	if(head.n_bones >= 32)
+	if(head.n_bones > 64)
 		throw Format("Too many bones (%d).", head.n_bones);
 	if(head.n_subs == 0)
 		throw "Missing model mesh!";
@@ -356,7 +356,7 @@ void Mesh::Load(cstring path)
 	}
 
 	old_ver = head.version;
-	head.version = 22;
+	head.version = 23;
 }
 
 void Mesh::LoadBoneGroups(FileReader& f)
@@ -550,4 +550,51 @@ Mesh::Point* Mesh::GetPoint(const string& id)
 			return &point;
 	}
 	return nullptr;
+}
+
+void Mesh::Convert()
+{
+	if(old_ver < 23)
+	{
+		if(!anims.empty() || !attach_points.empty())
+			throw Format("TODO upgrade rotation for animations/attach points");
+
+		const float RotToOrigin = PI / 2;
+		const Matrix mat = Matrix::RotationY(RotToOrigin);
+
+		int normalOffset;
+		if(IsSet(head.flags, F_PHYSICS))
+			normalOffset = -1;
+		else
+		{
+			if(IsSet(head.flags, F_ANIMATED))
+			{
+				if(IsSet(head.flags, F_TANGENTS))
+					normalOffset = offsetof(VAnimatedTangent, normal);
+				else
+					normalOffset = offsetof(VAnimated, normal);
+			}
+			else
+			{
+				if(IsSet(head.flags, F_TANGENTS))
+					normalOffset = offsetof(VTangent, normal);
+				else
+					normalOffset = offsetof(VDefault, normal);
+			}
+		}
+
+		// Rotate vertices
+		byte* v = vdata;
+		for(uint vi = 0; vi < head.n_verts; vi++)
+		{
+			Vec3& pos = *(Vec3*)v;
+			Vec3::Transform(pos, mat, pos);
+			if(normalOffset != -1)
+			{
+				Vec3& normal = *(Vec3*)(v + normalOffset);
+				Vec3::Transform(normal, mat, normal);
+			}
+			v += vertex_size;
+		}
+	}
 }

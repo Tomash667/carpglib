@@ -66,7 +66,7 @@ void QmshSaver::SaveQmsh(const QMSH &Qmsh, const string &FileName)
 	}
 
 	// Indeksy (trójk¹ty)
-	f.Write(&Qmsh.Indices[0], sizeof(word)*Qmsh.Indices.size());
+	f.Write(&Qmsh.Indices[0], sizeof(word) * Qmsh.Indices.size());
 
 	// Podsiatki
 	for(uint si = 0; si < Qmsh.Submeshes.size(); si++)

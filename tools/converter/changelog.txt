@@ -1,6 +1,17 @@
 CHANGELOG
 Minor updates have changes only in exporter/converer, don't affect qmsh file.
 ---------------------------
+v23:
+MESH (v23)
++ no changes but used to keep track if mesh is rotated correctly or not
++ max bones allowed fix from 63 to 64
+CONVERTER:
++ rotate mesh to face rot 0 radians
+IMPORTER:
++ v23 mesh support
++ support for 64 max bones
+
+CONVERTER:
 v22.1:
 CONVERTER:
 + return warning information to exporter, check empty animations
