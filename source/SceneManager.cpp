@@ -18,8 +18,7 @@ SceneManager::SceneManager() : use_lighting(true), use_fog(true), use_normalmap(
 //=================================================================================================
 void SceneManager::Init()
 {
-	super_shader = new SuperShader;
-	app::render->RegisterShader(super_shader);
+	super_shader = app::render->GetShader<SuperShader>();
 }
 
 //=================================================================================================

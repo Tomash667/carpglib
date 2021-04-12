@@ -96,7 +96,6 @@ public:
 	ID3D11SamplerState* CreateSampler(TextureAddressMode mode = TEX_ADR_WRAP, bool disableMipmap = false);
 	void CreateShader(ShaderParams& params);
 	void Present();
-	void RegisterShader(ShaderHandler* shader);
 	void ReloadShaders();
 	void SaveToFile(TEX tex, cstring path, ImageFormat format = ImageFormat::JPG);
 	uint SaveToFile(TEX tex, FileWriter& file, ImageFormat format = ImageFormat::JPG);
@@ -116,6 +115,16 @@ public:
 	const vector<Resolution>& GetResolutions() const { return resolutions; }
 	ID3D11SamplerState* GetSampler() const { return defaultSampler; }
 	const string& GetShadersDir() const { return shaders_dir; }
+	template<typename T> T* GetShader()
+	{
+		auto it = shaders.find(typeid(T));
+		if(it != shaders.end())
+			return static_cast<T*>(it->second);
+		T* shader = new T;
+		shaders[typeid(T)] = shader;
+		shader->OnInit();
+		return shader;
+	}
 
 	void SetAdapter(int adapter) { assert(!initialized); usedAdapter = adapter; }
 	void SetBlendState(BlendState blendState);
@@ -156,7 +165,7 @@ private:
 	ID3D11RasterizerState* rasterStates[RASTER_MAX];
 	ID3D11SamplerState* defaultSampler;
 	Int2 wndSize;
-	vector<ShaderHandler*> shaders;
+	std::unordered_map<std::type_index, ShaderHandler*> shaders;
 	vector<RenderTarget*> renderTargets;
 	vector<Resolution> resolutions;
 	vector<Int2> multisampleLevels;

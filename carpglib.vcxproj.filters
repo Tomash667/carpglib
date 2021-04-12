@@ -304,6 +304,9 @@
     <ClInclude Include="include\Perlin.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="include\PhysicsDrawer.h">
+      <Filter>utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">
@@ -562,6 +565,9 @@
     <ClCompile Include="source\ImageFormat.cpp">
       <Filter>const</Filter>
     </ClCompile>
+    <ClCompile Include="source\PhysicsDrawer.cpp">
+      <Filter>utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
@@ -587,6 +593,9 @@
     </Filter>
     <Filter Include="components">
       <UniqueIdentifier>{ed81dba0-00e0-4480-850f-eecdfe99c249}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utility">
+      <UniqueIdentifier>{ea13af8b-7bcc-4224-9751-c66191ad71ac}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
