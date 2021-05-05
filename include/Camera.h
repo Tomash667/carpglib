@@ -3,10 +3,11 @@
 //-----------------------------------------------------------------------------
 struct Camera
 {
-	Camera() : znear(0.1f), zfar(50.f) {}
+	Camera() : fov(PI / 4), znear(0.1f), zfar(50.f) {}
+	void UpdateMatrix();
 
-	Matrix mat_view_proj;
-	Matrix mat_view_inv;
+	Matrix matViewProj;
+	Matrix matViewInv;
 	Vec3 from, to;
-	float znear, zfar;
+	float fov, znear, zfar;
 };

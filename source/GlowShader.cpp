@@ -178,7 +178,7 @@ void GlowShader::DrawGlowNodes(Camera& camera, const vector<GlowNode>& glowNodes
 		{
 			ResourceLock lock(vsGlobals);
 			VsGlobals& vsg = *lock.Get<VsGlobals>();
-			vsg.matCombined = (glow.node->mat * camera.mat_view_proj).Transpose();
+			vsg.matCombined = (glow.node->mat * camera.matViewProj).Transpose();
 			if(isAnimated)
 			{
 				for(uint i = 0; i < glow.node->mesh_inst->mesh->head.n_bones; ++i)

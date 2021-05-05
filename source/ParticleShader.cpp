@@ -70,7 +70,7 @@ void ParticleShader::OnRelease()
 //=================================================================================================
 void ParticleShader::Prepare(Camera& camera)
 {
-	matViewInv = camera.mat_view_inv;
+	matViewInv = camera.matViewInv;
 	camPos = camera.from;
 
 	app::render->SetDepthState(Render::DEPTH_READ);
@@ -89,7 +89,7 @@ void ParticleShader::Prepare(Camera& camera)
 
 	// vertex shader constants
 	ResourceLock lock(vsGlobals);
-	lock.Get<VsGlobals>()->matCombined = camera.mat_view_proj.Transpose();
+	lock.Get<VsGlobals>()->matCombined = camera.matViewInv.Transpose();
 
 	lastTex = (Texture*)0xFEFEFEFE;
 }

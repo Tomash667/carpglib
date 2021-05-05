@@ -81,7 +81,7 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 	{
 		ResourceLock lock(vsGlobals);
 		VsGlobals& vsg = *lock.Get<VsGlobals>();
-		vsg.matCombined = camera->mat_view_proj.Transpose();
+		vsg.matCombined = camera->matViewProj.Transpose();
 		vsg.matWorld = Matrix::IdentityMatrix.Transpose();
 	}
 

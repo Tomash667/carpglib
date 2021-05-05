@@ -21,7 +21,7 @@ Scene::~Scene()
 //=================================================================================================
 void Scene::ListNodes(SceneBatch& batch)
 {
-	FrustumPlanes frustum(batch.camera->mat_view_proj);
+	FrustumPlanes frustum(batch.camera->matViewProj);
 	for(SceneNode* node : nodes)
 	{
 		if(node->mesh && frustum.SphereToFrustum(node->center, node->radius))

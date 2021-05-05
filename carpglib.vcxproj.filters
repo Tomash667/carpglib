@@ -568,6 +568,9 @@
     <ClCompile Include="source\PhysicsDrawer.cpp">
       <Filter>utility</Filter>
     </ClCompile>
+    <ClCompile Include="source\Camera.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

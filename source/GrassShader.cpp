@@ -74,7 +74,7 @@ void GrassShader::Prepare(Scene* scene, Camera* camera)
 	{
 		ResourceLock lock(vsGlobals);
 		VsGlobals& vsg = *lock.Get<VsGlobals>();
-		vsg.matViewProj = camera->mat_view_proj.Transpose();
+		vsg.matViewProj = camera->matViewProj.Transpose();
 	}
 
 	// set pixel shader globals
