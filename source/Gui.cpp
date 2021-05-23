@@ -759,6 +759,7 @@ void Gui::Draw(bool draw_layers, bool draw_dialogs)
 	// draw cursor
 	if(NeedCursor())
 	{
+		assert(layout);
 		Int2 pos = cursor_pos;
 		if(cursor_mode == CURSOR_TEXT)
 			pos -= Int2(3, 8);
