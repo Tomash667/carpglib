@@ -15,6 +15,7 @@ public:
 	~Engine();
 
 	void DoPseudotick(bool msg_only = false);
+	void RestoreFocus();
 	void Shutdown();
 	void FatalError(cstring err);
 	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);

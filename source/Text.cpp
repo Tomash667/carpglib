@@ -303,7 +303,7 @@ bool Unescape(const string& str_in, uint pos, uint size, string& str_out)
 		if(str_in[pos] == '\\')
 		{
 			++pos;
-			if(pos == size)
+			if(pos == end)
 			{
 				Error("Unescape error in string \"%.*s\", character '\\' at end of string.", size, str_in.c_str() + pos);
 				return false;

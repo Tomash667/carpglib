@@ -92,6 +92,15 @@ void Engine::DoPseudotick(bool msg_only)
 }
 
 //=================================================================================================
+// Call after returning from native dialog
+void Engine::RestoreFocus()
+{
+	DoPseudotick(true);
+	app::input->ReleaseKeys();
+	app::input->UpdateShortcuts();
+}
+
+//=================================================================================================
 // Common part for WindowLoop and DoPseudotick
 void Engine::DoTick(bool update_game)
 {
@@ -451,6 +460,7 @@ void Engine::ShowError(cstring msg, Logger::Level level)
 	logger->Log(level, msg);
 	logger->Flush();
 	MessageBox(nullptr, msg, nullptr, MB_OK | MB_ICONERROR | MB_APPLMODAL);
+	RestoreFocus();
 }
 
 //=================================================================================================
