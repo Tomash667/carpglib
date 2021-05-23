@@ -116,3 +116,8 @@ enum class Key : byte
 
 	Max = 0xFF
 };
+
+inline Key operator + (Key k, int offset)
+{
+	return (Key)((int)k + offset);
+}

@@ -54,7 +54,11 @@ struct MeshInstance
 
 		float time, speed, blend_time, blend_max;
 		int state, prio, used_group;
-		Mesh::Animation* anim;
+		union
+		{
+			Mesh::Animation* anim;
+			string* animName; // on preload
+		};
 		bool frame_end;
 
 		int GetFrameIndex(bool& hit) const { return anim->GetFrameIndex(time, hit); }
@@ -92,14 +96,13 @@ struct MeshInstance
 	void SetToEnd();
 	void ResetAnimation();
 	void Save(FileWriter& f) const;
-	void SaveSimple(FileWriter& f) const;
+	void SaveV2(StreamWriter& f) const;
 	void Load(FileReader& f, int version);
+	void LoadV2(StreamReader& f);
 	void LoadSimple(FileReader& f);
 	void Write(StreamWriter& f) const;
-	void WriteSimple(StreamWriter& f) const;
 	bool Read(StreamReader& f);
-	void ReadSimple(StreamReader& f);
-	bool ApplyPreload(Mesh* mesh, bool simple = false);
+	bool ApplyPreload(Mesh* mesh);
 	void ClearEndResult();
 	void Changed() { need_update = true; }
 
@@ -122,6 +125,9 @@ struct MeshInstance
 	bool IsEnded(uint group = 0) const { return GetGroup(group).frame_end; }
 
 	void SetProgress(float progress, uint group = 0) { GetGroup(group).SetProgress(progress); }
+
+	static void SaveOptional(StreamWriter& f, MeshInstance* meshInst);
+	static void LoadOptional(StreamReader& f, MeshInstance*& meshInst);
 
 private:
 	void SetupBlending(uint group, bool first = true, bool in_update = false);

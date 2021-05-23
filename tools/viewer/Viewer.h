@@ -34,4 +34,5 @@ public:
 	float rot, dist;
 	MeshInstance* lastMeshInst;
 	CamMode mode;
+	bool details;
 };

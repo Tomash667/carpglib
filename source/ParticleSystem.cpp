@@ -81,7 +81,7 @@ void ParticleEmitter::Init()
 //=================================================================================================
 bool ParticleEmitter::Update(float dt)
 {
-	if(emisions == 0 || (life > 0 && (life -= dt) <= 0.f))
+	if(emissions == 0 || (life > 0 && (life -= dt) <= 0.f))
 		destroy = true;
 
 	if(destroy && alive == 0)
@@ -113,11 +113,11 @@ bool ParticleEmitter::Update(float dt)
 	}
 
 	// emisja
-	if(!destroy && (emisions == -1 || emisions > 0) && ((time += dt) >= emision_interval))
+	if(!destroy && (emissions == -1 || emissions > 0) && ((time += dt) >= emission_interval))
 	{
-		if(emisions > 0)
-			--emisions;
-		time -= emision_interval;
+		if(emissions > 0)
+			--emissions;
+		time -= emission_interval;
 
 		int count = min(Random(spawn_min, spawn_max), max_particles - alive);
 		vector<Particle>::iterator it2 = particles.begin();
@@ -146,12 +146,12 @@ void ParticleEmitter::Save(FileWriter& f)
 {
 	f << id;
 	f << tex->filename;
-	f << emision_interval;
+	f << emission_interval;
 	f << life;
 	f << particle_life;
 	f << alpha;
 	f << size;
-	f << emisions;
+	f << emissions;
 	f << spawn_min;
 	f << spawn_max;
 	f << max_particles;
@@ -179,12 +179,12 @@ void ParticleEmitter::Load(FileReader& f, int version)
 	Register();
 
 	tex = app::res_mgr->Load<Texture>(f.ReadString1());
-	f >> emision_interval;
+	f >> emission_interval;
 	f >> life;
 	f >> particle_life;
 	f >> alpha;
 	f >> size;
-	f >> emisions;
+	f >> emissions;
 	f >> spawn_min;
 	f >> spawn_max;
 	f >> max_particles;

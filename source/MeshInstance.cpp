@@ -12,7 +12,7 @@ Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, Vec3::One);
 //=================================================================================================
 MeshInstance::MeshInstance(Mesh* mesh) : preload(false), mesh(mesh), need_update(true), ptr(nullptr), base_speed(1.f), mat_scale(nullptr)
 {
-	assert(mesh && mesh->IsLoaded());
+	assert(mesh && mesh->IsLoaded() && mesh->IsAnimated());
 
 	mat_bones.resize(mesh->head.n_bones);
 	blendb.resize(mesh->head.n_bones);
@@ -604,19 +604,47 @@ void MeshInstance::Save(FileWriter& f) const
 }
 
 //=================================================================================================
-void MeshInstance::SaveSimple(FileWriter& f) const
+void MeshInstance::SaveV2(StreamWriter& f) const
 {
-	assert(groups.size() == 1u && mesh->anims.size() == 1u);
-
-	const MeshInstance::Group& group = groups[0];
-	if(group.IsActive())
+	const byte groupCount = (byte)groups.size();
+	f << groupCount;
+	if(groupCount == 1u)
 	{
-		f << (group.state & ~FLAG_BLENDING);
+		const Group& group = groups[0];
 		f << group.time;
-		f << group.blend_time;
+		f << group.speed;
+		f << (group.state & ~FLAG_BLENDING); // don't save blending
+		if(group.anim)
+			f << group.anim->name;
+		else
+			f.Write0();
+		f << group.frame_end;
 	}
 	else
-		f << 0;
+	{
+		for(const Group& group : groups)
+		{
+			f << group.time;
+			f << group.speed;
+			f << (group.state & ~FLAG_BLENDING); // don't save blending
+			f << group.prio;
+			f << group.used_group;
+			if(group.anim)
+				f << group.anim->name;
+			else
+				f.Write0();
+			f << group.frame_end;
+		}
+	}
+}
+
+//=================================================================================================
+void MeshInstance::SaveOptional(StreamWriter& f, MeshInstance* meshInst)
+{
+	if(!meshInst || !meshInst->IsActive())
+		f.Write0();
+	else
+		meshInst->SaveV2(f);
 }
 
 //=================================================================================================
@@ -661,17 +689,73 @@ void MeshInstance::Load(FileReader& f, int version)
 }
 
 //=================================================================================================
+void MeshInstance::LoadV2(StreamReader& f)
+{
+	byte groupCount;
+	f >> groupCount;
+	groups.resize(groupCount);
+
+	if(groupCount == 1u)
+	{
+		MeshInstance::Group& group = groups[0];
+		f >> group.time;
+		f >> group.speed;
+		f >> group.state;
+		const string& animName = f.ReadString1();
+		if(!animName.empty())
+			group.animName = StringPool.Get(animName);
+		f >> group.frame_end;
+		group.used_group = 0;
+		group.prio = 0;
+	}
+	else
+	{
+		for(MeshInstance::Group& group : groups)
+		{
+			f >> group.time;
+			f >> group.speed;
+			f >> group.state;
+			f >> group.prio;
+			f >> group.used_group;
+			const string& animName = f.ReadString1();
+			if(!animName.empty())
+				group.animName = StringPool.Get(animName);
+			f >> group.frame_end;
+		}
+	}
+}
+
+//=================================================================================================
+void MeshInstance::LoadOptional(StreamReader& f, MeshInstance*& meshInst)
+{
+	uint pos = f.GetPos();
+	byte groups = f.Read<byte>();
+	if(groups == 0u)
+		meshInst = nullptr;
+	else
+	{
+		f.SetPos(pos);
+		meshInst = new MeshInstance(nullptr);
+		meshInst->LoadV2(f);
+	}
+}
+
+//=================================================================================================
 void MeshInstance::LoadSimple(FileReader& f)
 {
 	groups.resize(1u);
 	Group& group = groups[0];
 	group.state = f.Read<int>();
+	group.used_group = 0;
+	group.prio = 0;
 	if(group.state != 0)
 	{
-		group.used_group = 0;
 		f >> group.time;
 		f >> group.blend_time;
+		group.animName = StringPool.Get("first");
 	}
+	else
+		group.animName = nullptr;
 }
 
 //=================================================================================================
@@ -691,22 +775,6 @@ void MeshInstance::Write(StreamWriter& f) const
 			f.Write0();
 		f << group.frame_end;
 	}
-}
-
-//=================================================================================================
-void MeshInstance::WriteSimple(StreamWriter& f) const
-{
-	assert(groups.size() == 1u && mesh->anims.size() == 1u);
-
-	const MeshInstance::Group& group = groups[0];
-	if(group.IsActive())
-	{
-		f << (group.state & ~FLAG_BLENDING);
-		f << group.time;
-		f << group.blend_time;
-	}
-	else
-		f << 0;
 }
 
 //=================================================================================================
@@ -760,23 +828,11 @@ bool MeshInstance::Read(StreamReader& f)
 }
 
 //=================================================================================================
-void MeshInstance::ReadSimple(StreamReader& f)
-{
-	groups.resize(1u);
-	Group& group = groups[0];
-	group.state = f.Read<int>();
-	if(group.state != 0)
-	{
-		group.used_group = 0;
-		f >> group.time;
-		f >> group.blend_time;
-	}
-}
-
-//=================================================================================================
-bool MeshInstance::ApplyPreload(Mesh* mesh, bool simple)
+bool MeshInstance::ApplyPreload(Mesh* mesh)
 {
 	assert(mesh
+		&& mesh->IsLoaded()
+		&& mesh->IsAnimated()
 		&& preload
 		&& !this->mesh
 		&& groups.size() == mesh->head.n_groups);
@@ -786,28 +842,24 @@ bool MeshInstance::ApplyPreload(Mesh* mesh, bool simple)
 	mat_bones.resize(mesh->head.n_bones);
 	blendb.resize(mesh->head.n_bones);
 
-	if(simple)
+	for(Group& group : groups)
 	{
-		Group& group = groups[0];
-		if(group.state != 0)
-			group.anim = &mesh->anims[0];
-	}
-	else
-	{
-		for(Group& group : groups)
+		string* name = group.animName;
+		if(name)
 		{
-			string* str = (string*)group.anim;
-			if(str)
+			group.anim = mesh->GetAnimation(name->c_str());
+			if(!group.anim)
 			{
-				group.anim = mesh->GetAnimation(str->c_str());
-				if(!group.anim)
+				if(*name == "first")
+					group.anim = &mesh->anims[0];
+				else
 				{
-					Error("Invalid animation '%s' for mesh '%s'.", str->c_str(), mesh->path.c_str());
-					StringPool.Free(str);
+					Error("Invalid animation '%s' for mesh '%s'.", name->c_str(), mesh->path.c_str());
+					StringPool.Free(name);
 					return false;
 				}
-				StringPool.Free(str);
 			}
+			StringPool.Free(name);
 		}
 	}
 

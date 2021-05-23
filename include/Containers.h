@@ -234,6 +234,11 @@ inline T& RandomItem(vector<T>& v)
 {
 	return v[Rand() % v.size()];
 }
+template<typename T>
+inline const T& RandomItem(const vector<T>& v)
+{
+	return v[Rand() % v.size()];
+}
 
 template<typename T>
 inline T RandomItemPop(vector<T>& v)
@@ -345,6 +350,13 @@ struct ObjectPool
 #ifdef CHECK_POOL_LEAKS
 		ObjectPoolLeakManager::instance.Register(e);
 #endif
+		return e;
+	}
+
+	T* Get(const T& val)
+	{
+		T* e = Get();
+		*e = val;
 		return e;
 	}
 

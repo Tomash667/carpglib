@@ -145,7 +145,7 @@ cstring GetFeatureLevelString(int value)
 //=================================================================================================
 void Render::CreateDevice()
 {
-	const int flags = IsDebug() ? D3D11_CREATE_DEVICE_DEBUG : 0;
+	int flags = IsDebug() ? D3D11_CREATE_DEVICE_DEBUG : 0;
 	D3D_FEATURE_LEVEL featureLevel;
 
 	if(forceFeatureLevel != 0)
@@ -153,6 +153,14 @@ void Render::CreateDevice()
 		D3D_FEATURE_LEVEL featureLevels[] = { (D3D_FEATURE_LEVEL)forceFeatureLevel };
 		HRESULT result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags, featureLevels, countof(featureLevels),
 			D3D11_SDK_VERSION, &device, &featureLevel, &deviceContext);
+		if(result == DXGI_ERROR_SDK_COMPONENT_MISSING && flags != 0)
+		{
+			flags = 0;
+			result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags, featureLevels, countof(featureLevels),
+				D3D11_SDK_VERSION, &device, &featureLevel, &deviceContext);
+			if(SUCCEEDED(result))
+				Warn("Render: Failed to create device with debug mode.");
+		}
 		if(FAILED(result))
 		{
 			Warn("Render: Failed to create device in feature level %s (%u). Retrying...", GetFeatureLevelString(forceFeatureLevel), result);
@@ -165,6 +173,14 @@ void Render::CreateDevice()
 		D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };
 		HRESULT result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags, featureLevels, countof(featureLevels),
 			D3D11_SDK_VERSION, &device, &featureLevel, &deviceContext);
+		if(result == DXGI_ERROR_SDK_COMPONENT_MISSING && flags != 0)
+		{
+			flags = 0;
+			result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags, featureLevels, countof(featureLevels),
+				D3D11_SDK_VERSION, &device, &featureLevel, &deviceContext);
+			if(SUCCEEDED(result))
+				Warn("Render: Failed to create device with debug mode.");
+		}
 		if(FAILED(result))
 			throw Format("Render: Failed to create device (%u).", result);
 	}
@@ -1004,17 +1020,17 @@ ID3DBlob* Render::CompileShader(ShaderParams& params, bool isVertex)
 //=================================================================================================
 ID3D11InputLayout* Render::CreateInputLayout(VertexDeclarationId decl, ID3DBlob* vsBlob, cstring name)
 {
-	ID3D11InputLayout* layout ;
+	ID3D11InputLayout* layout;
 	VertexDeclaration& vertDecl = VertexDeclaration::decl[(int)decl];
 
-	HRESULT result = device->CreateInputLayout(vertDecl.desc, vertDecl.count, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &layout );
+	HRESULT result = device->CreateInputLayout(vertDecl.desc, vertDecl.count, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &layout);
 	if(FAILED(result))
 		throw Format("Failed to create input layout (%u).", result);
 
 	if(name)
 		SetDebugName(layout, name);
 
-	return layout ;
+	return layout;
 }
 
 //=================================================================================================

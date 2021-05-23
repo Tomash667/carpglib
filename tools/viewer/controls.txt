@@ -1,0 +1,14 @@
+Esc - quit
+F1 - open mesh
+F2 - toggle details
+Alt+Enter - toggle fullscreen
+Ctrl+U - unlock cursor
+Left/Right - rotate
+Spacebar - play/stop animation
+1 - prev animation
+2 - next animation
+3 - prev frame
+4 - next frame
+Num1 - front/back view (with ctrl)
+Num3 - side view
+Num7 - top/bottom view

@@ -16,6 +16,8 @@ v22.1:
 CONVERTER:
 + return warning information to exporter, check empty animations
 + script to fix animation after import from fbx
+IMPORTER:
++ shared skeleton import fix, remove zero vertex group, fixes
 
 v22:
 MESH (v22):

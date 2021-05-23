@@ -454,6 +454,15 @@ class Qmsh:
 			if point.name == name:
 				return point
 		return None
+	def GetBoneCount(self):
+		if not self.head.IsStatic():
+			return self.head.n_bones;
+		count = 0;
+		for v in self.verts:
+			for i in v.indices:
+				if i > count:
+					count = i
+		return count + 1
 			
 ################################################################################
 class Config:
@@ -599,14 +608,30 @@ class Importer:
 			uvs[i*3+1].uv = mesh.verts[f[1]].tex
 			uvs[i*3+2].uv = mesh.verts[f[2]].tex
 		# vertex groups
-		if len(mesh.bones) > 1 and mesh.head.IsAnimated():
-			for bone in mesh.bones:
-				obj.vertex_groups.new(name=bone.name)
-			i = 0
-			for v in mesh.verts:
-				obj.vertex_groups[v.indices[0]].add([i], v.weights, 'ADD')
-				obj.vertex_groups[v.indices[1]].add([i], 1 - v.weights, 'ADD')
-				i += 1
+		obj_arm = None
+		if mesh.head.IsAnimated():
+			ok = True
+			if mesh.head.IsStatic():
+				bone_count = mesh.GetBoneCount()
+				obj_arm = self.FindObject('ARMATURE', check=lambda obj : len(obj.data.bones) >= bone_count)
+				if obj_arm is None:
+					ok = False
+					self.Warn('Mesh contains bone weights but armature not found.')
+				else:
+					obj.parent = obj_arm
+					obj.vertex_groups.new(name='zero')
+					for bone in obj_arm.data.bones:
+						obj.vertex_groups.new(name=bone.name)
+			else:
+				for bone in mesh.bones:
+					obj.vertex_groups.new(name=bone.name)
+			if ok:
+				i = 0
+				for v in mesh.verts:
+					obj.vertex_groups[v.indices[0]].add([i], v.weights, 'ADD')
+					obj.vertex_groups[v.indices[1]].add([i], 1 - v.weights, 'ADD')
+					i += 1
+				obj.vertex_groups.remove(obj.vertex_groups[0])
 		# remove broken tris
 		if len(mesh.broken_tris) > 0:
 			bm.clear()
@@ -624,6 +649,7 @@ class Importer:
 			# create skeleton
 			armature = bpy.data.armatures.new(name='Armature')
 			obj_arm = bpy.data.objects.new(name='Armature', object_data=armature)
+			obj.parent = obj_arm
 			self.skeleton = obj_arm
 			bpy.context.scene.objects.link(obj_arm)
 			bpy.context.scene.objects.active = obj_arm
@@ -661,7 +687,8 @@ class Importer:
 			# animations
 			for anim in mesh.anims:
 				self.AddAnimation(anim)
-			# add armature modifier
+		# add armature modifier
+		if obj_arm is not None:
 			bpy.context.scene.objects.active = obj
 			bpy.ops.object.modifier_add(type='ARMATURE')
 			mod = obj.modifiers['Armature']
@@ -681,10 +708,11 @@ class Importer:
 		bpy.context.scene.objects.active = obj
 		bpy.ops.object.editmode_toggle()
 		bpy.ops.mesh.select_all()
-		bpy.ops.mesh.tris_convert_to_quads()
-		bpy.ops.mesh.select_all()
-		bpy.ops.mesh.tris_convert_to_quads()
+		bpy.ops.mesh.tris_convert_to_quads(uvs=True)
 		bpy.ops.object.editmode_toggle()
+		# set smooth shading
+		for p in obj.data.polygons:
+			p.use_smooth = True
 		# fix forward rotation
 		if mesh.head.version >= 23:
 			orig_mode = obj.rotation_mode
@@ -862,12 +890,12 @@ class Importer:
 		cam.location = self.mesh.head.cam_pos
 		cam.rotation_mode = 'QUATERNION'
 		cam.rotation_quaternion = QuaternionLookRotation(self.mesh.head.cam_pos, self.mesh.head.cam_target, self.mesh.head.cam_up)
-	def FindObject(self, type, name = None):
+	def FindObject(self, type, name = None, check = None):
 		for obj in bpy.context.selected_objects:
-			if obj.type == type and (name is None or obj.name == name):
+			if obj.type == type and (name is None or obj.name == name) and (check is None or check(obj)):
 				return obj
 		for obj in bpy.context.scene.objects:
-			if obj.type == type and (name is None or obj.name == name):
+			if obj.type == type and (name is None or obj.name == name) and (check is None or check(obj)):
 				return obj
 		return None
 	def SetResolution(self):
@@ -896,7 +924,7 @@ class QmshImporterOperator(bpy.types.Operator, ImportHelper):
 	config = Config()
 	
 	loadImages = BoolProperty(name="Load images", default=config.loadImages)
-	imagesPath = StringProperty(name="Converter path", default=config.imagesPath)
+	imagesPath = StringProperty(name="Images path", default=config.imagesPath)
 	setResolution = BoolProperty(name='Set resolution', default=config.setResolution)
 	useMerge = BoolProperty(name="Use merge", default=False)
 	mergeScript = StringProperty(name="Merge script")
