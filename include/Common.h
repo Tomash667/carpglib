@@ -18,6 +18,7 @@ struct PhysicsDrawer;
 struct PostEffect;
 struct Scene;
 struct SceneBatch;
+struct SceneCallback;
 struct SceneNode;
 struct SceneNodeGroup;
 struct SimpleMesh;
@@ -65,12 +66,14 @@ typedef VertexData* VertexDataPtr;
 // Gui types
 struct AreaLayout;
 struct Notification;
+union Cell;
 class Button;
 class CheckBox;
 class Container;
 class Control;
 class DialogBox;
 class DrawBox;
+class Grid;
 class GuiDialog;
 class GuiElement;
 class Label;
@@ -89,6 +92,7 @@ class TreeView;
 // Windows types
 struct HWND__;
 struct _GUID;
+typedef void* HANDLE;
 typedef HWND__* HWND;
 typedef _GUID GUID;
 

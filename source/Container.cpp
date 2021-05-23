@@ -11,8 +11,11 @@ Container::~Container()
 //=================================================================================================
 void Container::Add(Control* ctrl)
 {
-	assert(ctrl);
+	assert(ctrl && ctrl != this);
 	ctrl->parent = this;
+	ctrl->global_pos = global_pos + ctrl->pos;
+	if(disabled)
+		ctrl->SetDisabled(true);
 	ctrls.push_back(ctrl);
 	inside_loop = false;
 
@@ -152,6 +155,10 @@ void Container::Event(GuiEvent e)
 				c->Event(GuiEvent_Moved);
 			}
 			break;
+		default:
+			if(e >= GuiEvent_Custom)
+				parent->Event(e);
+			break;
 		}
 	}
 	else if(e == GuiEvent_WindowResize)
@@ -201,4 +208,15 @@ void Container::Remove(Control* ctrl)
 		RemoveElementOrder(ctrls, ctrl);
 
 	inside_loop = false;
+}
+
+//=================================================================================================
+Control* Container::HitTest()
+{
+	for(Control* ctrl : ctrls)
+	{
+		if(ctrl->visible && ctrl->IsInside(gui->cursor_pos))
+			return ctrl;
+	}
+	return nullptr;
 }

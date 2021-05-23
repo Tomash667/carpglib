@@ -32,8 +32,8 @@ public:
 		F_ON_CHAR_HANDLER = 1 << 1
 	};
 
-	Control(bool is_new = false) : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false),
-		initialized(false), is_new(is_new), disabled(false), flags(0) {}
+	explicit Control(bool is_new = false) : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false),
+		focusable(false), initialized(false), is_new(is_new), disabled(false), flags(0) {}
 	virtual ~Control() {}
 
 	static Gui* gui;
@@ -105,6 +105,15 @@ public:
 		}
 	}
 
+	void Show(bool visible)
+	{
+		if(this->visible != visible)
+		{
+			this->visible = visible;
+			Event(visible ? GuiEvent_Show : GuiEvent_Hide);
+		}
+	}
+
 	void Hide()
 	{
 		if(visible)
@@ -119,7 +128,9 @@ public:
 	const Int2& GetSize() const { return size; }
 	void Initialize();
 	void SetSize(const Int2& size);
+	void SetSize(int w, int h) { SetSize(Int2(w, h)); }
 	void SetPosition(const Int2& pos);
+	void SetPosition(int x, int y) { SetPosition(Int2(x, y)); }
 	void SetDocked(bool docked);
 	void TakeFocus(bool pressed = false);
 	void SetFocus();

@@ -6,13 +6,16 @@
 #include "Render.h"
 
 //=================================================================================================
-PhysicsDrawer::PhysicsDrawer() : shader(app::render->GetShader<BasicShader>())
+PhysicsDrawer::PhysicsDrawer() : shader(app::render->GetShader<BasicShader>()), enabled(false)
 {
 }
 
 //=================================================================================================
 void PhysicsDrawer::Draw(Camera& camera)
 {
+	if(!enabled)
+		return;
+
 	shader->Prepare(camera);
 	app::render->SetDepthState(Render::DEPTH_NO);
 

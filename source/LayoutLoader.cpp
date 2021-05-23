@@ -381,6 +381,10 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("tex_down", Entry::AreaLayout, offsetof(layout::Button, tex[Button::DOWN]));
 	c->AddEntry("tex_disabled", Entry::AreaLayout, offsetof(layout::Button, tex[Button::DISABLED]));
 	c->AddEntry("font", Entry::Font, offsetof(layout::Button, font));
+	c->AddEntry("font_color", Entry::Color, offsetof(layout::Button, font_color[Button::NONE]));
+	c->AddEntry("font_color_hover", Entry::Color, offsetof(layout::Button, font_color[Button::HOVER]));
+	c->AddEntry("font_color_down", Entry::Color, offsetof(layout::Button, font_color[Button::DOWN]));
+	c->AddEntry("font_color_disabled", Entry::Color, offsetof(layout::Button, font_color[Button::DISABLED]));
 	c->AddEntry("padding", Entry::Int, offsetof(layout::Button, padding));
 
 	c = AddControl<layout::CheckBox>("CheckBox");
@@ -431,6 +435,8 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("selection", Entry::AreaLayout, offsetof(layout::ListBox, selection));
 	c->AddEntry("down_arrow", Entry::Image, offsetof(layout::ListBox, down_arrow));
 	c->AddEntry("font", Entry::Font, offsetof(layout::ListBox, font));
+	c->AddEntry("font_color", Entry::Color, offsetof(layout::ListBox, font_color[0]));
+	c->AddEntry("font_color_selected", Entry::Color, offsetof(layout::ListBox, font_color[1]));
 	c->AddEntry("auto_padding", Entry::Int, offsetof(layout::ListBox, auto_padding));
 
 	c = AddControl<layout::MenuBar>("MenuBar");
@@ -456,6 +462,8 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("font", Entry::Font, offsetof(layout::MenuStrip, font));
 	c->AddEntry("padding", Entry::Int2, offsetof(layout::MenuStrip, padding));
 	c->AddEntry("item_padding", Entry::Int2, offsetof(layout::MenuStrip, item_padding));
+	c->AddEntry("font_color", Entry::Color, offsetof(layout::MenuStrip, font_color));
+	c->AddEntry("font_color_hover", Entry::Color, offsetof(layout::MenuStrip, font_color_hover));
 	c->AddEntry("font_color_disabled", Entry::Color, offsetof(layout::MenuStrip, font_color_disabled));
 
 	c = AddControl<layout::Notifications>("Notifications");
@@ -514,6 +522,9 @@ void LayoutLoader::RegisterControls()
 	c = AddControl<layout::TextBox>("TextBox");
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::TextBox, background));
 	c->AddEntry("font", Entry::Font, offsetof(layout::TextBox, font));
+	c->AddEntry("font_color", Entry::Color, offsetof(layout::TextBox, font_color));
+	c->AddEntry("selection_color", Entry::Color, offsetof(layout::TextBox, selection_color));
+	c->AddEntry("selection_color_disabled", Entry::Color, offsetof(layout::TextBox, selection_color_disabled));
 
 	c = AddControl<layout::TooltipController>("TooltipController");
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::TooltipController, box));

@@ -60,10 +60,10 @@ public:
 		BACKGROUND
 	};
 
-	Grid();
-
+	explicit Grid(bool isNew = false);
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
+	void Event(GuiEvent e) override;
 
 	void Init();
 	void Move(Int2& global_pos);
@@ -71,7 +71,7 @@ public:
 	void AddColumn(Type type, int width, cstring title = nullptr);
 	void AddItem();
 	void AddItems(int count);
-	void RemoveItem(int id);
+	void RemoveItem(int id, bool keepSelection = false);
 	void Reset();
 
 	vector<Column> columns;

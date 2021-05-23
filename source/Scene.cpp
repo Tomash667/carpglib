@@ -8,7 +8,7 @@
 
 //=================================================================================================
 Scene::Scene() : clear_color(Color::Black), ambient_color(0.4f, 0.4f, 0.4f), light_color(Color::White), fog_color(Color::Gray), use_light_dir(false),
-fog_range(50, 100)
+fog_range(50, 100), skybox(nullptr)
 {
 }
 
@@ -19,12 +19,33 @@ Scene::~Scene()
 }
 
 //=================================================================================================
+void Scene::Remove(SceneNode* node)
+{
+	assert(node);
+	RemoveElement(nodes, node);
+	node->Free();
+}
+
+//=================================================================================================
+void Scene::Detach(SceneNode* node)
+{
+	assert(node);
+	RemoveElement(nodes, node);
+}
+
+//=================================================================================================
+void Scene::Clear()
+{
+	SceneNode::Free(nodes);
+}
+
+//=================================================================================================
 void Scene::ListNodes(SceneBatch& batch)
 {
 	FrustumPlanes frustum(batch.camera->matViewProj);
 	for(SceneNode* node : nodes)
 	{
-		if(node->mesh && frustum.SphereToFrustum(node->center, node->radius))
+		if(node->visible && frustum.SphereToFrustum(node->pos, node->radius))
 		{
 			if(batch.gather_lights)
 				GatherLights(batch, node);
@@ -40,7 +61,7 @@ void Scene::GatherLights(SceneBatch& batch, SceneNode* node)
 
 	for(Light& light : lights)
 	{
-		float dist = Vec3::Distance(node->center, light.pos);
+		float dist = Vec3::Distance(node->pos, light.pos);
 		if(dist < light.range + node->radius)
 			best.Add(&light, dist);
 	}

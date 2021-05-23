@@ -522,6 +522,14 @@ void io::OpenUrl(Cstring url)
 }
 
 //=================================================================================================
+cstring io::GetCurrentDirectory()
+{
+	char* str = GetFormatString();
+	GetCurrentDirectoryA(MAX_PATH, str);
+	return str;
+}
+
+//=================================================================================================
 #ifndef CORE_ONLY
 Buffer* io::Compress(byte* data, uint size)
 {

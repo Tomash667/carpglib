@@ -330,8 +330,8 @@ cstring Escape(Cstring s, char quote)
 	cstring str = s.s;
 	char* out = GetFormatString();
 	char* out_buf = out;
-	cstring from = "\n\t\r";
-	cstring to = "ntr";
+	cstring from = "\n\t\r\\";
+	cstring to = "ntr\\";
 
 	char c;
 	while((c = *str) != 0)
@@ -519,10 +519,10 @@ char CharInStr(char c, cstring chrs)
 cstring ToString(const wchar_t* wstr)
 {
 	assert(wstr);
+
+	char* str = GetFormatString();
 	size_t len;
-	char* str = format_buf[format_marker];
 	wcstombs_s(&len, str, FORMAT_LENGTH, wstr, FORMAT_LENGTH - 1);
-	format_marker = (format_marker + 1) % FORMAT_STRINGS;
 	return str;
 }
 
@@ -531,9 +531,8 @@ const wchar_t* ToWString(cstring str)
 {
 	assert(str);
 	size_t len;
-	wchar_t* wstr = (wchar_t*)format_buf[format_marker];
+	wchar_t* wstr = (wchar_t*)GetFormatString();
 	mbstowcs_s(&len, wstr, FORMAT_LENGTH / 2, str, (FORMAT_LENGTH - 1) / 2);
-	format_marker = (format_marker + 1) % FORMAT_STRINGS;
 	return wstr;
 }
 
@@ -810,4 +809,24 @@ void Utf8ToAscii(string& str)
 	}
 
 	str.resize(str.length() - (end - output));
+}
+
+bool IsIdentifier(Cstring str)
+{
+	cstring s = str;
+	char c;
+	bool ok = false;
+	while((c = *s++) != 0)
+	{
+		if((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_')
+			ok = true;
+		else if(c >= '0' && c <= '9')
+		{
+			if(!ok)
+				return false;
+		}
+		else
+			return false;
+	}
+	return ok;
 }

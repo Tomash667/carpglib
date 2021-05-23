@@ -22,6 +22,7 @@ public:
 	void UnlockCursor(bool lock_on_focus = true);
 	void LockCursor();
 	void HideWindow(bool hide);
+	void ToggleFullscreen() { SetFullscreen(!IsFullscreen()); }
 
 	bool IsActive() const { return active; }
 	bool IsCursorLocked() const { return locked_cursor; }

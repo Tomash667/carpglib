@@ -32,18 +32,18 @@ void TextBox::Draw(ControlDrawData* cdd)
 		Rect r = { global_pos.x + padding, global_pos.y + padding, global_pos.x + size.x - padding, global_pos.y + size.y - padding };
 
 		if(!scrollbar)
-			gui->DrawText(layout->font, txt, multiline ? DTF_TOP : DTF_VCENTER, Color::Black, r);
+			gui->DrawText(layout->font, txt, multiline ? DTF_TOP : DTF_VCENTER, layout->font_color, r);
 		else
 		{
 			Rect r2 = Rect(r) - Int2(0, int(scrollbar->offset));
-			gui->DrawText(layout->font, txt, DTF_TOP, Color::Black, r2, &r);
+			gui->DrawText(layout->font, txt, DTF_TOP, layout->font_color, r2, &r);
 			scrollbar->Draw();
 		}
 
 		if(label)
 		{
 			r.Top() -= 20;
-			gui->DrawText(layout->font, label, 0, Color::Black, r);
+			gui->DrawText(layout->font, label, 0, layout->font_color, r);
 		}
 	}
 	else
@@ -70,7 +70,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 		// selected
 		if(select_start_index != NOT_SELECTED && select_start_index != select_end_index)
 		{
-			Color color = (readonly ? Color(100, 100, 100, 128) : Color(0, 148, 255, 128));
+			Color color = ((readonly || disabled) ? layout->selection_color_disabled : layout->selection_color);
 			int select_start_line = select_start_pos.y / line_height;
 			int select_end_line = select_end_pos.y / line_height;
 			int lines = select_end_line - select_start_line + 1;
@@ -139,10 +139,10 @@ void TextBox::Draw(ControlDrawData* cdd)
 		};
 		Rect area = Rect::Intersect(r, rclip);
 		int draw_flags = (multiline ? DTF_LEFT : DTF_VCENTER | DTF_SINGLELINE);
-		gui->DrawText(layout->font, text, draw_flags, Color::Black, r, &area);
+		gui->DrawText(layout->font, text, draw_flags, layout->font_color, r, &area);
 
 		// carret
-		if(caret_blink >= 0.f)
+		if(caret_blink >= 0.f && !readonly && !disabled)
 		{
 			Int2 p(global_pos.x + padding + caret_pos.x - offset, global_pos.y + padding + caret_pos.y - offsety);
 			Rect caret_rect = {
@@ -153,7 +153,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 			};
 			Rect caret_rect_clip;
 			if(Rect::Intersect(caret_rect, rclip, caret_rect_clip))
-				gui->DrawArea(Color::Black, caret_rect_clip.LeftTop(), caret_rect_clip.Size());
+				gui->DrawArea(layout->font_color, caret_rect_clip.LeftTop(), caret_rect_clip.Size());
 		}
 
 		if(require_scrollbar)
@@ -191,7 +191,7 @@ void TextBox::Update(float dt)
 				last_y_move = -1;
 
 				// double click select whole word
-				if(gui->DoubleClick(Key::LeftButton) && !input->Down(Key::Shift) && prev_index == caret_index)
+				if(gui->DoubleClick(Key::LeftButton) && !input->Down(Key::Shift) && prev_index == caret_index && char_index != 0xFFFFFFFF)
 				{
 					cstring whitespace = " \t\n\r";
 					char c = text[char_index];
@@ -509,7 +509,7 @@ void TextBox::Update(float dt)
 			}
 
 			// paste
-			if(!readonly && input->Shortcut(KEY_CONTROL, Key::V))
+			if(!readonly && !disabled && input->Shortcut(KEY_CONTROL, Key::V))
 			{
 				cstring clipboard = gui->GetClipboard();
 				if(clipboard)
@@ -535,7 +535,7 @@ void TextBox::Update(float dt)
 			}
 
 			// cut
-			if(!readonly && select_start_index != NOT_SELECTED && input->Shortcut(KEY_CONTROL, Key::X))
+			if(!readonly && !disabled && select_start_index != NOT_SELECTED && input->Shortcut(KEY_CONTROL, Key::X))
 			{
 				uint start = ToRawIndex(select_start_index);
 				uint end = ToRawIndex(select_end_index);
@@ -575,7 +575,7 @@ void TextBox::Event(GuiEvent e)
 		{
 			if(!is_new)
 				caret_blink = 0.f;
-			if(!readonly)
+			if(!readonly && !disabled)
 				gui->AddOnCharHandler(this);
 			added = true;
 		}
@@ -585,7 +585,7 @@ void TextBox::Event(GuiEvent e)
 		{
 			select_start_index = NOT_SELECTED;
 			caret_blink = -1.f;
-			if(!readonly)
+			if(!readonly && !disabled)
 				gui->RemoveOnCharHandler(this);
 			added = false;
 			down = false;
@@ -943,7 +943,7 @@ Int2 TextBox::IndexToPos(const Int2& index)
 }
 
 //=================================================================================================
-void TextBox::SetText(cstring new_text)
+void TextBox::SetText(Cstring new_text)
 {
 	if(new_text)
 		text = new_text;
