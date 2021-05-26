@@ -21,6 +21,7 @@
 
 #undef CreateFont
 #undef CreateDirectory
+#undef DeleteFile
 #undef DialogBox
 #undef DrawText
 #undef GetCurrentDirectory

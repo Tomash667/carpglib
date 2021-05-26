@@ -333,6 +333,14 @@ bool io::FileExists(cstring filename)
 }
 
 //=================================================================================================
+bool io::DeleteFile(cstring filename)
+{
+	assert(filename);
+
+	return DeleteFileA(filename) != 0;
+}
+
+//=================================================================================================
 FileTime io::GetFileTime(cstring filename)
 {
 	assert(filename);

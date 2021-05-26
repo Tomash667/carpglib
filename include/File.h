@@ -20,6 +20,7 @@ namespace io
 	bool DirectoryExists(cstring dir);
 	// Check if file exists.
 	bool FileExists(cstring filename);
+	bool DeleteFile(cstring filename);
 	FileTime GetFileTime(cstring filename);
 	void MoveFile(cstring filename, cstring new_filename);
 	// Find files matching pattern, return false from func to stop.
