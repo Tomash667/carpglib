@@ -84,7 +84,7 @@ private:
 
 //=================================================================================================
 SoundManager::SoundManager() : system(nullptr), handler(nullptr), device(Guid::Empty), newDevice(Guid::Empty), current_music(nullptr), music_ended(false),
-nosound(false), nomusic(false), sound_volume(50), music_volume(50)
+nosound(false), nomusic(false), sound_volume(50), music_volume(50), music_loop(true)
 {
 }
 
@@ -247,7 +247,16 @@ void SoundManager::Update(float dt)
 		bool playing;
 		current_music->isPlaying(&playing);
 		if(!playing)
-			music_ended = true;
+		{
+			if(music_loop)
+			{
+				FMOD::Sound* sound;
+				current_music->getCurrentSound(&sound);
+				system->playSound(sound, group_music, false, &current_music);
+			}
+			else
+				music_ended = true;
+		}
 	}
 
 	system->update();

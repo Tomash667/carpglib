@@ -19,6 +19,7 @@ public:
 	void SetListenerPosition(const Vec3& pos, const Vec3& dir, const Vec3& up = Vec3(0, 1, 0));
 	void SetSoundVolume(int volume);
 	void SetMusicVolume(int volume);
+	void SetMusicLoop(bool music_loop) { this->music_loop = music_loop; }
 	void SetDevice(Guid device);
 	bool UpdateChannelPosition(FMOD::Channel* channel, const Vec3& pos);
 
@@ -27,6 +28,7 @@ public:
 	bool IsSoundDisabled() const { return nosound; }
 	bool IsMusicDisabled() const { return nomusic; }
 	bool IsMusicEnded() const { return music_ended; }
+	bool IsMusicLoop() const { return music_loop; }
 	bool CanPlaySound() const { return play_sound; }
 	int GetSoundVolume() const { return sound_volume; }
 	int GetMusicVolume() const { return music_volume; }
@@ -46,5 +48,5 @@ private:
 	CriticalSection criticalSection;
 	Guid device, defaultDevice, newDevice;
 	int sound_volume, music_volume; // 0-100
-	bool initialized, music_ended, disabled_sound, play_sound, nosound, nomusic;
+	bool initialized, music_ended, disabled_sound, play_sound, nosound, nomusic, music_loop;
 };
