@@ -557,6 +557,7 @@ struct Rect
 	Rect();
 	Rect(int x, int y);
 	Rect(int x1, int y1, int x2, int y2);
+	Rect(const Int2& p);
 	Rect(const Int2& p1, const Int2& p2);
 	Rect(const Rect& box);
 	explicit Rect(const Box2d& box);
@@ -609,6 +610,7 @@ struct Rect
 	Rect LeftBottomPart() const;
 	Rect LeftTopPart() const;
 	Int2 Random() const;
+	void Resize(const Int2& p);
 	void Resize(const Rect& r);
 	Rect RightBottomPart() const;
 	Rect RightTopPart() const;

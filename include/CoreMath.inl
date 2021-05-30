@@ -260,6 +260,10 @@ inline Rect::Rect(int x1, int y1, int x2, int y2) : p1(x1, y1), p2(x2, y2)
 {
 }
 
+inline Rect::Rect(const Int2& p) : p1(p), p2(p)
+{
+}
+
 inline Rect::Rect(const Int2& p1, const Int2& p2) : p1(p1), p2(p2)
 {
 }
@@ -383,6 +387,18 @@ inline Rect Rect::LeftTopPart() const
 inline Int2 Rect::Random() const
 {
 	return Int2(::Random(p1.x, p2.x), ::Random(p1.y, p2.y));
+}
+
+inline void Rect::Resize(const Int2& p)
+{
+	if(p.x < p1.x)
+		p1.x = p.x;
+	else if(p.x > p2.x)
+		p2.x = p.x;
+	if(p.y < p1.y)
+		p1.y = p.y;
+	else if(p.y > p2.y)
+		p2.y = p.y;
 }
 
 inline void Rect::Resize(const Rect& r)
