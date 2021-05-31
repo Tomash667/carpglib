@@ -2,6 +2,8 @@
 #include "App.h"
 
 #include "Engine.h"
+#include "Input.h"
+#include "Render.h"
 
 //-----------------------------------------------------------------------------
 App* app::app;
@@ -23,4 +25,25 @@ App::~App()
 bool App::Start()
 {
 	return app::engine->Start();
+}
+
+//=================================================================================================
+void App::OnDraw()
+{
+	app::render->Clear(Color::Blue);
+	app::render->Present();
+}
+
+//=================================================================================================
+void App::OnUpdate(float dt)
+{
+	if(app::input->Shortcut(KEY_ALT, Key::F4))
+	{
+		app::engine->Shutdown();
+		return;
+	}
+	if(app::input->Shortcut(KEY_ALT, Key::Enter))
+		app::engine->ToggleFullscreen();
+	if(app::input->Shortcut(KEY_CONTROL, Key::U))
+		app::engine->UnlockCursor();
 }

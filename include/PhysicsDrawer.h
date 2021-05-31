@@ -1,14 +1,13 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "SceneCallback.h"
 #include <LinearMath\btIDebugDraw.h>
 
 //-----------------------------------------------------------------------------
-struct PhysicsDrawer : public SceneCallback, public btIDebugDraw
+struct PhysicsDrawer : public btIDebugDraw
 {
 	PhysicsDrawer();
-	void Draw(Camera& camera) override;
+	void Draw(Camera& camera);
 
 	void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override;
 	void drawLine(const btVector3& from, const btVector3& to, const btVector3& fromColor, const btVector3& toColor) override
@@ -22,5 +21,4 @@ struct PhysicsDrawer : public SceneCallback, public btIDebugDraw
 	int getDebugMode() const override { return DBG_DrawWireframe; }
 
 	BasicShader* shader;
-	bool enabled;
 };

@@ -168,7 +168,7 @@ void Engine::DoTick(bool update_game)
 	app::gui->Update(dt, 1.f);
 	app::input->UpdateMouseWheel(0);
 
-	app::scene_mgr->Draw();
+	app::app->OnDraw();
 	app::input->Update();
 	app::sound_mgr->Update(dt);
 }
