@@ -2,6 +2,7 @@
 #include "App.h"
 
 #include "Engine.h"
+#include "Gui.h"
 #include "Input.h"
 #include "Render.h"
 
@@ -32,6 +33,12 @@ void App::OnDraw()
 {
 	app::render->Clear(Color::Blue);
 	app::render->Present();
+}
+
+//=================================================================================================
+void App::OnResize()
+{
+	app::gui->OnResize();
 }
 
 //=================================================================================================
