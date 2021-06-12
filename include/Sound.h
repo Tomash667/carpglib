@@ -26,3 +26,14 @@ struct Music : public Resource
 	{
 	}
 };
+
+//-----------------------------------------------------------------------------
+struct MusicList
+{
+	vector<Music*> musics;
+
+	bool IsLoaded() const
+	{
+		return musics.empty() || musics[0]->IsLoaded();
+	}
+};

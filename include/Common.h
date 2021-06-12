@@ -51,6 +51,7 @@ class TerrainShader;
 struct Font;
 struct Mesh;
 struct Music;
+struct MusicList;
 struct Resource;
 struct Sound;
 struct Texture;

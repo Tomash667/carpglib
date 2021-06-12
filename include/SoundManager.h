@@ -8,43 +8,49 @@ public:
 	SoundManager();
 	~SoundManager();
 	void Init();
-	void Disable(bool nosound, bool nomusic);
+	void Disable(bool noSound, bool noMusic);
 	void Update(float dt);
 	int LoadSound(Sound* sound);
 	void PlayMusic(Music* music);
+	void PlayMusic(MusicList* musicList, bool delayed = false);
 	void PlaySound2d(Sound* sound);
 	void PlaySound3d(Sound* sound, const Vec3& pos, float distance);
 	FMOD::Channel* CreateChannel(Sound* sound, const Vec3& pos, float distance);
 	void StopSounds();
-	void SetListenerPosition(const Vec3& pos, const Vec3& dir, const Vec3& up = Vec3(0, 1, 0));
-	void SetSoundVolume(int volume);
-	void SetMusicVolume(int volume);
-	void SetDevice(Guid device);
+	void StopMusic();
 	bool UpdateChannelPosition(FMOD::Channel* channel, const Vec3& pos);
 
 	bool IsPlaying(FMOD::Channel* channel);
-	bool IsDisabled() const { return disabled_sound; }
-	bool IsSoundDisabled() const { return nosound; }
-	bool IsMusicDisabled() const { return nomusic; }
-	bool IsMusicEnded() const { return music_ended; }
-	bool CanPlaySound() const { return play_sound; }
-	int GetSoundVolume() const { return sound_volume; }
-	int GetMusicVolume() const { return music_volume; }
+	bool IsDisabled() const { return disabledSound; }
+	bool IsSoundDisabled() const { return noSound; }
+	bool IsMusicDisabled() const { return noMusic; }
+	bool IsMusicEnded() const { return musicEnded; }
+	bool CanPlaySound() const { return playSound; }
+	int GetSoundVolume() const { return soundVolume; }
+	int GetMusicVolume() const { return musicVolume; }
 	const Guid& GetDevice() const { return device; }
 	void GetDevices(vector<pair<Guid, string>>& devices) const;
+	void SetListenerPosition(const Vec3& pos, const Vec3& dir, const Vec3& up = Vec3::Up);
+	void SetSoundVolume(int volume);
+	void SetMusicVolume(int volume);
+	void SetDevice(Guid device);
 
 private:
 	void HandleDefaultDeviceChange(const Guid& device);
+	void SetupMusics();
 
 	FMOD::System* system;
-	FMOD::ChannelGroup* group_default, *group_music;
-	FMOD::Channel* current_music;
+	FMOD::ChannelGroup* groupDefault, *groupMusic;
+	FMOD::Channel* currentMusic;
+	MusicList* musicList;
+	Music* lastMusic;
 	DefaultDeviceHandler* handler;
-	vector<FMOD::Channel*> playing_sounds;
+	vector<FMOD::Channel*> playingSounds;
 	vector<FMOD::Channel*> fallbacks;
-	vector<Buffer*> sound_bufs;
+	vector<Music*> musics;
+	vector<Buffer*> soundBufs;
 	CriticalSection criticalSection;
 	Guid device, defaultDevice, newDevice;
-	int sound_volume, music_volume; // 0-100
-	bool initialized, music_ended, disabled_sound, play_sound, nosound, nomusic;
+	int soundVolume, musicVolume;
+	bool initialized, musicEnded, disabledSound, playSound, noSound, noMusic;
 };
