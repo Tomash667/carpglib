@@ -81,7 +81,6 @@
     <ClInclude Include="include\PickFileDialog.h" />
     <ClInclude Include="include\PickItemDialog.h" />
     <ClInclude Include="include\PostfxShader.h" />
-    <ClInclude Include="include\Profiler.h" />
     <ClInclude Include="include\QuadTree.h" />
     <ClInclude Include="include\Render.h" />
     <ClInclude Include="include\RenderTarget.h" />
@@ -179,7 +178,6 @@
     <ClCompile Include="source\PickFileDialog.cpp" />
     <ClCompile Include="source\PickItemDialog.cpp" />
     <ClCompile Include="source\PostfxShader.cpp" />
-    <ClCompile Include="source\Profiler.cpp" />
     <ClCompile Include="source\Render.cpp" />
     <ClCompile Include="source\RenderTarget.cpp" />
     <ClCompile Include="source\Resource.cpp" />

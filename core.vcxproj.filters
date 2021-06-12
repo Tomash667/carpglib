@@ -31,9 +31,6 @@
     <ClCompile Include="source\Logger.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="source\Profiler.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="source\Text.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -83,9 +80,6 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="include\Perlin.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Profiler.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="include\QuadTree.h">

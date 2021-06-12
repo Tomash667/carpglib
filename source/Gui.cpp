@@ -9,7 +9,6 @@
 #include "GuiShader.h"
 #include "Input.h"
 #include "Layout.h"
-#include "Profiler.h"
 #include "Render.h"
 #include "ResourceManager.h"
 #include "WindowsIncludes.h"
@@ -741,8 +740,6 @@ void Gui::DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, 
 //=================================================================================================
 void Gui::Draw(bool draw_layers, bool draw_dialogs)
 {
-	PROFILER_BLOCK("DrawGui");
-
 	wnd_size = app::engine->GetClientSize();
 
 	if(!draw_layers && !draw_dialogs)
@@ -910,8 +907,6 @@ void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Colo
 //=================================================================================================
 void Gui::Update(float dt, float mouse_speed)
 {
-	PROFILER_BLOCK("UpdateGui");
-
 	// update cursor
 	cursor_mode = CURSOR_NORMAL;
 	mouse_wheel = app::input->GetMouseWheel();

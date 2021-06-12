@@ -26,7 +26,6 @@
     <ClInclude Include="include\Logger.h" />
     <ClInclude Include="include\Pch.h" />
     <ClInclude Include="include\Perlin.h" />
-    <ClInclude Include="include\Profiler.h" />
     <ClInclude Include="include\QuadTree.h" />
     <ClInclude Include="include\Text.h" />
     <ClInclude Include="include\Timer.h" />
@@ -51,7 +50,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="source\Profiler.cpp" />
     <ClCompile Include="source\Text.cpp" />
     <ClCompile Include="source\Timer.cpp" />
     <ClCompile Include="source\Tokenizer.cpp" />

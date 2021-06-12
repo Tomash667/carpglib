@@ -34,9 +34,6 @@
     <ClInclude Include="include\Logger.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="include\Profiler.h">
-      <Filter>core</Filter>
-    </ClInclude>
     <ClInclude Include="include\Text.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -334,9 +331,6 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="source\Logger.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\Profiler.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="source\Text.cpp">
