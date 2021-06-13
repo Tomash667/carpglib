@@ -885,9 +885,7 @@ ID3D11Buffer* Render::CreateConstantBuffer(uint size, cstring name)
 	if(FAILED(result))
 		throw Format("Failed to create constant buffer (size:%u; code:%u).", size, result);
 
-	if(name)
-		SetDebugName(buffer, name);
-
+	SetDebugName(buffer, name);
 	return buffer;
 }
 
@@ -1035,9 +1033,7 @@ ID3D11InputLayout* Render::CreateInputLayout(VertexDeclarationId decl, ID3DBlob*
 	if(FAILED(result))
 		throw Format("Failed to create input layout (%u).", result);
 
-	if(name)
-		SetDebugName(layout, name);
-
+	SetDebugName(layout, name);
 	return layout;
 }
 

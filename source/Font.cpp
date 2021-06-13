@@ -460,7 +460,7 @@ Int2 Font::IndexToPos(uint expected_index, Cstring str, int limit_width, int fla
 	while(true)
 	{
 		int line_width;
-		bool ok = SplitLine(line_begin, line_end, line_width, index, text, text_end, flags, limit_width);
+		[[maybe_unused]] bool ok = SplitLine(line_begin, line_end, line_width, index, text, text_end, flags, limit_width);
 		assert(ok);
 		if(expected_index >= line_begin && expected_index <= line_end)
 		{
@@ -527,7 +527,7 @@ Int2 Font::IndexToPos(const Int2& expected_index, Cstring str, int limit_width, 
 	while(true)
 	{
 		int line_width;
-		bool ok = SplitLine(line_begin, line_end, line_width, index, text, text_end, flags, limit_width);
+		[[maybe_unused]] bool ok = SplitLine(line_begin, line_end, line_width, index, text, text_end, flags, limit_width);
 		assert(ok);
 		if(line == expected_index.y)
 		{

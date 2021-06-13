@@ -193,7 +193,7 @@ void SoundManager::Init()
 
 	// register change default device handler
 	IMMDeviceEnumerator* enumerator;
-	HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_INPROC_SERVER, __uuidof(IMMDeviceEnumerator), (void**)&enumerator);
+	[[maybe_unused]] HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_INPROC_SERVER, __uuidof(IMMDeviceEnumerator), (void**)&enumerator);
 	assert(SUCCEEDED(hr));
 	criticalSection.Create();
 	handler = new DefaultDeviceHandler(enumerator);

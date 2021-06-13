@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG
 #	define V(x) assert(SUCCEEDED(x))
-#	define SetDebugName(res, name) { cstring n = (name); (res)->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(n), n); }
+#	define SetDebugName(res, name) do { cstring n = (name); if(n) (res)->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(n), n); } while(0)
 #else
 #	define V(x) (x)
 #	define SetDebugName(res, name)
