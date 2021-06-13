@@ -333,6 +333,14 @@ bool io::FileExists(cstring filename)
 }
 
 //=================================================================================================
+bool io::DeleteFile(cstring filename)
+{
+	assert(filename);
+
+	return DeleteFileA(filename) != 0;
+}
+
+//=================================================================================================
 FileTime io::GetFileTime(cstring filename)
 {
 	assert(filename);
@@ -519,6 +527,14 @@ string io::PathToDirectory(Cstring path)
 void io::OpenUrl(Cstring url)
 {
 	ShellExecute(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
+}
+
+//=================================================================================================
+cstring io::GetCurrentDirectory()
+{
+	char* str = GetFormatString();
+	GetCurrentDirectoryA(MAX_PATH, str);
+	return str;
 }
 
 //=================================================================================================

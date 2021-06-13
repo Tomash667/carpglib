@@ -355,7 +355,7 @@ float ShortestArc(float a, float b);
 // Linear interpolation between two angles
 void LerpAngle(float& angle, float from, float to, float t);
 
-void AdjustAngle(float& angle, float expected, float max_diff);
+void AdjustAngle(float& angle, float expected, float max_dif);
 
 // Return true if value is in range
 template<typename T>
@@ -804,6 +804,8 @@ struct Vec3 : XMFLOAT3
 	Vec3& Normalize();
 	void Normalize(Vec3& result) const;
 	Vec3 Normalized() const;
+	bool Parse(cstring str);
+	cstring ToString() const;
 	Vec2 XY() const;
 	Vec2 XZ() const;
 

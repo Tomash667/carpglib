@@ -1,17 +1,12 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "MeshShape.h"
+
+//-----------------------------------------------------------------------------
 struct DebugNode : public ObjectPoolProxy<DebugNode>
 {
-	enum Mesh
-	{
-		None = -1,
-		Box,
-		Sphere,
-		Capsule,
-		Cylinder,
-		TriMesh
-	} mesh;
+	MeshShape shape;
 	Color color;
 	Matrix mat;
 	SimpleMesh* trimesh;

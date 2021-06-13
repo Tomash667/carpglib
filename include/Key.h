@@ -1,5 +1,6 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 enum class Key : byte
 {
 	None = 0x00,
@@ -117,6 +118,15 @@ enum class Key : byte
 	Max = 0xFF
 };
 
+//-----------------------------------------------------------------------------
+enum ShortcutKey
+{
+	KEY_SHIFT = 1 << 0,
+	KEY_CONTROL = 1 << 1,
+	KEY_ALT = 1 << 2
+};
+
+//-----------------------------------------------------------------------------
 inline Key operator + (Key k, int offset)
 {
 	return (Key)((int)k + offset);

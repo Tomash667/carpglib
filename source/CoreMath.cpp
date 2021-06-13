@@ -248,13 +248,13 @@ void LerpAngle(float& angle, float from, float to, float t)
 	angle = from + t * (to - from);
 }
 
-void AdjustAngle(float& angle, float expected, float max_diff)
+void AdjustAngle(float& angle, float expected, float max_dif)
 {
 	float diff = AngleDiff(angle, expected);
-	if(diff <= max_diff)
+	if(diff <= max_dif)
 		angle = expected;
 	else
-		angle = Clip(angle + ShortestArc(angle, expected) * max_diff);
+		angle = Clip(angle + ShortestArc(angle, expected) * max_dif);
 }
 
 bool CircleToRectangle(float circlex, float circley, float radius, float rectx, float recty, float w, float h)
@@ -280,6 +280,16 @@ bool CircleToRectangle(float circlex, float circley, float radius, float rectx, 
 	float dy = dist_y - h;
 
 	return (dx*dx + dy * dy) <= (radius*radius);
+}
+
+bool Vec3::Parse(cstring str)
+{
+	return sscanf_s(str, "%g; %g; %g", &x, &y, &z) == 3;
+}
+
+cstring Vec3::ToString() const
+{
+	return Format("%g; %g; %g", x, y, z);
 }
 
 bool Box2d::IsFullyInside(const Vec2& v, float r) const

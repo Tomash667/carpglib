@@ -10,7 +10,7 @@ class Container : public Control
 {
 	friend class Gui;
 public:
-	Container(bool new_mode = false) : Control(new_mode), auto_focus(false), focus_top(false), dont_focus(false), new_mode(new_mode)
+	explicit Container(bool new_mode = false) : Control(new_mode), auto_focus(false), focus_top(false), dont_focus(false), new_mode(new_mode)
 	{
 		focusable = true;
 	}

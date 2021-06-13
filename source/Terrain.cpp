@@ -72,15 +72,15 @@ void Terrain::Init(const Options& o)
 
 	h = new float[width2];
 	parts = new Part[n_parts2];
-	Vec3 diff = box.v2 - box.v1;
-	diff /= float(n_parts);
-	diff.y = 0;
+	Vec3 dif = box.v2 - box.v1;
+	dif /= float(n_parts);
+	dif.y = 0;
 	for(uint z = 0; z < n_parts; ++z)
 	{
 		for(uint x = 0; x < n_parts; ++x)
 		{
-			parts[x + z * n_parts].box.v1 = box.v1 + Vec3(diff.x * x, 0, diff.z * z);
-			parts[x + z * n_parts].box.v2 = parts[x + z * n_parts].box.v1 + diff;
+			parts[x + z * n_parts].box.v1 = box.v1 + Vec3(dif.x * x, 0, dif.z * z);
+			parts[x + z * n_parts].box.v2 = parts[x + z * n_parts].box.v1 + dif;
 		}
 	}
 

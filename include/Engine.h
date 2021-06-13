@@ -15,6 +15,7 @@ public:
 	~Engine();
 
 	void DoPseudotick(bool msg_only = false);
+	void RestoreFocus();
 	void Shutdown();
 	void FatalError(cstring err);
 	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);
@@ -22,6 +23,7 @@ public:
 	void UnlockCursor(bool lock_on_focus = true);
 	void LockCursor();
 	void HideWindow(bool hide);
+	void ToggleFullscreen() { SetFullscreen(!IsFullscreen()); }
 
 	bool IsActive() const { return active; }
 	bool IsCursorLocked() const { return locked_cursor; }

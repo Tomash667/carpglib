@@ -20,6 +20,7 @@ namespace io
 	bool DirectoryExists(cstring dir);
 	// Check if file exists.
 	bool FileExists(cstring filename);
+	bool DeleteFile(cstring filename);
 	FileTime GetFileTime(cstring filename);
 	void MoveFile(cstring filename, cstring new_filename);
 	// Find files matching pattern, return false from func to stop.
@@ -36,6 +37,8 @@ namespace io
 	void Crypt(char* inp, uint inplen, cstring key, uint keylen);
 	// open url in default web browser
 	void OpenUrl(Cstring url);
+	// get current directory
+	cstring GetCurrentDirectory();
 
 #ifndef CORE_ONLY
 	// Compress data to buffer

@@ -3,14 +3,6 @@
 #include "Key.h"
 
 //-----------------------------------------------------------------------------
-enum ShortcutKey
-{
-	KEY_SHIFT = 1 << 0,
-	KEY_CONTROL = 1 << 1,
-	KEY_ALT = 1 << 2
-};
-
-//-----------------------------------------------------------------------------
 // Input handling (keyboard & mouse)
 class Input
 {
@@ -109,6 +101,11 @@ public:
 
 	void SetFocus(bool f) { focus = f; }
 	bool Focus() const { return focus; }
+
+	bool IsModifier(int modifier) const
+	{
+		return shortcut_state == modifier;
+	}
 
 	// shortcut, checks if other modifiers are not down
 	// for example: Ctrl+A, shift and alt must not be pressed
