@@ -30,6 +30,7 @@ namespace layout
 	struct Grid : public Control
 	{
 		AreaLayout box;
+		AreaLayout selection;
 		Font* font;
 	};
 }
@@ -53,13 +54,6 @@ public:
 		string title;
 	};
 
-	enum SelectionType
-	{
-		NONE,
-		COLOR,
-		BACKGROUND
-	};
-
 	Grid();
 
 	void Draw(ControlDrawData* cdd = nullptr) override;
@@ -79,8 +73,6 @@ public:
 	GridEvent event;
 	Scrollbar scroll;
 	vector<Texture*> imgset;
-	SelectionType selection_type;
-	Color selection_color;
 	SelectGridEvent select_event;
-	bool single_line;
+	bool allow_select, single_line;
 };

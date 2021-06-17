@@ -411,6 +411,7 @@ void LayoutLoader::RegisterControls()
 
 	c = AddControl<layout::Grid>("Grid");
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::Grid, box));
+	c->AddEntry("selection", Entry::AreaLayout, offsetof(layout::Grid, selection));
 	c->AddEntry("font", Entry::Font, offsetof(layout::Grid, font));
 
 	c = AddControl<layout::Gui>("Gui");

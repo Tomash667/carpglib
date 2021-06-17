@@ -20,18 +20,18 @@ void MenuList::Draw(ControlDrawData*)
 {
 	gui->DrawArea(Box2d::Create(global_pos, size), layout->box);
 
+	if(selected != -1)
+	{
+		Rect r2 = { global_pos.x + 4, global_pos.y + 4 + selected * 20, global_pos.x + size.x - 4, global_pos.y + 24 + selected * 20 };
+		gui->DrawArea(Box2d(r2), layout->selection);
+	}
+
 	Rect rect = { global_pos.x + 5, global_pos.y + 5, global_pos.x + size.x - 5, global_pos.y + 25 };
 	for(GuiElement* e : items)
 	{
 		gui->DrawText(layout->font, e->ToString(), DTF_SINGLELINE, Color::Black, rect, &rect);
 		rect.Top() += 20;
 		rect.Bottom() += 20;
-	}
-
-	if(selected != -1)
-	{
-		Rect r2 = { global_pos.x + 4, global_pos.y + 4 + selected * 20, global_pos.x + size.x - 4, global_pos.y + 24 + selected * 20 };
-		gui->DrawArea(Box2d(r2), layout->selection);
 	}
 }
 

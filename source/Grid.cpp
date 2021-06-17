@@ -4,7 +4,7 @@
 #include "Input.h"
 
 //=================================================================================================
-Grid::Grid() : items(0), height(20), selected(-1), selection_type(COLOR), selection_color(Color::White), single_line(false), select_event(nullptr)
+Grid::Grid() : items(0), height(20), selected(-1), allow_select(true), single_line(false), select_event(nullptr)
 {
 }
 
@@ -63,7 +63,7 @@ void Grid::Draw(ControlDrawData*)
 			clip_state = 0;
 
 		// zaznaczenie t³a
-		if(i == selected && selection_type == BACKGROUND)
+		if(i == selected && allow_select)
 		{
 			Rect r2 = { x, y, x + total_width, y + height };
 			if(clip_state == 1)
@@ -71,7 +71,7 @@ void Grid::Draw(ControlDrawData*)
 			else if(clip_state == 2)
 				r2.Bottom() = global_pos.y + size.y;
 			if(r2.Top() < r2.Bottom())
-				gui->DrawArea(selection_color, r2);
+				gui->DrawArea(Box2d(r2), layout->selection);
 		}
 
 		for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it, ++n)
@@ -95,9 +95,6 @@ void Grid::Draw(ControlDrawData*)
 					text = tc.text;
 					color = tc.color;
 				}
-
-				if(selection_type == COLOR && i == selected)
-					color = selection_color;
 
 				r = Rect(x, y, x + it->width, y + height);
 
@@ -209,7 +206,7 @@ void Grid::Update(float dt)
 			int n = (gui->cursor_pos.y - (global_pos.y + height) + int(scroll.offset)) / height;
 			if(n >= 0 && n < items)
 			{
-				if(selection_type != NONE)
+				if(allow_select)
 				{
 					gui->cursor_mode = CURSOR_HOVER;
 					if(input->PressedRelease(Key::LeftButton))
