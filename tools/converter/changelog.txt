@@ -1,6 +1,10 @@
 CHANGELOG
 Minor updates have changes only in exporter/converer, don't affect qmsh file.
 ---------------------------
+v22.2:
+IMPORTER:
++ normal & specular map handling
+
 v22.1:
 CONVERTER:
 + return warning information to exporter, check empty animations

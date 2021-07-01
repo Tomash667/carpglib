@@ -1,10 +1,10 @@
 bl_info = {
-	"name": "Qmsh.tmp",
+	"name": "Qmsh exporter",
 	"author": "Tomashu",
-	"version": (0, 22, 0),
+	"version": (0, 22, 2),
 	"blender": (2, 78, 0),
-	"location": "File > Export > Qmsh.tmp",
-	"description": "Export to Qmsh.tmp",
+	"location": "File > Export > Qmsh",
+	"description": "Export to Qmsh or Qmsh.tmp",
 	"warning": "",
 	"category": "Import-Export"}
 
@@ -498,7 +498,7 @@ class Config:
 ################################################################################
 # Klasa eksportera
 class QmshExporterOperator(bpy.types.Operator, ExportHelper):
-	"""Export to the Qmsh temporary format (.qmsh.tmp)"""
+	"""Export to the Qmsh format (.qmsh)"""
 	
 	bl_idname = "export.qmsh"
 	bl_label = "Export QMSH"
@@ -558,7 +558,7 @@ class QmshExporterOperator(bpy.types.Operator, ExportHelper):
 ################################################################################
 # funkcje pluginu
 def menu_func(self, context):
-	self.layout.operator(QmshExporterOperator.bl_idname, text="Qmsh (.qmsh.tmp)")
+	self.layout.operator(QmshExporterOperator.bl_idname, text="Qmsh (.qmsh)")
 
 def register():
 	bpy.utils.register_module(__name__)

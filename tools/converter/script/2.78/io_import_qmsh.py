@@ -1,8 +1,8 @@
 bl_info = {
-	"name": "Qmsh",
+	"name": "Qmsh importer",
 	"author": "Tomashu",
-	"version": (0, 22, 1),
-	"blender": (2, 7, 8),
+	"version": (0, 22, 2),
+	"blender": (2, 78, 0),
 	"location": "File > Import > Qmsh",
 	"description": "Import from Qmsh",
 	"warning": "",
@@ -210,7 +210,7 @@ class Qmsh:
 				raise ImporterException("Invalid file signature " + str(self.sign))
 			if self.version < 20 or self.version > 22:
 				raise ImporterException("Invalid file version " + str(self.version))
-			if self.n_bones >= 64:
+			if self.n_bones > 64:
 				raise ImporterException("Too many bones (" + str(self.n_bones) + ")")
 			if self.n_subs == 0:
 				raise ImporterException("Missing model mesh.")
@@ -553,15 +553,15 @@ class Importer:
 		sub_to_mat = []
 		index = 0
 		for sub in mesh.subs:
-			existing_index = -1
+			mat_index = -1
 			# search for already added material
 			for i, mat in enumerate(materials):
 				tex = mat[1]
 				if tex == sub.tex:
-					existing_index = i
+					mat_index = i
 					break
 			# add new
-			if existing_index == -1:
+			if mat_index == -1:
 				# add material
 				mat = bpy.data.materials.new(sub.name)
 				mat.use_shadeless = True
@@ -572,19 +572,39 @@ class Importer:
 				mesh_data.materials.append(mat)
 				# add texture
 				tex = bpy.data.textures.new('', 'IMAGE')
+				tex.image = self.LoadImage(sub.tex)
 				tex_slot = mat.texture_slots.add()
 				tex_slot.texture = tex
-				# add image
-				img = self.LoadImage(sub.tex)
-				tex.image = img
-				sub.image = img
 				# setup
-				materials.append((mat, sub.tex, img))
-				existing_index = index
+				sub.image = tex.image
+				materials.append((mat, sub.tex, sub.image))
+				mat_index = index
 				index += 1
+				# normal map
+				if sub.tex_normal != '':
+					tex = bpy.data.textures.new('', 'IMAGE')
+					tex.image = self.LoadImage(sub.tex_normal)
+					tex_slot = mat.texture_slots.add();
+					tex_slot.texture = tex
+					tex_slot.use_map_color_diffuse = False
+					tex_slot.use_map_normal = True
+					tex_slot.normal_factor = sub.normal_factor
+				# specular map
+				if sub.tex_specular != '':
+					tex = bpy.data.textures.new('', 'IMAGE')
+					tex.image = self.LoadImage(sub.tex_specular)
+					tex_slot = mat.texture_slots.add();
+					tex_slot.texture = tex
+					tex_slot.use_map_color_diffuse = False
+					if sub.specular_factor != 0:
+						tex_slot.use_map_specular = True
+						tex_slot.specular_factor = sub.specular_factor
+					if sub.specular_color_factor != 0:
+						tex_slot.use_map_color_spec = True
+						tex_slot.specular_color_factor = sub.specular_color_factor
 			else:
-				sub.image = materials[existing_index][2]
-			sub_to_mat.append(existing_index)
+				sub.image = materials[mat_index][2]
+			sub_to_mat.append(mat_index)
 		# set material index
 		index = 0
 		for sub in mesh.subs:
