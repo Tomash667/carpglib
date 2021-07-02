@@ -4,65 +4,20 @@
 #include "Tokenizer.h"
 
 //-----------------------------------------------------------------------------
-enum class AnyVarType
-{
-	Bool
-};
-
-//-----------------------------------------------------------------------------
-enum Bool3
-{
-	False,
-	True,
-	None
-};
-
-//-----------------------------------------------------------------------------
-inline bool ToBool(Bool3 b)
-{
-	return (b == True);
-}
-
-//-----------------------------------------------------------------------------
-union AnyVar
-{
-	bool _bool;
-};
-
-//-----------------------------------------------------------------------------
-struct ConfigVar
-{
-	cstring name;
-	AnyVarType type;
-	AnyVar* ptr;
-	AnyVar new_value;
-	bool have_new_value, need_save;
-
-	ConfigVar(cstring name, bool& _bool) : name(name), type(AnyVarType::Bool), ptr((AnyVar*)&_bool), have_new_value(false), need_save(false) {}
-};
-
-//-----------------------------------------------------------------------------
 class Config
 {
-public:
 	struct Entry
 	{
-		string name, value;
+		string name, value, cmdValue;
+		bool haveCmdValue;
 	};
 
-	template<typename T>
-	struct EnumDef
-	{
-		cstring name;
-		T value;
-	};
-
+public:
 	enum Result
 	{
 		NO_FILE,
 		PARSE_ERROR,
-		OK,
-		CANT_SAVE
+		OK
 	};
 
 	enum GetResult
@@ -72,6 +27,13 @@ public:
 		GET_INVALID
 	};
 
+	template<typename T>
+	struct EnumDef
+	{
+		cstring name;
+		T value;
+	};
+
 	void Add(cstring name, cstring value);
 	void Add(cstring name, const string& value) { Add(name, value.c_str()); }
 	void Add(cstring name, bool value) { Add(name, value ? "1" : "0"); }
@@ -79,20 +41,15 @@ public:
 	void Add(cstring name, uint value) { Add(name, Format("%u", value)); }
 	void Add(cstring name, float value) { Add(name, Format("%g", value)); }
 	void Add(cstring name, const Int2& value) { Add(name, Format("{%d %d}", value.x, value.y)); }
-	void AddVar(const ConfigVar& var) { config_vars.push_back(var); }
-	Result Load(cstring filename);
-	Result Save(cstring filename);
+	void ParseCommandLine(cstring cmdLine);
+	Result Load(cstring defaultFilename);
+	bool Save();
 	void Remove(cstring name);
-	void Rename(cstring name, cstring new_name);
-	void ParseConfigVar(cstring var);
-	void LoadConfigVars();
+	void Rename(cstring name, cstring newName);
 
-	int GetVersion() const { return version; }
+	const string& GetFileName() const { return fileName; }
 	const string& GetError() const { return error; }
-	Entry* GetEntry(cstring name);
 	bool GetBool(cstring name, bool def = false);
-	bool GetBool(cstring name, cstring prev_name, bool def = false);
-	Bool3 GetBool3(cstring name, Bool3 def = None);
 	const string& GetString(cstring name);
 	const string& GetString(cstring name, const string& def);
 	int GetInt(cstring name, int def = 0);
@@ -122,9 +79,11 @@ public:
 	}
 
 private:
+	Entry* GetEntry(cstring name);
+	string* GetEntryValue(cstring name);
+
 	vector<Entry> entries;
-	string tmpstr, error;
-	int version;
+	string fileName, tmpstr, error;
 	Tokenizer t;
-	vector<ConfigVar> config_vars;
+	bool changes;
 };

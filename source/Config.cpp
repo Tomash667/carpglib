@@ -3,18 +3,20 @@
 #include "Config.h"
 #include "File.h"
 
-const int CONFIG_VERSION = 1;
-
 //=================================================================================================
 void Config::Add(cstring name, cstring value)
 {
 	assert(name && value);
 
-	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
+	for(Entry& entry : entries)
 	{
-		if(it->name == name)
+		if(entry.name == name)
 		{
-			it->value = value;
+			if(entry.value != value)
+			{
+				entry.value = value;
+				changes = true;
+			}
 			return;
 		}
 	}
@@ -22,66 +24,43 @@ void Config::Add(cstring name, cstring value)
 	Entry& e = Add1(entries);
 	e.name = name;
 	e.value = value;
+	e.haveCmdValue = false;
+
+	changes = true;
 }
 
 //=================================================================================================
 Config::Entry* Config::GetEntry(cstring name)
 {
 	assert(name);
-	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
+	for(Entry& entry : entries)
 	{
-		if(it->name == name)
-			return &*it;
+		if(entry.name == name)
+			return &entry;
 	}
+	return nullptr;
+}
+
+//=================================================================================================
+string* Config::GetEntryValue(cstring name)
+{
+	Entry* entry = GetEntry(name);
+	if(entry)
+		return entry->haveCmdValue ? &entry->cmdValue : &entry->value;
 	return nullptr;
 }
 
 //=================================================================================================
 bool Config::GetBool(cstring name, bool def)
 {
-	Entry* e = GetEntry(name);
-	if(!e)
+	string* value = GetEntryValue(name);
+	if(!value)
 		return def;
 
-	if(OR3_EQ(e->value, "0", "false", "FALSE"))
+	if(OR3_EQ(*value, "0", "false", "FALSE"))
 		return false;
-	else if(OR3_EQ(e->value, "1", "true", "TRUE"))
+	else if(OR3_EQ(*value, "1", "true", "TRUE"))
 		return true;
-	else
-		return def;
-}
-
-//=================================================================================================
-bool Config::GetBool(cstring name, cstring prev_name, bool def)
-{
-	Entry* e = GetEntry(name);
-	if(!e)
-	{
-		e = GetEntry(prev_name);
-		if(!e)
-			return def;
-		e->name = prev_name;
-	}
-
-	if(OR3_EQ(e->value, "0", "false", "FALSE"))
-		return false;
-	else if(OR3_EQ(e->value, "1", "true", "TRUE"))
-		return true;
-	else
-		return def;
-}
-
-//=================================================================================================
-Bool3 Config::GetBool3(cstring name, Bool3 def)
-{
-	Entry* e = GetEntry(name);
-	if(!e)
-		return def;
-
-	if(OR3_EQ(e->value, "0", "false", "FALSE"))
-		return False;
-	else if(OR3_EQ(e->value, "1", "true", "TRUE"))
-		return True;
 	else
 		return def;
 }
@@ -89,92 +68,88 @@ Bool3 Config::GetBool3(cstring name, Bool3 def)
 //=================================================================================================
 const string& Config::GetString(cstring name)
 {
-	Entry* e = GetEntry(name);
-	if(!e)
+	string* value = GetEntryValue(name);
+	if(!value)
 	{
 		tmpstr.clear();
 		return tmpstr;
 	}
 	else
-		return e->value;
+		return *value;
 }
 
 //=================================================================================================
 const string& Config::GetString(cstring name, const string& def)
 {
-	Entry* e = GetEntry(name);
-	if(!e)
+	string* value = GetEntryValue(name);
+	if(!value)
 	{
 		tmpstr = def;
 		return tmpstr;
 	}
 	else
-		return e->value;
+		return *value;
 }
 
 //=================================================================================================
 int Config::GetInt(cstring name, int def)
 {
-	Entry* e = GetEntry(name);
-	if(!e)
+	string* value = GetEntryValue(name);
+	if(!value)
 		return def;
+
+	int result;
+	if(TextHelper::ToInt(value->c_str(), result))
+		return result;
 	else
-	{
-		int value;
-		if(TextHelper::ToInt(e->value.c_str(), value))
-			return value;
-		else
-			return def;
-	}
+		return def;
 }
 
 //=================================================================================================
 uint Config::GetUint(cstring name, uint def)
 {
-	Entry* e = GetEntry(name);
-	if(!e)
+	string* value = GetEntryValue(name);
+	if(!value)
 		return def;
+
+	uint result;
+	if(TextHelper::ToUint(value->c_str(), result))
+		return result;
 	else
-	{
-		uint value;
-		if(TextHelper::ToUint(e->value.c_str(), value))
-			return value;
-		else
-			return def;
-	}
+		return def;
 }
 
 //=================================================================================================
 float Config::GetFloat(cstring name, float def)
 {
-	Entry* e = GetEntry(name);
-	if(!e)
+	string* value = GetEntryValue(name);
+	if(!value)
 		return def;
 	else
-		return (float)atof(e->value.c_str());
+		return (float)atof(value->c_str());
 }
 
 //=================================================================================================
 Int2 Config::GetInt2(cstring name, Int2 def)
 {
-	Entry* e = GetEntry(name);
-	if(!e)
+	string* value = GetEntryValue(name);
+	if(!value)
 		return def;
 
 	// old syntax compatibility "800x600"
-	if(e->value[0] != '{')
+	if(value->at(0) != '{')
 	{
 		Int2 result;
-		if(sscanf_s(e->value.c_str(), "%dx%d", &result.x, &result.y) != 2)
+		if(sscanf_s(value->c_str(), "%dx%d", &result.x, &result.y) != 2)
 		{
-			Warn("Invalid Int2 '%s' value '%s'.", name, e->value.c_str());
+			Warn("Invalid Int2 '%s' value '%s'.", name, value->c_str());
 			return def;
 		}
 		return result;
 	}
 
 	// new syntax {800 600}
-	t.FromString(e->value);
+	t.FromString(*value);
 	try
 	{
 		Int2 result;
@@ -185,33 +160,85 @@ Int2 Config::GetInt2(cstring name, Int2 def)
 	}
 	catch(const Tokenizer::Exception&)
 	{
-		Warn("Invalid Int2 '%s' value '%s'.", name, e->value.c_str());
+		Warn("Invalid Int2 '%s' value '%s'.", name, value->c_str());
 		return def;
 	}
 }
 
 //=================================================================================================
-Config::GetResult Config::TryGetInt(cstring name, int& value)
+Config::GetResult Config::TryGetInt(cstring name, int& result)
 {
-	Entry* e = GetEntry(name);
-	if(!e)
+	string* value = GetEntryValue(name);
+	if(!value)
 		return GET_MISSING;
-	else if(TextHelper::ToInt(e->value.c_str(), value))
+	else if(TextHelper::ToInt(value->c_str(), result))
 		return GET_OK;
 	else
 		return GET_INVALID;
 }
 
 //=================================================================================================
-Config::Result Config::Load(cstring filename)
+void Config::ParseCommandLine(cstring cmdLine)
 {
-	assert(filename);
+	assert(cmdLine);
 
-	t.SetFlags(Tokenizer::F_JOIN_DOT);
-	if(!t.FromFile(filename))
+	const vector<string> parts = Split(cmdLine);
+	LocalString name, value;
+
+	for(auto it = parts.begin(), end = parts.end(); it != end;)
+	{
+		if(it->at(0) != '-')
+		{
+			Error("Config: Invalid command line parameter '%s'.", it->c_str());
+			break;
+		}
+		name = it->substr(1);
+
+		++it;
+		value = "1";
+		if(it != end && it->at(0) != '-')
+		{
+			value = *it;
+			++it;
+		}
+
+		bool exists = false;
+		for(Entry& entry : entries)
+		{
+			if(name == entry.name)
+			{
+				entry.cmdValue = (string&)value;
+				exists = false;
+			}
+		}
+
+		if(!exists)
+		{
+			Entry& entry = Add1(entries);
+			entry.name = (string&)name;
+			entry.cmdValue = (string&)value;
+			entry.haveCmdValue = true;
+		}
+	}
+
+	fileName = GetString("config");
+}
+
+//=================================================================================================
+Config::Result Config::Load(cstring defaultFilename)
+{
+	assert(defaultFilename);
+
+	if(fileName.empty())
+		fileName = defaultFilename;
+
+	if(!t.FromFile(fileName))
+	{
+		changes = true;
 		return NO_FILE;
+	}
 
-	LocalString item, value;
+	LocalString name, value;
 
 	try
 	{
@@ -221,23 +248,17 @@ Config::Result Config::Load(cstring filename)
 		if(t.IsSymbol('#'))
 		{
 			t.Next();
-			if(t.IsItem("version"))
-			{
-				t.Next();
-				version = t.MustGetInt();
-				if(version < 0 || version > CONFIG_VERSION)
-					t.Throw("Invalid version %d.", version);
-				if(version == 1)
-					t.SetFlags(0);
-				t.Next();
-			}
+			t.AssertItem("version");
+			t.Next();
+			t.AssertInt();
+			t.Next();
 		}
 
 		// configuration
 		while(!t.IsEof())
 		{
 			// name
-			item = t.MustGetItem();
+			name = t.MustGetItem();
 			t.Next();
 
 			// =
@@ -257,19 +278,21 @@ Config::Result Config::Load(cstring filename)
 
 			// add if not exists
 			bool exists = false;
-			for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
+			for(Entry& entry : entries)
 			{
-				if(item == it->name)
+				if(name == entry.name)
 				{
-					exists = true;
-					break;
+					entry.value = (string&)value;
+					exists = false;
 				}
 			}
+
 			if(!exists)
 			{
-				Entry& e = Add1(entries);
-				e.name = (string&)item;
-				e.value = (string&)value;
+				Entry& entry = Add1(entries);
+				entry.name = (string&)name;
+				entry.value = (string&)value;
+				entry.haveCmdValue = false;
 			}
 
 			t.Next();
@@ -281,33 +304,40 @@ Config::Result Config::Load(cstring filename)
 		return PARSE_ERROR;
 	}
 
+	changes = false;
 	return OK;
 }
 
 //=================================================================================================
-Config::Result Config::Save(cstring filename)
+bool Config::Save()
 {
-	assert(filename);
+	if(fileName.empty())
+		return false;
 
-	TextWriter f(filename);
+	if(!changes)
+		return true;
+
+	TextWriter f(fileName);
 	if(!f)
-		return CANT_SAVE;
-
-	f << Format("#version %d\n", CONFIG_VERSION);
+		return false;
 
 	std::sort(entries.begin(), entries.end(), [](const Config::Entry& e1, const Config::Entry& e2) -> bool { return e1.name < e2.name; });
 
-	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
+	for(Entry& entry : entries)
 	{
+		if(entry.value.empty())
+			continue;
+
 		cstring s;
-		if(it->value[0] != '{' && it->value.find_first_of(" \n\t\\,./;'[]-=<>?:\"{}!@#$%^&*()_+") != string::npos)
-			s = Format("%s = \"%s\"\n", it->name.c_str(), Escape(it->value));
+		if(entry.value[0] != '{' && entry.value.find_first_of(" \n\t\\,./;'[]-=<>?:\"{}!@#$%^&*()_+") != string::npos)
+			s = Format("%s = \"%s\"\n", entry.name.c_str(), Escape(entry.value));
 		else
-			s = Format("%s = %s\n", it->name.c_str(), it->value.c_str());
+			s = Format("%s = %s\n", entry.name.c_str(), entry.value.c_str());
 		f << s;
 	}
 
-	return OK;
+	changes = false;
+	return true;
 }
 
 //=================================================================================================
@@ -319,102 +349,20 @@ void Config::Remove(cstring name)
 		if(it->name == name)
 		{
 			entries.erase(it);
+			changes = true;
 			return;
 		}
 	}
-	assert(0);
 }
 
 //=================================================================================================
-void Config::Rename(cstring name, cstring new_name)
+void Config::Rename(cstring name, cstring newName)
 {
-	assert(name && new_name);
+	assert(name && newName);
 	Entry* e = GetEntry(name);
 	if(e)
-		e->name = new_name;
-}
-
-//=================================================================================================
-void Config::ParseConfigVar(cstring arg)
-{
-	assert(arg);
-
-	int index = StrCharIndex(arg, '=');
-	if(index == -1 || index == 0)
 	{
-		Warn("Broken command line variable '%s'.", arg);
-		return;
-	}
-
-	ConfigVar* var = nullptr;
-	for(ConfigVar& v : config_vars)
-	{
-		if(strncmp(arg, v.name, index) == 0)
-		{
-			var = &v;
-			break;
-		}
-	}
-	if(!var)
-	{
-		Warn("Missing config variable '%.*s'.", index, arg);
-		return;
-	}
-
-	cstring value = arg + index + 1;
-	if(!*value)
-	{
-		Warn("Missing command line variable value '%s'.", arg);
-		return;
-	}
-
-	switch(var->type)
-	{
-	case AnyVarType::Bool:
-		{
-			bool b;
-			if(!TextHelper::ToBool(value, b))
-			{
-				Warn("Value for config variable '%s' must be bool, found '%s'.", var->name, value);
-				return;
-			}
-			var->new_value._bool = b;
-			var->have_new_value = true;
-		}
-		break;
-	}
-}
-
-//=================================================================================================
-void Config::LoadConfigVars()
-{
-	for(ConfigVar& v : config_vars)
-	{
-		Config::Entry* entry = GetEntry(v.name);
-		if(!entry)
-			continue;
-
-		switch(v.type)
-		{
-		case AnyVarType::Bool:
-			if(!TextHelper::ToBool(entry->value.c_str(), v.ptr->_bool))
-			{
-				Warn("Value for config variable '%s' must be bool, found '%s'.", v.name, entry->value.c_str());
-				return;
-			}
-			break;
-		}
-	}
-
-	for(ConfigVar& v : config_vars)
-	{
-		if(!v.have_new_value)
-			continue;
-		switch(v.type)
-		{
-		case AnyVarType::Bool:
-			v.ptr->_bool = v.new_value._bool;
-			break;
-		}
+		e->name = newName;
+		changes = true;
 	}
 }

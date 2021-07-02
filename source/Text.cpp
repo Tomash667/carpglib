@@ -231,30 +231,43 @@ bool TextHelper::ToBool(cstring s, bool& result)
 }
 
 //=================================================================================================
-vector<string> Split(cstring str, char c)
+vector<string> Split(cstring str, const char delimiter, const char quote)
 {
-	vector<string> v;
-	string s;
-	while(true)
+	assert(str);
+
+	vector<string> results;
+
+	while(*str)
 	{
-		char c2 = *str;
-		if(c2 == 0)
-			break;
-		if(c == c2)
+		while(*str == delimiter)
+			++str;
+
+		char c = *str;
+		if(c)
 		{
-			if(!s.empty())
+			cstring start;
+			if(c == quote)
 			{
-				v.push_back(s);
-				s.clear();
+				++str;
+				start = str;
+				while(*str && *str != quote)
+					++str;
 			}
+			else
+			{
+				start = str;
+				while(*str && *str != delimiter)
+					++str;
+			}
+
+			results.push_back(string(start, str - start));
 		}
-		else
-			s.push_back(c2);
-		++str;
+
+		if(*str)
+			++str;
 	}
-	if(!s.empty())
-		v.push_back(s);
-	return v;
+
+	return results;
 }
 
 //=================================================================================================

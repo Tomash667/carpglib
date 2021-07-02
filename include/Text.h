@@ -80,7 +80,7 @@ cstring Format(cstring fmt, ...);
 cstring FormatList(cstring fmt, va_list lis);
 void FormatStr(string& str, cstring fmt, ...);
 cstring Upper(cstring str);
-vector<string> Split(cstring str, char c = ' ');
+vector<string> Split(cstring str, char delimiter = ' ', char quote = '"');
 void SplitText(char* buf, vector<cstring>& lines);
 bool Unescape(const string& str_in, uint pos, uint length, string& str_out);
 inline bool Unescape(const string& str_in, string& str_out)
@@ -158,6 +158,20 @@ inline string Trimmed(const string& str)
 	string s = str;
 	Trim(s);
 	return s;
+}
+
+inline string& Truncate(string& str, uint length)
+{
+	if(str.length() > length)
+		str = str.substr(0, length);
+	return str;
+}
+inline string Truncate(const string& str, uint length)
+{
+	if(str.length() > length)
+		return str.substr(0, length);
+	else
+		return str;
 }
 
 template<typename T, class Pred>
