@@ -8,7 +8,7 @@ public:
 	SoundManager();
 	~SoundManager();
 	void Init();
-	void Disable(bool noSound, bool noMusic);
+	void Disable() { assert(!initialized); disabled = true; }
 	void Update(float dt);
 	int LoadSound(Sound* sound);
 	void PlayMusic(Music* music);
@@ -21,9 +21,7 @@ public:
 	bool UpdateChannelPosition(FMOD::Channel* channel, const Vec3& pos);
 
 	bool IsPlaying(FMOD::Channel* channel);
-	bool IsDisabled() const { return disabledSound; }
-	bool IsSoundDisabled() const { return noSound; }
-	bool IsMusicDisabled() const { return noMusic; }
+	bool IsDisabled() const { return disabled; }
 	bool IsMusicEnded() const { return musicEnded; }
 	bool CanPlaySound() const { return playSound; }
 	int GetSoundVolume() const { return soundVolume; }
@@ -52,5 +50,5 @@ private:
 	CriticalSection criticalSection;
 	Guid device, defaultDevice, newDevice;
 	int soundVolume, musicVolume;
-	bool initialized, musicEnded, disabledSound, playSound, noSound, noMusic;
+	bool initialized, musicEnded, disabled, playSound;
 };

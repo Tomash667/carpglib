@@ -84,7 +84,7 @@ private:
 
 //=================================================================================================
 SoundManager::SoundManager() : system(nullptr), handler(nullptr), device(Guid::Empty), newDevice(Guid::Empty), currentMusic(nullptr), musicEnded(false),
-noSound(false), noMusic(false), soundVolume(50), musicVolume(50)
+disabled(false), soundVolume(50), musicVolume(50)
 {
 }
 
@@ -100,13 +100,11 @@ SoundManager::~SoundManager()
 //=================================================================================================
 void SoundManager::Init()
 {
-	disabledSound = noSound && noMusic;
-	playSound = !noSound && soundVolume > 0;
-
 	// if disabled, log it
-	if(disabledSound)
+	if(disabled)
 	{
 		Info("SoundMgr: Sound and music is disabled.");
+		playSound = false;
 		return;
 	}
 
@@ -123,7 +121,8 @@ void SoundManager::Init()
 	if(count == 0)
 	{
 		Warn("SoundMgr: No sound devices found.");
-		disabledSound = true;
+		disabled = true;
+		playSound = false;
 		return;
 	}
 
@@ -181,15 +180,17 @@ void SoundManager::Init()
 	if(!ok)
 	{
 		Error("SoundMgr: Failed to initialize FMOD, disabling sound!");
-		disabledSound = true;
+		disabled = true;
+		playSound = false;
 		return;
 	}
 
 	// create group for sounds and music
 	system->createChannelGroup("default", &groupDefault);
 	system->createChannelGroup("music", &groupMusic);
-	groupDefault->setVolume(float(noSound ? 0 : soundVolume) / 100);
-	groupMusic->setVolume(float(noMusic ? 0 : musicVolume) / 100);
+	groupDefault->setVolume(float(soundVolume) / 100);
+	groupMusic->setVolume(float(musicVolume) / 100);
+	playSound = soundVolume > 0;
 
 	// register change default device handler
 	IMMDeviceEnumerator* enumerator;
@@ -203,17 +204,9 @@ void SoundManager::Init()
 }
 
 //=================================================================================================
-void SoundManager::Disable(bool noSound, bool noMusic)
-{
-	assert(!initialized);
-	this->noSound = noSound;
-	this->noMusic = noMusic;
-}
-
-//=================================================================================================
 void SoundManager::Update(float dt)
 {
-	if(disabledSound)
+	if(disabled)
 		return;
 
 	LoopAndRemove(fallbacks, [dt](FMOD::Channel* channel)
@@ -346,7 +339,7 @@ int SoundManager::LoadSound(Sound* sound)
 //=================================================================================================
 void SoundManager::PlayMusic(Music* music)
 {
-	if(noMusic)
+	if(disabled)
 		return;
 
 	assert(music && music->IsLoaded());
@@ -367,7 +360,7 @@ void SoundManager::PlayMusic(Music* music)
 //=================================================================================================
 void SoundManager::PlayMusic(MusicList* musicList, bool delayed)
 {
-	if(noMusic)
+	if(disabled)
 		return;
 
 	assert(musicList && musicList->IsLoaded());
@@ -453,7 +446,7 @@ FMOD::Channel* SoundManager::CreateChannel(Sound* sound, const Vec3& pos, float 
 //=================================================================================================
 void SoundManager::StopSounds()
 {
-	if(disabledSound)
+	if(disabled)
 		return;
 	for(vector<FMOD::Channel*>::iterator it = playingSounds.begin(), end = playingSounds.end(); it != end; ++it)
 		(*it)->stop();
@@ -475,7 +468,7 @@ void SoundManager::StopMusic()
 //=================================================================================================
 void SoundManager::SetListenerPosition(const Vec3& pos, const Vec3& dir, const Vec3& up)
 {
-	if(disabledSound)
+	if(disabled)
 		return;
 	system->set3DListenerAttributes(0, (const FMOD_VECTOR*)&pos, nullptr, (const FMOD_VECTOR*)&dir, (const FMOD_VECTOR*)&up);
 }
@@ -485,9 +478,11 @@ void SoundManager::SetSoundVolume(int volume)
 {
 	assert(InRange(volume, 0, 100));
 	soundVolume = volume;
-	playSound = !noSound && volume > 0;
-	if(!disabledSound)
-		groupDefault->setVolume(float(noSound ? 0 : soundVolume) / 100);
+	if(!disabled)
+	{
+		groupDefault->setVolume(float(soundVolume) / 100);
+		playSound = soundVolume > 0;
+	}
 }
 
 //=================================================================================================
@@ -495,8 +490,8 @@ void SoundManager::SetMusicVolume(int volume)
 {
 	assert(InRange(volume, 0, 100));
 	musicVolume = volume;
-	if(!disabledSound)
-		groupMusic->setVolume(float(noMusic ? 0 : musicVolume) / 100);
+	if(!disabled)
+		groupMusic->setVolume(float(musicVolume) / 100);
 }
 
 //=================================================================================================
@@ -504,8 +499,8 @@ bool SoundManager::UpdateChannelPosition(FMOD::Channel* channel, const Vec3& pos
 {
 	assert(channel);
 
-	bool is_playing;
-	if(channel->isPlaying(&is_playing) == FMOD_OK && is_playing)
+	bool isPlaying;
+	if(channel->isPlaying(&isPlaying) == FMOD_OK && isPlaying)
 	{
 		channel->set3DAttributes((const FMOD_VECTOR*)&pos, nullptr);
 		return true;
@@ -518,9 +513,9 @@ bool SoundManager::UpdateChannelPosition(FMOD::Channel* channel, const Vec3& pos
 bool SoundManager::IsPlaying(FMOD::Channel* channel)
 {
 	assert(channel);
-	bool is_playing;
-	if(channel->isPlaying(&is_playing) == FMOD_OK)
-		return is_playing;
+	bool isPlaying;
+	if(channel->isPlaying(&isPlaying) == FMOD_OK)
+		return isPlaying;
 	else
 		return false;
 }
