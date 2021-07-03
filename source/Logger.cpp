@@ -46,6 +46,24 @@ ConsoleLogger::~ConsoleLogger()
 	printf("*** End of log.");
 }
 
+void ConsoleLogger::Move(const Int2& consolePos, const Int2& consoleSize)
+{
+	HWND con = GetConsoleWindow();
+	Rect rect;
+	GetWindowRect(con, (RECT*)&rect);
+	Int2 pos = rect.LeftTop();
+	Int2 size = rect.Size();
+	if(consolePos.x != -1)
+		pos.x = consolePos.x;
+	if(consolePos.y != -1)
+		pos.y = consolePos.y;
+	if(consoleSize.x != -1)
+		size.x = consoleSize.x;
+	if(consoleSize.y != -1)
+		size.y = consoleSize.y;
+	SetWindowPos(con, 0, pos.x, pos.y, size.x, size.y, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+}
+
 void ConsoleLogger::Log(Level level, cstring text, const tm& time)
 {
 	printf("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, level_names[level], text);
@@ -73,6 +91,25 @@ void TextLogger::Log(Level level, cstring text, const tm& time)
 void TextLogger::Flush()
 {
 	writer->Flush();
+}
+
+TextLogger* TextLogger::GetInstance()
+{
+	Logger* log = Logger::GetInstance();
+	TextLogger* textLog = dynamic_cast<TextLogger*>(log);
+	if(textLog)
+		return textLog;
+	MultiLogger* mlog = dynamic_cast<MultiLogger*>(log);
+	if(mlog)
+	{
+		for(Logger* log : mlog->loggers)
+		{
+			textLog = dynamic_cast<TextLogger*>(log);
+			if(textLog)
+				return textLog;
+		}
+	}
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

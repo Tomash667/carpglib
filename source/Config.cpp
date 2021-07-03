@@ -106,6 +106,22 @@ int Config::GetInt(cstring name, int def)
 }
 
 //=================================================================================================
+int Config::GetEnumValue(cstring name, std::initializer_list<std::pair<cstring, int>> const& values, int def)
+{
+	string* value = GetEntryValue(name);
+	if(!value)
+		return def;
+
+	for(const std::pair<cstring, int>& v : values)
+	{
+		if(*value == v.first)
+			return v.second;
+	}
+
+	return def;
+}
+
+//=================================================================================================
 uint Config::GetUint(cstring name, uint def)
 {
 	string* value = GetEntryValue(name);
@@ -163,18 +179,6 @@ Int2 Config::GetInt2(cstring name, Int2 def)
 		Warn("Invalid Int2 '%s' value '%s'.", name, value->c_str());
 		return def;
 	}
-}
-
-//=================================================================================================
-Config::GetResult Config::TryGetInt(cstring name, int& result)
-{
-	string* value = GetEntryValue(name);
-	if(!value)
-		return GET_MISSING;
-	else if(TextHelper::ToInt(value->c_str(), result))
-		return GET_OK;
-	else
-		return GET_INVALID;
 }
 
 //=================================================================================================

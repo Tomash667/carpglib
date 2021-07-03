@@ -71,6 +71,8 @@ public:
 	ConsoleLogger();
 	~ConsoleLogger();
 
+	void Move(const Int2& pos, const Int2& size);
+
 protected:
 	void Log(Level level, cstring text, const tm& time) override;
 };
@@ -90,6 +92,8 @@ public:
 	{
 		return path;
 	}
+
+	static TextLogger* GetInstance();
 
 protected:
 	void Log(Level level, cstring text, const tm& time) override;

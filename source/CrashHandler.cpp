@@ -1,4 +1,6 @@
 #include "Pch.h"
+#include "CrashHandler.h"
+
 #include <CrashRpt.h>
 
 //=================================================================================================
@@ -67,26 +69,6 @@ cstring CodeToString(DWORD err)
 }
 
 //=================================================================================================
-TextLogger* GetTextLogger()
-{
-	Logger* log = Logger::GetInstance();
-	TextLogger* text_log = dynamic_cast<TextLogger*>(log);
-	if(text_log)
-		return text_log;
-	MultiLogger* mlog = dynamic_cast<MultiLogger*>(log);
-	if(mlog)
-	{
-		for(Logger* log : mlog->loggers)
-		{
-			text_log = dynamic_cast<TextLogger*>(log);
-			if(text_log)
-				return text_log;
-		}
-	}
-	return nullptr;
-}
-
-//=================================================================================================
 int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crash_info)
 {
 	cstring type = ExceptionTypeToString(crash_info->pExceptionInfo->exctype);
@@ -98,14 +80,16 @@ int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crash_info)
 	}
 	else
 		Error("Engine: Unhandled exception caught!\nType: %s", type);
-	TextLogger* text_logger = GetTextLogger();
-	if(text_logger)
-		text_logger->Flush();
+
+	TextLogger* textLogger = TextLogger::GetInstance();
+	if(textLogger)
+		textLogger->Flush();
+
 	return CR_CB_DODEFAULT;
 }
 
 //=================================================================================================
-void RegisterCrashHandler(cstring title, cstring version, cstring url, cstring log_file, int minidump_level)
+void CrashHandler::Register(cstring title, cstring version, cstring url, int minidumpLevel)
 {
 	if(IsDebuggerPresent())
 		return;
@@ -119,7 +103,7 @@ void RegisterCrashHandler(cstring title, cstring version, cstring url, cstring l
 	info.uPriorities[CR_SMTP] = CR_NEGATIVE_PRIORITY;
 	info.uPriorities[CR_SMAPI] = CR_NEGATIVE_PRIORITY;
 	info.dwFlags = CR_INST_ALL_POSSIBLE_HANDLERS | CR_INST_SHOW_ADDITIONAL_INFO_FIELDS | CR_INST_NO_EMAIL_VALIDATION;
-	switch(minidump_level)
+	switch(minidumpLevel)
 	{
 	case 0:
 		info.dwFlags |= CR_INST_NO_MINIDUMP;
@@ -142,11 +126,24 @@ void RegisterCrashHandler(cstring title, cstring version, cstring url, cstring l
 	r = crSetCrashCallback(OnCrash, nullptr);
 	assert(r == 0);
 
-	if(log_file)
+	TextLogger* textLogger = TextLogger::GetInstance();
+	if(textLogger)
 	{
-		r = crAddFile2(log_file, nullptr, "Log file", CR_AF_MAKE_FILE_COPY | CR_AF_MISSING_FILE_OK | CR_AF_ALLOW_DELETE);
+		r = crAddFile2(textLogger->GetPath().c_str(), nullptr, "Log file", CR_AF_MAKE_FILE_COPY | CR_AF_MISSING_FILE_OK | CR_AF_ALLOW_DELETE);
 		assert(r == 0);
 	}
+
 	r = crAddScreenshot2(CR_AS_MAIN_WINDOW | CR_AS_PROCESS_WINDOWS | CR_AS_USE_JPEG_FORMAT | CR_AS_ALLOW_DELETE, 50);
 	assert(r == 0);
+}
+
+//=================================================================================================
+void CrashHandler::DoCrash()
+{
+	Info("Crash test...");
+	int* z = nullptr;
+#pragma warning(push)
+#pragma warning(suppress: 6011)
+	*z = 13;
+#pragma warning(pop)
 }

@@ -2,6 +2,7 @@
 #include "Engine.h"
 
 #include "App.h"
+#include "Config.h"
 #include "Gui.h"
 #include "Input.h"
 #include "Physics.h"
@@ -37,6 +38,77 @@ wnd_size(DEFAULT_WINDOW_SIZE), client_size(wnd_size)
 Engine::~Engine()
 {
 	delete Logger::GetInstance();
+}
+
+//=================================================================================================
+void Engine::LoadConfiguration(Config& cfg)
+{
+	// log
+	PreLogger* plog = dynamic_cast<PreLogger*>(Logger::GetInstance());
+	TextLogger* textLogger = nullptr;
+	ConsoleLogger* consoleLogger = nullptr;
+	int count = 0;
+
+	if(cfg.GetBool("log", true))
+	{
+		textLogger = new TextLogger(cfg.GetString("log_filename", "log.txt").c_str());
+		++count;
+	}
+
+	if(cfg.GetBool("console"))
+	{
+		consoleLogger = new ConsoleLogger;
+		const Int2 consolePos = cfg.GetInt2("con_pos", Int2(-1, -1));
+		const Int2 consoleSize = cfg.GetInt2("con_size", Int2(-1, -1));
+		if(consolePos != Int2(-1, -1) || consoleSize != Int2(-1, -1))
+			consoleLogger->Move(consolePos, consoleSize);
+		++count;
+	}
+
+	Logger* logger;
+	if(count == 2)
+		logger = new MultiLogger({ textLogger, consoleLogger });
+	else if(count == 1)
+		logger = textLogger ? static_cast<Logger*>(textLogger) : static_cast<Logger*>(consoleLogger);
+	else
+		logger = new Logger;
+
+	if(plog)
+		plog->Apply(logger);
+	Logger::SetInstance(logger);
+
+	// window settings
+	bool isFullscreen = cfg.GetBool("fullscreen", true);
+	Int2 wndSize = cfg.GetInt2("resolution");
+	Info("Settings: Resolution %dx%d (%s).", wndSize.x, wndSize.y, isFullscreen ? "fullscreen" : "windowed");
+	SetFullscreen(isFullscreen);
+	SetWindowSize(wndSize);
+	SetWindowInitialPos(cfg.GetInt2("wnd_pos", Int2(-1, -1)), cfg.GetInt2("wnd_size", Int2(-1, -1)));
+	HideWindow(cfg.GetBool("hidden_window"));
+
+	// render settings
+	int adapter = cfg.GetInt("adapter");
+	Info("Settings: Adapter %d.", adapter);
+	app::render->SetAdapter(adapter);
+	const string& featureLevel = cfg.GetString("feature_level");
+	if(!featureLevel.empty())
+	{
+		if(!app::render->SetFeatureLevel(featureLevel))
+			Warn("Settings: Invalid feature level '%s'.", featureLevel.c_str());
+	}
+	app::render->SetVsync(cfg.GetBool("vsync", true));
+	app::render->SetMultisampling(cfg.GetInt("multisampling"), cfg.GetInt("multisampling_quality"));
+	app::scene_mgr->use_normalmap = cfg.GetBool("use_normalmap", true);
+	app::scene_mgr->use_specularmap = cfg.GetBool("use_specularmap", true);
+
+	// sound/music settings
+	if(cfg.GetBool("nosound"))
+		app::sound_mgr->Disable();
+	app::sound_mgr->SetSoundVolume(Clamp(cfg.GetInt("sound_volume", 100), 0, 100));
+	app::sound_mgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
+	Guid soundDevice;
+	if(soundDevice.TryParse(cfg.GetString("sound_device", Guid::EmptyString)))
+		app::sound_mgr->SetDevice(soundDevice);
 }
 
 //=================================================================================================

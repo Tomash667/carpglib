@@ -20,20 +20,6 @@ public:
 		OK
 	};
 
-	enum GetResult
-	{
-		GET_OK,
-		GET_MISSING,
-		GET_INVALID
-	};
-
-	template<typename T>
-	struct EnumDef
-	{
-		cstring name;
-		T value;
-	};
-
 	void Add(cstring name, cstring value);
 	void Add(cstring name, const string& value) { Add(name, value.c_str()); }
 	void Add(cstring name, bool value) { Add(name, value ? "1" : "0"); }
@@ -53,30 +39,10 @@ public:
 	const string& GetString(cstring name);
 	const string& GetString(cstring name, const string& def);
 	int GetInt(cstring name, int def = 0);
+	int GetEnumValue(cstring name, std::initializer_list<std::pair<cstring, int>> const& values, int def = 0);
 	uint GetUint(cstring name, uint def = 0);
 	float GetFloat(cstring name, float def = 0.f);
 	Int2 GetInt2(cstring name, Int2 def = Int2(0, 0));
-
-	GetResult TryGetInt(cstring name, int& value);
-	template<typename T>
-	GetResult TryGetEnum(cstring name, T& value, std::initializer_list<EnumDef<T>> const & enum_defs)
-	{
-		Entry* e = GetEntry(name);
-		if(!e)
-			return GET_MISSING;
-		else
-		{
-			for(const EnumDef<T>& en : enum_defs)
-			{
-				if(e->value == en.name)
-				{
-					value = en.value;
-					return GET_OK;
-				}
-			}
-			return GET_MISSING;
-		}
-	}
 
 private:
 	Entry* GetEntry(cstring name);

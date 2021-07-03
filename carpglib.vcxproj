@@ -28,6 +28,7 @@
     <ClInclude Include="include\Control.h" />
     <ClInclude Include="include\Core.h" />
     <ClInclude Include="include\CoreMath.h" />
+    <ClInclude Include="include\CrashHandler.h" />
     <ClInclude Include="include\Crc.h" />
     <ClInclude Include="include\CriticalSection.h" />
     <ClInclude Include="include\BasicShader.h" />

@@ -304,6 +304,9 @@
     <ClInclude Include="include\MeshShape.h">
       <Filter>const</Filter>
     </ClInclude>
+    <ClInclude Include="include\CrashHandler.h">
+      <Filter>components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">

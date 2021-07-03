@@ -2,6 +2,7 @@
 
 // Enums
 enum VertexDeclarationId;
+enum class ImageFormat;
 
 // Engine types
 struct Billboard;
@@ -147,8 +148,3 @@ namespace app
 	extern SceneManager* scene_mgr;
 	extern SoundManager* sound_mgr;
 }
-
-// Misc functions
-void RegisterCrashHandler(cstring title, cstring version, cstring url, cstring log_file, int minidump_level);
-
-#include "ImageFormat.h"

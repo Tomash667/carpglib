@@ -14,16 +14,16 @@ public:
 	Engine();
 	~Engine();
 
+	void LoadConfiguration(Config& cfg);
+	bool Start();
+	void Shutdown();
 	void DoPseudotick(bool msg_only = false);
 	void RestoreFocus();
-	void Shutdown();
-	void FatalError(cstring err);
 	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);
-	bool Start();
-	void UnlockCursor(bool lock_on_focus = true);
+	void FatalError(cstring err);
 	void LockCursor();
+	void UnlockCursor(bool lock_on_focus = true);
 	void HideWindow(bool hide);
-	void ToggleFullscreen() { SetFullscreen(!IsFullscreen()); }
 
 	bool IsActive() const { return active; }
 	bool IsCursorLocked() const { return locked_cursor; }
@@ -43,6 +43,7 @@ public:
 	void SetUnlockPoint(const Int2& pt) { unlock_point = pt; }
 	void SetWindowInitialPos(const Int2& pos, const Int2& size) { force_pos = pos; force_size = size; }
 	void SetWindowSize(const Int2& size);
+	void ToggleFullscreen() { SetFullscreen(!IsFullscreen()); }
 
 private:
 	void Init();
