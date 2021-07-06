@@ -149,7 +149,7 @@ void TooltipController::FormatBox(bool refresh)
 			img_size = imgSize;
 	}
 	else
-		imgSize = Int2::Zero;
+		img_size = Int2::Zero;
 
 	// big text
 	if(!big_text.empty())
