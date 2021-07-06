@@ -32,6 +32,7 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 	Vec4 tint;
 	Vec3 center;
 	array<Light*, 3> lights;
+	bool persistent;
 
 	void OnGet();
 	void SetMesh(Mesh* mesh, MeshInstance* mesh_inst = nullptr);
@@ -50,6 +51,7 @@ struct SceneBatch
 	vector<SceneNode*> nodes;
 	vector<SceneNode*> alpha_nodes;
 	vector<SceneNodeGroup> node_groups;
+	Scene* scene;
 	Camera* camera;
 	bool gather_lights;
 

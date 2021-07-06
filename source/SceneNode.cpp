@@ -10,6 +10,7 @@ void SceneNode::OnGet()
 {
 	tex_override = nullptr;
 	tint = Vec4::One;
+	persistent = false;
 }
 
 //=================================================================================================
