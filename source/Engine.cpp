@@ -428,10 +428,11 @@ void Engine::InitWindow()
 	wnd_size = Int2::Max(wnd_size, MIN_WINDOW_SIZE);
 
 	// register window class
+	HMODULE module = GetModuleHandle(nullptr);
 	WNDCLASSEX wc = {
 		sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,
 		[](HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam) -> LRESULT { return app::engine->HandleEvent(hwnd, msg, wParam, lParam); },
-		0, 0, GetModuleHandle(nullptr), LoadIcon(GetModuleHandle(nullptr), "Icon"), LoadCursor(nullptr, IDC_ARROW), (HBRUSH)GetStockObject(BLACK_BRUSH),
+		0, 0, module, LoadIcon(module, "Icon"), LoadCursor(nullptr, IDC_ARROW), (HBRUSH)GetStockObject(BLACK_BRUSH),
 		nullptr, "Krystal", nullptr
 	};
 	if(!RegisterClassEx(&wc))
@@ -439,14 +440,15 @@ void Engine::InitWindow()
 
 	// create window
 	AdjustWindowSize();
-	hwnd = CreateWindowEx(0, "Krystal", title.c_str(), fullscreen ? WS_POPUPWINDOW : WS_OVERLAPPEDWINDOW, 0, 0, real_size.x, real_size.y,
-		nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
+	hwnd = CreateWindowEx(0, "Krystal", title.c_str(), WINDOWED_FLAGS, 0, 0, real_size.x, real_size.y,
+		nullptr, nullptr, module, nullptr);
 	if(!hwnd)
 		throw Format("Failed to create window (%d).", GetLastError());
 
 	// position window
 	if(fullscreen)
 	{
+		ShowWindow(hwnd, SW_SHOWNORMAL);
 		fullscreen = false;
 		SetFullscreen(true);
 	}

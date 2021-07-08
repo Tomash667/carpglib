@@ -127,6 +127,9 @@ enum ShortcutKey
 };
 
 //-----------------------------------------------------------------------------
+typedef array<Key, 2> KeyPair;
+
+//-----------------------------------------------------------------------------
 inline Key operator + (Key k, int offset)
 {
 	return (Key)((int)k + offset);

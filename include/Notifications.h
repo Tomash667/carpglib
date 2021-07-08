@@ -23,12 +23,13 @@ struct Notification
 private:
 	enum State
 	{
+		Pending,
 		Showing,
 		Shown,
 		Hiding
 	};
 
-	Notification() : t2(0), state(Showing), buttons(false), active(0) {}
+	Notification() : t2(0), buttons(false), active(0) {}
 
 	State state;
 	float t, t2;
@@ -47,15 +48,18 @@ public:
 class Notifications : public Control, public LayoutControl<layout::Notifications>
 {
 public:
-	static const int MAX_ACTIVE_NOTIFICATIONS = 3;
-
 	Notifications();
 	~Notifications();
 	Notification* Add(cstring text, Texture* icon, float timer);
+	uint GetMaxNotifications() const { return maxNotifications; }
+	void SetShortcuts(KeyPair acceptKey, KeyPair declineKey, cstring acceptText, cstring declineText);
+	void SetMaxNotifications(uint value) { assert(value >= 1u); maxNotifications = value; }
 	void Draw(ControlDrawData*) override;
 	void Update(float dt) override;
 
 private:
-	Notification* active_notifications[MAX_ACTIVE_NOTIFICATIONS];
-	vector<Notification*> pending_notifications;
+	vector<Notification*> notifications;
+	uint maxNotifications;
+	KeyPair acceptKey, declineKey;
+	cstring acceptText, declineText;
 };
