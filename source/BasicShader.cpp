@@ -84,8 +84,10 @@ void BasicShader::OnRelease()
 }
 
 //=================================================================================================
-void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
+void BasicShader::PrepareForShapes(const Camera& camera)
 {
+	matViewProj = camera.mat_view_proj;
+
 	app::render->SetBlendState(Render::BLEND_NO);
 	app::render->SetDepthState(Render::DEPTH_NO);
 	app::render->SetRasterState(Render::RASTER_WIREFRAME);
@@ -97,9 +99,13 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 	deviceContext->PSSetConstantBuffers(0, 1, &psGlobalsMesh);
 	deviceContext->IASetInputLayout(shaderMesh.layout);
 
-	Color prevColor = Color::None;
-	MeshShape prevShape = MeshShape::None;
+	prevColor = Color::None;
+	prevShape = MeshShape::None;
+}
 
+//=================================================================================================
+void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
+{
 	for(vector<DebugNode*>::const_iterator it = nodes.begin(), end = nodes.end(); it != end; ++it)
 	{
 		const DebugNode& node = **it;
@@ -144,6 +150,40 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 
 		prevShape = node.shape;
 	}
+}
+
+//=================================================================================================
+void BasicShader::DrawShape(MeshShape shape, const Matrix& m, Color color)
+{
+	assert(shape != MeshShape::None && shape != MeshShape::TriMesh);
+
+	// set color
+	if(color != prevColor)
+	{
+		prevColor = color;
+		ResourceLock lock(psGlobalsMesh);
+		lock.Get<PsGlobalsMesh>()->color = color;
+	}
+
+	// set matrix
+	{
+		ResourceLock lock(vsGlobals);
+		lock.Get<VsGlobals>()->matCombined = (m * matViewProj).Transpose();
+	}
+
+	// set mesh
+	Mesh& mesh = *meshes[(int)shape];
+	if(shape != prevShape)
+	{
+		uint stride = sizeof(VPos), offset = 0;
+		deviceContext->IASetVertexBuffers(0, 1, &mesh.vb, &stride, &offset);
+		deviceContext->IASetIndexBuffer(mesh.ib, DXGI_FORMAT_R16_UINT, 0);
+		prevShape = shape;
+	}
+
+	// draw
+	for(Mesh::Submesh& sub : mesh.subs)
+		deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, 0);
 }
 
 //=================================================================================================
@@ -235,7 +275,7 @@ void BasicShader::DrawQuad(const Vec3(&pts)[4], Color color)
 {
 	Vec4 col = color;
 	uint offset = vertices.size();
-	for(int i=0; i<4; ++i)
+	for(int i = 0; i < 4; ++i)
 		vertices.push_back(VColor(pts[i], col));
 	indices.push_back(offset + 0);
 	indices.push_back(offset + 1);

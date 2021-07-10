@@ -2873,6 +2873,11 @@ inline Box Box::CreateXZ(const Box2d& box2d, float y1, float y2)
 	return Box(box2d.v1.x, y1, box2d.v1.y, box2d.v2.x, y2, box2d.v2.y);
 }
 
+inline Box Box::CreateBoundingBox(const Vec3& p1, const Vec3& p2)
+{
+	return Box(min(p1.x, p2.x), min(p1.y, p2.y), min(p1.z, p2.z), max(p1.x, p2.x), max(p1.y, p2.y), max(p1.z, p2.z));
+}
+
 //*************************************************************************************************
 //
 // 4x4 float matrix
