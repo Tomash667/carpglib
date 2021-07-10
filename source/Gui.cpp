@@ -44,7 +44,7 @@ void Gui::Init()
 	dialog_layer = new Container;
 	dialog_layer->focus_top = true;
 
-	app::render->RegisterShader(shader = new GuiShader);
+	shader = app::render->GetShader<GuiShader>();
 
 	fontLoader = new FontLoader;
 }

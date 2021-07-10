@@ -25,10 +25,10 @@ forceFeatureLevel(0), defaultSampler(nullptr)
 //=================================================================================================
 Render::~Render()
 {
-	for(ShaderHandler* shader : shaders)
+	for(pair<const std::type_index, ShaderHandler*>& shader : shaders)
 	{
-		shader->OnRelease();
-		delete shader;
+		shader.second->OnRelease();
+		delete shader.second;
 	}
 	DeleteElements(renderTargets);
 
@@ -514,25 +514,17 @@ bool Render::CheckDisplay(const Int2& size) const
 }
 
 //=================================================================================================
-void Render::RegisterShader(ShaderHandler* shader)
-{
-	assert(shader);
-	shaders.push_back(shader);
-	shader->OnInit();
-}
-
-//=================================================================================================
 void Render::ReloadShaders()
 {
 	Info("Reloading shaders...");
 
-	for(ShaderHandler* shader : shaders)
-		shader->OnRelease();
+	for(pair<const std::type_index, ShaderHandler*>& shader : shaders)
+		shader.second->OnRelease();
 
 	try
 	{
-		for(ShaderHandler* shader : shaders)
-			shader->OnInit();
+		for(pair<const std::type_index, ShaderHandler*>& shader : shaders)
+			shader.second->OnInit();
 	}
 	catch(cstring err)
 	{

@@ -21,7 +21,7 @@ struct PsGlobals
 };
 
 //=================================================================================================
-GlowShader::GlowShader(PostfxShader* postfxShader) : postfxShader(postfxShader), deviceContext(app::render->GetDeviceContext()), vertexShaderMesh(nullptr),
+GlowShader::GlowShader() : postfxShader(app::render->GetShader<PostfxShader>()), deviceContext(app::render->GetDeviceContext()), vertexShaderMesh(nullptr),
 vertexShaderAni(nullptr), pixelShader(nullptr), layoutMesh(nullptr), layoutMeshTangent(nullptr), layoutMeshWeight(nullptr), layoutMeshTangentWeight(nullptr),
 layoutAni(nullptr), layoutAniTangent(nullptr), vsGlobals(nullptr), psGlobals(nullptr)
 {

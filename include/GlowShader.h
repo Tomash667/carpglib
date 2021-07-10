@@ -7,7 +7,7 @@
 class GlowShader : public ShaderHandler
 {
 public:
-	GlowShader(PostfxShader* postfx);
+	GlowShader();
 	cstring GetName() const override { return "glow"; }
 	void OnInit() override;
 	void OnRelease() override;
