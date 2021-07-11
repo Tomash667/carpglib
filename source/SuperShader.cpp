@@ -317,6 +317,14 @@ void SuperShader::SetShader(uint id)
 }
 
 //=================================================================================================
+void SuperShader::SetTexture(Texture* tex)
+{
+	assert(tex);
+	TEX t = tex->tex;
+	deviceContext->PSSetShaderResources(0, 1, &t);
+}
+
+//=================================================================================================
 void SuperShader::SetTexture(const TexOverride* texOverride, Mesh* mesh, uint index)
 {
 	TEX tex;

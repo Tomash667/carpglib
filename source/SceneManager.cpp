@@ -31,6 +31,18 @@ void SceneManager::SetScene(Scene* scene, Camera* camera)
 }
 
 //=================================================================================================
+void SceneManager::Prepare()
+{
+	batch.Clear();
+	batch.camera = camera;
+	batch.gather_lights = use_lighting && !scene->use_light_dir;
+	scene->ListNodes(batch);
+	batch.Process();
+
+	app::render->Clear(scene->clear_color);
+}
+
+//=================================================================================================
 void SceneManager::Draw(RenderTarget* target)
 {
 	batch.Clear();
@@ -54,6 +66,21 @@ void SceneManager::Draw(RenderTarget* target)
 
 	if(target)
 		app::render->SetRenderTarget(nullptr);
+}
+
+//=================================================================================================
+void SceneManager::DrawSceneNodes()
+{
+	if(batch.node_groups.empty() && batch.alpha_nodes.empty())
+		return;
+
+	super_shader->Prepare();
+
+	if(!batch.node_groups.empty())
+		DrawSceneNodes(batch.nodes, batch.node_groups);
+
+	if(!batch.alpha_nodes.empty())
+		DrawAlphaSceneNodes(batch.alpha_nodes);
 }
 
 //=================================================================================================
