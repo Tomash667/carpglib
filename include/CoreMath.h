@@ -1171,6 +1171,7 @@ struct Box
 	friend Box operator * (float f, const Box& b);
 
 	// Methods
+	Box AddMargin(float margin) const;
 	void AddPoint(const Vec3& v);
 	Vec3 GetRandomPoint() const;
 	bool IsInside(const Vec3& v) const;

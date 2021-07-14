@@ -2804,6 +2804,11 @@ inline Box operator * (float f, const Box& b)
 // Methods
 //------------------------------------------------------------------------------
 
+inline Box Box::AddMargin(float margin) const
+{
+	return Box(v1.x - margin, v1.y - margin, v1.z - margin, v2.x + margin, v2.y + margin, v2.z + margin);
+}
+
 inline void Box::AddPoint(const Vec3& v)
 {
 	v1.x = min(v1.x, v.x);
