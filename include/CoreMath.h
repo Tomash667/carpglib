@@ -1187,6 +1187,7 @@ struct Box
 	// Static functions
 	static Box Create(const Vec3& pos, const Vec3& size);
 	static Box CreateXZ(const Box2d& box2d, float y1, float y2);
+	static Box CreateBoundingBox(const Vec3& p1, const Vec3& p2);
 };
 
 //-----------------------------------------------------------------------------
