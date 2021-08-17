@@ -33,7 +33,6 @@ public:
 
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Event(GuiEvent e) override;
-	void Update(float dt) override;
 
 	Int2 GetAreaSize() const { return Int2(area.Size()); }
 	Control* GetEventProxy() const { return event_proxy; }

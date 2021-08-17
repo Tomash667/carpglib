@@ -5,5 +5,10 @@
 class GuiDialog : public Window
 {
 public:
+	GuiDialog();
+	void Update(float dt) override;
 	void Close();
+
+protected:
+	bool allowClose;
 };

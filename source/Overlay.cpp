@@ -47,8 +47,14 @@ void Overlay::Update(float dt)
 		UpdateControl(menu, dt);
 
 	// update dialogs
+	bool first = true;
 	for(auto it = dialogs.rbegin(), end = dialogs.rend(); it != end; ++it)
-		UpdateControl(*it, dt);
+	{
+		GuiDialog* dialog = *it;
+		dialog->focus = first;
+		UpdateControl(dialog, dt);
+		first = false;
+	}
 	if(!dialogs.empty())
 		mouse_focus = false;
 	for(GuiDialog* dialog : dialogs_to_close)
@@ -102,11 +108,13 @@ void Overlay::ShowDialog(GuiDialog* dialog)
 	dialogs.push_back(dialog);
 	dialog->Initialize();
 	dialog->SetPosition((gui->wnd_size - dialog->GetSize()) / 2);
+	dialog->Event(GuiEvent_Show);
 }
 
 void Overlay::CloseDialog(GuiDialog* dialog)
 {
 	assert(dialog);
+	dialog->Event(GuiEvent_Hide);
 	dialogs_to_close.push_back(dialog);
 }
 

@@ -3,7 +3,7 @@
 
 #include "MenuBar.h"
 
-Window::Window(bool fullscreen, bool borderless) : menu(nullptr), fullscreen(fullscreen), borderless(borderless)
+Window::Window(bool fullscreen, bool borderless) : Container(true), menu(nullptr), fullscreen(fullscreen), borderless(borderless)
 {
 	size = Int2(300, 200);
 }
@@ -28,11 +28,6 @@ void Window::Draw(ControlDrawData*)
 
 	ControlDrawData cdd = { &body_rect };
 	Container::Draw(&cdd);
-}
-
-void Window::Update(float dt)
-{
-	Container::Update(dt);
 }
 
 void Window::Event(GuiEvent e)
