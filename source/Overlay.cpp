@@ -115,6 +115,8 @@ void Overlay::CloseDialog(GuiDialog* dialog)
 {
 	assert(dialog);
 	dialog->Event(GuiEvent_Hide);
+	if(dialog->handler)
+		dialog->handler();
 	dialogs_to_close.push_back(dialog);
 }
 
