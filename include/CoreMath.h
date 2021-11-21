@@ -815,6 +815,7 @@ struct Vec3 : XMFLOAT3
 	static float Angle2d(const Vec3& v1, const Vec3& v2);
 	static void Barycentric(const Vec3& v1, const Vec3& v2, const Vec3& v3, float f, float g, Vec3& result);
 	static Vec3 Barycentric(const Vec3& v1, const Vec3& v2, const Vec3& v3, float f, float g);
+	static void CalculateNormal(Vec3& out, const Vec3& v1, const Vec3& v2, const Vec3& v3);
 	static void CatmullRom(const Vec3& v1, const Vec3& v2, const Vec3& v3, const Vec3& v4, float t, Vec3& result);
 	static Vec3 CatmullRom(const Vec3& v1, const Vec3& v2, const Vec3& v3, const Vec3& v4, float t);
 	static float Distance(const Vec3& v1, const Vec3& v2);

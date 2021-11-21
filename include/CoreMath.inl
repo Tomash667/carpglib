@@ -1534,6 +1534,14 @@ inline Vec3 Vec3::Barycentric(const Vec3& v1, const Vec3& v2, const Vec3& v3, fl
 	return result;
 }
 
+inline void Vec3::CalculateNormal(Vec3& out, const Vec3& v1, const Vec3& v2, const Vec3& v3)
+{
+	Vec3 v01 = v2 - v1;
+	Vec3 v02 = v3 - v1;
+
+	out = v01.Cross(v02).Normalize();
+}
+
 inline void Vec3::CatmullRom(const Vec3& v1, const Vec3& v2, const Vec3& v3, const Vec3& v4, float t, Vec3& result)
 {
 	XMVECTOR x1 = XMLoadFloat3(&v1);
