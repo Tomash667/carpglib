@@ -751,6 +751,11 @@ inline Vec2 Vec2::Cross(const Vec2& v) const
 	return result;
 }
 
+inline float Vec2::Cross2d(const Vec2& v) const
+{
+	return x * v.y - y * v.x;
+}
+
 inline float Vec2::Dot(const Vec2& v) const
 {
 	XMVECTOR v1 = XMLoadFloat2(this);

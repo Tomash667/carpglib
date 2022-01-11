@@ -682,6 +682,7 @@ struct Vec2 : XMFLOAT2
 	Vec2 Clip() const;
 	void Cross(const Vec2& v, Vec2& result) const;
 	Vec2 Cross(const Vec2& v) const;
+	float Cross2d(const Vec2& v) const;
 	float Dot(const Vec2& v) const;
 	float DotSelf() const;
 	bool Equal(const Vec2& v) const;
@@ -1497,7 +1498,8 @@ namespace POD
 // Collisions and functions
 //-----------------------------------------------------------------------------
 bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box& box, float* out_t);
-bool RayToPlane(const Vec3& ray_pos, const Vec3& ray_dir, const Plane& plane, float* out_t);
+bool RayToPlane(const Vec3& rayPos, const Vec3& rayDir, const Plane& plane, float* outT);
+bool RayToQuad(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v0, const Vec3& v1, const Vec3& v2, const Vec3& v3, float* outT);
 bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, float radius, float& dist);
 bool RayToTriangle(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& v1, const Vec3& v2, const Vec3& v3, float& dist);
 bool RectangleToRectangle(float x1, float y1, float x2, float y2, float a1, float b1, float a2, float b2);
