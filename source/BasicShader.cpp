@@ -271,7 +271,7 @@ void BasicShader::ReserveIndexBuffer(uint indexCount)
 }
 
 //=================================================================================================
-void BasicShader::DrawQuad(const Vec3(&pts)[4], Color color)
+void BasicShader::DrawQuad(const array<Vec3, 4>& pts, Color color)
 {
 	Vec4 col = color;
 	uint offset = vertices.size();
@@ -306,7 +306,7 @@ void BasicShader::DrawLine(const Vec3& from, const Vec3& to, float width, Color 
 	Vec3 extrude_dir = line_dir.Cross(quad_normal).Normalize();
 	Vec3 line_normal = line_dir.Normalized() * width;
 
-	const Vec3 pts[4] = {
+	const array<Vec3, 4> pts = {
 		from + extrude_dir * width + line_normal,
 		from - extrude_dir * width + line_normal,
 		to + extrude_dir * width - line_normal,

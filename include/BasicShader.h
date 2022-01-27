@@ -31,7 +31,7 @@ public:
 	// drawing vertices
 	void Prepare(const Camera& camera);
 	void SetAreaParams(const Vec3& playerPos, float range, float falloff);
-	void DrawQuad(const Vec3(&pts)[4], Color color);
+	void DrawQuad(const array<Vec3, 4>& pts, Color color);
 	void DrawArea(const vector<Vec3>& vertices, const vector<word>& indices, Color color);
 	void DrawLine(const Vec3& from, const Vec3& to, float width, Color color);
 	void Draw();
