@@ -536,12 +536,13 @@ bool RayToPlane(const Vec3& rayPos, const Vec3& rayDir, const Plane& plane, floa
 }
 
 // https://www.shadertoy.com/view/XtlBDs
-// 0--b--3
+// 0-b-3
 // |\
 // a c
 // |  \
-// 1    2
-bool RayToQuad(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v0, const Vec3& v1, const Vec3& v2, const Vec3& v3, float* outT)
+// 1   2
+// result: 0 - no intersection, 1 - intersection, -1 - backface intersection
+int RayToQuad(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v0, const Vec3& v1, const Vec3& v2, const Vec3& v3, float* outT)
 {
 	// lets make v0 the origin
 	Vec3 a = v1 - v0;
@@ -553,7 +554,7 @@ bool RayToQuad(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v0, const Vec
 	Vec3 nor = a.Cross(b);
 	float t = -p.Dot(nor) / rayDir.Dot(nor);
 	if(t < 0.0f)
-		return false;
+		return 0;
 
 	// intersection point
 	Vec3 pos = p + t * rayDir;
@@ -593,7 +594,7 @@ bool RayToQuad(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v0, const Vec
 		// otherwise, it's a quadratic
 		float w = k1 * k1 - 4.0f * k0 * k2;
 		if(w < 0.0f)
-			return false;
+			return 0;
 		w = sqrt(w);
 
 		float ik2 = 1.0f / (2.0f * k2);
@@ -606,11 +607,13 @@ bool RayToQuad(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v0, const Vec
 	}
 
 	if(u < 0.0f || u>1.0f || v < 0.0f || v>1.0f)
-		return false;
+		return 0;
 
 	if(outT)
 		*outT = t;
-	return true;
+
+	const float hitNormal = rayDir.Dot(nor);
+	return hitNormal >= 0 ? -1 : 0;
 }
 
 bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, float radius, float& dist)
