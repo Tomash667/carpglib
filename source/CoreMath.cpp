@@ -613,7 +613,7 @@ int RayToQuad(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v0, const Vec3
 		*outT = t;
 
 	const float hitNormal = rayDir.Dot(nor);
-	return hitNormal >= 0 ? -1 : 0;
+	return hitNormal >= 0 ? -1 : 1;
 }
 
 bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, float radius, float& dist)
