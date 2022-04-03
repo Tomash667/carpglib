@@ -43,6 +43,8 @@ const Quat Quat::Identity = { 0.f, 0.f, 0.f, 1.f };
 const Guid Guid::Empty = Guid(0, 0, 0, 0);
 const string Guid::EmptyString = "00000000-0000-0000-0000-000000000000";
 
+void MurmurHash3_x86_32(const void* key, int len, uint32_t seed, void* out);
+
 //=================================================================================================
 // Random number generator
 //=================================================================================================
@@ -1157,7 +1159,7 @@ Vec2 Vec2::RandomPoissonDiscPoint()
 	return pos;
 }
 
-int Hash(const string& str)
+uint Hash(const string& str)
 {
 	uint hash = 0x811c9dc5;
 	uint prime = 0x1000193;
@@ -1170,10 +1172,10 @@ int Hash(const string& str)
 	}
 
 	assert(hash != 0u);
-	return union_cast<int>(hash);
+	return hash;
 }
 
-int Hash(cstring str)
+uint Hash(cstring str)
 {
 	uint hash = 0x811c9dc5;
 	const uint prime = 0x1000193;
@@ -1185,7 +1187,14 @@ int Hash(cstring str)
 	}
 
 	assert(hash != 0u);
-	return union_cast<int>(hash);
+	return hash;
+}
+
+uint Hash(const void* ptr, uint size)
+{
+	uint result;
+	MurmurHash3_x86_32(ptr, size, 0, &result);
+	return result;
 }
 
 cstring Guid::ToString() const

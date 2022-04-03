@@ -458,8 +458,9 @@ inline constexpr int Join3(int a, int b, int c)
 	return (a & 0xFF) | ((b & 0xFF) << 8) | ((c & 0xFF) << 16);
 }
 
-int Hash(const string& str);
-int Hash(cstring str);
+uint Hash(const string& str);
+uint Hash(cstring str);
+uint Hash(const void* ptr, uint size);
 
 //-----------------------------------------------------------------------------
 // check for overflow a + b, and return value

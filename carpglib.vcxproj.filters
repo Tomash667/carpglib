@@ -577,6 +577,9 @@
     <ClCompile Include="source\Camera.cpp">
       <Filter>entity</Filter>
     </ClCompile>
+    <ClCompile Include="source\MurmurHash3.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
