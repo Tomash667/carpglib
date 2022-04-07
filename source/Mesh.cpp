@@ -591,30 +591,31 @@ void Mesh::GetKeyframeData(KeyframeBone& keyframe, Animation* anim, uint bone, f
 //=================================================================================================
 void Mesh::LoadVertexData(VertexData* vd, StreamReader& stream)
 {
-	// read and check header
-	Header head;
-	stream >> head;
-	if(!stream)
-		throw "Failed to read file header.";
-	if(memcmp(head.format, "QMSH", 4) != 0)
-		throw Format("Invalid file signature '%.4s'.", head.format);
-	if(head.version != 20)
-		throw Format("Invalid file version '%d'.", head.version);
-	if(head.flags != F_PHYSICS)
-		throw Format("Invalid mesh flags '%d'.", head.flags);
-	vd->radius = head.radius;
+	assert(vd);
 
-	// read vertices
-	uint size = sizeof(Vec3) * head.n_verts;
+	LoadHeader(stream);
+	SetVertexSizeDecl();
+	vd->radius = head.radius;
+	vd->vertex_decl = vertex_decl;
+	vd->vertex_size = vertex_size;
+
+	// ------ vertices
+	// ensure size
+	uint size = vertex_size * head.n_verts;
 	if(!stream.Ensure(size))
-		throw "Failed to read vertex data.";
-	vd->verts.resize(head.n_verts);
+		throw "Failed to read vertex buffer.";
+
+	// read
+	vd->verts.resize(size);
 	stream.Read(vd->verts.data(), size);
 
-	// read faces
+	// ----- triangles
+	// ensure size
 	size = sizeof(Face) * head.n_tris;
 	if(!stream.Ensure(size))
-		throw "Failed to read triangle data.";
+		throw "Failed to read index buffer.";
+
+	// read
 	vd->faces.resize(head.n_tris);
 	stream.Read(vd->faces.data(), size);
 }

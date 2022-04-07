@@ -190,4 +190,5 @@ private:
 	float timer_dt, progress, progress_min, progress_max;
 	ProgressCallback progress_clbk;
 	ObjectPool<TaskDetail> task_pool;
+	Mesh* tmpMesh;
 };

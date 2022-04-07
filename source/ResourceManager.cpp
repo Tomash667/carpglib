@@ -21,13 +21,15 @@ extern uint capsule_qmsh_len;
 extern uint cylinder_qmsh_len;
 
 //=================================================================================================
-ResourceManager::ResourceManager() : mode(Mode::Instant)
+ResourceManager::ResourceManager() : mode(Mode::Instant), tmpMesh(nullptr)
 {
 }
 
 //=================================================================================================
 ResourceManager::~ResourceManager()
 {
+	delete tmpMesh;
+
 	for(Resource* res : resources)
 		delete res;
 
@@ -610,15 +612,18 @@ void ResourceManager::LoadVertexData(VertexData* vd)
 {
 	try
 	{
+		if(!tmpMesh)
+			tmpMesh = new Mesh();
+
 		if(vd->IsFile())
 		{
 			FileReader f(vd->path);
-			Mesh::LoadVertexData(vd, f);
+			tmpMesh->LoadVertexData(vd, f);
 		}
 		else
 		{
 			MemoryReader f(vd->GetBuffer());
-			Mesh::LoadVertexData(vd, f);
+			tmpMesh->LoadVertexData(vd, f);
 		}
 	}
 	catch(cstring err)
