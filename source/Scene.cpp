@@ -15,7 +15,7 @@ fog_range(50, 100), skybox(nullptr)
 //=================================================================================================
 Scene::~Scene()
 {
-	SceneNode::Free(nodes);
+	Clear();
 }
 
 //=================================================================================================
@@ -37,12 +37,24 @@ void Scene::Detach(SceneNode* node)
 void Scene::Clear()
 {
 	SceneNode::Free(nodes);
+	DeleteElements(lights);
 }
 
 //=================================================================================================
 void Scene::ListNodes(SceneBatch& batch)
 {
 	FrustumPlanes frustum(batch.camera->matViewProj);
+
+	if(batch.gather_lights)
+	{
+		activeLights.clear();
+		for(Light* light : lights)
+		{
+			if(frustum.SphereToFrustum(light->pos, light->range))
+				activeLights.push_back(light);
+		}
+	}
+
 	for(SceneNode* node : nodes)
 	{
 		if(node->visible && frustum.SphereToFrustum(node->pos, node->radius))
@@ -59,11 +71,11 @@ void Scene::GatherLights(SceneBatch& batch, SceneNode* node)
 {
 	TopN<Light*, 3, float, std::less<>> best(nullptr, batch.camera->zfar);
 
-	for(Light& light : lights)
+	for(Light* light : activeLights)
 	{
-		float dist = Vec3::Distance(node->pos, light.pos);
-		if(dist < light.range + node->radius)
-			best.Add(&light, dist);
+		float dist = Vec3::Distance(node->pos, light->pos);
+		if(dist < light->range + node->radius)
+			best.Add(light, dist);
 	}
 
 	for(int i = 0; i < 3; ++i)

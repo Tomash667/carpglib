@@ -229,7 +229,7 @@ struct TopN
 		return best[index];
 	}
 
-	T best[COUNT];
-	ValueT best_values[COUNT];
+	array<T, COUNT> best;
+	array<ValueT, COUNT> best_values;
 	Pred pred;
 };

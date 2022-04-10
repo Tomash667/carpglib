@@ -25,7 +25,7 @@ struct Scene
 	Vec4 GetLightDir() const { return Vec4(light_dir, 1); }
 
 	vector<SceneNode*> nodes;
-	vector<Light> lights;
+	vector<Light*> lights, activeLights;
 	vector<SceneCallback*> callbacks;
 	Mesh* skybox;
 	Vec3 light_dir;
