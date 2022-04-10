@@ -89,7 +89,7 @@ void ParticleShader::Prepare(Camera& camera)
 
 	// vertex shader constants
 	ResourceLock lock(vsGlobals);
-	lock.Get<VsGlobals>()->matCombined = camera.matViewInv.Transpose();
+	lock.Get<VsGlobals>()->matCombined = camera.matViewProj.Transpose();
 
 	lastTex = (Texture*)0xFEFEFEFE;
 }
