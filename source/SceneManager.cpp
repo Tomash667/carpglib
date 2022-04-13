@@ -96,6 +96,7 @@ void SceneManager::DrawSceneNodes()
 		return;
 
 	super_shader->Prepare();
+	super_shader->SetScene(scene, camera);
 
 	if(!batch.node_groups.empty())
 		DrawSceneNodes(batch.nodes, batch.node_groups);
