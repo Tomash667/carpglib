@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Sound.h"
+
+//-----------------------------------------------------------------------------
 class SoundManager
 {
 	friend class DefaultDeviceHandler;
@@ -11,7 +14,7 @@ public:
 	void Disable() { assert(!initialized); disabled = true; }
 	void Update(float dt);
 	int LoadSound(Sound* sound);
-	void PlayMusic(Music* music);
+	void PlayMusic(Music* music, bool loop = true);
 	void PlayMusic(MusicList* musicList, bool delayed = false);
 	void PlaySound2d(Sound* sound);
 	void PlaySound3d(Sound* sound, const Vec3& pos, float distance);
@@ -41,6 +44,7 @@ private:
 	FMOD::ChannelGroup* groupDefault, *groupMusic;
 	FMOD::Channel* currentMusic;
 	MusicList* musicList;
+	MusicList tmpMusicList;
 	Music* lastMusic;
 	DefaultDeviceHandler* handler;
 	vector<FMOD::Channel*> playingSounds;

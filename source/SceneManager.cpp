@@ -3,9 +3,11 @@
 
 #include "Camera.h"
 #include "DirectX.h"
+#include "Gui.h"
 #include "Render.h"
 #include "Scene.h"
 #include "SceneNode.h"
+#include "SkyboxShader.h"
 #include "SuperShader.h"
 
 SceneManager* app::scene_mgr;
@@ -18,17 +20,40 @@ SceneManager::SceneManager() : use_lighting(true), use_fog(true), use_normalmap(
 //=================================================================================================
 void SceneManager::Init()
 {
-	super_shader = new SuperShader;
-	app::render->RegisterShader(super_shader);
+	super_shader = app::render->GetShader<SuperShader>();
+	skybox_shader = app::render->GetShader<SkyboxShader>();
 }
 
 //=================================================================================================
 void SceneManager::SetScene(Scene* scene, Camera* camera)
 {
-	assert(scene && camera);
 	this->scene = scene;
 	this->camera = camera;
-	super_shader->SetScene(scene, camera);
+	if(scene && camera)
+		super_shader->SetScene(scene, camera);
+}
+
+//=================================================================================================
+void SceneManager::Prepare()
+{
+	batch.Clear();
+	batch.camera = camera;
+	batch.gather_lights = use_lighting && !scene->use_light_dir;
+	scene->ListNodes(batch);
+	batch.Process();
+
+	app::render->Clear(scene->clear_color);
+}
+
+//=================================================================================================
+void SceneManager::Draw()
+{
+	if(scene && camera)
+		Draw(nullptr);
+	else
+		app::render->Clear(Color::Black);
+	app::gui->Draw();
+	app::render->Present();
 }
 
 //=================================================================================================
@@ -45,6 +70,9 @@ void SceneManager::Draw(RenderTarget* target)
 
 	app::render->Clear(scene->clear_color);
 
+	if(scene->skybox)
+		skybox_shader->Draw(*scene->skybox, *camera);
+
 	super_shader->Prepare();
 
 	if(!batch.node_groups.empty())
@@ -55,6 +83,22 @@ void SceneManager::Draw(RenderTarget* target)
 
 	if(target)
 		app::render->SetRenderTarget(nullptr);
+}
+
+//=================================================================================================
+void SceneManager::DrawSceneNodes()
+{
+	if(batch.node_groups.empty() && batch.alpha_nodes.empty())
+		return;
+
+	super_shader->Prepare();
+	super_shader->SetScene(scene, camera);
+
+	if(!batch.node_groups.empty())
+		DrawSceneNodes(batch.nodes, batch.node_groups);
+
+	if(!batch.alpha_nodes.empty())
+		DrawAlphaSceneNodes(batch.alpha_nodes);
 }
 
 //=================================================================================================
@@ -136,4 +180,11 @@ void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 
 		super_shader->Draw(node);
 	}
+}
+
+//=================================================================================================
+void SceneManager::DrawSkybox(Mesh* mesh)
+{
+	assert(mesh);
+	skybox_shader->Draw(*mesh, *camera);
 }

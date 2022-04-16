@@ -113,7 +113,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 	t.Next();
 
 	uint wersja = t.MustGetUint();
-	if(wersja < (uint)QMSH_TMP_HANDLED_VERSION.x || wersja > (uint)QMSH_TMP_HANDLED_VERSION.y)
+	if(wersja < (uint)QMSH_TMP_HANDLED_VERSION.x || wersja >(uint)QMSH_TMP_HANDLED_VERSION.y)
 		t.Throw("B³êdna wersja");
 	t.Next();
 	load_version = wersja;
@@ -525,7 +525,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 		{
 			t.Next();
 
-			if(Out->Armature != NULL)
+			if(Out->Armature != nullptr)
 				t.Throw("Multiple armature objects not allowed.");
 
 			Out->Armature.reset(new tmp::ARMATURE);

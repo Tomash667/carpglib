@@ -18,8 +18,8 @@ const Vec3 Vec3::Up = { 0.f, 1.f, 0.f };
 const Vec3 Vec3::Down = { 0.f, -1.f, 0.f };
 const Vec3 Vec3::Right = { 1.f, 0.f, 0.f };
 const Vec3 Vec3::Left = { -1.f, 0.f, 0.f };
-const Vec3 Vec3::Forward = { 0.f, 0.f, -1.f };
-const Vec3 Vec3::Backward = { 0.f, 0.f, 1.f };
+const Vec3 Vec3::Forward = { 0.f, 0.f, 1.f };
+const Vec3 Vec3::Backward = { 0.f, 0.f, -1.f };
 
 const Vec4 Vec4::Zero = { 0.f, 0.f, 0.f, 0.f };
 const Vec4 Vec4::One = { 1.f, 1.f, 1.f, 1.f };
@@ -42,6 +42,8 @@ const Quat Quat::Identity = { 0.f, 0.f, 0.f, 1.f };
 
 const Guid Guid::Empty = Guid(0, 0, 0, 0);
 const string Guid::EmptyString = "00000000-0000-0000-0000-000000000000";
+
+void MurmurHash3_x86_32(const void* key, int len, uint32_t seed, void* out);
 
 //=================================================================================================
 // Random number generator
@@ -250,8 +252,8 @@ void LerpAngle(float& angle, float from, float to, float t)
 
 void AdjustAngle(float& angle, float expected, float max_dif)
 {
-	float diff = AngleDiff(angle, expected);
-	if(diff <= max_dif)
+	float dif = AngleDif(angle, expected);
+	if(dif <= max_dif)
 		angle = expected;
 	else
 		angle = Clip(angle + ShortestArc(angle, expected) * max_dif);
@@ -279,7 +281,7 @@ bool CircleToRectangle(float circlex, float circley, float radius, float rectx, 
 	float dx = dist_x - w;
 	float dy = dist_y - h;
 
-	return (dx*dx + dy * dy) <= (radius*radius);
+	return (dx * dx + dy * dy) <= (radius * radius);
 }
 
 bool Vec3::Parse(cstring str)
@@ -523,15 +525,97 @@ bool FrustumPlanes::SphereInFrustum(const Vec3& sphere_center, float sphere_radi
 	return true;
 }
 
-bool RayToPlane(const Vec3& ray_pos, const Vec3& ray_dir, const Plane& plane, float* out_t)
+bool RayToPlane(const Vec3& rayPos, const Vec3& rayDir, const Plane& plane, float* outT)
 {
-	float VD = plane.x * ray_dir.x + plane.y * ray_dir.y + plane.z * ray_dir.z;
+	float VD = plane.x * rayDir.x + plane.y * rayDir.y + plane.z * rayDir.z;
 	if(VD == 0.0f)
 		return false;
 
-	*out_t = -(plane.x * ray_pos.x + plane.y * ray_pos.y + plane.z * ray_pos.z + plane.w) / VD;
+	if(outT)
+		*outT = -(plane.x * rayPos.x + plane.y * rayPos.y + plane.z * rayPos.z + plane.w) / VD;
 
 	return true;
+}
+
+// https://www.shadertoy.com/view/XtlBDs
+// 0-b-3
+// |\
+// a c
+// |  \
+// 1   2
+// result: 0 - no intersection, 1 - intersection, -1 - backface intersection
+int RayToQuad(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v0, const Vec3& v1, const Vec3& v2, const Vec3& v3, float* outT)
+{
+	// lets make v0 the origin
+	Vec3 a = v1 - v0;
+	Vec3 b = v3 - v0;
+	Vec3 c = v2 - v0;
+	Vec3 p = rayPos - v0;
+
+	// intersect plane
+	Vec3 nor = a.Cross(b);
+	float t = -p.Dot(nor) / rayDir.Dot(nor);
+	if(t < 0.0f)
+		return 0;
+
+	// intersection point
+	Vec3 pos = p + t * rayDir;
+
+	// select projection plane
+	Vec3 mor = Vec3(abs(nor.x), abs(nor.y), abs(nor.z));
+	int id = (mor.x > mor.y && mor.x > mor.z) ? 0 :
+		(mor.y > mor.z) ? 1 :
+		2;
+
+	const int lut[4]{ 1, 2, 0, 1 };
+	int idu = lut[id];
+	int idv = lut[id + 1];
+
+	// project to 2D
+	Vec2 kp = Vec2(pos[idu], pos[idv]);
+	Vec2 ka = Vec2(a[idu], a[idv]);
+	Vec2 kb = Vec2(b[idu], b[idv]);
+	Vec2 kc = Vec2(c[idu], c[idv]);
+
+	// find barycentric coords of the quadrilateral
+	Vec2 kg = kc - kb - ka;
+
+	float k0 = kp.Cross2d(kb);
+	float k2 = (kc - kb).Cross2d(ka);        // float k2 = cross2d( kg, ka );
+	float k1 = kp.Cross2d(kg) - nor[id]; // float k1 = cross2d( kb, ka ) + cross2d( kp, kg );
+
+	// if edges are parallel, this is a linear equation
+	float u, v;
+	if(abs(k2) < 0.00001f)
+	{
+		v = -k0 / k1;
+		u = kp.Cross2d(ka) / k1;
+	}
+	else
+	{
+		// otherwise, it's a quadratic
+		float w = k1 * k1 - 4.0f * k0 * k2;
+		if(w < 0.0f)
+			return 0;
+		w = sqrt(w);
+
+		float ik2 = 1.0f / (2.0f * k2);
+
+		v = (-k1 - w) * ik2;
+		if(v < 0.0f || v>1.0f)
+			v = (-k1 + w) * ik2;
+
+		u = (kp.x - ka.x * v) / (kb.x + kg.x * v);
+	}
+
+	if(u < 0.0f || u>1.0f || v < 0.0f || v>1.0f)
+		return 0;
+
+	if(outT)
+		*outT = t;
+
+	const float hitNormal = rayDir.Dot(nor);
+	return hitNormal >= 0 ? -1 : 1;
 }
 
 bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, float radius, float& dist)
@@ -602,9 +686,9 @@ bool RayToTriangle(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& v1, con
 
 bool LineToLine(const Vec2& start1, const Vec2& end1, const Vec2& start2, const Vec2& end2, float* t)
 {
-	float ua_t = (end2.x - start2.x)*(start1.y - start2.y) - (end2.y - start2.y)*(start1.x - start2.x);
-	float ub_t = (end1.x - start1.x)*(start1.y - start2.y) - (end1.y - start1.y)*(start1.x - start2.x);
-	float u_b = (end2.y - start2.y)*(end1.x - start1.x) - (end2.x - start2.x)*(end1.y - start1.y);
+	float ua_t = (end2.x - start2.x) * (start1.y - start2.y) - (end2.y - start2.y) * (start1.x - start2.x);
+	float ub_t = (end1.x - start1.x) * (start1.y - start2.y) - (end1.y - start1.y) * (start1.x - start2.x);
+	float u_b = (end2.y - start2.y) * (end1.x - start1.x) - (end2.x - start2.x) * (end1.y - start1.y);
 
 	if(u_b != 0)
 	{
@@ -694,7 +778,7 @@ bool SphereToBox(const Vec3 &SphereCenter, float SphereRadius, const Box &Box)
 {
 	Vec3 PointInBox;
 	ClosestPointInBox(&PointInBox, Box, SphereCenter);
-	return Vec3::DistanceSquared(SphereCenter, PointInBox) < SphereRadius*SphereRadius;
+	return Vec3::DistanceSquared(SphereCenter, PointInBox) < SphereRadius * SphereRadius;
 }
 
 bool CircleToRotatedRectangle(float cx, float cy, float radius, float rx, float ry, float w, float h, float rot)
@@ -715,8 +799,8 @@ inline void RotateVector2DClockwise(Vec2& v, float ang)
 		cosa = cos(ang),
 		sina = sin(ang);
 	t = v.x;
-	v.x = t * cosa + v.y*sina;
-	v.y = -t * sina + v.y*cosa;
+	v.x = t * cosa + v.y * sina;
+	v.y = -t * sina + v.y * cosa;
 }
 
 // Rotated Rectangles Collision Detection, Oren Becker, 2001
@@ -747,8 +831,8 @@ bool RotatedRectanglesCollision(const RotRect& r1, const RotRect& r2)
 	TR += r2.size;
 
 	// calculate vertices of (rotated := 'r') r1
-	A.x = -r1.size.y*sina; B.x = A.x; t = r1.size.x*cosa; A.x += t; B.x -= t;
-	A.y = r1.size.y*cosa; B.y = A.y; t = r1.size.x*sina; A.y += t; B.y -= t;
+	A.x = -r1.size.y * sina; B.x = A.x; t = r1.size.x * cosa; A.x += t; B.x -= t;
+	A.y = r1.size.y * cosa; B.y = A.y; t = r1.size.x * sina; A.y += t; B.y -= t;
 
 	t = sina * cosa;
 
@@ -775,7 +859,7 @@ bool RotatedRectanglesCollision(const RotRect& r1, const RotRect& r2)
 		ext1 = A.y;
 		// if the first vertical min/max isn't in (BL.x, TR.x), then
 		// find the vertical min/max on BL.x or on TR.x
-		if(a*x > 0)
+		if(a * x > 0)
 		{
 			dx = A.x;
 			if(x < 0) { dx -= B.x; ext1 -= B.y; x = a; }
@@ -787,7 +871,7 @@ bool RotatedRectanglesCollision(const RotRect& r1, const RotRect& r2)
 		ext2 = -A.y;
 		// if the second vertical min/max isn't in (BL.x, TR.x), then
 		// find the local vertical min/max on BL.x or on TR.x
-		if(a*x > 0)
+		if(a * x > 0)
 		{
 			dx = -A.x;
 			if(x < 0) { dx -= B.x; ext2 -= B.y; x = a; }
@@ -950,7 +1034,7 @@ float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float 
 {
 	float x = x2 - x1;
 	float y = y2 - y1;
-	return abs(y*x0 - x * y0 + x2 * y1 - y2 * x1) / sqrt(y*y + x * x);
+	return abs(y * x0 - x * y0 + x2 * y1 - y2 * x1) / sqrt(y * y + x * x);
 }
 
 float GetClosestPointOnLineSegment(const Vec2& A, const Vec2& B, const Vec2& P, Vec2& result)
@@ -1075,7 +1159,7 @@ Vec2 Vec2::RandomPoissonDiscPoint()
 	return pos;
 }
 
-int Hash(const string& str)
+uint Hash(const string& str)
 {
 	uint hash = 0x811c9dc5;
 	uint prime = 0x1000193;
@@ -1088,10 +1172,10 @@ int Hash(const string& str)
 	}
 
 	assert(hash != 0u);
-	return union_cast<int>(hash);
+	return hash;
 }
 
-int Hash(cstring str)
+uint Hash(cstring str)
 {
 	uint hash = 0x811c9dc5;
 	const uint prime = 0x1000193;
@@ -1103,7 +1187,14 @@ int Hash(cstring str)
 	}
 
 	assert(hash != 0u);
-	return union_cast<int>(hash);
+	return hash;
+}
+
+uint Hash(const void* ptr, uint size)
+{
+	uint result;
+	MurmurHash3_x86_32(ptr, size, 0, &result);
+	return result;
 }
 
 cstring Guid::ToString() const

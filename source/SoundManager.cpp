@@ -193,7 +193,7 @@ void SoundManager::Init()
 	playSound = soundVolume > 0;
 
 	// register change default device handler
-	IMMDeviceEnumerator* enumerator;
+	IMMDeviceEnumerator* enumerator{};
 	[[maybe_unused]] HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_INPROC_SERVER, __uuidof(IMMDeviceEnumerator), (void**)&enumerator);
 	assert(SUCCEEDED(hr));
 	criticalSection.Create();
@@ -337,24 +337,40 @@ int SoundManager::LoadSound(Sound* sound)
 }
 
 //=================================================================================================
-void SoundManager::PlayMusic(Music* music)
+void SoundManager::PlayMusic(Music* music, bool loop)
 {
 	if(disabled)
 		return;
 
 	assert(music && music->IsLoaded());
 
-	if(musicList == nullptr && music == lastMusic)
+	// convert to music list if loop requested
+	if(loop)
+	{
+		// if already playing, ignore
+		if(musicList == &tmpMusicList && tmpMusicList.musics[0] == music)
+			return;
+
+		tmpMusicList.musics.clear();
+		tmpMusicList.musics.push_back(music);
+		PlayMusic(&tmpMusicList);
 		return;
+	}
+	else
+	{
+		// if already playing, ignore
+		if(musicList == nullptr && music == lastMusic)
+			return;
 
-	musicList = nullptr;
-	musicEnded = false;
-	if(currentMusic)
-		fallbacks.push_back(currentMusic);
+		musicList = nullptr;
+		musicEnded = false;
+		if(currentMusic)
+			fallbacks.push_back(currentMusic);
 
-	system->playSound(music->sound, groupMusic, true, &currentMusic);
-	currentMusic->setVolume(0.f);
-	currentMusic->setPaused(false);
+		system->playSound(music->sound, groupMusic, true, &currentMusic);
+		currentMusic->setVolume(0.f);
+		currentMusic->setPaused(false);
+	}
 }
 
 //=================================================================================================
@@ -365,6 +381,7 @@ void SoundManager::PlayMusic(MusicList* musicList, bool delayed)
 
 	assert(musicList && musicList->IsLoaded());
 
+	// if already playing, ignore
 	if(this->musicList == musicList)
 		return;
 

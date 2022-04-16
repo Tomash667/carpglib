@@ -13,11 +13,9 @@ struct Scene
 		assert(node);
 		nodes.push_back(node);
 	}
-	void Remove(SceneNode* node)
-	{
-		assert(node);
-		RemoveElement(nodes, node);
-	}
+	void Remove(SceneNode* node);
+	void Detach(SceneNode* node);
+	void Clear();
 	void ListNodes(SceneBatch& batch);
 	void GatherLights(SceneBatch& batch, SceneNode* node);
 	Vec4 GetAmbientColor() const;
@@ -27,7 +25,8 @@ struct Scene
 	Vec4 GetLightDir() const { return Vec4(light_dir, 1); }
 
 	vector<SceneNode*> nodes;
-	vector<Light> lights;
+	vector<Light*> lights, activeLights;
+	Mesh* skybox;
 	Vec3 light_dir;
 	Vec2 fog_range;
 	Color clear_color, ambient_color, light_color, fog_color;

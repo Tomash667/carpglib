@@ -36,8 +36,8 @@ inline void DeleteElements(std::map<Key, Value>& v)
 	v.clear();
 }
 
-template<typename Key, typename Value>
-inline void DeleteElements(std::unordered_map<Key, Value>& v)
+template<typename Key, typename Value, typename Hash>
+inline void DeleteElements(std::unordered_map<Key, Value, Hash>& v)
 {
 	for(auto& e : v)
 		delete e.second;

@@ -252,7 +252,7 @@ void Grid::Init()
 {
 	scroll.pos = Int2(size.x - 16, height);
 	scroll.size = Int2(16, size.y - height);
-	scroll.total = height*items;
+	scroll.total = height * items;
 	scroll.part = scroll.size.y;
 	scroll.offset = 0;
 
@@ -282,7 +282,7 @@ void Grid::AddColumn(Type type, int width, cstring title)
 void Grid::AddItem()
 {
 	++items;
-	scroll.total = items*height;
+	scroll.total = items * height;
 }
 
 //=================================================================================================
@@ -290,18 +290,26 @@ void Grid::AddItems(int count)
 {
 	assert(count > 0);
 	items += count;
-	scroll.total = items*height;
+	scroll.total = items * height;
 }
 
 //=================================================================================================
-void Grid::RemoveItem(int id)
+void Grid::RemoveItem(int id, bool keepSelection)
 {
 	if(selected == id)
-		selected = -1;
+	{
+		if(keepSelection)
+		{
+			if(selected + 1 == items)
+				--selected;
+		}
+		else
+			selected = -1;
+	}
 	else if(selected > id)
 		--selected;
 	--items;
-	scroll.total = items*height;
+	scroll.total = items * height;
 	const float s = float(scroll.total - scroll.part);
 	if(scroll.offset > s)
 		scroll.offset = s;

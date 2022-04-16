@@ -15,6 +15,7 @@ struct Light;
 struct Lights;
 struct MeshInstance;
 struct ParticleEmitter;
+struct PhysicsDrawer;
 struct PostEffect;
 struct Scene;
 struct SceneBatch;
@@ -26,7 +27,6 @@ struct Terrain;
 struct TrailParticleEmitter;
 class App;
 class BasicShader;
-class CustomCollisionWorld;
 class Engine;
 class FontLoader;
 class GlowShader;
@@ -67,12 +67,14 @@ typedef VertexData* VertexDataPtr;
 // Gui types
 struct AreaLayout;
 struct Notification;
+union Cell;
 class Button;
 class CheckBox;
 class Container;
 class Control;
 class DialogBox;
 class DrawBox;
+class Grid;
 class GuiDialog;
 class GuiElement;
 class Label;
@@ -91,6 +93,7 @@ class TreeView;
 // Windows types
 struct HWND__;
 struct _GUID;
+typedef void* HANDLE;
 typedef HWND__* HWND;
 typedef _GUID GUID;
 
@@ -143,6 +146,7 @@ namespace app
 	extern Engine* engine;
 	extern Gui* gui;
 	extern Input* input;
+	extern Physics* physics;
 	extern Render* render;
 	extern ResourceManager* res_mgr;
 	extern SceneManager* scene_mgr;

@@ -50,7 +50,7 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 	{
 		if(QmshTmp.static_anim)
 			Out->Flags |= FLAG_STATIC;
-		if(QmshTmp.Armature != NULL)
+		if(QmshTmp.Armature != nullptr)
 		{
 			Out->Flags |= FLAG_SKINNING;
 
@@ -187,7 +187,7 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 			//BlenderToDirectxTransform(&v.Binormal, NvVertices[vi].binormal);
 			v.Tangent = NvVertices[vi].tangent;
 			v.Binormal = NvVertices[vi].binormal;
-			if(QmshTmp.Armature != NULL)
+			if(QmshTmp.Armature != nullptr)
 			{
 				const INTERMEDIATE_VERTEX_SKIN_DATA &ivsd = VertexSkinData[MappingNvToTmpVert[NvMappingOldToNewVert[vi]]];
 				v.BoneIndices = (ivsd.Index1) | (ivsd.Index2 << 8);
@@ -313,46 +313,7 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 	if(QmshTmp.force_tangents)
 		Out->Flags |= FLAG_TANGENTS;
 
-	Info("Zapisywanie punktów.");
-
-	// punkty
-	const uint n_bones = Out->Bones.size();
-	for(std::vector< shared_ptr<tmp::POINT> >::const_iterator it = QmshTmp.points.begin(), end = QmshTmp.points.end(); it != end; ++it)
-	{
-		shared_ptr<QMSH_POINT> point(new QMSH_POINT);
-		tmp::POINT& pt = *((*it).get());
-
-		point->name = pt.name;
-		point->size = Vec3(abs(pt.size.x), abs(pt.size.y), abs(pt.size.z));
-		BlenderToDirectxTransform(&point->size);
-		point->type = (word)-1;
-		for(int i = 0; i < Mesh::Point::MAX; ++i)
-		{
-			if(pt.type == point_types[i])
-			{
-				point->type = i;
-				break;
-			}
-		}
-		if(point->type == (word)-1)
-			throw Format("Invalid point type '%s'.", pt.type.c_str());
-		BlenderToDirectxTransform(&point->matrix, pt.matrix);
-		BlenderToDirectxTransform(&point->rot, pt.rot);
-		point->rot.y = Clip(-point->rot.y);
-
-		uint i = 0;
-		for(std::vector< shared_ptr<QMSH_BONE> >::const_iterator it = Out->Bones.begin(), end = Out->Bones.end(); it != end; ++i, ++it)
-		{
-			if((*it)->Name == pt.bone)
-			{
-				point->bone = i;
-				break;
-			}
-		}
-
-		Out->Points.push_back(point);
-	}
-
+	ConvertPoints(QmshTmp, *Out);
 	CalcBoundingVolumes(*Out);
 }
 
@@ -364,7 +325,9 @@ void Converter::TmpToQmsh_Bones(QMSH *Out, std::vector<BONE_INTER_DATA> *OutBone
 	// Ta macierz przekszta³ca wsp. z lokalnych obiektu Armature do globalnych œwiata.
 	// Bêdzie ju¿ w uk³adzie DirectX.
 	Matrix ArmatureToWorldMat;
-	AssemblyBlenderObjectMatrix(&ArmatureToWorldMat, TmpArmature.Position, TmpArmature.Orientation, TmpArmature.Size);
+	Vec3 orientation = TmpArmature.Orientation;
+	orientation.z += RotToOrigin;
+	AssemblyBlenderObjectMatrix(&ArmatureToWorldMat, TmpArmature.Position, orientation, TmpArmature.Size);
 	BlenderToDirectxTransform(&ArmatureToWorldMat);
 
 	// Dla ka¿dej koœci g³ównego poziomu
@@ -507,7 +470,7 @@ void Converter::TmpToQmsh_Animation(QMSH_ANIMATION *OutAnimation, const tmp::ACT
 	float TimeFactor = 1.f / (float)QmshTmp.FPS;
 
 	// Lista wskaŸników do krzywych dotycz¹cych poszczególnych parametrów danej koœci QMSH
-	// (Mog¹ byæ NULL)
+	// (Mog¹ byæ nullptr)
 
 	struct CHANNEL_POINTERS {
 		const tmp::CURVE *LocX, *LocY, *LocZ, *QuatX, *QuatY, *QuatZ, *QuatW, *SizeX, *SizeY, *SizeZ;
@@ -520,16 +483,16 @@ void Converter::TmpToQmsh_Animation(QMSH_ANIMATION *OutAnimation, const tmp::ACT
 	// Dla kolejnych koœci
 	for(uint bi = 0; bi < BoneCount; bi++)
 	{
-		BoneChannelPointers[bi].LocX = NULL;  BoneChannelPointers[bi].LocX_index = 0;
-		BoneChannelPointers[bi].LocY = NULL;  BoneChannelPointers[bi].LocY_index = 0;
-		BoneChannelPointers[bi].LocZ = NULL;  BoneChannelPointers[bi].LocZ_index = 0;
-		BoneChannelPointers[bi].QuatX = NULL; BoneChannelPointers[bi].QuatX_index = 0;
-		BoneChannelPointers[bi].QuatY = NULL; BoneChannelPointers[bi].QuatY_index = 0;
-		BoneChannelPointers[bi].QuatZ = NULL; BoneChannelPointers[bi].QuatZ_index = 0;
-		BoneChannelPointers[bi].QuatW = NULL; BoneChannelPointers[bi].QuatW_index = 0;
-		BoneChannelPointers[bi].SizeX = NULL; BoneChannelPointers[bi].SizeX_index = 0;
-		BoneChannelPointers[bi].SizeY = NULL; BoneChannelPointers[bi].SizeY_index = 0;
-		BoneChannelPointers[bi].SizeZ = NULL; BoneChannelPointers[bi].SizeZ_index = 0;
+		BoneChannelPointers[bi].LocX = nullptr;  BoneChannelPointers[bi].LocX_index = 0;
+		BoneChannelPointers[bi].LocY = nullptr;  BoneChannelPointers[bi].LocY_index = 0;
+		BoneChannelPointers[bi].LocZ = nullptr;  BoneChannelPointers[bi].LocZ_index = 0;
+		BoneChannelPointers[bi].QuatX = nullptr; BoneChannelPointers[bi].QuatX_index = 0;
+		BoneChannelPointers[bi].QuatY = nullptr; BoneChannelPointers[bi].QuatY_index = 0;
+		BoneChannelPointers[bi].QuatZ = nullptr; BoneChannelPointers[bi].QuatZ_index = 0;
+		BoneChannelPointers[bi].QuatW = nullptr; BoneChannelPointers[bi].QuatW_index = 0;
+		BoneChannelPointers[bi].SizeX = nullptr; BoneChannelPointers[bi].SizeX_index = 0;
+		BoneChannelPointers[bi].SizeY = nullptr; BoneChannelPointers[bi].SizeY_index = 0;
+		BoneChannelPointers[bi].SizeZ = nullptr; BoneChannelPointers[bi].SizeZ_index = 0;
 
 		//ZnajdŸ kana³ odpowiadaj¹cy tej koœci
 		const string & BoneName = Qmsh.Bones[bi]->Name;
@@ -609,16 +572,16 @@ void Converter::TmpToQmsh_Animation(QMSH_ANIMATION *OutAnimation, const tmp::ACT
 			}
 		}
 
-		if(BoneChannelPointers[bi].LocX != NULL && BoneChannelPointers[bi].LocX->Interpolation == tmp::INTERPOLATION_CONST ||
-			BoneChannelPointers[bi].LocY != NULL && BoneChannelPointers[bi].LocY->Interpolation == tmp::INTERPOLATION_CONST ||
-			BoneChannelPointers[bi].LocZ != NULL && BoneChannelPointers[bi].LocZ->Interpolation == tmp::INTERPOLATION_CONST ||
-			BoneChannelPointers[bi].QuatX != NULL && BoneChannelPointers[bi].QuatX->Interpolation == tmp::INTERPOLATION_CONST ||
-			BoneChannelPointers[bi].QuatY != NULL && BoneChannelPointers[bi].QuatY->Interpolation == tmp::INTERPOLATION_CONST ||
-			BoneChannelPointers[bi].QuatZ != NULL && BoneChannelPointers[bi].QuatZ->Interpolation == tmp::INTERPOLATION_CONST ||
-			BoneChannelPointers[bi].QuatW != NULL && BoneChannelPointers[bi].QuatW->Interpolation == tmp::INTERPOLATION_CONST ||
-			BoneChannelPointers[bi].SizeX != NULL && BoneChannelPointers[bi].SizeX->Interpolation == tmp::INTERPOLATION_CONST ||
-			BoneChannelPointers[bi].SizeY != NULL && BoneChannelPointers[bi].SizeY->Interpolation == tmp::INTERPOLATION_CONST ||
-			BoneChannelPointers[bi].SizeZ != NULL && BoneChannelPointers[bi].SizeZ->Interpolation == tmp::INTERPOLATION_CONST)
+		if(BoneChannelPointers[bi].LocX != nullptr && BoneChannelPointers[bi].LocX->Interpolation == tmp::INTERPOLATION_CONST ||
+			BoneChannelPointers[bi].LocY != nullptr && BoneChannelPointers[bi].LocY->Interpolation == tmp::INTERPOLATION_CONST ||
+			BoneChannelPointers[bi].LocZ != nullptr && BoneChannelPointers[bi].LocZ->Interpolation == tmp::INTERPOLATION_CONST ||
+			BoneChannelPointers[bi].QuatX != nullptr && BoneChannelPointers[bi].QuatX->Interpolation == tmp::INTERPOLATION_CONST ||
+			BoneChannelPointers[bi].QuatY != nullptr && BoneChannelPointers[bi].QuatY->Interpolation == tmp::INTERPOLATION_CONST ||
+			BoneChannelPointers[bi].QuatZ != nullptr && BoneChannelPointers[bi].QuatZ->Interpolation == tmp::INTERPOLATION_CONST ||
+			BoneChannelPointers[bi].QuatW != nullptr && BoneChannelPointers[bi].QuatW->Interpolation == tmp::INTERPOLATION_CONST ||
+			BoneChannelPointers[bi].SizeX != nullptr && BoneChannelPointers[bi].SizeX->Interpolation == tmp::INTERPOLATION_CONST ||
+			BoneChannelPointers[bi].SizeY != nullptr && BoneChannelPointers[bi].SizeY->Interpolation == tmp::INTERPOLATION_CONST ||
+			BoneChannelPointers[bi].SizeZ != nullptr && BoneChannelPointers[bi].SizeZ->Interpolation == tmp::INTERPOLATION_CONST)
 		{
 			WarningInterpolation = true;
 		}
@@ -683,13 +646,13 @@ void Converter::TmpToQmsh_Animation(QMSH_ANIMATION *OutAnimation, const tmp::ACT
 }
 
 // Zwraca wartoœæ krzywej w podanej klatce
-// TmpCurve mo¿e byæ NULL.
+// TmpCurve mo¿e byæ nullptr.
 // PtIndex - indeks nastêpnego punktu
 // NextFrame - jeœli nastêpna klatka tej krzywej istnieje i jest mniejsza ni¿ NextFrame, ustawia NextFrame na ni¹
 float Converter::CalcTmpCurveValue(float DefaultValue, const tmp::CURVE *TmpCurve, uint *InOutPtIndex, float Frame, float *InOutNextFrame)
 {
 	// Nie ma krzywej
-	if(TmpCurve == NULL)
+	if(TmpCurve == nullptr)
 		return DefaultValue;
 	// W ogóle nie ma punktów
 	if(TmpCurve->Points.empty())
@@ -741,13 +704,15 @@ void Converter::TransformQmshTmpCoords(tmp::QMSH *InOut)
 
 		// Zbuduj macierz przekszta³cania tego obiektu
 		Matrix Mat, MatRot;
-		AssemblyBlenderObjectMatrix(&Mat, o.Position, o.Orientation, o.Size);
-		MatRot = Matrix::Rotation(o.Orientation);
+		Vec3 orientation = o.Orientation;
+		orientation.z += RotToOrigin;
+		AssemblyBlenderObjectMatrix(&Mat, o.Position, orientation, o.Size);
+		MatRot = Matrix::Rotation(orientation);
 		// Jeœli obiekt jest sparentowany do Armature
 		// To jednak nic, bo te wspó³rzêdne s¹ ju¿ wyeksportowane w uk³adzie globalnym modelu a nie wzglêdem parenta.
-		if(!o.ParentArmature.empty() && !InOut->static_anim /*&& InOut->Armature != NULL*/)
+		if(!o.ParentArmature.empty() && !InOut->static_anim)
 		{
-			assert(InOut->Armature != NULL);
+			assert(InOut->Armature != nullptr);
 			Matrix ArmatureMat, ArmatureMatRot;
 			AssemblyBlenderObjectMatrix(&ArmatureMat, InOut->Armature->Position, InOut->Armature->Orientation, InOut->Armature->Size);
 			ArmatureMatRot = Matrix::Rotation(InOut->Armature->Orientation);
@@ -919,16 +884,13 @@ void Converter::CalcVertexSkinData(std::vector<INTERMEDIATE_VERTEX_SKIN_DATA> *O
 			std::vector<INFLUENCE> VertexInfluences;
 
 			// Wp³yw przez Vertex Groups
-			if(1)
+			for(uint bi = 0; bi < Qmsh.Bones.size(); bi++)
 			{
-				for(uint bi = 0; bi < Qmsh.Bones.size(); bi++)
+				INFLUENCE_MAP::iterator biit = BoneInfluences[bi].find(vi);
+				if(biit != BoneInfluences[bi].end())
 				{
-					INFLUENCE_MAP::iterator biit = BoneInfluences[bi].find(vi);
-					if(biit != BoneInfluences[bi].end())
-					{
-						INFLUENCE Influence = { bi + 1, biit->second };
-						VertexInfluences.push_back(Influence);
-					}
+					INFLUENCE Influence = { bi + 1, biit->second };
+					VertexInfluences.push_back(Influence);
 				}
 			}
 
@@ -1297,7 +1259,7 @@ void Converter::LoadBoneGroups(QMSH& qmsh, Tokenizer& t)
 		t.AssertSymbol(':');
 		t.Next();
 		string bone_name = t.MustGetString();
-		QMSH_BONE* bone = NULL;
+		QMSH_BONE* bone = nullptr;
 		int index = 0;
 		for(std::vector<shared_ptr<QMSH_BONE> >::iterator it = qmsh.Bones.begin(), end = qmsh.Bones.end(); it != end; ++it)
 		{
@@ -1422,6 +1384,48 @@ void Converter::BlenderToDirectxTransform(Matrix *InOut)
 
 	std::swap(InOut->_22, InOut->_33);
 	std::swap(InOut->_23, InOut->_32);
+}
+
+void Converter::ConvertPoints(tmp::QMSH& tmp, QMSH& mesh)
+{
+	Info("Converting points...");
+
+	const uint n_bones = mesh.Bones.size();
+	for(std::vector< shared_ptr<tmp::POINT> >::const_iterator it = tmp.points.begin(), end = tmp.points.end(); it != end; ++it)
+	{
+		shared_ptr<QMSH_POINT> point(new QMSH_POINT);
+		tmp::POINT& pt = *((*it).get());
+
+		point->name = pt.name;
+		point->size = Vec3(abs(pt.size.x), abs(pt.size.y), abs(pt.size.z));
+		BlenderToDirectxTransform(&point->size);
+		point->type = (word)-1;
+		for(int i = 0; i < Mesh::Point::MAX; ++i)
+		{
+			if(pt.type == point_types[i])
+			{
+				point->type = i;
+				break;
+			}
+		}
+		if(point->type == (word)-1)
+			throw Format("Invalid point type '%s'.", pt.type.c_str());
+		BlenderToDirectxTransform(&point->matrix, pt.matrix);
+		BlenderToDirectxTransform(&point->rot, pt.rot);
+		point->rot.y = Clip(-point->rot.y);
+
+		uint i = 0;
+		for(std::vector< shared_ptr<QMSH_BONE> >::const_iterator it = mesh.Bones.begin(), end = mesh.Bones.end(); it != end; ++i, ++it)
+		{
+			if((*it)->Name == pt.bone)
+			{
+				point->bone = i;
+				break;
+			}
+		}
+
+		mesh.Points.push_back(point);
+	}
 }
 
 // Wylicza parametry bry³ otaczaj¹cych siatkê

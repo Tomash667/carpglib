@@ -4,10 +4,6 @@
 #include "File.h"
 #include "ResourceManager.h"
 
-bool EntitySystem::clear;
-EntityType<ParticleEmitter>::Impl EntityType<ParticleEmitter>::impl;
-EntityType<TrailParticleEmitter>::Impl EntityType<TrailParticleEmitter>::impl;
-
 //=================================================================================================
 float drop_range(float v, float t)
 {
@@ -75,7 +71,6 @@ void ParticleEmitter::Init()
 
 	// nowe
 	manual_delete = 0;
-	Register();
 }
 
 //=================================================================================================
@@ -144,7 +139,6 @@ bool ParticleEmitter::Update(float dt)
 //=================================================================================================
 void ParticleEmitter::Save(FileWriter& f)
 {
-	f << id;
 	f << tex->filename;
 	f << emission_interval;
 	f << life;
@@ -172,12 +166,8 @@ void ParticleEmitter::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void ParticleEmitter::Load(FileReader& f, int version)
+void ParticleEmitter::Load(FileReader& f)
 {
-	if(version >= 1)
-		f >> id;
-	Register();
-
 	tex = app::res_mgr->Load<Texture>(f.ReadString1());
 	f >> emission_interval;
 	f >> life;
@@ -215,7 +205,6 @@ void TrailParticleEmitter::Init(int maxp)
 	last = -1;
 	alive = 0;
 	timer = 0.f;
-	Register();
 }
 
 //=================================================================================================
@@ -307,7 +296,6 @@ void TrailParticleEmitter::AddPoint(const Vec3& pt)
 //=================================================================================================
 void TrailParticleEmitter::Save(FileWriter& f)
 {
-	f << id;
 	f << fade;
 	f << color1;
 	f << color2;
@@ -326,55 +314,22 @@ void TrailParticleEmitter::Save(FileWriter& f)
 }
 
 //=================================================================================================
-void TrailParticleEmitter::Load(FileReader& f, int version)
+void TrailParticleEmitter::Load(FileReader& f)
 {
-	if(version >= 1)
-		f >> id;
-	Register();
-
 	f >> fade;
 	f >> color1;
 	f >> color2;
-	if(version >= 2)
-		f >> parts;
-	else
-	{
-		uint count;
-		f >> count;
-		parts.resize(count);
-		for(Particle& p : parts)
-		{
-			Vec3 pt1, pt2;
-			uint exists;
-			f >> pt1;
-			f >> pt2;
-			f >> p.t;
-			f >> p.next;
-			f >> exists;
-			p.exists = (exists & 0xFF) != 0; // saved as 4 bytes due to padding
-			if(p.exists)
-				p.pt = (pt1 + pt2) / 2;
-		}
-	}
+	f >> parts;
 	f >> first;
 	f >> last;
 	f >> destroy;
 	f >> alive;
 	f >> timer;
-	if(version >= 2)
-	{
-		f >> width;
-		const string& tex_id = f.ReadString1();
-		if(!tex_id.empty())
-			tex = app::res_mgr->Load<Texture>(tex_id);
-		else
-			tex = nullptr;
-		f >> manual;
-	}
+	f >> width;
+	const string& tex_id = f.ReadString1();
+	if(!tex_id.empty())
+		tex = app::res_mgr->Load<Texture>(tex_id);
 	else
-	{
-		width = 0.1f;
 		tex = nullptr;
-		manual = false;
-	}
+	f >> manual;
 }

@@ -260,6 +260,10 @@ inline Rect::Rect(int x1, int y1, int x2, int y2) : p1(x1, y1), p2(x2, y2)
 {
 }
 
+inline Rect::Rect(const Int2& p) : p1(p), p2(p)
+{
+}
+
 inline Rect::Rect(const Int2& p1, const Int2& p2) : p1(p1), p2(p2)
 {
 }
@@ -383,6 +387,18 @@ inline Rect Rect::LeftTopPart() const
 inline Int2 Rect::Random() const
 {
 	return Int2(::Random(p1.x, p2.x), ::Random(p1.y, p2.y));
+}
+
+inline void Rect::Resize(const Int2& p)
+{
+	if(p.x < p1.x)
+		p1.x = p.x;
+	else if(p.x > p2.x)
+		p2.x = p.x;
+	if(p.y < p1.y)
+		p1.y = p.y;
+	else if(p.y > p2.y)
+		p2.y = p.y;
 }
 
 inline void Rect::Resize(const Rect& r)
@@ -733,6 +749,11 @@ inline Vec2 Vec2::Cross(const Vec2& v) const
 	Vec2 result;
 	Cross(v, result);
 	return result;
+}
+
+inline float Vec2::Cross2d(const Vec2& v) const
+{
+	return x * v.y - y * v.x;
 }
 
 inline float Vec2::Dot(const Vec2& v) const
@@ -1516,6 +1537,14 @@ inline Vec3 Vec3::Barycentric(const Vec3& v1, const Vec3& v2, const Vec3& v3, fl
 	Vec3 result;
 	XMStoreFloat3(&result, X);
 	return result;
+}
+
+inline void Vec3::CalculateNormal(Vec3& out, const Vec3& v1, const Vec3& v2, const Vec3& v3)
+{
+	Vec3 v01 = v2 - v1;
+	Vec3 v02 = v3 - v1;
+
+	out = v01.Cross(v02).Normalize();
 }
 
 inline void Vec3::CatmullRom(const Vec3& v1, const Vec3& v2, const Vec3& v3, const Vec3& v4, float t, Vec3& result)
@@ -2871,6 +2900,11 @@ inline Box Box::Create(const Vec3& pos, const Vec3& size)
 inline Box Box::CreateXZ(const Box2d& box2d, float y1, float y2)
 {
 	return Box(box2d.v1.x, y1, box2d.v1.y, box2d.v2.x, y2, box2d.v2.y);
+}
+
+inline Box Box::CreateBoundingBox(const Vec3& p1, const Vec3& p2)
+{
+	return Box(min(p1.x, p2.x), min(p1.y, p2.y), min(p1.z, p2.z), max(p1.x, p2.x), max(p1.y, p2.y), max(p1.z, p2.z));
 }
 
 //*************************************************************************************************

@@ -13,6 +13,7 @@ namespace layout
 	{
 		AreaLayout background;
 		Font* font;
+		Color font_color, selection_color, selection_color_disabled;
 	};
 }
 
@@ -39,7 +40,7 @@ public:
 	void Reset();
 	void UpdateScrollbar();
 	void UpdateSize(const Int2& pos, const Int2& size);
-	void SetText(cstring text);
+	void SetText(Cstring text);
 	const string& GetText() const { return text; }
 	void SelectAll();
 	bool IsMultiline() const { return multiline; }

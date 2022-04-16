@@ -1,9 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Entity.h"
-
-//-----------------------------------------------------------------------------
 struct Billboard
 {
 	Texture* tex;
@@ -12,7 +9,7 @@ struct Billboard
 };
 
 //-----------------------------------------------------------------------------
-struct ParticleEmitter : public EntityType<ParticleEmitter>
+struct ParticleEmitter
 {
 	enum PARTICLE_OP
 	{
@@ -45,7 +42,7 @@ struct ParticleEmitter : public EntityType<ParticleEmitter>
 	void Init();
 	bool Update(float dt);
 	void Save(FileWriter& f);
-	void Load(FileReader& f, int version = 2);
+	void Load(FileReader& f);
 	float GetAlpha(const Particle &p) const
 	{
 		if(op_alpha == POP_CONST)
@@ -63,7 +60,7 @@ struct ParticleEmitter : public EntityType<ParticleEmitter>
 };
 
 //-----------------------------------------------------------------------------
-struct TrailParticleEmitter : public EntityType<TrailParticleEmitter>
+struct TrailParticleEmitter
 {
 	struct Particle
 	{
@@ -85,5 +82,5 @@ struct TrailParticleEmitter : public EntityType<TrailParticleEmitter>
 	bool Update(float dt);
 	void AddPoint(const Vec3& pt);
 	void Save(FileWriter& f);
-	void Load(FileReader& f, int version = 2);
+	void Load(FileReader& f);
 };

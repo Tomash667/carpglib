@@ -189,7 +189,7 @@ void MenuStrip::UpdateMouse()
 				if(input->PressedRelease(Key::LeftButton))
 				{
 					if(handler)
-						handler(item.action);
+						handler(item.index);
 					gui->GetOverlay()->CloseMenu(this);
 				}
 			}

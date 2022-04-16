@@ -272,6 +272,7 @@ struct Mesh
 	void LoadBoneGroups(FileReader& f);
 	void Save(cstring path);
 	Point* GetPoint(const string& id);
+	void Convert();
 
 	Header head;
 	uint vertex_size;

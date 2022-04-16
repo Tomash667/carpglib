@@ -317,6 +317,14 @@ void SuperShader::SetShader(uint id)
 }
 
 //=================================================================================================
+void SuperShader::SetTexture(Texture* tex)
+{
+	assert(tex);
+	TEX t = tex->tex;
+	deviceContext->PSSetShaderResources(0, 1, &t);
+}
+
+//=================================================================================================
 void SuperShader::SetTexture(const TexOverride* texOverride, Mesh* mesh, uint index)
 {
 	TEX tex;
@@ -387,7 +395,7 @@ void SuperShader::Draw(SceneNode* node)
 	{
 		ResourceLock lock(vsLocals);
 		VsLocals& vsl = *lock.Get<VsLocals>();
-		vsl.matCombined = (node->mat * camera->mat_view_proj).Transpose();
+		vsl.matCombined = (node->mat * camera->matViewProj).Transpose();
 		vsl.matWorld = node->mat.Transpose();
 		if(applyBones)
 		{
@@ -551,7 +559,7 @@ void SuperShader::DrawDecal(const Decal& decal)
 		VsLocals& vsl = *lock.Get<VsLocals>();
 		Matrix matWorld = Matrix::Translation(decal.pos);
 		vsl.matWorld = matWorld.Transpose();
-		vsl.matCombined = (matWorld * camera->mat_view_proj).Transpose();
+		vsl.matCombined = (matWorld * camera->matViewProj).Transpose();
 	}
 
 	// set pixel shader constants

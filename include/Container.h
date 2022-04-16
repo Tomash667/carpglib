@@ -32,6 +32,7 @@ public:
 		assert(!Empty());
 		return ctrls.back();
 	}
+	Control* HitTest();
 
 	bool auto_focus, focus_top, dont_focus;
 

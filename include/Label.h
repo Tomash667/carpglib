@@ -10,8 +10,6 @@ namespace layout
 	{
 		Font* font;
 		Color color;
-		uint align;
-		Int2 padding;
 	};
 }
 
@@ -19,6 +17,7 @@ namespace layout
 class Label : public Control, public LayoutControl<layout::Label>
 {
 public:
+	Label(bool auto_size = true);
 	Label(cstring text, bool auto_size = true);
 	void Draw(ControlDrawData*) override;
 	const string& GetText() const { return text; }

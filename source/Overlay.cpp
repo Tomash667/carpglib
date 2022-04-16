@@ -6,7 +6,7 @@
 #include "Input.h"
 #include "MenuStrip.h"
 
-Overlay::Overlay() : Container(true), focused(nullptr), to_add(nullptr)
+Overlay::Overlay() : Container(true), focused(nullptr), to_add(nullptr), drawCursor(true)
 {
 }
 
@@ -84,6 +84,7 @@ void Overlay::Update(float dt)
 		if(focused)
 		{
 			focused->focus = false;
+			focused->Event(GuiEvent_LostFocus);
 			if(focused->IsOnCharHandler())
 				gui->RemoveOnCharHandler(dynamic_cast<OnCharHandler*>(focused));
 		}
@@ -161,6 +162,18 @@ void Overlay::SetFocus(Control* ctrl)
 	focused = ctrl;
 	if(ctrl->IsOnCharHandler())
 		gui->AddOnCharHandler(dynamic_cast<OnCharHandler*>(ctrl));
+}
+
+void Overlay::ClearFocus()
+{
+	if(focused)
+	{
+		focused->focus = false;
+		focused->Event(GuiEvent_LostFocus);
+		if(focused->IsOnCharHandler())
+			gui->RemoveOnCharHandler(dynamic_cast<OnCharHandler*>(focused));
+		focused = nullptr;
+	}
 }
 
 bool Overlay::IsOpen(MenuStrip* menu)

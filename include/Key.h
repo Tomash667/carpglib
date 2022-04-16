@@ -121,6 +121,7 @@ enum class Key : byte
 //-----------------------------------------------------------------------------
 enum ShortcutKey
 {
+	KEY_NONE,
 	KEY_SHIFT = 1 << 0,
 	KEY_CONTROL = 1 << 1,
 	KEY_ALT = 1 << 2

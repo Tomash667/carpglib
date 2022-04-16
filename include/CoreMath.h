@@ -299,7 +299,7 @@ inline float AngleLH(float x1, float y1, float x2, float y2)
 }
 
 // Return difference between two angles
-inline float AngleDiff(float a, float b)
+inline float AngleDif(float a, float b)
 {
 	assert(IsNormalizedAngle(a) && IsNormalizedAngle(b));
 	return min((2 * PI) - abs(a - b), abs(b - a));
@@ -458,8 +458,9 @@ inline constexpr int Join3(int a, int b, int c)
 	return (a & 0xFF) | ((b & 0xFF) << 8) | ((c & 0xFF) << 16);
 }
 
-int Hash(const string& str);
-int Hash(cstring str);
+uint Hash(const string& str);
+uint Hash(cstring str);
+uint Hash(const void* ptr, uint size);
 
 //-----------------------------------------------------------------------------
 // check for overflow a + b, and return value
@@ -557,6 +558,7 @@ struct Rect
 	Rect();
 	Rect(int x, int y);
 	Rect(int x1, int y1, int x2, int y2);
+	Rect(const Int2& p);
 	Rect(const Int2& p1, const Int2& p2);
 	Rect(const Rect& box);
 	explicit Rect(const Box2d& box);
@@ -609,6 +611,7 @@ struct Rect
 	Rect LeftBottomPart() const;
 	Rect LeftTopPart() const;
 	Int2 Random() const;
+	void Resize(const Int2& p);
 	void Resize(const Rect& r);
 	Rect RightBottomPart() const;
 	Rect RightTopPart() const;
@@ -680,6 +683,7 @@ struct Vec2 : XMFLOAT2
 	Vec2 Clip() const;
 	void Cross(const Vec2& v, Vec2& result) const;
 	Vec2 Cross(const Vec2& v) const;
+	float Cross2d(const Vec2& v) const;
 	float Dot(const Vec2& v) const;
 	float DotSelf() const;
 	bool Equal(const Vec2& v) const;
@@ -813,6 +817,7 @@ struct Vec3 : XMFLOAT3
 	static float Angle2d(const Vec3& v1, const Vec3& v2);
 	static void Barycentric(const Vec3& v1, const Vec3& v2, const Vec3& v3, float f, float g, Vec3& result);
 	static Vec3 Barycentric(const Vec3& v1, const Vec3& v2, const Vec3& v3, float f, float g);
+	static void CalculateNormal(Vec3& out, const Vec3& v1, const Vec3& v2, const Vec3& v3);
 	static void CatmullRom(const Vec3& v1, const Vec3& v2, const Vec3& v3, const Vec3& v4, float t, Vec3& result);
 	static Vec3 CatmullRom(const Vec3& v1, const Vec3& v2, const Vec3& v3, const Vec3& v4, float t);
 	static float Distance(const Vec3& v1, const Vec3& v2);
@@ -1185,6 +1190,7 @@ struct Box
 	// Static functions
 	static Box Create(const Vec3& pos, const Vec3& size);
 	static Box CreateXZ(const Box2d& box2d, float y1, float y2);
+	static Box CreateBoundingBox(const Vec3& p1, const Vec3& p2);
 };
 
 //-----------------------------------------------------------------------------
@@ -1493,7 +1499,8 @@ namespace POD
 // Collisions and functions
 //-----------------------------------------------------------------------------
 bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box& box, float* out_t);
-bool RayToPlane(const Vec3& ray_pos, const Vec3& ray_dir, const Plane& plane, float* out_t);
+bool RayToPlane(const Vec3& rayPos, const Vec3& rayDir, const Plane& plane, float* outT);
+int RayToQuad(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v0, const Vec3& v1, const Vec3& v2, const Vec3& v3, float* outT);
 bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, float radius, float& dist);
 bool RayToTriangle(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& v1, const Vec3& v2, const Vec3& v3, float& dist);
 bool RectangleToRectangle(float x1, float y1, float x2, float y2, float a1, float b1, float a2, float b2);

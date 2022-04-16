@@ -1,7 +1,7 @@
 bl_info = {
 	"name": "Qmsh importer",
 	"author": "Tomashu",
-	"version": (0, 22, 2),
+	"version": (0, 23, 0),
 	"blender": (2, 78, 0),
 	"location": "File > Import > Qmsh",
 	"description": "Import from Qmsh",
@@ -10,7 +10,7 @@ bl_info = {
 
 import bpy
 from bpy.props import StringProperty, BoolProperty
-from math import sqrt
+from math import sqrt, pi
 from mathutils import Vector, Quaternion, Matrix
 import os
 import struct
@@ -208,7 +208,7 @@ class Qmsh:
 			self.cam_up = ConvertVec3(f.ReadVec3())
 			if self.sign != b"QMSH":
 				raise ImporterException("Invalid file signature " + str(self.sign))
-			if self.version < 20 or self.version > 22:
+			if self.version < 20 or self.version > 23:
 				raise ImporterException("Invalid file version " + str(self.version))
 			if self.n_bones > 64:
 				raise ImporterException("Too many bones (" + str(self.n_bones) + ")")
@@ -733,6 +733,13 @@ class Importer:
 		# set smooth shading
 		for p in obj.data.polygons:
 			p.use_smooth = True
+		# fix forward rotation
+		if mesh.head.version >= 23:
+			orig_mode = obj.rotation_mode
+			obj.rotation_mode = 'XYZ'
+			obj.rotation_euler[2] = -pi / 2
+			bpy.ops.object.transform_apply()
+			obj.rotation_mode = orig_mode
 		# switch to textured mode
 		area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
 		space = next(space for space in area.spaces if space.type == 'VIEW_3D')

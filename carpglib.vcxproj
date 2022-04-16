@@ -41,7 +41,6 @@
     <ClInclude Include="include\FontLoader.h" />
     <ClInclude Include="include\MeshShape.h" />
     <ClInclude Include="include\Pch.h" />
-    <ClInclude Include="include\Entity.h" />
     <ClInclude Include="include\FastFunc.h" />
     <ClInclude Include="include\File.h" />
     <ClInclude Include="include\ImageFormat.h" />
@@ -80,6 +79,7 @@
     <ClInclude Include="include\ParticleSystem.h" />
     <ClInclude Include="include\Perlin.h" />
     <ClInclude Include="include\Physics.h" />
+    <ClInclude Include="include\PhysicsDrawer.h" />
     <ClInclude Include="include\PickFileDialog.h" />
     <ClInclude Include="include\PickItemDialog.h" />
     <ClInclude Include="include\PostfxShader.h" />
@@ -125,6 +125,7 @@
     <ClCompile Include="source\Bresenham.cpp" />
     <ClCompile Include="source\BuiltinMesh.cpp" />
     <ClCompile Include="source\Button.cpp" />
+    <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="source\CheckBox.cpp" />
     <ClCompile Include="source\CheckBoxGroup.cpp" />
     <ClCompile Include="source\Color.cpp" />
@@ -143,6 +144,7 @@
     <ClCompile Include="source\Engine.cpp" />
     <ClCompile Include="source\FontLoader.cpp" />
     <ClCompile Include="source\ImageFormat.cpp" />
+    <ClCompile Include="source\MurmurHash3.cpp" />
     <ClCompile Include="source\Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -177,6 +179,7 @@
     <ClCompile Include="source\ParticleShader.cpp" />
     <ClCompile Include="source\ParticleSystem.cpp" />
     <ClCompile Include="source\Physics.cpp" />
+    <ClCompile Include="source\PhysicsDrawer.cpp" />
     <ClCompile Include="source\PickFileDialog.cpp" />
     <ClCompile Include="source\PickItemDialog.cpp" />
     <ClCompile Include="source\PostfxShader.cpp" />

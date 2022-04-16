@@ -47,6 +47,10 @@ struct Color
 	{
 		return Color(255, 255, 255, a);
 	}
+	static Color Alpha(Color c, int a)
+	{
+		return Color(c.r, c.g, c.b, a);
+	}
 	static Color Alpha(float a)
 	{
 		return Color(255, 255, 255, byte(a * 255));

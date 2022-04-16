@@ -8,9 +8,19 @@
 //=================================================================================================
 void SceneNode::OnGet()
 {
-	tex_override = nullptr;
+	pos = Vec3::Zero;
+	rot = Vec3::Zero;
+	scale = Vec3::One;
 	tint = Vec4::One;
-	persistent = false;
+	mesh_inst = nullptr;
+	tex_override = nullptr;
+	visible = true;
+}
+
+//=================================================================================================
+void SceneNode::OnFree()
+{
+	delete mesh_inst;
 }
 
 //=================================================================================================
@@ -33,6 +43,12 @@ void SceneNode::SetMesh(MeshInstance* mesh_inst)
 	flags = F_ANIMATED;
 	mesh->EnsureIsLoaded();
 	radius = mesh->head.radius;
+}
+
+//=================================================================================================
+void SceneNode::UpdateMatrix()
+{
+	mat = Matrix::Transform(pos, rot, scale);
 }
 
 //=================================================================================================
@@ -71,9 +87,12 @@ void SceneBatch::Add(SceneNode* node, int sub)
 		node->subs = SceneNode::SPLIT_INDEX | sub;
 	}
 
+	if(node->mesh_inst)
+		node->mesh_inst->SetupBones();
+
 	if(IsSet(node->flags, SceneNode::F_ALPHA_BLEND))
 	{
-		node->dist = Vec3::DistanceSquared(node->center, camera->from);
+		node->dist = Vec3::DistanceSquared(node->pos, camera->from);
 		alpha_nodes.push_back(node);
 	}
 	else

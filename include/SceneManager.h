@@ -10,11 +10,16 @@ public:
 	SceneManager();
 	void Init();
 	void SetScene(Scene* scene, Camera* camera);
+	void Prepare();
+	void Draw();
 	void Draw(RenderTarget* target);
+	void DrawSceneNodes();
 	void DrawSceneNodes(SceneBatch& batch);
 	void DrawAlphaSceneNodes(SceneBatch& batch);
+	void DrawSkybox(Mesh* mesh);
 
-	SuperShader* super_shader;
+	Scene* GetScene() { return scene; }
+
 	bool use_lighting, use_fog, use_normalmap, use_specularmap;
 
 private:
@@ -24,4 +29,6 @@ private:
 	SceneBatch batch;
 	Scene* scene;
 	Camera* camera;
+	SuperShader* super_shader;
+	SkyboxShader* skybox_shader;
 };

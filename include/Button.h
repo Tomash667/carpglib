@@ -15,6 +15,7 @@ namespace layout
 	struct Button : public Control
 	{
 		AreaLayout tex[4];
+		Color font_color[4];
 		Font* font;
 		int padding;
 	};
@@ -40,6 +41,11 @@ public:
 	DialogEvent GetHandler() const { return handler; }
 
 	void SetHandler(DialogEvent new_handler) { handler = new_handler; }
+	void SetDisabled(bool new_disabled) override
+	{
+		state = new_disabled ? DISABLED : NONE;
+		Control::SetDisabled(new_disabled);
+	}
 
 	string text;
 	State state;

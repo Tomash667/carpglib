@@ -36,6 +36,7 @@ public:
 	void Prepare();
 	void PrepareDecals();
 	void SetShader(uint id);
+	void SetTexture(Texture* tex);
 	void SetTexture(const TexOverride* texOverride, Mesh* mesh, uint index);
 	void SetCustomMesh(ID3D11Buffer* vb, ID3D11Buffer* ib, uint vertexSize);
 	void Draw(SceneNode* node);

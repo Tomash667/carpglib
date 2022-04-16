@@ -8,23 +8,56 @@
 
 //=================================================================================================
 Scene::Scene() : clear_color(Color::Black), ambient_color(0.4f, 0.4f, 0.4f), light_color(Color::White), fog_color(Color::Gray), use_light_dir(false),
-fog_range(50, 100)
+fog_range(50, 100), skybox(nullptr)
 {
 }
 
 //=================================================================================================
 Scene::~Scene()
 {
+	Clear();
+}
+
+//=================================================================================================
+void Scene::Remove(SceneNode* node)
+{
+	assert(node);
+	RemoveElement(nodes, node);
+	node->Free();
+}
+
+//=================================================================================================
+void Scene::Detach(SceneNode* node)
+{
+	assert(node);
+	RemoveElement(nodes, node);
+}
+
+//=================================================================================================
+void Scene::Clear()
+{
 	SceneNode::Free(nodes);
+	DeleteElements(lights);
 }
 
 //=================================================================================================
 void Scene::ListNodes(SceneBatch& batch)
 {
-	FrustumPlanes frustum(batch.camera->mat_view_proj);
+	FrustumPlanes frustum(batch.camera->matViewProj);
+
+	if(batch.gather_lights)
+	{
+		activeLights.clear();
+		for(Light* light : lights)
+		{
+			if(frustum.SphereToFrustum(light->pos, light->range))
+				activeLights.push_back(light);
+		}
+	}
+
 	for(SceneNode* node : nodes)
 	{
-		if(node->mesh && frustum.SphereToFrustum(node->center, node->radius))
+		if(node->visible && frustum.SphereToFrustum(node->pos, node->radius))
 		{
 			if(batch.gather_lights)
 				GatherLights(batch, node);
@@ -38,11 +71,11 @@ void Scene::GatherLights(SceneBatch& batch, SceneNode* node)
 {
 	TopN<Light*, 3, float, std::less<>> best(nullptr, batch.camera->zfar);
 
-	for(Light& light : lights)
+	for(Light* light : activeLights)
 	{
-		float dist = Vec3::Distance(node->center, light.pos);
-		if(dist < light.range + node->radius)
-			best.Add(&light, dist);
+		float dist = Vec3::Distance(node->pos, light->pos);
+		if(dist < light->range + node->radius)
+			best.Add(light, dist);
 	}
 
 	for(int i = 0; i < 3; ++i)
