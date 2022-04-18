@@ -5,5 +5,6 @@
 class GuiDialog : public Window
 {
 public:
+	void Update(float dt) override;
 	void Close();
 };

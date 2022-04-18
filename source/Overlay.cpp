@@ -17,6 +17,14 @@ Overlay::~Overlay()
 		RemoveElement(ctrls, static_cast<Control*>(menu));
 }
 
+bool Overlay::NeedCursor() const
+{
+	if(drawCursor || HaveDialog())
+		return true;
+
+	return Container::NeedCursor();
+}
+
 void Overlay::Draw(ControlDrawData*)
 {
 	Container::Draw();
@@ -52,7 +60,10 @@ void Overlay::Update(float dt)
 	if(!dialogs.empty())
 		mouse_focus = false;
 	for(GuiDialog* dialog : dialogs_to_close)
+	{
+		dialog->Event(GuiEvent_Close);
 		RemoveElement(dialogs, dialog);
+	}
 	dialogs_to_close.clear();
 
 	// update controls
@@ -199,4 +210,9 @@ void Overlay::CloseMenus()
 		to_add->OnClose();
 		to_add = nullptr;
 	}
+}
+
+bool Overlay::HaveDialog() const
+{
+	return !dialogs.empty() || gui->HaveDialog();
 }

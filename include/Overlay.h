@@ -22,7 +22,7 @@ public:
 	Overlay();
 	~Overlay();
 
-	bool NeedCursor() const override { return drawCursor; }
+	bool NeedCursor() const override;
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 
@@ -35,6 +35,7 @@ public:
 	void ClearFocus();
 	bool IsOpen(MenuStrip* menu);
 	void SetDrawCursor(bool drawCursor) { this->drawCursor = drawCursor; }
+	bool HaveDialog() const;
 
 private:
 	void CloseMenus();

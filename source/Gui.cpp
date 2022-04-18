@@ -2353,3 +2353,12 @@ void Gui::SetLayout(Layout* master_layout)
 	if(!layout)
 		layout = master_layout->Get<layout::Gui>();
 }
+
+//=================================================================================================
+void Gui::SetOverlay(Overlay* newOverlay)
+{
+	assert(newOverlay);
+	assert(!overlay); // TODO
+	overlay = newOverlay;
+	Add(overlay);
+}

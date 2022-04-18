@@ -4,7 +4,7 @@
 //=================================================================================================
 Container::~Container()
 {
-	if(new_mode)
+	if(new_mode && !manual)
 		DeleteElements(ctrls);
 }
 

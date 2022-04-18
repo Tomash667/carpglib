@@ -342,6 +342,16 @@ bool Font::HitTest(Cstring str, int limit_width, int flags, const Int2& pos, uin
 	int width = 0, prev_width = 0;
 	index = 0;
 
+	if(text_end == 0u)
+	{
+		index = 0;
+		index2 = Int2::Zero;
+		rect.p1 = Int2::Zero;
+		rect.p2 = Int2(0, height);
+		uv = 0;
+		return true;
+	}
+
 	// simple single line mode
 	if(IsSet(flags, DTF_SINGLELINE))
 	{

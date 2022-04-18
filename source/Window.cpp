@@ -3,7 +3,7 @@
 
 #include "MenuBar.h"
 
-Window::Window(bool fullscreen, bool borderless) : menu(nullptr), fullscreen(fullscreen), borderless(borderless)
+Window::Window(bool fullscreen, bool borderless) : Container(true), menu(nullptr), fullscreen(fullscreen), borderless(borderless)
 {
 	size = Int2(300, 200);
 }

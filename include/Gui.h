@@ -15,7 +15,7 @@ enum GuiEvent
 	GuiEvent_Resize, // control is resized
 	GuiEvent_Show, // control is shown
 	GuiEvent_WindowResize, // game window size change, only send to parent controls
-	GuiEvent_Close, // window is closed (old)
+	GuiEvent_Close, // dialog is closed
 	GuiEvent_Initialize, // send at control initialization
 	GuiEvent_Hide, // control is hidden
 	GuiEvent_LostMouseFocus, // control lost mouse focus
@@ -181,7 +181,7 @@ public:
 	void SetLayout(Layout* layout);
 	Layout* GetLayout() const { return master_layout; }
 	void DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect = nullptr, Color* tint = nullptr);
-	void SetOverlay(Overlay* overlay) { this->overlay = overlay; }
+	void SetOverlay(Overlay* overlay);
 	Overlay* GetOverlay() const { return overlay; }
 	bool MouseMoved() const { return cursor_pos != prev_cursor_pos; }
 	void SetClipboard(cstring text);

@@ -549,6 +549,7 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::Window, background));
 	c->AddEntry("header", Entry::AreaLayout, offsetof(layout::Window, header));
 	c->AddEntry("font", Entry::Font, offsetof(layout::Window, font));
+	c->AddEntry("font_color", Entry::Color, offsetof(layout::Window, font_color));
 	c->AddEntry("header_height", Entry::Int, offsetof(layout::Window, header_height));
 	c->AddEntry("padding", Entry::Int2, offsetof(layout::Window, padding));
 }
