@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------
 Engine* app::engine;
 const Int2 Engine::MIN_WINDOW_SIZE = Int2(800, 600);
-const Int2 Engine::DEFAULT_WINDOW_SIZE = Int2(1024, 768);
+const Int2 Engine::DEFAULT_WINDOW_SIZE = Int2(1280, 720);
 constexpr int WINDOWED_FLAGS = WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME;
 constexpr int FULLSCREEN_FLAGS = WS_POPUP;
 
@@ -83,7 +83,8 @@ void Engine::LoadConfiguration(Config& cfg)
 	Int2 wndSize = cfg.GetInt2("resolution");
 	Info("Settings: Resolution %dx%d (%s).", wndSize.x, wndSize.y, isFullscreen ? "fullscreen" : "windowed");
 	SetFullscreen(isFullscreen);
-	SetWindowSize(wndSize);
+	if(wndSize != Int2::Zero)
+		SetWindowSize(wndSize);
 	SetWindowInitialPos(cfg.GetInt2("wnd_pos", Int2(-1, -1)), cfg.GetInt2("wnd_size", Int2(-1, -1)));
 	HideWindow(cfg.GetBool("hidden_window"));
 
@@ -229,9 +230,10 @@ void Engine::DoTick(bool update_game)
 			Rect rect;
 			GetClientRect(hwnd, (RECT*)&rect);
 			Int2 wh = rect.Size();
-			POINT pt;
-			pt.x = int(float(unlock_point.x)*wh.x / wnd_size.x);
-			pt.y = int(float(unlock_point.y)*wh.y / wnd_size.y);
+			POINT pt{
+				int(float(unlock_point.x) * wh.x / wnd_size.x),
+				int(float(unlock_point.y) * wh.y / wnd_size.y)
+			};
 			ClientToScreen(hwnd, &pt);
 			SetCursorPos(pt.x, pt.y);
 		}
@@ -615,9 +617,10 @@ void Engine::UnlockCursor(bool lock_on_focus)
 		Rect rect;
 		GetClientRect(hwnd, (RECT*)&rect);
 		Int2 wh = rect.Size();
-		POINT pt;
-		pt.x = int(float(unlock_point.x)*wh.x / wnd_size.x);
-		pt.y = int(float(unlock_point.y)*wh.y / wnd_size.y);
+		POINT pt{
+			int(float(unlock_point.x) * wh.x / wnd_size.x),
+			int(float(unlock_point.y) * wh.y / wnd_size.y)
+		};
 		ClientToScreen(hwnd, &pt);
 		SetCursorPos(pt.x, pt.y);
 	}
@@ -722,7 +725,7 @@ void Engine::SetFullscreen(bool fullscreen)
 		return;
 	in_resize = true;
 	HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-	MONITORINFO monitorInfo;
+	MONITORINFO monitorInfo{};
 	monitorInfo.cbSize = sizeof(MONITORINFO);
 	GetMonitorInfoA(monitor, &monitorInfo);
 	Rect& monitorRect = *reinterpret_cast<Rect*>(&monitorInfo.rcMonitor);

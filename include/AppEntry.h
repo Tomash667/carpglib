@@ -1,6 +1,6 @@
 #pragma once
 
-int AppEntry(char*);
+int AppEntry(cstring cmdLine);
 
 #ifndef _MINWINDEF_
 struct HINSTANCE__ { int unused; };

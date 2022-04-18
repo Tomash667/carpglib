@@ -12,6 +12,7 @@ App* app::app;
 //=================================================================================================
 App::App()
 {
+	Logger::SetInstance(new PreLogger());
 	app::app = this;
 	app::engine = new Engine;
 }
