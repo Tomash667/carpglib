@@ -1390,7 +1390,6 @@ void Converter::ConvertPoints(tmp::QMSH& tmp, QMSH& mesh)
 {
 	Info("Converting points...");
 
-	const uint n_bones = mesh.Bones.size();
 	for(std::vector< shared_ptr<tmp::POINT> >::const_iterator it = tmp.points.begin(), end = tmp.points.end(); it != end; ++it)
 	{
 		shared_ptr<QMSH_POINT> point(new QMSH_POINT);
