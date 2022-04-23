@@ -736,7 +736,6 @@ int Upgrade(const char* path, bool force)
 		else
 		{
 			Info("File '%s': upgrading version %d -> %d\n", path, mesh->old_ver, mesh->head.version);
-			mesh->Convert();
 			mesh->Save(path);
 			result = 1;
 		}

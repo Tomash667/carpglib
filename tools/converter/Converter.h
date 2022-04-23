@@ -45,7 +45,4 @@ private:
 	void CalcBoundingVolumes(QMSH &Qmsh);
 	void CalcBoundingVolumes(const QMSH &Qmsh, float *OutSphereRadius, Box *OutBox);
 	void CalcBoundingVolumes(const QMSH& mesh, QMSH_SUBMESH& sub);
-
-	// In blender mesh is rotated "forward" which is 0 ("east" in engine)
-	const float RotToOrigin = PI / 2;
 };

@@ -950,7 +950,7 @@ inline Vec2 Vec2::Lerp(const Vec2& v1, const Vec2& v2, float t)
 
 inline float Vec2::LookAtAngle(const Vec2& v1, const Vec2& v2)
 {
-	return ::Clip(-Angle(v1, v2) - PI / 2);
+	return ConvertAngle(Angle(v1, v2));
 }
 
 inline void Vec2::Max(const Vec2& v1, const Vec2& v2, Vec2& result)
@@ -1671,7 +1671,7 @@ inline Vec3 Vec3::Lerp(const Vec3& v1, const Vec3& v2, float t)
 
 inline float Vec3::LookAtAngle(const Vec3& v1, const Vec3& v2)
 {
-	return Clip(-Angle2d(v1, v2) - PI / 2);
+	return ConvertAngle(Angle2d(v1, v2));
 }
 
 inline void Vec3::Max(const Vec3& v1, const Vec3& v2, Vec3& result)

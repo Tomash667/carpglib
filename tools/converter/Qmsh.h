@@ -112,5 +112,5 @@ struct QMSH
 	Box BoundingBox;
 	Vec3 camera_pos, camera_target, camera_up;
 
-	static const uint VERSION = 23u;
+	static const uint VERSION = 22u;
 };

@@ -325,9 +325,7 @@ void Converter::TmpToQmsh_Bones(QMSH *Out, std::vector<BONE_INTER_DATA> *OutBone
 	// Ta macierz przekszta³ca wsp. z lokalnych obiektu Armature do globalnych œwiata.
 	// Bêdzie ju¿ w uk³adzie DirectX.
 	Matrix ArmatureToWorldMat;
-	Vec3 orientation = TmpArmature.Orientation;
-	orientation.z += RotToOrigin;
-	AssemblyBlenderObjectMatrix(&ArmatureToWorldMat, TmpArmature.Position, orientation, TmpArmature.Size);
+	AssemblyBlenderObjectMatrix(&ArmatureToWorldMat, TmpArmature.Position, TmpArmature.Orientation, TmpArmature.Size);
 	BlenderToDirectxTransform(&ArmatureToWorldMat);
 
 	// Dla ka¿dej koœci g³ównego poziomu
@@ -704,10 +702,8 @@ void Converter::TransformQmshTmpCoords(tmp::QMSH *InOut)
 
 		// Zbuduj macierz przekszta³cania tego obiektu
 		Matrix Mat, MatRot;
-		Vec3 orientation = o.Orientation;
-		orientation.z += RotToOrigin;
-		AssemblyBlenderObjectMatrix(&Mat, o.Position, orientation, o.Size);
-		MatRot = Matrix::Rotation(orientation);
+		AssemblyBlenderObjectMatrix(&Mat, o.Position, o.Orientation, o.Size);
+		MatRot = Matrix::Rotation(o.Orientation);
 		// Jeœli obiekt jest sparentowany do Armature
 		// To jednak nic, bo te wspó³rzêdne s¹ ju¿ wyeksportowane w uk³adzie globalnym modelu a nie wzglêdem parenta.
 		if(!o.ParentArmature.empty() && !InOut->static_anim)

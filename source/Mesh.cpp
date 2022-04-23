@@ -293,7 +293,7 @@ void Mesh::LoadHeader(StreamReader& stream)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Format("Invalid file signature '%.4s'.", head.format);
-	if(head.version < 12 || head.version > 23)
+	if(head.version < 12 || head.version > 22)
 		throw Format("Invalid file version '%u'.", head.version);
 	if(head.version < 20)
 		throw Format("Unsupported file version '%u'.", head.version);

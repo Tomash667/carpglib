@@ -284,19 +284,15 @@ inline constexpr bool IsNormalizedAngle(float angle)
 	return angle >= 0.f && angle < PI * 2;
 }
 
-// Convert left handed <-> right handed rotation
+// Convert angle between math and engine rotation
 inline float ConvertAngle(float angle)
 {
 	assert(IsNormalizedAngle(angle));
-	return PI * 2 - angle;
+	return Clip(PI * 2 - angle - 0.5f * PI);
 }
 
 // Return angle between two points
 float Angle(float x1, float y1, float x2, float y2);
-inline float AngleLH(float x1, float y1, float x2, float y2)
-{
-	return ConvertAngle(Angle(x1, y1, x2, y2));
-}
 
 // Return difference between two angles
 inline float AngleDif(float a, float b)
