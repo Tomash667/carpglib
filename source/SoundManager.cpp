@@ -382,7 +382,7 @@ void SoundManager::PlayMusic(MusicList* musicList, bool delayed)
 	assert(musicList && musicList->IsLoaded());
 
 	// if already playing, ignore
-	if(this->musicList == musicList)
+	if(this->musicList == musicList && musicList != &tmpMusicList)
 		return;
 
 	musicEnded = false;
