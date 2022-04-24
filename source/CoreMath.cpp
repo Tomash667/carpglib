@@ -618,6 +618,19 @@ int RayToQuad(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v0, const Vec3
 	return hitNormal >= 0 ? -1 : 1;
 }
 
+bool RayToElipsis(const Vec3& from, const Vec3& dir, const Vec3& pos, float sizeX, float sizeZ, float& t)
+{
+	const Plane plane(pos, Vec3::Up);
+	if(!RayToPlane(from, dir, plane, &t))
+		return false;
+
+	const Vec3 hitpoint = from + dir * t;
+	const float dx = hitpoint.x - pos.x;
+	const float dz = hitpoint.z - pos.z;
+	const float p = (dx * dx) / (sizeX * sizeX) + (dz * dz) / (sizeZ * sizeZ);
+	return p <= 1.f;
+}
+
 bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, float radius, float& dist)
 {
 	Vec3 RayOrig_minus_SphereCenter = ray_pos - center;

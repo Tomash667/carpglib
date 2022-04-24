@@ -1497,6 +1497,7 @@ namespace POD
 bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box& box, float* out_t);
 bool RayToPlane(const Vec3& rayPos, const Vec3& rayDir, const Plane& plane, float* outT);
 int RayToQuad(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v0, const Vec3& v1, const Vec3& v2, const Vec3& v3, float* outT);
+bool RayToElipsis(const Vec3& from, const Vec3& dir, const Vec3& pos, float sizeX, float sizeZ, float& t);
 bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, float radius, float& dist);
 bool RayToTriangle(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& v1, const Vec3& v2, const Vec3& v3, float& dist);
 bool RectangleToRectangle(float x1, float y1, float x2, float y2, float a1, float b1, float a2, float b2);
