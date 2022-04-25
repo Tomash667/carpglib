@@ -34,7 +34,7 @@ public:
 
 	typedef delegate<bool(int, int)> Handler;
 
-	ListBox(bool is_new = false);
+	ListBox();
 	~ListBox();
 
 	void Draw(ControlDrawData* cdd = nullptr) override;
@@ -92,7 +92,6 @@ public:
 		forceImgSize = size;
 	}
 
-	MenuList* menu;
 	MenuStrip* menu_strip;
 	DialogEvent event_handler;
 	Handler event_handler2;

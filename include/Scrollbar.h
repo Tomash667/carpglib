@@ -16,7 +16,7 @@ namespace layout
 class Scrollbar : public Control, public LayoutControl<layout::Scrollbar>
 {
 public:
-	explicit Scrollbar(bool hscrollbar = false, bool is_new = false);
+	explicit Scrollbar(bool hscrollbar = false);
 
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;

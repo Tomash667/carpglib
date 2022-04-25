@@ -6,7 +6,7 @@
 #include "Input.h"
 #include "MenuStrip.h"
 
-Overlay::Overlay() : Container(true), focused(nullptr), to_add(nullptr), drawCursor(true)
+Overlay::Overlay() : focused(nullptr), to_add(nullptr), drawCursor(true)
 {
 }
 

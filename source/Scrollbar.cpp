@@ -4,7 +4,7 @@
 #include "Input.h"
 
 //=================================================================================================
-Scrollbar::Scrollbar(bool hscrollbar, bool is_new) : Control(is_new), clicked(false), hscrollbar(hscrollbar), manual_change(false), offset(0.f)
+Scrollbar::Scrollbar(bool hscrollbar) : clicked(false), hscrollbar(hscrollbar), manual_change(false), offset(0.f)
 {
 }
 
@@ -135,8 +135,7 @@ void Scrollbar::Update(float dt)
 			}
 		}
 
-		if(is_new)
-			TakeFocus(true);
+		TakeFocus(true);
 	}
 }
 
@@ -152,7 +151,7 @@ bool Scrollbar::ApplyMouseWheel()
 	if(gui->mouse_wheel != 0.f)
 	{
 		LostFocus();
-		float mod = (!is_new ? (input->Down(Key::Shift) ? 1.f : 0.2f) : 0.2f);
+		const float mod = 0.2f;
 		float prev_offset = offset;
 		offset -= part*gui->mouse_wheel*mod;
 		if(offset < 0.f)

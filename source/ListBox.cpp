@@ -2,12 +2,11 @@
 #include "ListBox.h"
 
 #include "Input.h"
-#include "MenuList.h"
 #include "MenuStrip.h"
 
 //=================================================================================================
-ListBox::ListBox(bool is_new) : Control(is_new), scrollbar(false, is_new), selected(-1), event_handler(nullptr), event_handler2(nullptr), menu(nullptr), menu_strip(nullptr),
-forceImgSize(0, 0), itemHeight(20), requireScrollbar(false), textFlags(DTF_SINGLELINE)
+ListBox::ListBox() : scrollbar(false), selected(-1), event_handler(nullptr), event_handler2(nullptr), menu_strip(nullptr), forceImgSize(0, 0), itemHeight(20),
+requireScrollbar(false), textFlags(DTF_SINGLELINE)
 {
 	SetOnCharHandler(true);
 }
@@ -16,7 +15,6 @@ forceImgSize(0, 0), itemHeight(20), requireScrollbar(false), textFlags(DTF_SINGL
 ListBox::~ListBox()
 {
 	DeleteElements(items);
-	delete menu;
 	delete menu_strip;
 }
 
@@ -106,37 +104,14 @@ void ListBox::Update(float dt)
 
 	if(collapsed)
 	{
-		if(is_new)
+		if(mouse_focus && input->PressedRelease(Key::LeftButton))
 		{
-			if(mouse_focus && input->PressedRelease(Key::LeftButton))
+			if(menu_strip->IsOpen())
+				TakeFocus(true);
+			else
 			{
-				if(menu_strip->IsOpen())
-					TakeFocus(true);
-				else
-				{
-					menu_strip->ShowMenu(global_pos + Int2(0, size.y));
-					menu_strip->SetSelectedIndex(selected);
-				}
-			}
-		}
-		else
-		{
-			if(menu->visible)
-			{
-				if(!menu->focus)
-					menu->visible = false;
-			}
-			else if(mouse_focus && input->Focus() && PointInRect(gui->cursor_pos, global_pos, size) && input->PressedRelease(Key::LeftButton))
-			{
-				menu->global_pos = global_pos + Int2(0, size.y);
-				if(menu->global_pos.y + menu->size.y >= gui->wnd_size.y)
-				{
-					menu->global_pos.y = global_pos.y - menu->size.y;
-					if(menu->global_pos.y < 0)
-						menu->global_pos.y = gui->wnd_size.y - menu->size.y;
-				}
-				menu->visible = true;
-				menu->focus = true;
+				menu_strip->ShowMenu(global_pos + Int2(0, size.y));
+				menu_strip->SetSelectedIndex(selected);
 			}
 		}
 	}
@@ -158,7 +133,7 @@ void ListBox::Update(float dt)
 				ChangeIndexEvent(newSelected, false, true);
 		}
 
-		if(is_new && requireScrollbar)
+		if(requireScrollbar)
 		{
 			if(mouse_focus)
 				scrollbar.ApplyMouseWheel();
@@ -207,17 +182,9 @@ void ListBox::Update(float dt)
 						menu_strip->ShowMenu();
 					}
 				}
-				else if(is_new)
+				else
 					TakeFocus(true);
 			}
-		}
-
-		if(!is_new)
-		{
-			if(IsInside(gui->cursor_pos))
-				scrollbar.ApplyMouseWheel();
-			scrollbar.mouse_focus = mouse_focus;
-			scrollbar.Update(dt);
 		}
 	}
 }
@@ -226,11 +193,7 @@ void ListBox::Update(float dt)
 void ListBox::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Moved)
-	{
-		if(!is_new)
-			global_pos = parent->global_pos + pos;
 		scrollbar.global_pos = global_pos + scrollbar.pos;
-	}
 	else if(e == GuiEvent_Initialize)
 	{
 		realSize = size;
@@ -242,20 +205,8 @@ void ListBox::Event(GuiEvent e)
 
 		if(collapsed)
 		{
-			if(is_new)
-			{
-				menu_strip = new MenuStrip(items, size.x);
-				menu_strip->SetHandler(DialogEvent(this, &ListBox::OnSelect));
-			}
-			else
-			{
-				menu = new MenuList;
-				menu->AddItems(items, false);
-				menu->visible = false;
-				menu->Init();
-				menu->size.x = size.x;
-				menu->event_handler = DialogEvent(this, &ListBox::OnSelect);
-			}
+			menu_strip = new MenuStrip(items, size.x);
+			menu_strip->SetHandler(DialogEvent(this, &ListBox::OnSelect));
 		}
 
 		UpdateScrollbarVisibility();
@@ -318,9 +269,6 @@ void ListBox::Add(GuiElement* e, bool select)
 	items.push_back(e);
 	scrollbar.total += e->height;
 	UpdateScrollbarVisibility();
-
-	if(menu)
-		menu->AddItem(e);
 
 	if(select)
 		Select(items.size() - 1, true);
@@ -385,24 +333,15 @@ void ListBox::ScrollTo(int index, bool center)
 //=================================================================================================
 void ListBox::OnSelect(int index)
 {
-	if(is_new)
+	if(collapsed)
 	{
-		if(collapsed)
-		{
-			if(index != selected)
-				ChangeIndexEvent(index, false, false);
-		}
-		else
-		{
-			if(event_handler2)
-				event_handler2(A_MENU, index);
-		}
+		if(index != selected)
+			ChangeIndexEvent(index, false, false);
 	}
 	else
 	{
-		menu->visible = false;
-		if(index != selected)
-			ChangeIndexEvent(index, false, false);
+		if(event_handler2)
+			event_handler2(A_MENU, index);
 	}
 }
 
@@ -600,8 +539,6 @@ void ListBox::Reset()
 	selected = -1;
 	DeleteElements(items);
 	UpdateScrollbarVisibility();
-	if(menu)
-		menu->Reset();
 }
 
 //=================================================================================================
