@@ -136,6 +136,7 @@ typedef FMOD::Sound* SOUND;
 class btBvhTriangleMeshShape;
 class btCollisionObject;
 class btCollisionShape;
+class btGhostPairCallback;
 class btHeightfieldTerrainShape;
 class btTriangleIndexVertexArray;
 

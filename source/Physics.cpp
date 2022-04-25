@@ -1,10 +1,12 @@
 #include "Pch.h"
 #include "Physics.h"
 
+#include <BulletCollision\CollisionDispatch\btGhostObject.h>
+
 Physics* app::physics;
 
 //=================================================================================================
-Physics::Physics() : config(nullptr), dispatcher(nullptr), broadphase(nullptr), world(nullptr)
+Physics::Physics() : config(nullptr), dispatcher(nullptr), broadphase(nullptr), world(nullptr), ghostCallback(nullptr)
 {
 }
 
@@ -14,6 +16,7 @@ Physics::~Physics()
 	Reset();
 	DeleteElements(shapes);
 
+	delete ghostCallback;
 	delete world;
 	delete broadphase;
 	delete dispatcher;
@@ -58,4 +61,11 @@ void Physics::UpdateAabb(btCollisionObject* cobj)
 	btVector3 a_min, a_max;
 	cobj->getCollisionShape()->getAabb(cobj->getWorldTransform(), a_min, a_max);
 	broadphase->setAabb(cobj->getBroadphaseHandle(), a_min, a_max, dispatcher);
+}
+
+//=================================================================================================
+void Physics::SetGhostCallback()
+{
+	ghostCallback = new btGhostPairCallback;
+	world->getPairCache()->setInternalGhostPairCallback(ghostCallback);
 }

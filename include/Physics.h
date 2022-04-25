@@ -17,12 +17,14 @@ public:
 	void AddShape(btCollisionShape* shape) { shapes.push_back(shape); }
 	void UpdateAabb(btCollisionObject* cobj);
 	btCollisionWorld* GetWorld() { return world; }
+	void SetGhostCallback();
 
 private:
 	btCollisionConfiguration* config;
 	btDispatcher* dispatcher;
 	btBroadphaseInterface* broadphase;
 	btCollisionWorld* world;
+	btGhostPairCallback* ghostCallback;
 	vector<btCollisionShape*> shapes;
 };
 
