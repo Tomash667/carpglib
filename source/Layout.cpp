@@ -23,7 +23,7 @@ layout::Control* Layout::Get(const type_info& type)
 void AreaLayout::SetFromArea(const Rect* area)
 {
 	if(!tex->IsLoaded())
-		app::res_mgr->LoadInstant(tex);
+		app::resMgr->LoadInstant(tex);
 
 	Int2 tex_size = tex->GetSize();
 	if(area)

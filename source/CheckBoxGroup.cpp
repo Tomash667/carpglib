@@ -52,7 +52,7 @@ void CheckBoxGroup::Update(float dt)
 	int offset = 0;
 	for(auto item : items)
 	{
-		if(PointInRect(gui->cursor_pos, box_x, box_y + offset, box_x + box_size.x, box_y + offset + box_size.y) && input->Pressed(Key::LeftButton))
+		if(PointInRect(gui->cursorPos, box_x, box_y + offset, box_x + box_size.x, box_y + offset + box_size.y) && input->Pressed(Key::LeftButton))
 		{
 			item->checked = !item->checked;
 			TakeFocus(true);

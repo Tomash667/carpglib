@@ -14,7 +14,7 @@ GetTextDialog::GetTextDialog(const DialogInfo& info) : DialogBox(info), singleli
 //=================================================================================================
 void GetTextDialog::Draw(ControlDrawData*)
 {
-	gui->DrawArea(Box2d::Create(Int2::Zero, gui->wnd_size), layout->background);
+	gui->DrawArea(Box2d::Create(Int2::Zero, gui->wndSize), layout->background);
 	gui->DrawArea(Box2d::Create(global_pos, size), layout->box);
 
 	for(int i = 0; i < 2; ++i)
@@ -90,7 +90,7 @@ void GetTextDialog::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_WindowResize)
 	{
-		self->pos = self->global_pos = (gui->wnd_size - self->size) / 2;
+		self->pos = self->global_pos = (gui->wndSize - self->size) / 2;
 		self->bts[0].global_pos = self->bts[0].pos + self->global_pos;
 		self->bts[1].global_pos = self->bts[1].pos + self->global_pos;
 		self->textBox.global_pos = self->textBox.pos + self->global_pos;
@@ -180,7 +180,7 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	input_str = params.input_str;
 
 	// ustaw pozycjê
-	pos = global_pos = (gui->wnd_size - size) / 2;
+	pos = global_pos = (gui->wndSize - size) / 2;
 	bt1.global_pos = bt1.pos + global_pos;
 	bt2.global_pos = bt2.pos + global_pos;
 	textBox.global_pos = textBox.pos + global_pos;

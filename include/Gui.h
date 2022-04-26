@@ -153,8 +153,8 @@ public:
 	bool HaveDialog() const;
 	void DrawSpriteFull(Texture* t, Color color = Color::White);
 	void DrawSpriteFullWrap(Texture* t, Color color = Color::White);
-	void AddOnCharHandler(OnCharHandler* h) { on_char.push_back(h); }
-	void RemoveOnCharHandler(OnCharHandler* h) { RemoveElement(on_char, h); }
+	void AddOnCharHandler(OnCharHandler* h) { onChar.push_back(h); }
+	void RemoveOnCharHandler(OnCharHandler* h) { RemoveElement(onChar, h); }
 	void SimpleDialog(cstring text, Control* parent, cstring name = "simple");
 	void DrawSpriteRect(Texture* t, const Rect& rect, Color color = Color::White);
 	bool HaveDialog(cstring name);
@@ -179,11 +179,11 @@ public:
 		DrawArea(color, rect.LeftTop(), rect.Size(), clip_rect);
 	}
 	void SetLayout(Layout* layout);
-	Layout* GetLayout() const { return master_layout; }
+	Layout* GetLayout() const { return masterLayout; }
 	void DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect = nullptr, Color* tint = nullptr);
 	void SetOverlay(Overlay* overlay);
 	Overlay* GetOverlay() const { return overlay; }
-	bool MouseMoved() const { return cursor_pos != prev_cursor_pos; }
+	bool MouseMoved() const { return cursorPos != prevCursorPos; }
 	void SetClipboard(cstring text);
 	cstring GetClipboard();
 	Rect GetSpriteRect(Texture* t, const Matrix& mat, const Rect* part = nullptr, const Rect* clipping = nullptr);
@@ -218,11 +218,11 @@ public:
 	}
 
 	Matrix mViewProj;
-	Int2 cursor_pos, prev_cursor_pos, wnd_size;
-	CursorMode cursor_mode;
+	Int2 cursorPos, prevCursorPos, wndSize;
+	CursorMode cursorMode;
 	cstring txOk, txYes, txNo, txCancel;
-	Control* focused_ctrl;
-	float mouse_wheel;
+	Control* focusedCtrl;
+	float mouseWheel;
 
 private:
 	struct DrawLineContext
@@ -248,16 +248,16 @@ private:
 
 	FontLoader* fontLoader;
 	GuiShader* shader;
-	vector<DialogBox*> created_dialogs;
-	Container* layer, *dialog_layer;
+	vector<DialogBox*> createdDialogs;
+	Container* layer, *dialogLayer;
 	VGui vBuf[256 * 6], vBuf2[256 * 6];
 	HitboxContext tmpHitboxContext;
-	vector<OnCharHandler*> on_char;
+	vector<OnCharHandler*> onChar;
 	bool grayscale, doubleclk[5];
 	Key lastClick;
 	float lastClickTimer;
 	Int2 lastClickPos;
-	Layout* master_layout;
+	Layout* masterLayout;
 	layout::Gui* layout;
 	Overlay* overlay;
 };

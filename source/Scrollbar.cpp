@@ -52,7 +52,7 @@ void Scrollbar::Update(float dt)
 
 	change = 0;
 
-	Int2 cpos = gui->cursor_pos - global_pos;
+	Int2 cpos = gui->cursorPos - global_pos;
 
 	if(clicked)
 	{
@@ -149,12 +149,12 @@ void Scrollbar::LostFocus()
 //=================================================================================================
 bool Scrollbar::ApplyMouseWheel()
 {
-	if(gui->mouse_wheel != 0.f)
+	if(gui->mouseWheel != 0.f)
 	{
 		LostFocus();
 		float mod = (!is_new ? (input->Down(Key::Shift) ? 1.f : 0.2f) : 0.2f);
 		float prev_offset = offset;
-		offset -= part*gui->mouse_wheel*mod;
+		offset -= part*gui->mouseWheel*mod;
 		if(offset < 0.f)
 			offset = 0.f;
 		else if(offset + part > total)

@@ -80,17 +80,17 @@ void SceneBatch::Add(SceneNode* node)
 	if(!IsSet(node->subs, SceneNode::SPLIT_INDEX))
 	{
 		assert(mesh.head.n_subs < 31);
-		if(app::scene_mgr->use_normalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
+		if(app::sceneMgr->useNormalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
 			node->flags |= SceneNode::F_NORMAL_MAP;
-		if(app::scene_mgr->use_specularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))
+		if(app::sceneMgr->useSpecularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))
 			node->flags |= SceneNode::F_SPECULAR_MAP;
 	}
 	else
 	{
 		int sub = node->subs & SceneNode::SPLIT_MASK;
-		if(app::scene_mgr->use_normalmap && mesh.subs[sub].tex_normal)
+		if(app::sceneMgr->useNormalmap && mesh.subs[sub].tex_normal)
 			node->flags |= SceneNode::F_NORMAL_MAP;
-		if(app::scene_mgr->use_specularmap && mesh.subs[sub].tex_specular)
+		if(app::sceneMgr->useSpecularmap && mesh.subs[sub].tex_specular)
 			node->flags |= SceneNode::F_SPECULAR_MAP;
 	}
 

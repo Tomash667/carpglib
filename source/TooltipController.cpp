@@ -59,11 +59,11 @@ void TooltipController::UpdateTooltip(float dt, int new_group, int new_id)
 
 		if(state == State::VISIBLE)
 		{
-			pos = gui->cursor_pos + Int2(24, 24);
-			if(pos.x + size.x >= gui->wnd_size.x)
-				pos.x = gui->wnd_size.x - size.x - 1;
-			if(pos.y + size.y >= gui->wnd_size.y)
-				pos.y = gui->wnd_size.y - size.y - 1;
+			pos = gui->cursorPos + Int2(24, 24);
+			if(pos.x + size.x >= gui->wndSize.x)
+				pos.x = gui->wndSize.x - size.x - 1;
+			if(pos.y + size.y >= gui->wndSize.y)
+				pos.y = gui->wndSize.y - size.y - 1;
 			timer -= dt;
 			if(timer <= 0.f)
 			{

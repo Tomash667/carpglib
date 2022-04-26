@@ -130,7 +130,7 @@ void TabControl::Update(float dt)
 	if(selected)
 		selected->close_hover = false;
 
-	if(mouse_focus && IsInside(gui->cursor_pos))
+	if(mouse_focus && IsInside(gui->cursorPos))
 	{
 		Box2d rectf;
 		if(tab_offset > 0)
@@ -138,7 +138,7 @@ void TabControl::Update(float dt)
 			rectf.v1.x = (float)global_pos.x;
 			rectf.v1.y = (float)global_pos.y + (height - layout->button_prev.size.y) / 2;
 			rectf.v2 = rectf.v1 + Vec2(layout->button_prev.size);
-			if(rectf.IsInside(gui->cursor_pos))
+			if(rectf.IsInside(gui->cursorPos))
 			{
 				arrow_hover = -1;
 				if(input->Pressed(Key::LeftButton))
@@ -154,7 +154,7 @@ void TabControl::Update(float dt)
 			rectf.v1.x = (float)global_pos.x + size.x - layout->button_next.size.x;
 			rectf.v1.y = (float)global_pos.y + (height - layout->button_next.size.y) / 2;
 			rectf.v2 = rectf.v1 + Vec2(layout->button_next.size);
-			if(rectf.IsInside(gui->cursor_pos))
+			if(rectf.IsInside(gui->cursorPos))
 			{
 				arrow_hover = 1;
 				if(input->Pressed(Key::LeftButton))
@@ -168,14 +168,14 @@ void TabControl::Update(float dt)
 		for(int i = tab_offset; i < tab_offset_max; ++i)
 		{
 			Tab* tab = tabs[i];
-			if(tab->rect.IsInside(gui->cursor_pos))
+			if(tab->rect.IsInside(gui->cursorPos))
 			{
 				if(tab != selected)
 				{
 					hover = tab;
 					hover->mode = Tab::Hover;
 				}
-				if(tab->close_rect.IsInside(gui->cursor_pos))
+				if(tab->close_rect.IsInside(gui->cursorPos))
 				{
 					tab->close_hover = true;
 					if(input->Pressed(Key::LeftButton))

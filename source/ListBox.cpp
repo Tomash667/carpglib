@@ -126,14 +126,14 @@ void ListBox::Update(float dt)
 				if(!menu->focus)
 					menu->visible = false;
 			}
-			else if(mouse_focus && input->Focus() && PointInRect(gui->cursor_pos, global_pos, size) && input->PressedRelease(Key::LeftButton))
+			else if(mouse_focus && input->Focus() && PointInRect(gui->cursorPos, global_pos, size) && input->PressedRelease(Key::LeftButton))
 			{
 				menu->global_pos = global_pos + Int2(0, size.y);
-				if(menu->global_pos.y + menu->size.y >= gui->wnd_size.y)
+				if(menu->global_pos.y + menu->size.y >= gui->wndSize.y)
 				{
 					menu->global_pos.y = global_pos.y - menu->size.y;
 					if(menu->global_pos.y < 0)
-						menu->global_pos.y = gui->wnd_size.y - menu->size.y;
+						menu->global_pos.y = gui->wndSize.y - menu->size.y;
 				}
 				menu->visible = true;
 				menu->focus = true;
@@ -165,13 +165,13 @@ void ListBox::Update(float dt)
 			UpdateControl(&scrollbar, dt);
 		}
 
-		if(mouse_focus && input->Focus() && PointInRect(gui->cursor_pos, global_pos, realSize))
+		if(mouse_focus && input->Focus() && PointInRect(gui->cursorPos, global_pos, realSize))
 		{
 			int bt = 0;
 
 			if(event_handler2 && gui->DoubleClick(Key::LeftButton))
 			{
-				int new_index = PosToIndex(gui->cursor_pos.y);
+				int new_index = PosToIndex(gui->cursorPos.y);
 				if(new_index != -1 && new_index == selected)
 				{
 					event_handler2(A_DOUBLE_CLICK, selected);
@@ -189,7 +189,7 @@ void ListBox::Update(float dt)
 
 			if(bt > 0)
 			{
-				int new_index = PosToIndex(gui->cursor_pos.y);
+				int new_index = PosToIndex(gui->cursorPos.y);
 				bool ok = true;
 				if(new_index != -1 && new_index != selected)
 					ok = ChangeIndexEvent(new_index, false, false);
@@ -214,7 +214,7 @@ void ListBox::Update(float dt)
 
 		if(!is_new)
 		{
-			if(IsInside(gui->cursor_pos))
+			if(IsInside(gui->cursorPos))
 				scrollbar.ApplyMouseWheel();
 			scrollbar.mouse_focus = mouse_focus;
 			scrollbar.Update(dt);

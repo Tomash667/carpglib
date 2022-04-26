@@ -62,7 +62,7 @@ public:
 
 	Int2 GetCursorPos() const
 	{
-		return gui->cursor_pos - pos;
+		return gui->cursorPos - pos;
 	}
 
 	bool IsInside(const Int2& pt) const
@@ -70,8 +70,8 @@ public:
 		return pt.x >= global_pos.x && pt.y >= global_pos.y && pt.x < global_pos.x + size.x && pt.y < global_pos.y + size.y;
 	}
 
-	static Int2 Center(const Int2& in_size) { return Int2((gui->wnd_size.x - in_size.x) / 2, (gui->wnd_size.y - in_size.y) / 2); }
-	static Int2 Center(int w, int h) { return Int2((gui->wnd_size.x - w) / 2, (gui->wnd_size.y - h) / 2); }
+	static Int2 Center(const Int2& in_size) { return Int2((gui->wndSize.x - in_size.x) / 2, (gui->wndSize.y - in_size.y) / 2); }
+	static Int2 Center(int w, int h) { return Int2((gui->wndSize.x - w) / 2, (gui->wndSize.y - h) / 2); }
 
 	void SimpleDialog(cstring text)
 	{

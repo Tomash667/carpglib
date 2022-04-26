@@ -105,14 +105,14 @@ public:
 
 	bool IsModifier(int modifier) const
 	{
-		return shortcut_state == modifier;
+		return shortcutState == modifier;
 	}
 
 	// shortcut, checks if other modifiers are not down
 	// for example: Ctrl+A, shift and alt must not be pressed
 	bool Shortcut(int modifier, Key key, bool up = true)
 	{
-		if(shortcut_state == modifier && Pressed(key))
+		if(shortcutState == modifier && Pressed(key))
 		{
 			if(up)
 				SetState(key, IS_DOWN);
@@ -138,19 +138,19 @@ public:
 		return Down(key) && keyrepeat[(int)key];
 	}
 
-	float GetMouseWheel() const { return mouse_wheel; }
-	const Int2& GetMouseDif() const { return mouse_dif; }
-	void UpdateMouseWheel(float mouse_wheel) { this->mouse_wheel = mouse_wheel; }
-	void UpdateMouseDif(const Int2& mouse_dif) { this->mouse_dif = mouse_dif; }
-	void SetCallback(Callback clbk) { key_callback = clbk; }
+	float GetMouseWheel() const { return mouseWheel; }
+	const Int2& GetMouseDif() const { return mouseDif; }
+	void UpdateMouseWheel(float mouseWheel) { this->mouseWheel = mouseWheel; }
+	void UpdateMouseDif(const Int2& mouseDif) { this->mouseDif = mouseDif; }
+	void SetCallback(Callback clbk) { keyCallback = clbk; }
 
 private:
-	Callback key_callback;
-	vector<Key> to_release;
+	Callback keyCallback;
+	vector<Key> toRelease;
 	byte keystate[MAX_KEY];
 	bool keyrepeat[MAX_KEY];
-	Int2 mouse_dif;
-	float mouse_wheel;
-	int shortcut_state;
+	Int2 mouseDif;
+	float mouseWheel;
+	int shortcutState;
 	bool focus;
 };

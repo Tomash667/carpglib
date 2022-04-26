@@ -168,7 +168,7 @@ void ParticleEmitter::Save(FileWriter& f)
 //=================================================================================================
 void ParticleEmitter::Load(FileReader& f)
 {
-	tex = app::res_mgr->Load<Texture>(f.ReadString1());
+	tex = app::resMgr->Load<Texture>(f.ReadString1());
 	f >> emission_interval;
 	f >> life;
 	f >> particle_life;
@@ -328,7 +328,7 @@ void TrailParticleEmitter::Load(FileReader& f)
 	f >> width;
 	const string& tex_id = f.ReadString1();
 	if(!tex_id.empty())
-		tex = app::res_mgr->Load<Texture>(tex_id);
+		tex = app::resMgr->Load<Texture>(tex_id);
 	else
 		tex = nullptr;
 	f >> manual;

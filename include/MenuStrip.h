@@ -60,7 +60,7 @@ public:
 
 	// internal! call only from Overlay -> Move to better place
 	void ShowAt(const Int2& pos);
-	void ShowMenu() { ShowMenu(gui->cursor_pos); }
+	void ShowMenu() { ShowMenu(gui->cursorPos); }
 	void ShowMenu(const Int2& pos);
 	void OnClose()
 	{

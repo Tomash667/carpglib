@@ -32,5 +32,5 @@ Buffer* Resource::GetBuffer()
 void Resource::EnsureIsLoaded()
 {
 	if(state != ResourceState::Loaded)
-		app::res_mgr->LoadInstant(this);
+		app::resMgr->LoadInstant(this);
 }

@@ -27,7 +27,7 @@ void DrawBox::Update(float dt)
 {
 	if(mouse_focus)
 	{
-		float change = gui->mouse_wheel;
+		float change = gui->mouseWheel;
 		if(change > 0)
 		{
 			while(change > 0)
@@ -55,7 +55,7 @@ void DrawBox::Update(float dt)
 		if(!clicked && input->Down(Key::LeftButton))
 		{
 			clicked = true;
-			click_point = gui->cursor_pos;
+			click_point = gui->cursorPos;
 		}
 	}
 
@@ -65,8 +65,8 @@ void DrawBox::Update(float dt)
 			clicked = false;
 		else
 		{
-			Int2 dif = click_point - gui->cursor_pos;
-			gui->cursor_pos = click_point;
+			Int2 dif = click_point - gui->cursorPos;
+			gui->cursorPos = click_point;
 			move -= Vec2(dif) / 2;
 			move.x = Clamp(move.x, 0.f, 100.f);
 			move.y = Clamp(move.y, 0.f, 100.f);

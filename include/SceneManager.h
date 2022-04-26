@@ -20,7 +20,7 @@ public:
 
 	Scene* GetScene() { return scene; }
 
-	bool use_lighting, use_fog, use_normalmap, use_specularmap;
+	bool useLighting, useFog, useNormalmap, useSpecularmap;
 
 private:
 	void DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<SceneNodeGroup>& groups);
@@ -29,6 +29,6 @@ private:
 	SceneBatch batch;
 	Scene* scene;
 	Camera* camera;
-	SuperShader* super_shader;
-	SkyboxShader* skybox_shader;
+	SuperShader* superShader;
+	SkyboxShader* skyboxShader;
 };

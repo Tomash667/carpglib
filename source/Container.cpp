@@ -215,7 +215,7 @@ Control* Container::HitTest()
 {
 	for(Control* ctrl : ctrls)
 	{
-		if(ctrl->visible && ctrl->IsInside(gui->cursor_pos))
+		if(ctrl->visible && ctrl->IsInside(gui->cursorPos))
 			return ctrl;
 	}
 	return nullptr;

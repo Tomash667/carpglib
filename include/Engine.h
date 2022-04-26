@@ -22,26 +22,26 @@ public:
 	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);
 	void FatalError(cstring err);
 	void LockCursor();
-	void UnlockCursor(bool lock_on_focus = true);
+	void UnlockCursor(bool lockOnFocus = true);
 	void HideWindow(bool hide);
 	void ToggleFullscreen() { SetFullscreen(!IsFullscreen()); }
 
 	bool IsActive() const { return active; }
-	bool IsCursorLocked() const { return locked_cursor; }
-	bool IsCursorVisible() const { return cursor_visible; }
+	bool IsCursorLocked() const { return lockedCursor; }
+	bool IsCursorVisible() const { return cursorVisible; }
 	bool IsShutdown() const { return shutdown; }
 	bool IsFullscreen() const { return fullscreen; }
 
-	const Int2& GetClientSize() const { return client_size; }
+	const Int2& GetClientSize() const { return clientSize; }
 	float GetFps() const { return fps; }
-	float GetWindowAspect() const { return float(client_size.x) / client_size.y; }
+	float GetWindowAspect() const { return float(clientSize.x) / clientSize.y; }
 	HWND GetWindowHandle() const { return hwnd; }
-	const Int2& GetWindowSize() const { return wnd_size; }
+	const Int2& GetWindowSize() const { return wndSize; }
 
 	void SetFullscreen(bool fullscreen);
 	void SetTitle(cstring title);
-	void SetUnlockPoint(const Int2& pt) { unlock_point = pt; }
-	void SetWindowInitialPos(const Int2& pos, const Int2& size) { force_pos = pos; force_size = size; }
+	void SetUnlockPoint(const Int2& pt) { unlockPoint = pt; }
+	void SetWindowInitialPos(const Int2& pos, const Int2& size) { forcePos = pos; forceSize = size; }
 	void SetWindowSize(const Int2& size);
 
 private:
@@ -62,8 +62,8 @@ private:
 	HWND hwnd;
 	Timer timer;
 	string title;
-	Int2 wnd_size, real_size, client_size, unlock_point, activation_point, force_pos, force_size;
-	float frame_time, fps;
+	Int2 wndSize, realSize, clientSize, unlockPoint, activationPoint, forcePos, forceSize;
+	float frameTime, fps;
 	uint frames;
-	bool initialized, shutdown, cursor_visible, replace_cursor, locked_cursor, lock_on_focus, active, fullscreen, hidden_window, in_resize;
+	bool initialized, shutdown, cursorVisible, replaceCursor, lockedCursor, lockOnFocus, active, fullscreen, hiddenWindow, inResize;
 };

@@ -74,9 +74,9 @@ void Button::Update(float dt)
 	if(state == DISABLED || disabled)
 		return;
 
-	if(input->Focus() && mouse_focus && IsInside(gui->cursor_pos))
+	if(input->Focus() && mouse_focus && IsInside(gui->cursorPos))
 	{
-		gui->cursor_mode = CURSOR_HOVER;
+		gui->cursorMode = CURSOR_HOVER;
 		if(state == DOWN)
 		{
 			bool apply = false;

@@ -9,7 +9,7 @@
 #include "SoundManager.h"
 #include "WICTextureLoader.h"
 
-ResourceManager* app::res_mgr;
+ResourceManager* app::resMgr;
 
 extern byte box_qmsh[];
 extern byte sphere_qmsh[];
@@ -39,9 +39,7 @@ ResourceManager::~ResourceManager()
 		delete pak;
 	}
 
-	Buffer::Free(sound_bufs);
-
-	task_pool.Free(tasks);
+	taskPool.Free(tasks);
 }
 
 //=================================================================================================
@@ -305,8 +303,8 @@ Resource* ResourceManager::CreateResource(ResourceType type)
 //=================================================================================================
 Resource* ResourceManager::TryGetResource(Cstring filename, ResourceType type)
 {
-	res_search.filename = filename;
-	auto it = resources.find(&res_search);
+	resSearch.filename = filename;
+	auto it = resources.find(&resSearch);
 	if(it != resources.end())
 	{
 		assert((*it)->type == type);
@@ -360,11 +358,11 @@ void ResourceManager::Load(Resource* res)
 		LoadResourceInternal(res);
 	else if(res->state == ResourceState::NotLoaded)
 	{
-		TaskDetail* td = task_pool.Get();
+		TaskDetail* td = taskPool.Get();
 		td->data.res = res;
 		td->type = TaskType::Load;
 		tasks.push_back(td);
-		++to_load;
+		++toLoad;
 
 		res->state = ResourceState::Loading;
 	}
@@ -403,7 +401,7 @@ void ResourceManager::AddTaskCategory(Cstring category)
 {
 	assert(mode == Mode::LoadScreenPrepare);
 
-	TaskDetail* td = task_pool.Get();
+	TaskDetail* td = taskPool.Get();
 	td->category = category;
 	td->type = TaskType::Category;
 	tasks.push_back(td);
@@ -414,23 +412,23 @@ void ResourceManager::AddTask(void* ptr, TaskCallback callback)
 {
 	assert(mode == Mode::LoadScreenPrepare);
 
-	TaskDetail* td = task_pool.Get();
+	TaskDetail* td = taskPool.Get();
 	td->callback = callback;
 	td->data.ptr = ptr;
 	td->type = TaskType::Callback;
 	tasks.push_back(td);
-	++to_load;
+	++toLoad;
 }
 
 //=================================================================================================
-void ResourceManager::PrepareLoadScreen(float progress_min, float progress_max)
+void ResourceManager::PrepareLoadScreen(float progressMin, float progressMax)
 {
-	assert(mode == Mode::Instant && InRange(progress_min, 0.f, 1.f) && InRange(progress_max, 0.f, 1.f) && progress_max >= progress_min);
+	assert(mode == Mode::Instant && InRange(progressMin, 0.f, 1.f) && InRange(progressMax, 0.f, 1.f) && progressMax >= progressMin);
 
-	this->progress_min = progress_min;
-	this->progress_max = progress_max;
-	progress = progress_min;
-	to_load = 0;
+	this->progressMin = progressMin;
+	this->progressMax = progressMax;
+	progress = progressMin;
+	toLoad = 0;
 	loaded = 0;
 	mode = Mode::LoadScreenPrepare;
 	category = nullptr;
@@ -446,7 +444,7 @@ void ResourceManager::StartLoadScreen(cstring category)
 		this->category = category;
 	UpdateLoadScreen();
 	mode = Mode::Instant;
-	task_pool.Free(tasks);
+	taskPool.Free(tasks);
 }
 
 //=================================================================================================
@@ -461,7 +459,7 @@ void ResourceManager::CancelLoadScreen(bool cleanup)
 			if(task->type == TaskType::Load && task->data.res->state == ResourceState::Loading)
 				task->data.res->state = ResourceState::NotLoaded;
 		}
-		task_pool.Free(tasks);
+		taskPool.Free(tasks);
 	}
 	else
 		assert(tasks.empty());
@@ -472,11 +470,11 @@ void ResourceManager::CancelLoadScreen(bool cleanup)
 //=================================================================================================
 void ResourceManager::UpdateLoadScreen()
 {
-	if(to_load == loaded)
+	if(toLoad == loaded)
 	{
 		// no tasks to load, draw with full progress
-		progress = progress_max;
-		progress_clbk(progress_max, "");
+		progress = progressMax;
+		progressClbk(progressMax, "");
 		app::engine->DoPseudotick();
 		return;
 	}
@@ -484,12 +482,12 @@ void ResourceManager::UpdateLoadScreen()
 	// draw first frame
 	if(tasks[0]->type == TaskType::Category)
 		category = tasks[0]->category;
-	progress_clbk(progress, category);
+	progressClbk(progress, category);
 	app::engine->DoPseudotick();
 
 	// do all tasks
 	timer.Reset();
-	timer_dt = 0;
+	timerDt = 0;
 	for(uint i = 0; i < tasks.size(); ++i)
 	{
 		TaskDetail* task = tasks[i];
@@ -516,20 +514,20 @@ void ResourceManager::UpdateLoadScreen()
 	}
 
 	// draw last frame
-	progress = progress_max;
-	progress_clbk(progress_max, nullptr);
+	progress = progressMax;
+	progressClbk(progressMax, nullptr);
 	app::engine->DoPseudotick();
 }
 
 //=================================================================================================
 void ResourceManager::TickLoadScreen()
 {
-	timer_dt += timer.Tick();
-	if(timer_dt >= 0.05f)
+	timerDt += timer.Tick();
+	if(timerDt >= 0.05f)
 	{
-		timer_dt = 0.f;
-		progress = float(loaded) / to_load * (progress_max - progress_min) + progress_min;
-		progress_clbk(progress, category);
+		timerDt = 0.f;
+		progress = float(loaded) / toLoad * (progressMax - progressMin) + progressMin;
+		progressClbk(progress, category);
 		app::engine->DoPseudotick();
 	}
 }
@@ -635,7 +633,7 @@ void ResourceManager::LoadVertexData(VertexData* vd)
 //=================================================================================================
 void ResourceManager::LoadSoundOrMusic(Sound* sound)
 {
-	int result = app::sound_mgr->LoadSound(sound);
+	int result = app::soundMgr->LoadSound(sound);
 	if(result != 0)
 		throw Format("ResourceManager: Failed to load %s '%s' (%d).", sound->type == ResourceType::Music ? "music" : "sound", sound->path.c_str(), result);
 }

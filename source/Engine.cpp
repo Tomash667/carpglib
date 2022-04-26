@@ -20,9 +20,9 @@ constexpr int WINDOWED_FLAGS = WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME;
 constexpr int FULLSCREEN_FLAGS = WS_POPUP;
 
 //=================================================================================================
-Engine::Engine() : initialized(false), shutdown(false), timer(false), hwnd(nullptr), cursor_visible(true), replace_cursor(false), locked_cursor(true),
-active(false), activation_point(-1, -1), title("Window"), force_pos(-1, -1), force_size(-1, -1), hidden_window(false), wnd_size(DEFAULT_WINDOW_SIZE),
-client_size(wnd_size)
+Engine::Engine() : initialized(false), shutdown(false), timer(false), hwnd(nullptr), cursorVisible(true), replaceCursor(false), lockedCursor(true),
+active(false), activationPoint(-1, -1), title("Window"), forcePos(-1, -1), forceSize(-1, -1), hiddenWindow(false), wndSize(DEFAULT_WINDOW_SIZE),
+clientSize(wndSize)
 {
 	if(!Logger::GetInstance())
 		Logger::SetInstance(new Logger);
@@ -30,9 +30,9 @@ client_size(wnd_size)
 	app::input = new Input;
 	app::physics = new Physics;
 	app::render = new Render;
-	app::res_mgr = new ResourceManager;
-	app::scene_mgr = new SceneManager;
-	app::sound_mgr = new SoundManager;
+	app::resMgr = new ResourceManager;
+	app::sceneMgr = new SceneManager;
+	app::soundMgr = new SoundManager;
 }
 
 //=================================================================================================
@@ -100,17 +100,17 @@ void Engine::LoadConfiguration(Config& cfg)
 	}
 	app::render->SetVsync(cfg.GetBool("vsync", true));
 	app::render->SetMultisampling(cfg.GetInt("multisampling"), cfg.GetInt("multisampling_quality"));
-	app::scene_mgr->use_normalmap = cfg.GetBool("use_normalmap", true);
-	app::scene_mgr->use_specularmap = cfg.GetBool("use_specularmap", true);
+	app::sceneMgr->useNormalmap = cfg.GetBool("use_normalmap", true);
+	app::sceneMgr->useSpecularmap = cfg.GetBool("use_specularmap", true);
 
 	// sound/music settings
 	if(cfg.GetBool("nosound"))
-		app::sound_mgr->Disable();
-	app::sound_mgr->SetSoundVolume(Clamp(cfg.GetInt("sound_volume", 100), 0, 100));
-	app::sound_mgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
+		app::soundMgr->Disable();
+	app::soundMgr->SetSoundVolume(Clamp(cfg.GetInt("sound_volume", 100), 0, 100));
+	app::soundMgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
 	Guid soundDevice;
 	if(soundDevice.TryParse(cfg.GetString("sound_device", Guid::EmptyString)))
-		app::sound_mgr->SetDevice(soundDevice);
+		app::soundMgr->SetDevice(soundDevice);
 }
 
 //=================================================================================================
@@ -119,12 +119,12 @@ void Engine::AdjustWindowSize()
 {
 	if(!fullscreen)
 	{
-		Rect rect = Rect::Create(Int2::Zero, wnd_size);
+		Rect rect = Rect::Create(Int2::Zero, wndSize);
 		AdjustWindowRect((RECT*)&rect, WINDOWED_FLAGS, false);
-		real_size = rect.Size();
+		realSize = rect.Size();
 	}
 	else
-		real_size = wnd_size;
+		realSize = wndSize;
 }
 
 //=================================================================================================
@@ -137,11 +137,11 @@ void Engine::Cleanup()
 
 	delete app::input;
 	delete app::physics;
-	delete app::res_mgr;
+	delete app::resMgr;
 	delete app::render;
 	delete app::gui;
-	delete app::scene_mgr;
-	delete app::sound_mgr;
+	delete app::sceneMgr;
+	delete app::soundMgr;
 }
 
 //=================================================================================================
@@ -182,12 +182,12 @@ void Engine::DoTick(bool update_game)
 
 	// calculate fps
 	frames++;
-	frame_time += dt;
-	if(frame_time >= 1.f)
+	frameTime += dt;
+	if(frameTime >= 1.f)
 	{
-		fps = frames / frame_time;
+		fps = frames / frameTime;
 		frames = 0;
-		frame_time = 0.f;
+		frameTime = 0.f;
 	}
 
 	// update activity state
@@ -199,22 +199,22 @@ void Engine::DoTick(bool update_game)
 	Int2 mouse_dif = Int2::Zero;
 	if(active)
 	{
-		if(locked_cursor)
+		if(lockedCursor)
 		{
-			if(replace_cursor)
-				replace_cursor = false;
+			if(replaceCursor)
+				replaceCursor = false;
 			else if(was_active)
 			{
 				POINT pt;
 				GetCursorPos(&pt);
 				ScreenToClient(hwnd, &pt);
-				mouse_dif = Int2(pt.x, pt.y) - client_size / 2;
+				mouse_dif = Int2(pt.x, pt.y) - clientSize / 2;
 			}
 			PlaceCursor();
 		}
 	}
-	else if(!locked_cursor && lock_on_focus)
-		locked_cursor = true;
+	else if(!lockedCursor && lockOnFocus)
+		lockedCursor = true;
 	app::input->UpdateMouseDif(mouse_dif);
 
 	// update keyboard shortcuts info
@@ -225,14 +225,14 @@ void Engine::DoTick(bool update_game)
 		app::app->OnUpdate(dt);
 	if(shutdown)
 	{
-		if(active && locked_cursor)
+		if(active && lockedCursor)
 		{
 			Rect rect;
 			GetClientRect(hwnd, (RECT*)&rect);
 			Int2 wh = rect.Size();
 			POINT pt{
-				int(float(unlock_point.x) * wh.x / wnd_size.x),
-				int(float(unlock_point.y) * wh.y / wnd_size.y)
+				int(float(unlockPoint.x) * wh.x / wndSize.x),
+				int(float(unlockPoint.y) * wh.y / wndSize.y)
 			};
 			ClientToScreen(hwnd, &pt);
 			SetCursorPos(pt.x, pt.y);
@@ -244,7 +244,7 @@ void Engine::DoTick(bool update_game)
 
 	app::app->OnDraw();
 	app::input->Update();
-	app::sound_mgr->Update(dt);
+	app::soundMgr->Update(dt);
 }
 
 //=================================================================================================
@@ -294,14 +294,14 @@ long Engine::HandleEvent(HWND in_hwnd, uint msg, uint wParam, long lParam)
 			SetFullscreen(true);
 		else if(wParam != SIZE_MINIMIZED)
 		{
-			if(!in_resize)
+			if(!inResize)
 			{
 				RECT rect = {};
 				GetWindowRect((HWND)hwnd, &rect);
-				real_size = Int2(rect.right - rect.left, rect.bottom - rect.top);
+				realSize = Int2(rect.right - rect.left, rect.bottom - rect.top);
 
 				GetClientRect((HWND)hwnd, &rect);
-				client_size = Int2(rect.right - rect.left, rect.bottom - rect.top);
+				clientSize = Int2(rect.right - rect.left, rect.bottom - rect.top);
 			}
 
 			app::render->OnChangeResolution();
@@ -338,7 +338,7 @@ long Engine::HandleEvent(HWND in_hwnd, uint msg, uint wParam, long lParam)
 			int result;
 			bool down = MsgToKey(msg, wParam, key, result);
 
-			if((!locked_cursor || !active) && down && lock_on_focus)
+			if((!lockedCursor || !active) && down && lockOnFocus)
 			{
 				ShowCursor(false);
 				Rect rect;
@@ -347,11 +347,11 @@ long Engine::HandleEvent(HWND in_hwnd, uint msg, uint wParam, long lParam)
 				POINT pt;
 				GetCursorPos(&pt);
 				ScreenToClient(hwnd, &pt);
-				activation_point = Int2(pt.x * wnd_size.x / wh.x, pt.y * wnd_size.y / wh.y);
+				activationPoint = Int2(pt.x * wndSize.x / wh.x, pt.y * wndSize.y / wh.y);
 				PlaceCursor();
 
 				if(active)
-					locked_cursor = true;
+					lockedCursor = true;
 
 				return result;
 			}
@@ -428,7 +428,7 @@ bool Engine::MsgToKey(uint msg, uint wParam, byte& key, int& result)
 // Create window
 void Engine::InitWindow()
 {
-	wnd_size = Int2::Max(wnd_size, MIN_WINDOW_SIZE);
+	wndSize = Int2::Max(wndSize, MIN_WINDOW_SIZE);
 
 	// register window class
 	HMODULE module = GetModuleHandle(nullptr);
@@ -443,7 +443,7 @@ void Engine::InitWindow()
 
 	// create window
 	AdjustWindowSize();
-	hwnd = CreateWindowEx(0, "Krystal", title.c_str(), WINDOWED_FLAGS, 0, 0, real_size.x, real_size.y,
+	hwnd = CreateWindowEx(0, "Krystal", title.c_str(), WINDOWED_FLAGS, 0, 0, realSize.x, realSize.y,
 		nullptr, nullptr, module, nullptr);
 	if(!hwnd)
 		throw Format("Failed to create window (%d).", GetLastError());
@@ -457,39 +457,39 @@ void Engine::InitWindow()
 	}
 	else
 	{
-		if(force_pos != Int2(-1, -1) || force_size != Int2(-1, -1))
+		if(forcePos != Int2(-1, -1) || forceSize != Int2(-1, -1))
 		{
 			// set window position from config file
 			Rect rect;
 			GetWindowRect(hwnd, (RECT*)&rect);
-			if(force_pos.x != -1)
-				rect.Left() = force_pos.x;
-			if(force_pos.y != -1)
-				rect.Top() = force_pos.y;
-			Int2 size = real_size;
-			if(force_size.x != -1)
-				size.x = force_size.x;
-			if(force_size.y != -1)
-				size.y = force_size.y;
+			if(forcePos.x != -1)
+				rect.Left() = forcePos.x;
+			if(forcePos.y != -1)
+				rect.Top() = forcePos.y;
+			Int2 size = realSize;
+			if(forceSize.x != -1)
+				size.x = forceSize.x;
+			if(forceSize.y != -1)
+				size.y = forceSize.y;
 			SetWindowPos(hwnd, 0, rect.Left(), rect.Top(), size.x, size.y, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 		}
 		else
 		{
 			// set window at center of screen
 			MoveWindow(hwnd,
-				(GetSystemMetrics(SM_CXSCREEN) - real_size.x) / 2,
-				(GetSystemMetrics(SM_CYSCREEN) - real_size.y) / 2,
-				real_size.x, real_size.y, false);
+				(GetSystemMetrics(SM_CXSCREEN) - realSize.x) / 2,
+				(GetSystemMetrics(SM_CYSCREEN) - realSize.y) / 2,
+				realSize.x, realSize.y, false);
 		}
 	}
 
 	// show window
-	ShowWindow(hwnd, hidden_window ? SW_HIDE : SW_SHOWNORMAL);
+	ShowWindow(hwnd, hiddenWindow ? SW_HIDE : SW_SHOWNORMAL);
 
 	// reset cursor
-	replace_cursor = true;
+	replaceCursor = true;
 	app::input->UpdateMouseDif(Int2::Zero);
-	unlock_point = real_size / 2;
+	unlockPoint = realSize / 2;
 
 	Info("Engine: Window created.");
 }
@@ -498,7 +498,7 @@ void Engine::InitWindow()
 // Place cursor on window center
 void Engine::PlaceCursor()
 {
-	POINT dest_pt = { client_size.x / 2, client_size.y / 2 };
+	POINT dest_pt = { clientSize.x / 2, clientSize.y / 2 };
 	ClientToScreen(hwnd, &dest_pt);
 	SetCursorPos(dest_pt.x, dest_pt.y);
 }
@@ -520,7 +520,7 @@ void Engine::ShowCursor(bool _show)
 	if(IsCursorVisible() != _show)
 	{
 		::ShowCursor(_show);
-		cursor_visible = _show;
+		cursorVisible = _show;
 	}
 }
 
@@ -574,7 +574,7 @@ bool Engine::Start()
 	// loop game
 	try
 	{
-		if(locked_cursor && active)
+		if(lockedCursor && active)
 			PlaceCursor();
 		WindowLoop();
 	}
@@ -595,22 +595,22 @@ void Engine::Init()
 {
 	InitWindow();
 	app::render->Init();
-	app::sound_mgr->Init();
+	app::soundMgr->Init();
 	app::physics->Init();
-	app::res_mgr->Init();
+	app::resMgr->Init();
 	app::gui->Init();
-	app::scene_mgr->Init();
+	app::sceneMgr->Init();
 	initialized = true;
 }
 
 //=================================================================================================
 // Unlock cursor - show system cursor and allow to move outside of window
-void Engine::UnlockCursor(bool lock_on_focus)
+void Engine::UnlockCursor(bool lockOnFocus)
 {
-	this->lock_on_focus = lock_on_focus;
-	if(!locked_cursor)
+	this->lockOnFocus = lockOnFocus;
+	if(!lockedCursor)
 		return;
-	locked_cursor = false;
+	lockedCursor = false;
 
 	if(!IsCursorVisible())
 	{
@@ -618,8 +618,8 @@ void Engine::UnlockCursor(bool lock_on_focus)
 		GetClientRect(hwnd, (RECT*)&rect);
 		Int2 wh = rect.Size();
 		POINT pt{
-			int(float(unlock_point.x) * wh.x / wnd_size.x),
-			int(float(unlock_point.y) * wh.y / wnd_size.y)
+			int(float(unlockPoint.x) * wh.x / wndSize.x),
+			int(float(unlockPoint.y) * wh.y / wndSize.y)
 		};
 		ClientToScreen(hwnd, &pt);
 		SetCursorPos(pt.x, pt.y);
@@ -632,10 +632,10 @@ void Engine::UnlockCursor(bool lock_on_focus)
 // Lock cursor when window gets activated
 void Engine::LockCursor()
 {
-	if(locked_cursor)
+	if(lockedCursor)
 		return;
-	lock_on_focus = true;
-	locked_cursor = true;
+	lockOnFocus = true;
+	lockedCursor = true;
 	if(active)
 	{
 		ShowCursor(false);
@@ -646,9 +646,9 @@ void Engine::LockCursor()
 //=================================================================================================
 void Engine::HideWindow(bool hide)
 {
-	if(hide == hidden_window)
+	if(hide == hiddenWindow)
 		return;
-	hidden_window = hide;
+	hiddenWindow = hide;
 	if(initialized)
 		ShowWindow(hwnd, hide ? SW_HIDE : SW_SHOWNORMAL);
 }
@@ -662,7 +662,7 @@ void Engine::UpdateActivity(bool is_active)
 	active = is_active;
 	if(active)
 	{
-		if(locked_cursor)
+		if(lockedCursor)
 		{
 			ShowCursor(false);
 			PlaceCursor();
@@ -673,8 +673,8 @@ void Engine::UpdateActivity(bool is_active)
 		ShowCursor(true);
 		app::input->ReleaseKeys();
 	}
-	app::app->OnFocus(active, activation_point);
-	activation_point = Int2(-1, -1);
+	app::app->OnFocus(active, activationPoint);
+	activationPoint = Int2(-1, -1);
 }
 
 //=================================================================================================
@@ -686,7 +686,7 @@ void Engine::WindowLoop()
 	// start timer
 	timer.Start();
 	frames = 0;
-	frame_time = 0.f;
+	frameTime = 0.f;
 	fps = 0.f;
 
 	while(msg.message != WM_QUIT)
@@ -708,10 +708,10 @@ void Engine::WindowLoop()
 //=================================================================================================
 void Engine::SetWindowSizeInternal(const Int2& size)
 {
-	wnd_size = size;
+	wndSize = size;
 	AdjustWindowSize();
-	SetWindowPos(hwnd, HWND_NOTOPMOST, (GetSystemMetrics(SM_CXSCREEN) - real_size.x) / 2, (GetSystemMetrics(SM_CYSCREEN) - real_size.y) / 2,
-		real_size.x, real_size.y, SWP_SHOWWINDOW | SWP_DRAWFRAME);
+	SetWindowPos(hwnd, HWND_NOTOPMOST, (GetSystemMetrics(SM_CXSCREEN) - realSize.x) / 2, (GetSystemMetrics(SM_CYSCREEN) - realSize.y) / 2,
+		realSize.x, realSize.y, SWP_SHOWWINDOW | SWP_DRAWFRAME);
 }
 
 
@@ -723,7 +723,7 @@ void Engine::SetFullscreen(bool fullscreen)
 	this->fullscreen = fullscreen;
 	if(!hwnd)
 		return;
-	in_resize = true;
+	inResize = true;
 	HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
 	MONITORINFO monitorInfo{};
 	monitorInfo.cbSize = sizeof(MONITORINFO);
@@ -731,46 +731,46 @@ void Engine::SetFullscreen(bool fullscreen)
 	Rect& monitorRect = *reinterpret_cast<Rect*>(&monitorInfo.rcMonitor);
 	if(fullscreen)
 	{
-		client_size = monitorRect.Size();
-		real_size = client_size;
+		clientSize = monitorRect.Size();
+		realSize = clientSize;
 		SetWindowLong((HWND)hwnd, GWL_STYLE, FULLSCREEN_FLAGS);
 		SetWindowPos((HWND)hwnd, HWND_NOTOPMOST,
 			monitorRect.Left(), monitorRect.Top(),
-			client_size.x, client_size.y,
+			clientSize.x, clientSize.y,
 			SWP_FRAMECHANGED | SWP_NOACTIVATE);
 		ShowWindow((HWND)hwnd, SW_MAXIMIZE);
 	}
 	else
 	{
-		client_size = wnd_size;
+		clientSize = wndSize;
 		AdjustWindowSize();
 		SetWindowLong((HWND)hwnd, GWL_STYLE, WINDOWED_FLAGS);
 		SetWindowPos((HWND)hwnd, HWND_NOTOPMOST,
-			monitorRect.Left() + (monitorRect.SizeX() - real_size.x) / 2,
-			monitorRect.Top() + (monitorRect.SizeY() - real_size.y) / 2,
-			real_size.x, real_size.y,
+			monitorRect.Left() + (monitorRect.SizeX() - realSize.x) / 2,
+			monitorRect.Top() + (monitorRect.SizeY() - realSize.y) / 2,
+			realSize.x, realSize.y,
 			SWP_FRAMECHANGED | SWP_NOACTIVATE);
 		ShowWindow((HWND)hwnd, SW_NORMAL);
 	}
-	in_resize = false;
+	inResize = false;
 }
 
 //=================================================================================================
 void Engine::SetWindowSize(const Int2& size)
 {
-	if(wnd_size == size)
+	if(wndSize == size)
 		return;
-	wnd_size = size;
+	wndSize = size;
 	if(!initialized)
 		return;
 	if(!fullscreen)
 	{
-		client_size = size;
+		clientSize = size;
 		AdjustWindowSize();
 		SetWindowPos((HWND)hwnd, HWND_NOTOPMOST,
-			(GetSystemMetrics(SM_CXSCREEN) - real_size.x) / 2,
-			(GetSystemMetrics(SM_CYSCREEN) - real_size.y) / 2,
-			real_size.x, real_size.y,
+			(GetSystemMetrics(SM_CXSCREEN) - realSize.x) / 2,
+			(GetSystemMetrics(SM_CYSCREEN) - realSize.y) / 2,
+			realSize.x, realSize.y,
 			SWP_NOACTIVATE);
 	}
 }

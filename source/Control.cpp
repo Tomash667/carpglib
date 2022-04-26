@@ -84,7 +84,7 @@ void Control::SetFocus()
 
 void Control::UpdateControl(Control* ctrl, float dt)
 {
-	if(mouse_focus && ctrl->IsInside(gui->cursor_pos))
+	if(mouse_focus && ctrl->IsInside(gui->cursorPos))
 	{
 		ctrl->mouse_focus = true;
 		ctrl->Update(dt);
