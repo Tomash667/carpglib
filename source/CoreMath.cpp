@@ -250,13 +250,23 @@ void LerpAngle(float& angle, float from, float to, float t)
 	angle = from + t * (to - from);
 }
 
-void AdjustAngle(float& angle, float expected, float max_dif)
+int AdjustAngle(float& angle, float expected, float maxDif)
 {
+	if(angle == expected)
+		return 0;
+
 	float dif = AngleDif(angle, expected);
-	if(dif <= max_dif)
+	if(dif <= maxDif)
+	{
 		angle = expected;
+		return 0;
+	}
 	else
-		angle = Clip(angle + ShortestArc(angle, expected) * max_dif);
+	{
+		float dir = ShortestArc(angle, expected);
+		angle = Clip(angle + dir * maxDif);
+		return dir > 0 ? 1 : -1;
+	}
 }
 
 bool CircleToRectangle(float circlex, float circley, float radius, float rectx, float recty, float w, float h)
@@ -389,10 +399,64 @@ void FrustumPlanes::Set(const Matrix& worldViewProj)
 	planes[5].Normalize();
 }
 
-void FrustumPlanes::GetPoints(Vec3* points) const
+void FrustumPlanes::Set(const array<Vec3, 8>& pts)
 {
-	assert(points);
+	// Left clipping plane
+	planes[0] = Plane(
+		pts[NEAR_LEFT_BOTTOM],
+		pts[NEAR_LEFT_TOP],
+		pts[FAR_LEFT_TOP]);
 
+	// Right clipping plane
+	planes[1] = Plane(
+		pts[FAR_RIGHT_BOTTOM],
+		pts[FAR_RIGHT_TOP],
+		pts[NEAR_RIGHT_TOP]);
+
+	// Top clipping plane
+	planes[2] = Plane(
+		pts[FAR_LEFT_TOP],
+		pts[NEAR_LEFT_TOP],
+		pts[NEAR_RIGHT_TOP]);
+
+	// Bottom clipping plane
+	planes[3] = Plane(
+		pts[NEAR_LEFT_BOTTOM],
+		pts[FAR_LEFT_BOTTOM],
+		pts[FAR_RIGHT_BOTTOM]);
+
+	// Near clipping plane
+	planes[4] = Plane(
+		pts[NEAR_RIGHT_BOTTOM],
+		pts[NEAR_RIGHT_TOP],
+		pts[NEAR_LEFT_TOP]);
+
+	// Far clipping plane
+	planes[5] = Plane(
+		pts[FAR_LEFT_BOTTOM],
+		pts[FAR_LEFT_TOP],
+		pts[FAR_RIGHT_TOP]);
+}
+
+void FrustumPlanes::Construct(const Vec3& from, float rot, float dist, const Vec2& width, const Vec2& height)
+{
+	array<Vec3, 8> pts;
+	Matrix mat = Matrix::RotationY(rot + PI) * Matrix::Translation(from);
+
+	pts[NEAR_LEFT_BOTTOM] = Vec3::Transform(Vec3(-width.x / 2, -height.x / 2, 0), mat);
+	pts[NEAR_RIGHT_BOTTOM] = Vec3::Transform(Vec3(width.x / 2, -height.x / 2, 0), mat);
+	pts[NEAR_LEFT_TOP] = Vec3::Transform(Vec3(-width.x / 2, height.x / 2, 0), mat);
+	pts[NEAR_RIGHT_TOP] = Vec3::Transform(Vec3(width.x / 2, height.x / 2, 0), mat);
+	pts[FAR_LEFT_BOTTOM] = Vec3::Transform(Vec3(-width.y / 2, -height.y / 2, dist), mat);
+	pts[FAR_RIGHT_BOTTOM] = Vec3::Transform(Vec3(width.y / 2, -height.y / 2, dist), mat);
+	pts[FAR_LEFT_TOP] = Vec3::Transform(Vec3(-width.y / 2, height.y / 2, dist), mat);
+	pts[FAR_RIGHT_TOP] = Vec3::Transform(Vec3(width.y / 2, height.y / 2, dist), mat);
+
+	Set(pts);
+}
+
+void FrustumPlanes::GetPoints(array<Vec3, 8>& points) const
+{
 	Plane::Intersect3Planes(planes[4], planes[0], planes[3], points[0]);
 	Plane::Intersect3Planes(planes[4], planes[1], planes[3], points[1]);
 	Plane::Intersect3Planes(planes[4], planes[0], planes[2], points[2]);
@@ -403,10 +467,8 @@ void FrustumPlanes::GetPoints(Vec3* points) const
 	Plane::Intersect3Planes(planes[5], planes[1], planes[2], points[7]);
 }
 
-void FrustumPlanes::GetPoints(const Matrix& worldViewProj, Vec3* points)
+void FrustumPlanes::GetPoints(const Matrix& worldViewProj, array<Vec3, 8>& points)
 {
-	assert(points);
-
 	Matrix worldViewProjInv;
 	worldViewProj.Inverse(worldViewProjInv);
 

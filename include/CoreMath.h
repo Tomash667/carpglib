@@ -351,7 +351,7 @@ float ShortestArc(float a, float b);
 // Linear interpolation between two angles
 void LerpAngle(float& angle, float from, float to, float t);
 
-void AdjustAngle(float& angle, float expected, float max_dif);
+int AdjustAngle(float& angle, float expected, float maxDif);
 
 // Return true if value is in range
 template<typename T>
@@ -1420,15 +1420,30 @@ struct Guid
 //-----------------------------------------------------------------------------
 struct FrustumPlanes
 {
+	enum Points
+	{
+		NEAR_LEFT_BOTTOM,
+		NEAR_RIGHT_BOTTOM,
+		NEAR_LEFT_TOP,
+		NEAR_RIGHT_TOP,
+		FAR_LEFT_BOTTOM,
+		FAR_RIGHT_BOTTOM,
+		FAR_LEFT_TOP,
+		FAR_RIGHT_TOP
+	};
+
 	Plane planes[6];
 
 	FrustumPlanes() {}
 	explicit FrustumPlanes(const Matrix& worldViewProj) { Set(worldViewProj); }
+	explicit FrustumPlanes(const array<Vec3, 8>& pts) { Set(pts); }
 	void Set(const Matrix& worldViewProj);
+	void Set(const array<Vec3, 8>& pts);
+	void Construct(const Vec3& from, float rot, float dist, const Vec2& width, const Vec2& height);
 
 	// Return points on edge of frustum
-	void GetPoints(Vec3* points) const;
-	static void GetPoints(const Matrix& worldViewProj, Vec3* points);
+	void GetPoints(array<Vec3, 8>& points) const;
+	static void GetPoints(const Matrix& worldViewProj, array<Vec3, 8>& points);
 	// Checks if point is inside frustum
 	bool PointInFrustum(const Vec3 &p) const;
 	// Checks if box collide with frustum

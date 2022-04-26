@@ -34,6 +34,7 @@ public:
 	void DrawQuad(const array<Vec3, 4>& pts, Color color);
 	void DrawArea(const vector<Vec3>& vertices, const vector<word>& indices, Color color);
 	void DrawLine(const Vec3& from, const Vec3& to, float width, Color color);
+	void DrawFrustum(const FrustumPlanes& frustum, float width, Color color);
 	void Draw();
 
 private:

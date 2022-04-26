@@ -317,6 +317,28 @@ void BasicShader::DrawLine(const Vec3& from, const Vec3& to, float width, Color 
 }
 
 //=================================================================================================
+void BasicShader::DrawFrustum(const FrustumPlanes& frustum, float width, Color color)
+{
+	array<Vec3, 8> pts;
+	frustum.GetPoints(pts);
+
+	DrawLine(pts[FrustumPlanes::NEAR_LEFT_BOTTOM], pts[FrustumPlanes::NEAR_RIGHT_BOTTOM], width, color);
+	DrawLine(pts[FrustumPlanes::NEAR_LEFT_TOP], pts[FrustumPlanes::NEAR_RIGHT_TOP], width, color);
+	DrawLine(pts[FrustumPlanes::NEAR_LEFT_BOTTOM], pts[FrustumPlanes::NEAR_LEFT_TOP], width, color);
+	DrawLine(pts[FrustumPlanes::NEAR_RIGHT_BOTTOM], pts[FrustumPlanes::NEAR_RIGHT_TOP], width, color);
+
+	DrawLine(pts[FrustumPlanes::FAR_LEFT_BOTTOM], pts[FrustumPlanes::FAR_RIGHT_BOTTOM], width, color);
+	DrawLine(pts[FrustumPlanes::FAR_LEFT_TOP], pts[FrustumPlanes::FAR_RIGHT_TOP], width, color);
+	DrawLine(pts[FrustumPlanes::FAR_LEFT_BOTTOM], pts[FrustumPlanes::FAR_LEFT_TOP], width, color);
+	DrawLine(pts[FrustumPlanes::FAR_RIGHT_BOTTOM], pts[FrustumPlanes::FAR_RIGHT_TOP], width, color);
+
+	DrawLine(pts[FrustumPlanes::NEAR_LEFT_BOTTOM], pts[FrustumPlanes::FAR_LEFT_BOTTOM], width, color);
+	DrawLine(pts[FrustumPlanes::NEAR_RIGHT_BOTTOM], pts[FrustumPlanes::FAR_RIGHT_BOTTOM], width, color);
+	DrawLine(pts[FrustumPlanes::NEAR_LEFT_TOP], pts[FrustumPlanes::FAR_LEFT_TOP], width, color);
+	DrawLine(pts[FrustumPlanes::NEAR_RIGHT_TOP], pts[FrustumPlanes::FAR_RIGHT_TOP], width, color);
+}
+
+//=================================================================================================
 void BasicShader::Draw()
 {
 	if(vertices.empty())
