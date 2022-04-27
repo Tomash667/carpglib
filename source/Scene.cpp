@@ -45,7 +45,7 @@ void Scene::ListNodes(SceneBatch& batch)
 {
 	FrustumPlanes frustum(batch.camera->matViewProj);
 
-	if(batch.gather_lights)
+	if(batch.gatherLights)
 	{
 		activeLights.clear();
 		for(Light* light : lights)
@@ -59,7 +59,7 @@ void Scene::ListNodes(SceneBatch& batch)
 	{
 		if(node->visible && frustum.SphereToFrustum(node->pos, node->radius))
 		{
-			if(batch.gather_lights)
+			if(batch.gatherLights)
 				GatherLights(batch, node);
 			batch.Add(node);
 		}

@@ -399,8 +399,8 @@ void SuperShader::Draw(SceneNode* node)
 		vsl.matWorld = node->mat.Transpose();
 		if(applyBones)
 		{
-			for(uint i = 0; i < node->mesh_inst->mesh->head.n_bones; ++i)
-				vsl.matBones[i] = node->mesh_inst->mat_bones[i].Transpose();
+			for(uint i = 0; i < node->meshInst->mesh->head.n_bones; ++i)
+				vsl.matBones[i] = node->meshInst->mat_bones[i].Transpose();
 		}
 	}
 
@@ -453,7 +453,7 @@ void SuperShader::DrawSubmesh(SceneNode* node, uint index)
 	}
 
 	// set texture OwO
-	SetTexture(node->tex_override, node->mesh, index);
+	SetTexture(node->texOverride, node->mesh, index);
 
 	// actual drawing
 	deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, 0);

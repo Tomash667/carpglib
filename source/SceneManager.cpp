@@ -38,7 +38,7 @@ void SceneManager::Prepare()
 {
 	batch.Clear();
 	batch.camera = camera;
-	batch.gather_lights = useLighting && !scene->useLightDir;
+	batch.gatherLights = useLighting && !scene->useLightDir;
 	scene->ListNodes(batch);
 	batch.Process();
 
@@ -61,7 +61,7 @@ void SceneManager::Draw(RenderTarget* target)
 {
 	batch.Clear();
 	batch.camera = camera;
-	batch.gather_lights = useLighting && !scene->useLightDir;
+	batch.gatherLights = useLighting && !scene->useLightDir;
 	scene->ListNodes(batch);
 	batch.Process();
 
@@ -75,11 +75,11 @@ void SceneManager::Draw(RenderTarget* target)
 
 	superShader->Prepare();
 
-	if(!batch.node_groups.empty())
-		DrawSceneNodes(batch.nodes, batch.node_groups);
+	if(!batch.nodeGroups.empty())
+		DrawSceneNodes(batch.nodes, batch.nodeGroups);
 
-	if(!batch.alpha_nodes.empty())
-		DrawAlphaSceneNodes(batch.alpha_nodes);
+	if(!batch.alphaNodes.empty())
+		DrawAlphaSceneNodes(batch.alphaNodes);
 
 	if(target)
 		app::render->SetRenderTarget(nullptr);
@@ -88,17 +88,17 @@ void SceneManager::Draw(RenderTarget* target)
 //=================================================================================================
 void SceneManager::DrawSceneNodes()
 {
-	if(batch.node_groups.empty() && batch.alpha_nodes.empty())
+	if(batch.nodeGroups.empty() && batch.alphaNodes.empty())
 		return;
 
 	superShader->Prepare();
 	superShader->SetScene(scene, camera);
 
-	if(!batch.node_groups.empty())
-		DrawSceneNodes(batch.nodes, batch.node_groups);
+	if(!batch.nodeGroups.empty())
+		DrawSceneNodes(batch.nodes, batch.nodeGroups);
 
-	if(!batch.alpha_nodes.empty())
-		DrawAlphaSceneNodes(batch.alpha_nodes);
+	if(!batch.alphaNodes.empty())
+		DrawAlphaSceneNodes(batch.alphaNodes);
 }
 
 //=================================================================================================
@@ -106,7 +106,7 @@ void SceneManager::DrawSceneNodes(SceneBatch& batch)
 {
 	superShader->Prepare();
 
-	DrawSceneNodes(batch.nodes, batch.node_groups);
+	DrawSceneNodes(batch.nodes, batch.nodeGroups);
 }
 
 //=================================================================================================
@@ -114,7 +114,7 @@ void SceneManager::DrawAlphaSceneNodes(SceneBatch& batch)
 {
 	superShader->Prepare();
 
-	DrawAlphaSceneNodes(batch.alpha_nodes);
+	DrawAlphaSceneNodes(batch.alphaNodes);
 }
 
 //=================================================================================================

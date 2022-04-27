@@ -181,8 +181,8 @@ void GlowShader::DrawGlowNodes(Camera& camera, const vector<GlowNode>& glowNodes
 			vsg.matCombined = (glow.node->mat * camera.matViewProj).Transpose();
 			if(isAnimated)
 			{
-				for(uint i = 0; i < glow.node->mesh_inst->mesh->head.n_bones; ++i)
-					vsg.matBones[i] = glow.node->mesh_inst->mat_bones[i].Transpose();
+				for(uint i = 0; i < glow.node->meshInst->mesh->head.n_bones; ++i)
+					vsg.matBones[i] = glow.node->meshInst->mat_bones[i].Transpose();
 			}
 		}
 
