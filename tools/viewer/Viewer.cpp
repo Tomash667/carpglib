@@ -10,6 +10,7 @@
 #include <ResourceManager.h>
 #include <Gui.h>
 #include <File.h>
+#include <BasicShader.h>
 
 #define INCLUDE_COMMON_DIALOGS
 #include <WindowsIncludes.h>
@@ -56,12 +57,20 @@ bool Viewer::OnInit()
 
 	app::scene_mgr->SetScene(scene, camera);
 
+	shader = app::render->GetShader<BasicShader>();
+
 	return true;
 }
 
 void Viewer::OnDraw()
 {
 	app::scene_mgr->Draw(nullptr);
+
+	shader->Prepare(*camera);
+	shader->DrawLine(Vec3(-100, 0, 0), Vec3(100, 0, 0), 0.01f, Color::Black);
+	shader->DrawLine(Vec3(0, 0, -100), Vec3(0, 0, 100), 0.01f, Color::Black);
+	shader->Draw();
+
 	app::gui->Draw(true, true);
 	app::render->Present();
 }

@@ -6,6 +6,8 @@ CONVERTER:
 + max 64 bones
 IMPORTER:
 + normal & specular map handling
+EXPORTER:
++ warning when exporting mesh with invalid armature parent
 
 v22.1:
 CONVERTER:

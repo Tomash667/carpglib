@@ -78,6 +78,12 @@ def QuoteString(s):
 ################################################################################
 def ProcessMeshObject(data,obj):
 	mesh = obj.to_mesh(bpy.context.scene, data.apply_mod, 'PREVIEW', True)
+	
+	# validate
+	for modifier in obj.modifiers:
+		if isinstance(modifier, bpy.types.ArmatureModifier) and (obj.parent is None or obj.parent != modifier.object):
+			data.Warning("Mesh \"%s\" has armature modifier but no valid parent." % obj.name)
+	
 	# aktualizuj statystyki
 	data.objects = data.objects + 1
 	data.vertices = data.vertices + len(mesh.vertices)
@@ -182,8 +188,6 @@ def ProcessMeshObject(data,obj):
 	
 ################################################################################
 def ProcessArmatureObject(data,obj):
-	armature = obj.data
-	
 	# Zakazany Parent
 	if obj.parent != None:
 		data.Warning("Object \"%s\" has a parent." %obj.name)
@@ -196,14 +200,11 @@ def ProcessArmatureObject(data,obj):
 	data.file.write("\tarmature %s {\n" % QuoteString(obj.name))
 	
 	# Pozycja
-	Location = obj.location
-	data.file.write("\t\t%f,%f,%f\n" % (Location[0], Location[1], Location[2]))
+	data.file.write("\t\t%f,%f,%f\n" % (obj.location[0], obj.location[1], obj.location[2]))
 	# Orientacja
-	Orientation = obj.rotation_euler
-	data.file.write("\t\t%f,%f,%f\n" % (Orientation[0], Orientation[1], Orientation[2]))
+	data.file.write("\t\t%f,%f,%f\n" % (obj.rotation_euler[0], obj.rotation_euler[1], obj.rotation_euler[2]))
 	# Skalowanie
-	Scaling = obj.scale
-	data.file.write("\t\t%f,%f,%f\n" % (Scaling[0], Scaling[1], Scaling[2]))
+	data.file.write("\t\t%f,%f,%f\n" % (obj.scale[0], obj.scale[1], obj.scale[2]))
 	
 	# Bone groups
 	pose = obj.pose
@@ -220,6 +221,7 @@ def ProcessArmatureObject(data,obj):
 		bone_groups[bone_group] = name
 	
 	# Bones
+	armature = obj.data
 	for bone in armature.bones:
 		data.file.write("\t\tbone %s {\n" % QuoteString(bone.name))
 		# Parent
@@ -444,16 +446,16 @@ def RunExport(filepath, config):
 		filepath += '.tmp'
 	data = ExporterData(filepath, config.textureNames, config.useExistingArmature, config.applyModifiers, config.forceTangents)
 	ExportQmsh(data)
-	if config.runConverter:
-		cmd = '"' + config.converterPath + '" "' + filepath + '"'
-		print("Command: %s" % cmd)
-		sub = subprocess.Popen(cmd)
-		result = sub.wait()
-		if result == 2:
-			raise ExporterException("Converter error.")
-		os.remove(data.path)
-		return result == 0
-	return True
+	if not config.runConverter:
+		return data.warnings == 0
+	cmd = '"' + config.converterPath + '" "' + filepath + '"'
+	print("Command: %s" % cmd)
+	sub = subprocess.Popen(cmd)
+	result = sub.wait()
+	if result == 2:
+		raise ExporterException("Converter error.")
+	os.remove(data.path)
+	return result == 0 and data.warnings == 0
 
 ################################################################################
 class Config:

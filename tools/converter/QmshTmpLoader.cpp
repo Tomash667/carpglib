@@ -112,11 +112,11 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 	t.AssertItem("TMP");
 	t.Next();
 
-	uint wersja = t.MustGetUint();
-	if(wersja < (uint)QMSH_TMP_HANDLED_VERSION.x || wersja >(uint)QMSH_TMP_HANDLED_VERSION.y)
-		t.Throw("B³êdna wersja");
+	uint version = t.MustGetUint();
+	if(version < (uint)QMSH_TMP_HANDLED_VERSION.x || version >(uint)QMSH_TMP_HANDLED_VERSION.y)
+		t.Throw("Invalid tmp version");
 	t.Next();
-	load_version = wersja;
+	load_version = version;
 
 	// Pocz¹tek
 	t.AssertKeyword(T_OBJECTS);
@@ -153,7 +153,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			// pozycja
 			t.AssertKeyword(T_POS);
 			t.Next();
-			if(wersja < 18)
+			if(version < 18)
 			{
 				t.AssertSymbol(':');
 				t.Next();
@@ -162,7 +162,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			// obrót
 			t.AssertKeyword(T_ROT);
 			t.Next();
-			if(wersja < 18)
+			if(version < 18)
 			{
 				t.AssertSymbol(':');
 				t.Next();
@@ -171,7 +171,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			// skala
 			t.AssertKeyword(T_SCALE);
 			t.Next();
-			if(wersja < 18)
+			if(version < 18)
 			{
 				t.AssertSymbol(':');
 				t.Next();
@@ -180,7 +180,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			// parent armature
 			t.AssertKeyword(T_PARENT);
 			t.Next();
-			if(wersja < 18)
+			if(version < 18)
 			{
 				t.AssertSymbol(':');
 				t.Next();
@@ -194,7 +194,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			// Materia³y
 			t.AssertKeyword(T_MATERIALS);
 			t.Next();
-			if(wersja >= 16 && wersja < 18)
+			if(version >= 16 && version < 18)
 			{
 				t.AssertSymbol(':');
 				t.Next();
@@ -207,7 +207,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			t.AssertSymbol('{');
 			t.Next();
 
-			if(wersja >= 16)
+			if(version >= 16)
 			{
 				for(uint mi = 0; mi < NumMaterials; mi++)
 				{
@@ -225,7 +225,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 					t.AssertSymbol('{');
 					t.Next();
 
-					if(wersja >= 18)
+					if(version >= 18)
 					{
 						t.AssertKeyword(T_DIFFUSE);
 						t.Next();
@@ -356,7 +356,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			// Wierzcho³ki
 			t.AssertKeyword(T_VERTICES);
 			t.Next();
-			if(wersja >= 16 && wersja < 18)
+			if(version >= 16 && version < 18)
 			{
 				t.AssertSymbol(':');
 				t.Next();
@@ -369,7 +369,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			t.AssertSymbol('{');
 			t.Next();
 
-			if(wersja >= 17)
+			if(version >= 17)
 			{
 				object->vertex_normals = true;
 				for(uint vi = 0; vi < NumVertices; vi++)
@@ -422,7 +422,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			// Œcianki (faces)
 			t.AssertKeyword(T_FACES); // faces
 			t.Next();
-			if(wersja >= 16 && wersja < 18)
+			if(version >= 16 && version < 18)
 			{
 				t.AssertSymbol(':');
 				t.Next();
@@ -499,7 +499,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			// Grupy wierzcho³ków
 			t.AssertKeyword(T_VERTEX_GROUPS); // vertex_groups
 			t.Next();
-			if(wersja >= 16 && wersja < 18)
+			if(version >= 16 && version < 18)
 			{
 				t.AssertSymbol(':');
 				t.Next();
@@ -542,7 +542,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			ParseVec3(&arm.Orientation, t);
 			ParseVec3(&arm.Size, t);
 
-			if(wersja < 17)
+			if(version < 17)
 			{
 				t.MustGetUint();
 				t.Next();
@@ -563,7 +563,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 				else
 				{
 					shared_ptr<tmp::BONE> bone(new tmp::BONE);
-					ParseBone(bone.get(), t, wersja);
+					ParseBone(bone.get(), t, version);
 					arm.Bones.push_back(bone);
 				}
 			}
@@ -584,7 +584,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			// bone
 			t.AssertKeyword(T_BONE);
 			t.Next();
-			if(wersja < 18)
+			if(version < 18)
 			{
 				t.AssertSymbol(':');
 				t.Next();
@@ -595,7 +595,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			// type
 			t.AssertKeyword(T_TYPE);
 			t.Next();
-			if(wersja < 18)
+			if(version < 18)
 			{
 				t.AssertSymbol(':');
 				t.Next();
@@ -606,13 +606,13 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			// size
 			t.AssertKeyword(T_SIZE);
 			t.Next();
-			if(wersja < 18)
+			if(version < 18)
 			{
 				t.AssertSymbol(':');
 				t.Next();
 			}
 
-			if(wersja >= 14)
+			if(version >= 14)
 			{
 				Vec3 size;
 				ParseVec3(&size, t);
@@ -620,7 +620,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 				// scale
 				t.AssertKeyword(T_SCALE);
 				t.Next();
-				if(wersja < 18)
+				if(version < 18)
 				{
 					t.AssertSymbol(':');
 					t.Next();
@@ -641,15 +641,15 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			// macierz
 			t.AssertKeyword(T_MATRIX);
 			t.Next();
-			if(wersja < 18)
+			if(version < 18)
 			{
 				t.AssertSymbol(':');
 				t.Next();
 			}
-			ParseMatrix4x4(&point->matrix, t, wersja < 19);
+			ParseMatrix4x4(&point->matrix, t, version < 19);
 
 			// rot
-			if(wersja >= 19)
+			if(version >= 19)
 			{
 				t.AssertKeyword(T_ROT);
 				t.Next();
@@ -673,7 +673,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			ParseVec3(&rot, t);
 
 			// up
-			if(wersja >= 15)
+			if(version >= 15)
 			{
 				Vec3 up;
 				ParseVec3(&up, t);
@@ -721,7 +721,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 		{
 		case T_FPS:
 			t.Next();
-			if(wersja < 18)
+			if(version < 18)
 			{
 				t.AssertSymbol('=');
 				t.Next();
@@ -731,7 +731,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			break;
 		case T_STATIC:
 			t.Next();
-			if(wersja < 18)
+			if(version < 18)
 			{
 				t.AssertSymbol('=');
 				t.Next();
@@ -741,7 +741,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			break;
 		case T_TANGENTS:
 			t.Next();
-			if(wersja < 18)
+			if(version < 18)
 			{
 				t.AssertSymbol('=');
 				t.Next();
@@ -865,7 +865,7 @@ void QmshTmpLoader::ParseVertexGroup(tmp::VERTEX_GROUP *Out, Tokenizer &t)
 	t.Next();
 }
 
-void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int wersja)
+void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int version)
 {
 	t.AssertKeyword(T_BONE);
 	t.Next();
@@ -877,7 +877,7 @@ void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int wersja)
 	t.Next();
 
 	// parent bone
-	if(wersja >= 21)
+	if(version >= 21)
 	{
 		t.AssertKeyword(T_PARENT);
 		t.Next();
@@ -887,7 +887,7 @@ void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int wersja)
 	t.Next();
 
 	// bone group
-	if(wersja >= 21)
+	if(version >= 21)
 	{
 		t.AssertKeyword(T_GROUP);
 		t.Next();
@@ -899,7 +899,7 @@ void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int wersja)
 	// head
 	t.AssertKeyword(T_HEAD);
 	t.Next();
-	if(wersja < 21)
+	if(version < 21)
 	{
 		// old bonespace head pos
 		Vec3 unused;
@@ -912,7 +912,7 @@ void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int wersja)
 	// tail
 	t.AssertKeyword(T_TAIL);
 	t.Next();
-	if(wersja < 21)
+	if(version < 21)
 	{
 		// old bonespace tail pos
 		Vec3 unused;
@@ -923,7 +923,7 @@ void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int wersja)
 	t.Next();
 
 	// Reszta
-	if(wersja < 17)
+	if(version < 17)
 	{
 		// old roll
 		t.MustGetFloat();
@@ -931,7 +931,7 @@ void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int wersja)
 		t.MustGetFloat();
 		t.Next();
 	}
-	if(wersja < 21)
+	if(version < 21)
 	{
 		// old length
 		t.MustGetFloat();
@@ -942,20 +942,20 @@ void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int wersja)
 		Out->connected = (t.MustGetInt() == 1);
 		t.Next();
 	}
-	if(wersja < 17)
+	if(version < 17)
 	{
 		t.MustGetFloat();
 		t.Next();
 	}
 
 	// Macierze
-	if(wersja < 21)
+	if(version < 21)
 	{
 		// old bonespace matrix
 		Matrix m;
-		ParseMatrix3x3(&m, t, wersja < 19);
+		ParseMatrix3x3(&m, t, version < 19);
 	}
-	ParseMatrix4x4(&Out->matrix, t, wersja < 19);
+	ParseMatrix4x4(&Out->matrix, t, version < 19);
 
 	t.AssertSymbol('}');
 	t.Next();
