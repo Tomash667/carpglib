@@ -5,7 +5,7 @@
 const Vec3 DefaultSpecularColor(1, 1, 1);
 const float DefaultSpecularIntensity = 0.2f;
 const int DefaultSpecularHardness = 10;
-extern bool any_warning;
+extern bool anyWarning;
 
 // Przechowuje dane na temat wybranej koœci we wsp. globalnych modelu w uk³adzie DirectX
 struct BONE_INTER_DATA
@@ -37,6 +37,8 @@ cstring point_types[Mesh::Point::MAX] = {
 
 void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionData& cs)
 {
+	allowDoubles = cs.allowDoubles;
+
 	// Przekszta³æ uk³ad wspó³rzêdnych
 	TransformQmshTmpCoords(&QmshTmp);
 
@@ -44,7 +46,7 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 	std::vector<BONE_INTER_DATA> BoneInterData;
 
 	Out->Flags = 0;
-	if(cs.export_phy)
+	if(cs.exportPhy)
 		Out->Flags |= FLAG_PHYSICS;
 	else
 	{
@@ -58,12 +60,9 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 			TmpToQmsh_Bones(Out, &BoneInterData, QmshTmp);
 
 			// Przetwórz animacje
-			if(!QmshTmp.static_anim && cs.gopt != GO_CREATE)
+			if(!QmshTmp.static_anim)
 				TmpToQmsh_Animations(Out, QmshTmp);
 		}
-
-		if(cs.gopt == GO_CREATE)
-			return;
 
 		CreateBoneGroups(*Out, QmshTmp, cs);
 	}
@@ -87,6 +86,7 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 	for(uint oi = 0; oi < QmshTmp.Meshes.size(); oi++)
 	{
 		tmp::MESH & o = *QmshTmp.Meshes[oi].get();
+		vertexNormals = o.vertex_normals;
 
 		// Policz wp³yw koœci na wierzcho³ki tej siatki
 		std::vector<INTERMEDIATE_VERTEX_SKIN_DATA> VertexSkinData;
@@ -121,18 +121,18 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 			MaterialIndicesUse[f.MaterialIndex] = true;
 
 			// Pierwszy trójk¹t
-			NvIndices.push_back(TmpConvert_AddVertex(NvVertices, MappingNvToTmpVert, f.VertexIndices[0], o.Vertices[f.VertexIndices[0]], f.TexCoords[0], f.Normal, o.vertex_normals));
-			NvIndices.push_back(TmpConvert_AddVertex(NvVertices, MappingNvToTmpVert, f.VertexIndices[1], o.Vertices[f.VertexIndices[1]], f.TexCoords[1], f.Normal, o.vertex_normals));
-			NvIndices.push_back(TmpConvert_AddVertex(NvVertices, MappingNvToTmpVert, f.VertexIndices[2], o.Vertices[f.VertexIndices[2]], f.TexCoords[2], f.Normal, o.vertex_normals));
+			NvIndices.push_back(TmpConvert_AddVertex(NvVertices, MappingNvToTmpVert, f.VertexIndices[0], o.Vertices[f.VertexIndices[0]], f.TexCoords[0], f.Normal));
+			NvIndices.push_back(TmpConvert_AddVertex(NvVertices, MappingNvToTmpVert, f.VertexIndices[1], o.Vertices[f.VertexIndices[1]], f.TexCoords[1], f.Normal));
+			NvIndices.push_back(TmpConvert_AddVertex(NvVertices, MappingNvToTmpVert, f.VertexIndices[2], o.Vertices[f.VertexIndices[2]], f.TexCoords[2], f.Normal));
 			// (wierzcho³ki dodane/zidenksowane, indeksy dodane - zostaje œcianka)
 			NvFaces.push_back(NV_FACE(f.MaterialIndex));
 
 			// Drugi trójk¹t
 			if(f.NumVertices == 4)
 			{
-				NvIndices.push_back(TmpConvert_AddVertex(NvVertices, MappingNvToTmpVert, f.VertexIndices[0], o.Vertices[f.VertexIndices[0]], f.TexCoords[0], f.Normal, o.vertex_normals));
-				NvIndices.push_back(TmpConvert_AddVertex(NvVertices, MappingNvToTmpVert, f.VertexIndices[2], o.Vertices[f.VertexIndices[2]], f.TexCoords[2], f.Normal, o.vertex_normals));
-				NvIndices.push_back(TmpConvert_AddVertex(NvVertices, MappingNvToTmpVert, f.VertexIndices[3], o.Vertices[f.VertexIndices[3]], f.TexCoords[3], f.Normal, o.vertex_normals));
+				NvIndices.push_back(TmpConvert_AddVertex(NvVertices, MappingNvToTmpVert, f.VertexIndices[0], o.Vertices[f.VertexIndices[0]], f.TexCoords[0], f.Normal));
+				NvIndices.push_back(TmpConvert_AddVertex(NvVertices, MappingNvToTmpVert, f.VertexIndices[2], o.Vertices[f.VertexIndices[2]], f.TexCoords[2], f.Normal));
+				NvIndices.push_back(TmpConvert_AddVertex(NvVertices, MappingNvToTmpVert, f.VertexIndices[3], o.Vertices[f.VertexIndices[3]], f.TexCoords[3], f.Normal));
 				NvFaces.push_back(NV_FACE(f.MaterialIndex));
 			}
 		}
@@ -141,7 +141,7 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 
 		float MinCreaseCosAngle = cosf(ToRadians(30)); // AutoSmoothAngle w przeciwieñstwie do k¹tów Eulera jest w stopniach!
 		float WeightNormalsByArea = 1.0f;
-		bool CalcNormals = !o.vertex_normals && !cs.export_phy;
+		bool CalcNormals = !o.vertex_normals && !cs.exportPhy;
 		bool RespectExistingSplits = CalcNormals;
 		bool FixCylindricalWrapping = false;
 
@@ -239,7 +239,7 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 								{
 									Warn("Mesh '%s', material '%s', texture '%s' has diffuse factor %g (only 1.0 is supported).", o.Name.c_str(), m.name.c_str(), t.image.c_str(),
 										t.diffuse_factor);
-									any_warning = true;
+									anyWarning = true;
 								}
 							}
 							else if(!t.use_diffuse && t.use_normal && !t.use_specular && !t.use_specular_color)
@@ -356,7 +356,7 @@ void Converter::TmpToQmsh_Bones(QMSH *Out, std::vector<BONE_INTER_DATA> *OutBone
 	if(Out->Bones.size() != QmshTmp.Armature->Bones.size())
 	{
 		WarnOnce(1, "Skipped %u invalid bones.", QmshTmp.Armature->Bones.size() - Out->Bones.size());
-		any_warning = true;
+		anyWarning = true;
 	}
 
 	// Policzenie Bone Inter Data
@@ -384,7 +384,7 @@ void Converter::TmpToQmsh_Bones(QMSH *Out, std::vector<BONE_INTER_DATA> *OutBone
 				if(!Equal(TmpArmature.Size.x, TmpArmature.Size.y) || !Equal(TmpArmature.Size.y, TmpArmature.Size.z))
 				{
 					WarnOnce(2342235, "Non uniform scaling of Armature object may give invalid bone envelopes.");
-					any_warning = true;
+					anyWarning = true;
 				}
 
 				float ScaleFactor = (TmpArmature.Size.x + TmpArmature.Size.y + TmpArmature.Size.z) / 3.f;
@@ -589,7 +589,7 @@ void Converter::TmpToQmsh_Animation(QMSH_ANIMATION *OutAnimation, const tmp::ACT
 	if(WarningInterpolation)
 	{
 		WarnOnce(2352634, "Constant IPO interpolation mode not supported.");
-		any_warning = true;
+		anyWarning = true;
 	}
 
 	// Wygenerowanie klatek kluczowych
@@ -624,7 +624,7 @@ void Converter::TmpToQmsh_Animation(QMSH_ANIMATION *OutAnimation, const tmp::ACT
 	{
 		OutAnimation->Length = 0.f;
 		Warn("Animation '%s' have no frames.", OutAnimation->Name.c_str());
-		any_warning = true;
+		anyWarning = true;
 	}
 	else if(OutAnimation->Keyframes.size() == 1)
 	{
@@ -759,18 +759,21 @@ void Converter::TransformQmshTmpCoords(tmp::QMSH *InOut)
 // Jeœli nie znajdzie, dodaje nowy.
 // Czy znalaz³ czy doda³, zwraca jego indeks w NvVertices.
 uint Converter::TmpConvert_AddVertex(std::vector<MeshMender::Vertex>& NvVertices, std::vector<unsigned int>& MappingNvToTmpVert, uint TmpVertIndex,
-	const tmp::VERTEX& TmpVertex, const Vec2& TexCoord, const Vec3& face_normal, bool vertex_normals)
+	const tmp::VERTEX& TmpVertex, const Vec2& TexCoord, const Vec3& face_normal)
 {
-	for(uint i = 0; i < NvVertices.size(); i++)
+	if(!allowDoubles)
 	{
-		MeshMender::Vertex& v = NvVertices[i];
-		// Pozycja identyczna...
-		if(v.pos == TmpVertex.Pos &&
-			// TexCoord mniej wiêcej...
-			Equal(TexCoord.x, v.s) && Equal(TexCoord.y, v.t))
+		for(uint i = 0; i < NvVertices.size(); i++)
 		{
-			if(!vertex_normals || v.normal == TmpVertex.Normal)
-				return i;
+			MeshMender::Vertex& v = NvVertices[i];
+			// Pozycja identyczna...
+			if(v.pos == TmpVertex.Pos &&
+				// TexCoord mniej wiêcej...
+				Equal(TexCoord.x, v.s) && Equal(TexCoord.y, v.t))
+			{
+				if(!vertexNormals || v.normal == TmpVertex.Normal)
+					return i;
+			}
 		}
 	}
 
@@ -779,7 +782,7 @@ uint Converter::TmpConvert_AddVertex(std::vector<MeshMender::Vertex>& NvVertices
 	v.pos = TmpVertex.Pos;
 	v.s = TexCoord.x;
 	v.t = TexCoord.y;
-	v.normal = (vertex_normals ? TmpVertex.Normal : face_normal);
+	v.normal = (vertexNormals ? TmpVertex.Normal : face_normal);
 	NvVertices.push_back(v);
 	MappingNvToTmpVert.push_back(TmpVertIndex);
 
@@ -821,7 +824,7 @@ void Converter::CalcVertexSkinData(std::vector<INTERMEDIATE_VERTEX_SKIN_DATA> *O
 		if(BoneIndex == 0)
 		{
 			WarnOnce(13497325, "Object parented to non existing bone.");
-			any_warning = true;
+			anyWarning = true;
 		}
 		// Przypisz t¹ koœæ do wszystkich wierzcho³ków
 		for(uint vi = 0; vi < TmpMesh.Vertices.size(); vi++)
@@ -1034,7 +1037,7 @@ void Converter::CreateBoneGroups(QMSH& qmsh, const tmp::QMSH &QmshTmp, Conversio
 			qmsh.Groups[index].bones.push_back(qmsh.Bones[i].get());
 		}
 	}
-	else if(cs.gopt == GO_ONE)
+	else
 	{
 		qmsh.Groups.resize(1);
 		QMSH_GROUP& gr = qmsh.Groups[0];
@@ -1043,273 +1046,6 @@ void Converter::CreateBoneGroups(QMSH& qmsh, const tmp::QMSH &QmshTmp, Conversio
 
 		for(uint i = 0; i < qmsh.Bones.size(); ++i)
 			gr.bones.push_back(&*qmsh.Bones[i]);
-	}
-	else
-	{
-		Tokenizer t;
-		t.FromFile(cs.group_file.c_str());
-
-		Info("Wczytywanie pliku konfiguracyjnego '%s'.", cs.group_file.c_str());
-
-		try
-		{
-			LoadBoneGroups(qmsh, t);
-		}
-		catch(const Tokenizer::Exception& ex)
-		{
-			throw Format("B³¹d parsowania pliku konfiguracyjnego '%s'!\n%s", cs.group_file.c_str(), ex.ToString());
-		}
-
-		// policz ile jest specjalnych koœci
-		int special_count = 0;
-		for(std::vector< shared_ptr<QMSH_BONE> >::iterator it = qmsh.Bones.begin(), end = qmsh.Bones.end(); it != end; ++it)
-		{
-			if((*it)->non_mesh)
-				++special_count;
-		}
-
-		// same normalne koœci, my job is done here!
-		if(special_count == 0)
-			return;
-
-		std::sort(qmsh.Bones.begin(), qmsh.Bones.end(), [](const shared_ptr<QMSH_BONE>& b1, const shared_ptr<QMSH_BONE>& b2)
-		{
-			return b1->non_mesh < b2->non_mesh;
-		});
-
-		Info("Plik wczytany.");
-	}
-}
-
-enum Keyword
-{
-	K_FILE,
-	K_BONES,
-	K_GROUPS,
-	K_GROUP,
-	K_NAME,
-	K_PARENT,
-	K_SPECIAL,
-	K_BONE,
-	K_OUTPUT
-};
-
-void Converter::LoadBoneGroups(QMSH& qmsh, Tokenizer& t)
-{
-	t.AddKeywords(0, {
-		{ "file", K_FILE },
-		{ "bones", K_BONES },
-		{ "groups", K_GROUPS },
-		{ "group", K_GROUP },
-		{ "name", K_NAME },
-		{ "parent", K_PARENT },
-		{ "special", K_SPECIAL },
-		{ "bone", K_BONE },
-		{ "output", K_OUTPUT }
-		});
-	t.Next();
-
-	// file: name
-	t.AssertKeyword(K_FILE);
-	t.Next();
-	t.AssertSymbol(':');
-	t.Next();
-	t.AssertString();
-	t.Next();
-
-	// [output: name]
-	if(t.IsKeyword(K_OUTPUT))
-	{
-		t.Next();
-		t.AssertSymbol(':');
-		t.Next();
-		t.AssertString();
-		t.Next();
-	}
-
-	// bones: X
-	t.AssertKeyword(K_BONES);
-	t.Next();
-	t.AssertSymbol(':');
-	t.Next();
-	int bone_count = t.MustGetInt();
-	if(bone_count != qmsh.Bones.size())
-		throw Format("Niew³aœciwa liczba koœci %d do %d!", bone_count, qmsh.Bones.size());
-	t.Next();
-
-	// groups: X
-	t.AssertKeyword(K_GROUPS);
-	t.Next();
-	t.AssertSymbol(':');
-	t.Next();
-	int groups = t.MustGetInt();
-	if(groups < 1 || groups > 255)
-		throw Format("Niew³aœciwa liczba grup %d!", groups);
-	t.Next();
-
-	qmsh.Groups.resize(groups);
-
-	// ustaw parent ID na -1 aby zobaczyæ co nie zosta³o ustawione
-	for(std::vector<QMSH_GROUP>::iterator it = qmsh.Groups.begin(), end = qmsh.Groups.end(); it != end; ++it)
-		it->parent = (unsigned short)-1;
-
-	// grupy
-	// group: ID {
-	//    name: "NAME"
-	//    parent: ID
-	// };
-	for(int i = 0; i < groups; ++i)
-	{
-		// group: ID
-		t.AssertKeyword(K_GROUP);
-		t.Next();
-		t.AssertSymbol(':');
-		t.Next();
-		int id = t.MustGetInt();
-		if(id < 0 || id >= groups)
-			throw Format("Z³y identyfikator grupy %d!", id);
-		QMSH_GROUP& gr = qmsh.Groups[id];
-		if(gr.parent != (unsigned short)-1)
-			throw Format("Grupa '%s' zosta³a ju¿ zdefiniowana!", gr.name.c_str());
-		t.Next();
-
-		// {
-		t.AssertSymbol('{');
-		t.Next();
-
-		// name: "NAME"
-		t.AssertKeyword(K_NAME);
-		t.Next();
-		t.AssertSymbol(':');
-		t.Next();
-		gr.name = t.MustGetString();
-		if(gr.name.empty())
-			throw Format("Nazwa grupy %d jest pusta!", id);
-		int index = 0;
-		for(std::vector<QMSH_GROUP>::iterator it = qmsh.Groups.begin(), end = qmsh.Groups.end(); it != end; ++it, ++index)
-		{
-			if(&*it != &gr && it->name == gr.name)
-				throw Format("Grupa %d nie mo¿e nazywaæ siê '%s'! Grupa %d ma ju¿ t¹ nazwê!", id, gr.name.c_str(), index);
-		}
-		t.Next();
-
-		// parent: ID
-		t.AssertKeyword(K_PARENT);
-		t.Next();
-		t.AssertSymbol(':');
-		t.Next();
-		int pid = t.MustGetInt();
-		if(pid < 0 || pid >= groups)
-			throw Format("%d nie mo¿e byæ grup¹ nadrzêdn¹ dla grup '%s'!", pid, gr.name.c_str());
-		if(id == pid && id != 0)
-			throw Format("Tylko zerowa grupa mo¿e wskazywaæ na sam¹ siebie, grupa '%s'!", gr.name.c_str());
-		if(id == 0 && pid != 0)
-			throw "Zerowa grupa musi wskazywaæ na sam¹ siebie!";
-		gr.parent = (unsigned short)pid;
-		t.Next();
-
-		// };
-		t.AssertSymbol('}');
-		t.Next();
-		t.AssertSymbol(';');
-		t.Next();
-	}
-
-	// sprawdŸ hierarchiê grup
-	for(int i = 0; i < groups; ++i)
-	{
-		int id = qmsh.Groups[i].parent;
-		bool ok = false;
-
-		for(int j = 0; j < groups; ++j)
-		{
-			if(id == 0)
-			{
-				ok = true;
-				break;
-			}
-
-			id = qmsh.Groups[id].parent;
-		}
-
-		if(!ok)
-			throw Format("Grupa %s ma uszkodzon¹ hierarchiê, nie prowadzi do zerowej!", qmsh.Groups[i].name.c_str());
-	}
-
-	// ustaw grupy w koœciach na -1
-	for(std::vector<shared_ptr<QMSH_BONE> >::iterator it = qmsh.Bones.begin(), end = qmsh.Bones.end(); it != end; ++it)
-	{
-		(*it)->group_index = -1;
-	}
-
-	// wczytaj koœci
-	// bone: "NAME" {
-	//    group: ID
-	//    specjal: X
-	// };
-	for(int i = 0; i < bone_count; ++i)
-	{
-		// bone: "NAME"
-		t.AssertKeyword(K_BONE);
-		t.Next();
-		t.AssertSymbol(':');
-		t.Next();
-		string bone_name = t.MustGetString();
-		QMSH_BONE* bone = nullptr;
-		int index = 0;
-		for(std::vector<shared_ptr<QMSH_BONE> >::iterator it = qmsh.Bones.begin(), end = qmsh.Bones.end(); it != end; ++it)
-		{
-			if((*it)->Name == bone_name)
-			{
-				bone = &**it;
-				break;
-			}
-		}
-		if(!bone)
-			throw Format("Brak koœci o nazwie '%s'!", bone_name.c_str());
-		if(bone->group_index != -1)
-			throw Format("Koœæ '%s' ma ju¿ ustawion¹ grupê %d!", bone_name.c_str(), bone->group_index);
-		t.Next();
-
-		// {
-		t.AssertSymbol('{');
-		t.Next();
-
-		// group: ID
-		t.AssertKeyword(K_GROUP);
-		t.Next();
-		t.AssertSymbol(':');
-		t.Next();
-		int group_id = t.MustGetInt();
-		if(group_id < 0 || group_id >= groups)
-			throw Format("Brak grupy o id %d dla koœci '%s'!", group_id, bone_name.c_str());
-		qmsh.Groups[group_id].bones.push_back(bone);
-		bone->group_index = group_id;
-		t.Next();
-
-		// special: X
-		t.AssertKeyword(K_SPECIAL);
-		t.Next();
-		t.AssertSymbol(':');
-		t.Next();
-		int special = t.MustGetInt();
-		if(special != 0 && special != 1)
-			throw Format("Nieznana wartoœæ specjalna %d dla koœci '%s'!", special, bone_name.c_str());
-		bone->non_mesh = (special == 1 ? true : false);
-		t.Next();
-
-		// };
-		t.AssertSymbol('}');
-		t.Next();
-		t.AssertSymbol(';');
-		t.Next();
-	}
-
-	// sprawdŸ czy wszystkie grupy maj¹ jakieœ koœci
-	for(int i = 0; i < groups; ++i)
-	{
-		if(qmsh.Groups[i].bones.empty())
-			throw Format("Grupa '%s' nie ma koœci!", qmsh.Groups[i].name.c_str());
 	}
 }
 

@@ -22,14 +22,13 @@ private:
 	void TmpToQmsh_Animation(QMSH_ANIMATION *OutAnimation, const tmp::ACTION &TmpAction, const QMSH &Qmsh, const tmp::QMSH &QmshTmp);
 	float CalcTmpCurveValue(float DefaultValue, const tmp::CURVE *TmpCurve, uint *InOutPtIndex, float Frame, float *InOutNextFrame);
 	uint TmpConvert_AddVertex(std::vector<MeshMender::Vertex>& NvVertices, std::vector<unsigned int>& MappingNvToTmpVert, uint TmpVertIndex,
-		const tmp::VERTEX& TmpVertex, const Vec2& TexCoord, const Vec3& face_normal, bool vertex_normals);
+		const tmp::VERTEX& TmpVertex, const Vec2& TexCoord, const Vec3& face_normal);
 	void CalcVertexSkinData(std::vector<INTERMEDIATE_VERTEX_SKIN_DATA> *Out, const tmp::MESH &TmpMesh, const QMSH &Qmsh,
 		const tmp::QMSH &QmshTmp, const std::vector<BONE_INTER_DATA> &BoneInterData);
 	float PointToBone(const Vec3 &Pt,
 		const Vec3 &Center1, float InnerRadius1, float OuterRadius1,
 		const Vec3 &Center2, float InnerRadius2, float OuterRadius2);
 	void CreateBoneGroups(QMSH& qmsh, const tmp::QMSH &QmshTmp, ConversionData& cs);
-	void LoadBoneGroups(QMSH& qmsh, Tokenizer& t);
 	// Sk³ada translacjê, rotacje i skalowanie w macierz w uk³adzie Blendera,
 	// która wykonuje te operacje transformuj¹c ze wsp. lokalnych obiektu o podanych
 	// parametrach do wsp. globalnych Blendera
@@ -45,4 +44,6 @@ private:
 	void CalcBoundingVolumes(QMSH &Qmsh);
 	void CalcBoundingVolumes(const QMSH &Qmsh, float *OutSphereRadius, Box *OutBox);
 	void CalcBoundingVolumes(const QMSH& mesh, QMSH_SUBMESH& sub);
+
+	bool vertexNormals, allowDoubles;
 };

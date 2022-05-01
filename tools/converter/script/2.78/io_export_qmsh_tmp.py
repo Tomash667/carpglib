@@ -1,7 +1,7 @@
 bl_info = {
 	"name": "Qmsh exporter",
 	"author": "Tomashu",
-	"version": (0, 22, 2),
+	"version": (0, 22, 3),
 	"blender": (2, 78, 0),
 	"location": "File > Export > Qmsh",
 	"description": "Export to Qmsh or Qmsh.tmp",
@@ -448,7 +448,7 @@ def RunExport(filepath, config):
 	ExportQmsh(data)
 	if not config.runConverter:
 		return data.warnings == 0
-	cmd = '"' + config.converterPath + '" "' + filepath + '"'
+	cmd = '"%s" %s "%s"' % (config.converterPath, config.converterFlags, filepath)
 	print("Command: %s" % cmd)
 	sub = subprocess.Popen(cmd)
 	result = sub.wait()
@@ -472,13 +472,15 @@ class Config:
 		self.forceTangents = s.getboolean('forceTangents')
 		self.runConverter = s.getboolean('runConverter')
 		self.converterPath = s['converterPath']
+		self.converterFlags = s['converterFlags']
 	def Init(self):
 		sett = {'textureNames': 'True',
 				'useExistingArmature': 'False',
 				'applyModifiers': 'True',
 				'forceTangents': 'False',
 				'runConverter': 'True',
-				'converterPath': 'D:\\carpg\\other\\mesh\\converter.exe'}
+				'converterPath': 'D:\\carpg\\other\\mesh\\converter.exe',
+				'converterFlags': ''}
 		if not self.config.has_section('settings'):
 			self.config['settings'] = sett
 			return
@@ -494,6 +496,7 @@ class Config:
 		s['forceTangents'] = str(self.forceTangents)
 		s['runConverter'] = str(self.runConverter)
 		s['converterPath'] = self.converterPath
+		s['converterFlags'] = self.converterFlags
 		with open(self.filepath, 'w') as configfile:
 			self.config.write(configfile)
 
@@ -538,6 +541,10 @@ class QmshExporterOperator(bpy.types.Operator, ExportHelper):
 		name="Converter path",
 		default=config.converterPath)
 		
+	ConverterFlags = StringProperty(
+		name="Converter flags",
+		default=config.converterFlags)
+		
 	def execute(self, context):
 		self.config.textureNames = self.TextureNames
 		self.config.useExistingArmature = self.UseExistingArmature
@@ -545,6 +552,7 @@ class QmshExporterOperator(bpy.types.Operator, ExportHelper):
 		self.config.forceTangents = self.ForceTangents
 		self.config.runConverter = self.RunConverter
 		self.config.converterPath = self.ConverterPath
+		self.config.converterFlags = self.ConverterFlags
 		self.config.Save()
 		try:
 			ok = RunExport(self.properties.filepath, self.config)

@@ -46,7 +46,7 @@ const float DefaultDiffuseIntensity = 0.8f;
 const Vec3 DefaultSpecularColor(1, 1, 1);
 const float DefaultSpecularIntensity = 0.5f;
 const int DefaultSpecularHardness = 50;
-extern bool any_warning;
+extern bool anyWarning;
 
 void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 {
@@ -487,7 +487,7 @@ void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
 			if(use_smooth > 0 && use_flat > 0)
 			{
 				WarnOnce(2, "Mixed smooth/flat shading.");
-				any_warning = true;
+				anyWarning = true;
 				object->vertex_normals = false;
 			}
 			else if(use_flat)

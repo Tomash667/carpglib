@@ -1,6 +1,13 @@
 CHANGELOG
 Minor updates have changes only in exporter/converer, don't affect qmsh file.
 ---------------------------
+v22.3:
+EXPORTER:
++ converter flags textbox
+CONVERTER:
++ allow vertex doubles flag
++ removed old groups settings
+
 v22.2:
 CONVERTER:
 + max 64 bones
