@@ -10,11 +10,11 @@ void(*MeshInstance::Predraw)(void*, Matrix*, int) = nullptr;
 Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, Vec3::One);
 
 //=================================================================================================
-MeshInstance::MeshInstance(Mesh* mesh) : preload(false), mesh(mesh), need_update(true), ptr(nullptr), base_speed(1.f), mat_scale(nullptr)
+MeshInstance::MeshInstance(Mesh* mesh) : preload(false), mesh(mesh), needUpdate(true), ptr(nullptr), baseSpeed(1.f), matScale(nullptr)
 {
 	assert(mesh && mesh->IsLoaded() && mesh->IsAnimated());
 
-	mat_bones.resize(mesh->head.n_bones);
+	matBones.resize(mesh->head.n_bones);
 	blendb.resize(mesh->head.n_bones);
 	groups.resize(mesh->head.n_groups);
 }
@@ -31,8 +31,8 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, uint group)
 		return;
 
 	// resetuj szybkoœæ i blending
-	gr.speed = base_speed;
-	gr.blend_max = DEFAULT_BLENDING;
+	gr.speed = baseSpeed;
+	gr.blendMax = DEFAULT_BLENDING;
 
 	int new_state = 0;
 
@@ -43,7 +43,7 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, uint group)
 		SetBit(new_state, FLAG_BLENDING);
 		if(IsSet(flags, PLAY_BLEND_WAIT))
 			SetBit(new_state, FLAG_BLEND_WAIT);
-		gr.blend_time = 0.f;
+		gr.blendTime = 0.f;
 	}
 
 	// ustaw animacjê
@@ -61,7 +61,7 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, uint group)
 		gr.time = 0.f;
 	if(IsSet(flags, PLAY_STOP_AT_END))
 		SetBit(gr.state, FLAG_STOP_AT_END);
-	gr.frame_end = false;
+	gr.frameEnd = false;
 
 	// anuluj blending w innych grupach
 	if(IsSet(flags, PLAY_NO_BLEND))
@@ -82,8 +82,8 @@ void MeshInstance::Deactivate(uint group, bool in_update)
 	{
 		SetupBlending(group, true, in_update);
 		gr.state = FLAG_BLENDING;
-		gr.blend_time = 0.f;
-		gr.blend_max = DEFAULT_BLENDING;
+		gr.blendTime = 0.f;
+		gr.blendMax = DEFAULT_BLENDING;
 	}
 }
 
@@ -103,16 +103,16 @@ void MeshInstance::Update(float dt)
 		// blending
 		if(IsSet(gr.state, FLAG_BLENDING))
 		{
-			need_update = true;
-			gr.blend_time += dt;
-			if(gr.blend_time >= gr.blend_max)
+			needUpdate = true;
+			gr.blendTime += dt;
+			if(gr.blendTime >= gr.blendMax)
 				ClearBit(gr.state, FLAG_BLENDING);
 		}
 
 		// odtwarzaj animacjê
 		if(IsSet(gr.state, FLAG_PLAYING))
 		{
-			need_update = true;
+			needUpdate = true;
 
 			if(IsSet(gr.state, FLAG_BLEND_WAIT))
 			{
@@ -126,7 +126,7 @@ void MeshInstance::Update(float dt)
 				gr.time -= dt * gr.speed;
 				if(gr.time < 0) // przekroczono czas animacji
 				{
-					gr.frame_end = true;
+					gr.frameEnd = true;
 					if(IsSet(gr.state, FLAG_ONCE))
 					{
 						gr.time = 0;
@@ -151,7 +151,7 @@ void MeshInstance::Update(float dt)
 				gr.time += dt * gr.speed;
 				if(gr.time >= gr.anim->length) // przekroczono czas animacji
 				{
-					gr.frame_end = true;
+					gr.frameEnd = true;
 					if(IsSet(gr.state, FLAG_ONCE))
 					{
 						gr.time = gr.anim->length;
@@ -178,9 +178,9 @@ void MeshInstance::Update(float dt)
 //====================================================================================================
 void MeshInstance::SetupBones()
 {
-	if(!need_update)
+	if(!needUpdate)
 		return;
-	need_update = false;
+	needUpdate = false;
 
 	Matrix BoneToParentPoseMat[Mesh::MAX_BONES];
 	BoneToParentPoseMat[0] = Matrix::IdentityMatrix;
@@ -203,7 +203,7 @@ void MeshInstance::SetupBones()
 			if(gr_bones.IsBlending())
 			{
 				// jest blending pomiêdzy B--->0
-				float bt = gr_bones.blend_time / gr_bones.blend_max;
+				float bt = gr_bones.blendTime / gr_bones.blendMax;
 
 				for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 				{
@@ -232,8 +232,8 @@ void MeshInstance::SetupBones()
 			if(gr_anim.IsBlending() || gr_bones.IsBlending())
 			{
 				// jest blending
-				const float bt = (gr_bones.IsBlending() ? (gr_bones.blend_time / gr_bones.blend_max) :
-					(gr_anim.blend_time / gr_anim.blend_max));
+				const float bt = (gr_bones.IsBlending() ? (gr_bones.blendTime / gr_bones.blendMax) :
+					(gr_anim.blendTime / gr_anim.blendMax));
 
 				if(hit)
 				{
@@ -313,16 +313,16 @@ void MeshInstance::SetupBones()
 	}
 
 	// przeskaluj koœci
-	if(mat_scale)
+	if(matScale)
 	{
 		for(int i = 0; i < mesh->head.n_bones; ++i)
-			BoneToModelPoseMat[i] = BoneToModelPoseMat[i] * mat_scale[i];
+			BoneToModelPoseMat[i] = BoneToModelPoseMat[i] * matScale[i];
 	}
 
 	// Macierze zebrane koœci - przekszta³caj¹ce z modelu do koœci w pozycji spoczynkowej * z koœci do modelu w pozycji bie¿¹cej
-	mat_bones[0] = Matrix::IdentityMatrix;
+	matBones[0] = Matrix::IdentityMatrix;
 	for(word i = 1; i < mesh->head.n_bones; ++i)
-		mat_bones[i] = mesh->model_to_bone[i] * BoneToModelPoseMat[i];
+		matBones[i] = mesh->model_to_bone[i] * BoneToModelPoseMat[i];
 }
 
 //=================================================================================================
@@ -342,7 +342,7 @@ void MeshInstance::SetupBlending(uint bones_group, bool first, bool in_update)
 		if(gr_bones.IsBlending())
 		{
 			// jest blending pomiêdzy B--->0
-			const float bt = gr_bones.blend_time / gr_bones.blend_max;
+			const float bt = gr_bones.blendTime / gr_bones.blendMax;
 
 			for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 			{
@@ -370,8 +370,8 @@ void MeshInstance::SetupBlending(uint bones_group, bool first, bool in_update)
 			// je¿eli gr_anim == gr_bones to mo¿na to zoptymalizowaæ
 
 			// jest blending
-			const float bt = (gr_bones.IsBlending() ? (gr_bones.blend_time / gr_bones.blend_max) :
-				(gr_anim.blend_time / gr_anim.blend_max));
+			const float bt = (gr_bones.IsBlending() ? (gr_bones.blendTime / gr_bones.blendMax) :
+				(gr_anim.blendTime / gr_anim.blendMax));
 
 			if(hit)
 			{
@@ -440,7 +440,7 @@ void MeshInstance::SetupBlending(uint bones_group, bool first, bool in_update)
 				SetBit(gr.state, FLAG_BLENDING);
 				if(in_update && group > bones_group)
 					SetBit(gr.state, FLAG_UPDATED);
-				gr.blend_time = 0;
+				gr.blendTime = 0;
 			}
 		}
 	}
@@ -450,7 +450,7 @@ void MeshInstance::SetupBlending(uint bones_group, bool first, bool in_update)
 void MeshInstance::ClearEndResult()
 {
 	for(Group& group : groups)
-		group.frame_end = false;
+		group.frameEnd = false;
 }
 
 //=================================================================================================
@@ -512,8 +512,8 @@ void MeshInstance::DisableAnimations()
 		group.state = 0;
 	}
 	for(int i = 0; i < mesh->head.n_bones; ++i)
-		mat_bones[i] = Matrix::IdentityMatrix;
-	need_update = false;
+		matBones[i] = Matrix::IdentityMatrix;
+	needUpdate = false;
 }
 
 //=================================================================================================
@@ -522,10 +522,10 @@ void MeshInstance::SetToEnd(Mesh::Animation* anim)
 	assert(anim);
 
 	groups[0].anim = anim;
-	groups[0].blend_time = 0.f;
+	groups[0].blendTime = 0.f;
 	groups[0].state = FLAG_GROUP_ACTIVE;
 	groups[0].time = anim->length;
-	groups[0].used_group = 0;
+	groups[0].usedGroup = 0;
 	groups[0].prio = 3;
 
 	if(mesh->head.n_groups > 1)
@@ -534,13 +534,13 @@ void MeshInstance::SetToEnd(Mesh::Animation* anim)
 		{
 			groups[i].anim = nullptr;
 			groups[i].state = 0;
-			groups[i].used_group = 0;
+			groups[i].usedGroup = 0;
 			groups[i].time = groups[0].time;
-			groups[i].blend_time = groups[0].blend_time;
+			groups[i].blendTime = groups[0].blendTime;
 		}
 	}
 
-	need_update = true;
+	needUpdate = true;
 
 	SetupBones();
 }
@@ -548,20 +548,20 @@ void MeshInstance::SetToEnd(Mesh::Animation* anim)
 //=================================================================================================
 void MeshInstance::SetToEnd()
 {
-	groups[0].blend_time = 0.f;
+	groups[0].blendTime = 0.f;
 	groups[0].state = FLAG_GROUP_ACTIVE;
 	groups[0].time = groups[0].anim->length;
-	groups[0].used_group = 0;
+	groups[0].usedGroup = 0;
 	groups[0].prio = 1;
 
 	for(uint i = 1; i < groups.size(); ++i)
 	{
 		groups[i].state = 0;
-		groups[i].used_group = 0;
-		groups[i].blend_time = 0;
+		groups[i].usedGroup = 0;
+		groups[i].blendTime = 0;
 	}
 
-	need_update = true;
+	needUpdate = true;
 
 	SetupBones();
 }
@@ -572,7 +572,7 @@ void MeshInstance::ResetAnimation()
 	SetupBlending(0);
 
 	groups[0].time = 0.f;
-	groups[0].blend_time = 0.f;
+	groups[0].blendTime = 0.f;
 	SetBit(groups[0].state, FLAG_BLENDING | FLAG_PLAYING);
 }
 
@@ -580,7 +580,7 @@ void MeshInstance::ResetAnimation()
 float MeshInstance::Group::GetBlendT() const
 {
 	if(IsBlending())
-		return blend_time / blend_max;
+		return blendTime / blendMax;
 	else
 		return 1.f;
 }
@@ -594,12 +594,12 @@ void MeshInstance::Save(FileWriter& f) const
 		f << group.speed;
 		f << (group.state & ~FLAG_BLENDING); // don't save blending
 		f << group.prio;
-		f << group.used_group;
+		f << group.usedGroup;
 		if(group.anim)
 			f << group.anim->name;
 		else
 			f.Write0();
-		f << group.frame_end;
+		f << group.frameEnd;
 	}
 }
 
@@ -618,7 +618,7 @@ void MeshInstance::SaveV2(StreamWriter& f) const
 			f << group.anim->name;
 		else
 			f.Write0();
-		f << group.frame_end;
+		f << group.frameEnd;
 	}
 	else
 	{
@@ -628,12 +628,12 @@ void MeshInstance::SaveV2(StreamWriter& f) const
 			f << group.speed;
 			f << (group.state & ~FLAG_BLENDING); // don't save blending
 			f << group.prio;
-			f << group.used_group;
+			f << group.usedGroup;
 			if(group.anim)
 				f << group.anim->name;
 			else
 				f.Write0();
-			f << group.frame_end;
+			f << group.frameEnd;
 		}
 	}
 }
@@ -662,30 +662,30 @@ void MeshInstance::Load(FileReader& f, int version)
 	{
 		f >> group.time;
 		f >> group.speed;
-		group.blend_time = 0.f;
+		group.blendTime = 0.f;
 		f >> group.state;
 		f >> group.prio;
-		f >> group.used_group;
+		f >> group.usedGroup;
 		const string& anim_name = f.ReadString1();
 		if(anim_name.empty())
 			group.anim = nullptr;
 		else
 			group.anim = mesh->GetAnimation(anim_name.c_str());
 		if(version >= 1)
-			f >> group.frame_end;
+			f >> group.frameEnd;
 		else
 		{
 			if(index == 0)
-				group.frame_end = frame_end_info;
+				group.frameEnd = frame_end_info;
 			else if(index == 1)
-				group.frame_end = frame_end_info2;
+				group.frameEnd = frame_end_info2;
 			else
-				group.frame_end = false;
+				group.frameEnd = false;
 		}
 		++index;
 	}
 
-	need_update = true;
+	needUpdate = true;
 }
 
 //=================================================================================================
@@ -704,8 +704,8 @@ void MeshInstance::LoadV2(StreamReader& f)
 		const string& animName = f.ReadString1();
 		if(!animName.empty())
 			group.animName = StringPool.Get(animName);
-		f >> group.frame_end;
-		group.used_group = 0;
+		f >> group.frameEnd;
+		group.usedGroup = 0;
 		group.prio = 0;
 	}
 	else
@@ -716,11 +716,11 @@ void MeshInstance::LoadV2(StreamReader& f)
 			f >> group.speed;
 			f >> group.state;
 			f >> group.prio;
-			f >> group.used_group;
+			f >> group.usedGroup;
 			const string& animName = f.ReadString1();
 			if(!animName.empty())
 				group.animName = StringPool.Get(animName);
-			f >> group.frame_end;
+			f >> group.frameEnd;
 		}
 	}
 }
@@ -746,12 +746,12 @@ void MeshInstance::LoadSimple(FileReader& f)
 	groups.resize(1u);
 	Group& group = groups[0];
 	group.state = f.Read<int>();
-	group.used_group = 0;
+	group.usedGroup = 0;
 	group.prio = 0;
 	if(group.state != 0)
 	{
 		f >> group.time;
-		f >> group.blend_time;
+		f >> group.blendTime;
 		group.animName = StringPool.Get("first");
 	}
 	else
@@ -768,12 +768,12 @@ void MeshInstance::Write(StreamWriter& f) const
 		f << group.speed;
 		f << group.state;
 		f.WriteCasted<byte>(group.prio);
-		f.WriteCasted<byte>(group.used_group);
+		f.WriteCasted<byte>(group.usedGroup);
 		if(group.anim)
 			f << group.anim->name;
 		else
 			f.Write0();
-		f << group.frame_end;
+		f << group.frameEnd;
 	}
 }
 
@@ -795,9 +795,9 @@ bool MeshInstance::Read(StreamReader& f)
 		f >> group.speed;
 		f >> group.state;
 		f.ReadCasted<byte>(group.prio);
-		f.ReadCasted<byte>(group.used_group);
+		f.ReadCasted<byte>(group.usedGroup);
 		const string& anim_id = f.ReadString1();
-		f >> group.frame_end;
+		f >> group.frameEnd;
 		if(!f)
 			return false;
 
@@ -823,7 +823,7 @@ bool MeshInstance::Read(StreamReader& f)
 			group.anim = nullptr;
 	}
 
-	need_update = true;
+	needUpdate = true;
 	return true;
 }
 
@@ -839,7 +839,7 @@ bool MeshInstance::ApplyPreload(Mesh* mesh)
 
 	preload = false;
 	this->mesh = mesh;
-	mat_bones.resize(mesh->head.n_bones);
+	matBones.resize(mesh->head.n_bones);
 	blendb.resize(mesh->head.n_bones);
 
 	for(Group& group : groups)

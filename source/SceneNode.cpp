@@ -39,7 +39,7 @@ void SceneNode::SetMesh(Mesh* mesh, MeshInstance* meshInst)
 void SceneNode::SetMesh(MeshInstance* meshInst)
 {
 	assert(meshInst);
-	this->mesh = meshInst->mesh;
+	this->mesh = meshInst->GetMesh();
 	this->meshInst = meshInst;
 	meshInstOwner = true;
 	UpdateFlags();

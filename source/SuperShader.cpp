@@ -399,8 +399,9 @@ void SuperShader::Draw(SceneNode* node)
 		vsl.matWorld = node->mat.Transpose();
 		if(applyBones)
 		{
-			for(uint i = 0; i < node->meshInst->mesh->head.n_bones; ++i)
-				vsl.matBones[i] = node->meshInst->mat_bones[i].Transpose();
+			const vector<Matrix>& matBones = node->meshInst->GetBoneMatrices();
+			for(uint i = 0, count = matBones.size(); i < count; ++i)
+				vsl.matBones[i] = matBones[i].Transpose();
 		}
 	}
 
