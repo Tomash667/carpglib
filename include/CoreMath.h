@@ -487,13 +487,13 @@ struct Int2
 	int x, y;
 
 	Int2();
-	Int2(int x, int y);
-	Int2(const Int2& i);
+	constexpr Int2(int x, int y);
+	constexpr Int2(const Int2& i);
 	template<typename T, typename T2>
-	Int2(T x, T2 y);
-	explicit Int2(int xy);
-	explicit Int2(const Vec2& v);
-	explicit Int2(const Vec3& v);
+	constexpr Int2(T x, T2 y);
+	explicit constexpr Int2(int xy);
+	explicit constexpr Int2(const Vec2& v);
+	explicit constexpr Int2(const Vec3& v);
 
 	// Comparison operators
 	bool operator == (const Int2& i) const;
@@ -552,13 +552,13 @@ struct Rect
 	Int2 p1, p2;
 
 	Rect();
-	Rect(int x, int y);
-	Rect(int x1, int y1, int x2, int y2);
-	Rect(const Int2& p);
-	Rect(const Int2& p1, const Int2& p2);
-	Rect(const Rect& box);
-	explicit Rect(const Box2d& box);
-	Rect(const Box2d& box, const Int2& pad);
+	constexpr Rect(int x, int y);
+	constexpr Rect(int x1, int y1, int x2, int y2);
+	constexpr Rect(const Int2& p);
+	constexpr Rect(const Int2& p1, const Int2& p2);
+	constexpr Rect(const Rect& box);
+	explicit constexpr Rect(const Box2d& box);
+	constexpr Rect(const Box2d& box, const Int2& pad);
 
 	// Comparison operators
 	bool operator == (const Rect& r) const;
@@ -632,12 +632,12 @@ struct Rect
 struct Vec2 : XMFLOAT2
 {
 	Vec2();
-	Vec2(float x, float y);
-	Vec2(const Vec2& v);
+	constexpr Vec2(float x, float y);
+	constexpr Vec2(const Vec2& v);
 	Vec2(FXMVECTOR v);
-	explicit Vec2(float xy);
-	explicit Vec2(const Int2& i);
-	explicit Vec2(const XMVECTORF32& v);
+	explicit constexpr Vec2(float xy);
+	explicit constexpr Vec2(const Int2& i);
+	explicit constexpr Vec2(const XMVECTORF32& v);
 
 	operator XMVECTOR() const;
 	explicit operator float*();
@@ -748,11 +748,11 @@ struct Vec2 : XMFLOAT2
 struct Vec3 : XMFLOAT3
 {
 	Vec3();
-	Vec3(float x, float y, float z);
-	Vec3(const Vec3& v);
+	constexpr Vec3(float x, float y, float z);
+	constexpr Vec3(const Vec3& v);
 	Vec3(FXMVECTOR v);
-	explicit Vec3(const XMVECTORF32& v);
-	explicit Vec3(const float* f);
+	explicit constexpr Vec3(const XMVECTORF32& v);
+	explicit constexpr Vec3(const float* f);
 
 	operator XMVECTOR() const;
 	explicit operator float*();
@@ -871,10 +871,10 @@ struct Vec4 : XMFLOAT4
 {
 	Vec4();
 	constexpr Vec4(float x, float y, float z, float w);
-	Vec4(const Vec4& v);
-	Vec4(const Vec3& v, float w);
+	constexpr Vec4(const Vec4& v);
+	constexpr Vec4(const Vec3& v, float w);
 	Vec4(FXMVECTOR v);
-	explicit Vec4(const XMVECTORF32& v);
+	explicit constexpr Vec4(const XMVECTORF32& v);
 
 	operator XMVECTOR() const;
 	explicit operator float*();
@@ -971,13 +971,13 @@ struct Box2d
 	Vec2 v1, v2;
 
 	Box2d();
-	Box2d(float minx, float miny, float maxx, float maxy);
-	Box2d(const Vec2& v1, const Vec2& v2);
-	Box2d(const Box2d& box);
-	Box2d(float x, float y);
-	Box2d(const Box2d& box, float margin);
-	explicit Box2d(const Vec2& v);
-	explicit Box2d(const Rect& r);
+	constexpr Box2d(float minx, float miny, float maxx, float maxy);
+	constexpr Box2d(const Vec2& v1, const Vec2& v2);
+	constexpr Box2d(const Box2d& box);
+	constexpr Box2d(float x, float y);
+	constexpr Box2d(const Box2d& box, float margin);
+	explicit constexpr Box2d(const Vec2& v);
+	explicit constexpr Box2d(const Rect& r);
 
 	// Comparison operators
 	bool operator == (const Box2d& b) const;
@@ -1143,11 +1143,11 @@ struct Box
 	Vec3 v1, v2;
 
 	Box();
-	Box(float minx, float miny, float minz, float maxx, float maxy, float maxz);
-	Box(const Vec3& v1, const Vec3& v2);
-	Box(const Box& box);
-	Box(float x, float y, float z);
-	explicit Box(const Vec3& v);
+	constexpr Box(float minx, float miny, float minz, float maxx, float maxy, float maxz);
+	constexpr Box(const Vec3& v1, const Vec3& v2);
+	constexpr Box(const Box& box);
+	constexpr Box(float x, float y, float z);
+	explicit constexpr Box(const Vec3& v);
 
 	// Comparison operators
 	bool operator == (const Box& b) const;
@@ -1195,13 +1195,13 @@ struct Box
 struct Matrix : XMFLOAT4X4
 {
 	Matrix();
-	Matrix(float m00, float m01, float m02, float m03,
+	constexpr Matrix(float m00, float m01, float m02, float m03,
 		float m10, float m11, float m12, float m13,
 		float m20, float m21, float m22, float m23,
 		float m30, float m31, float m32, float m33);
-	Matrix(const Vec3& v1, const Vec3& v2, const Vec3& v3);
-	Matrix(const Vec4& v1, const Vec4& v2, const Vec4& v3, const Vec4& v4);
-	Matrix(const Matrix& m);
+	constexpr Matrix(const Vec3& v1, const Vec3& v2, const Vec3& v3);
+	constexpr Matrix(const Vec4& v1, const Vec4& v2, const Vec4& v3, const Vec4& v4);
+	constexpr Matrix(const Matrix& m);
 	Matrix(CXMMATRIX m);
 
 	operator XMMATRIX() const;
@@ -1286,12 +1286,12 @@ struct Matrix : XMFLOAT4X4
 struct Quat : public XMFLOAT4
 {
 	Quat();
-	Quat(float x, float y, float z, float w);
-	Quat(const Vec3& v, float w);
-	Quat(const Quat& q);
+	constexpr Quat(float x, float y, float z, float w);
+	constexpr Quat(const Vec3& v, float w);
+	constexpr Quat(const Quat& q);
 	Quat(FXMVECTOR v);
-	explicit Quat(const Vec4& v);
-	explicit Quat(const XMVECTORF32& v);
+	explicit constexpr Quat(const Vec4& v);
+	explicit constexpr Quat(const XMVECTORF32& v);
 
 	operator XMVECTOR() const;
 
@@ -1355,13 +1355,13 @@ struct Quat : public XMFLOAT4
 struct Plane : public XMFLOAT4
 {
 	Plane();
-	Plane(float x, float y, float z, float w);
-	Plane(const Vec3& normal, float d);
+	constexpr Plane(float x, float y, float z, float w);
+	constexpr Plane(const Vec3& normal, float d);
 	Plane(const Vec3& point1, const Vec3& point2, const Vec3& point3);
 	Plane(const Vec3& point, const Vec3& normal);
 	Plane(FXMVECTOR v);
-	explicit Plane(const Vec4& v);
-	explicit Plane(const XMVECTORF32& v);
+	explicit constexpr Plane(const Vec4& v);
+	explicit constexpr Plane(const XMVECTORF32& v);
 
 	operator XMVECTOR() const;
 
@@ -1403,7 +1403,7 @@ struct Guid
 	};
 
 	Guid() {}
-	Guid(uint data0, uint data1, uint data2, uint data3) : data{ data0, data1, data2, data3 } {}
+	constexpr Guid(uint data0, uint data1, uint data2, uint data3) : data{ data0, data1, data2, data3 } {}
 
 	bool operator == (const Guid& guid) const;
 	bool operator != (const Guid& guid) const;
