@@ -4,10 +4,11 @@
 #include "File.h"
 
 //---------------------------
-const float DEFAULT_BLENDING = 0.33f;
-const int BLEND_TO_BIND_POSE = -1;
-void(*MeshInstance::Predraw)(void*, Matrix*, int) = nullptr;
+constexpr float DEFAULT_BLENDING = 0.33f;
+constexpr int BLEND_TO_BIND_POSE = -1;
 constexpr Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, Vec3::One);
+
+typedef vector<byte>::const_iterator BoneIter;
 
 //=================================================================================================
 MeshInstance::MeshInstance(Mesh* mesh) : preload(false), mesh(mesh), needUpdate(true), ptr(nullptr), baseSpeed(1.f), matScale(nullptr)
@@ -294,8 +295,8 @@ void MeshInstance::SetupBones()
 		}
 	}
 
-	if(ptr)
-		Predraw(ptr, BoneToParentPoseMat, 0);
+	if(predraw)
+		predraw(ptr, BoneToParentPoseMat, 0);
 
 	// Macierze przekszta³caj¹ce ze wsp. danej koœci do wsp. modelu w ustalonej pozycji
 	// (To obliczenie nale¿a³oby po³¹czyæ z poprzednim)
@@ -466,7 +467,7 @@ bool MeshInstance::IsBlending() const
 }
 
 //=================================================================================================
-int MeshInstance::GetHighestPriority(uint& _group)
+int MeshInstance::GetHighestPriority(uint& _group) const
 {
 	int best = -1;
 
@@ -483,7 +484,7 @@ int MeshInstance::GetHighestPriority(uint& _group)
 }
 
 //=================================================================================================
-int MeshInstance::GetUsableGroup(uint group)
+int MeshInstance::GetUsableGroup(uint group) const
 {
 	uint top_group;
 	int highest_prio = GetHighestPriority(top_group);
