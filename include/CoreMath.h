@@ -433,6 +433,12 @@ inline int Roundi(float value)
 	return (int)round(value);
 }
 
+inline float Round10(float value)
+{
+	// +0 required to get rid of (0, -0) flickering
+	return round(value * 10) / 10 + 0.0f;
+}
+
 // Return module
 inline constexpr int Modulo(int a, int mod)
 {
