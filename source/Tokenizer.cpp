@@ -1396,7 +1396,7 @@ int Tokenizer::IsKeywordGroup(std::initializer_list<int> const& groups) const
 //=================================================================================================
 Pos Tokenizer::GetPos()
 {
-	Pos p;
+	Pos p{};
 	p.line = normal_seek.line + 1;
 	p.charpos = normal_seek.charpos + 1;
 	p.pos = normal_seek.start_pos;
@@ -1491,4 +1491,111 @@ SeekData& Tokenizer::Query()
 	tmp.charpos = normal_seek.charpos;
 	DoNext(tmp, false);
 	return tmp;
+}
+
+//=================================================================================================
+int Tokenizer::ParseTop(int group, delegate<bool(int)> action)
+{
+	int errors = 0;
+
+	try
+	{
+		Next();
+
+		while(!IsEof())
+		{
+			bool skip = false;
+
+			if(IsKeywordGroup(group))
+			{
+				int top = GetKeywordId(group);
+				Next();
+				if(!action(top))
+					skip = true;
+			}
+			else
+			{
+				Error(FormatUnexpected(T_KEYWORD_GROUP, &group));
+				skip = true;
+			}
+
+			if(skip)
+			{
+				SkipToKeywordGroup(group);
+				++errors;
+			}
+			else
+				Next();
+		}
+	}
+	catch(const Exception& e)
+	{
+		Error("Failed to parse top group: %s", e.ToString());
+		++errors;
+	}
+
+	return errors;
+}
+
+//=================================================================================================
+int Tokenizer::ParseTopId(int group, delegate<void(int, const string&)> action)
+{
+	int errors = 0;
+
+	try
+	{
+		Next();
+
+		while(!IsEof())
+		{
+			bool skip = false;
+
+			if(IsKeywordGroup(group))
+			{
+				int top = GetKeywordId(group);
+				Next();
+
+				if(IsString())
+				{
+					tmpId = GetString();
+					Next();
+
+					try
+					{
+						action(top, tmpId);
+					}
+					catch(const Exception& ex)
+					{
+						Error("Failed to parse %s '%s': %s", FindKeyword(top, group)->name, tmpId.c_str(), ex.ToString());
+						skip = true;
+					}
+				}
+				else
+				{
+					Error(FormatUnexpected(T_STRING));
+					skip = true;
+				}
+			}
+			else
+			{
+				Error(FormatUnexpected(T_KEYWORD_GROUP, &group));
+				skip = true;
+			}
+
+			if(skip)
+			{
+				SkipToKeywordGroup(group);
+				++errors;
+			}
+			else
+				Next();
+		}
+	}
+	catch(const Exception& ex)
+	{
+		Error("Failed to parse top group: %s", ex.ToString());
+		++errors;
+	}
+
+	return errors;
 }

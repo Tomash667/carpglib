@@ -807,50 +807,8 @@ namespace tokenizer
 		void Parse(Color& c);
 		void ParseFlags(int group, int& flags);
 		void ParseFlags(std::initializer_list<FlagGroup> const& flags);
-
-		template<typename Top, typename Action>
-		int ParseTop(int group, Action action)
-		{
-			int errors = 0;
-
-			try
-			{
-				Next();
-
-				while(!IsEof())
-				{
-					bool skip = false;
-
-					if(IsKeywordGroup(group))
-					{
-						Top top = (Top)GetKeywordId(group);
-						Next();
-						if(!action(top))
-							skip = true;
-					}
-					else
-					{
-						Error(FormatUnexpected(T_KEYWORD_GROUP, &group));
-						skip = true;
-					}
-
-					if(skip)
-					{
-						SkipToKeywordGroup(group);
-						++errors;
-					}
-					else
-						Next();
-				}
-			}
-			catch(const Exception& e)
-			{
-				Error("Failed to parse top group: %s", e.ToString());
-				++errors;
-			}
-
-			return errors;
-		}
+		int ParseTop(int group, delegate<bool(int)> action);
+		int ParseTopId(int group, delegate<void(int, const string&)> action);
 
 		void SetFlags(int _flags);
 		void CheckItemOrKeyword(const string& item)
@@ -885,7 +843,7 @@ namespace tokenizer
 
 		const string* str;
 		int flags;
-		string filename;
+		string filename, tmpId;
 		vector<Keyword> keywords;
 		vector<KeywordGroup> groups;
 		SeekData normal_seek;
