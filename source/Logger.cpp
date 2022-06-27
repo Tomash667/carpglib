@@ -149,7 +149,7 @@ void PreLogger::Apply(Logger* logger)
 	DeleteElements(prelogs);
 }
 
-void PreLogger::Clear()
+PreLogger::~PreLogger()
 {
 	DeleteElements(prelogs);
 }

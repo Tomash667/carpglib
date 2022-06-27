@@ -47,10 +47,10 @@ void ResourceManager::Init()
 {
 	RegisterExtensions();
 
-	LoadBuiltinMesh("box.qmsh", box_qmsh, box_qmsh_len);
-	LoadBuiltinMesh("sphere.qmsh", sphere_qmsh, sphere_qmsh_len);
-	LoadBuiltinMesh("capsule.qmsh", capsule_qmsh, capsule_qmsh_len);
-	LoadBuiltinMesh("cylinder.qmsh", cylinder_qmsh, cylinder_qmsh_len);
+	LoadBuiltinMesh("box", box_qmsh, box_qmsh_len);
+	LoadBuiltinMesh("sphere", sphere_qmsh, sphere_qmsh_len);
+	LoadBuiltinMesh("capsule", capsule_qmsh, capsule_qmsh_len);
+	LoadBuiltinMesh("cylinder", cylinder_qmsh, cylinder_qmsh_len);
 }
 
 //=================================================================================================
@@ -691,8 +691,8 @@ void ResourceManager::LoadBuiltinMesh(cstring name, byte* data, uint size)
 
 	Mesh* mesh = new Mesh;
 	mesh->type = ResourceType::Mesh;
-	mesh->path = Format("builtin/%s", name);
-	mesh->filename = mesh->path.c_str() + 8;
+	mesh->path = Format("builtin/%s.qmsh", name);
+	mesh->filename = mesh->path.c_str();
 	mesh->state = ResourceState::Loaded;
 	mesh->pak = nullptr;
 

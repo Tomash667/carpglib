@@ -131,8 +131,8 @@ class PreLogger : public Logger
 
 public:
 	PreLogger() : flush(false) {}
+	~PreLogger();
 	void Apply(Logger* logger);
-	void Clear();
 	void Flush() override;
 
 protected:
