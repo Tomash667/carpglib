@@ -294,10 +294,10 @@ void SuperShader::PrepareDecals()
 	app::render->SetDepthState(Render::DEPTH_READ);
 	app::render->SetRasterState(Render::RASTER_NORMAL);
 
-	const bool use_fog = app::scene_mgr->use_lighting && app::scene_mgr->use_fog;
+	const bool use_fog = app::sceneMgr->useLighting && app::sceneMgr->useFog;
 
 	SetShader(GetShaderId(false, false, false, use_fog, false, false,
-		!scene->use_light_dir && app::scene_mgr->use_lighting, scene->use_light_dir && app::scene_mgr->use_lighting));
+		!scene->useLightDir && app::sceneMgr->useLighting, scene->useLightDir && app::sceneMgr->useLighting));
 }
 
 //=================================================================================================
@@ -399,8 +399,9 @@ void SuperShader::Draw(SceneNode* node)
 		vsl.matWorld = node->mat.Transpose();
 		if(applyBones)
 		{
-			for(uint i = 0; i < node->mesh_inst->mesh->head.n_bones; ++i)
-				vsl.matBones[i] = node->mesh_inst->mat_bones[i].Transpose();
+			const vector<Matrix>& matBones = node->meshInst->GetBoneMatrices();
+			for(uint i = 0, count = matBones.size(); i < count; ++i)
+				vsl.matBones[i] = matBones[i].Transpose();
 		}
 	}
 
@@ -453,7 +454,7 @@ void SuperShader::DrawSubmesh(SceneNode* node, uint index)
 	}
 
 	// set texture OwO
-	SetTexture(node->tex_override, node->mesh, index);
+	SetTexture(node->texOverride, node->mesh, index);
 
 	// actual drawing
 	deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, 0);

@@ -22,55 +22,55 @@ float drop_range(float v, float t)
 //=================================================================================================
 void ParticleEmitter::Init()
 {
-	particles.resize(max_particles);
+	particles.resize(maxParticles);
 	time = 0.f;
 	alive = 0;
 	destroy = false;
-	for(int i = 0; i < max_particles; ++i)
+	for(int i = 0; i < maxParticles; ++i)
 		particles[i].exists = false;
 
 	// oblicz promieñ
 	float t;
 	if(life > 0)
-		t = min(particle_life, life);
+		t = min(particleLife, life);
 	else
-		t = particle_life;
+		t = particleLife;
 	float r = 0.f;
 
 	// lewa
-	float r2 = abs(pos_min.x + speed_min.x * t);
+	float r2 = abs(posMin.x + speedMin.x * t);
 	if(r2 > r)
 		r = r2;
 
 	// prawa
-	r2 = abs(pos_max.x + speed_max.x * t);
+	r2 = abs(posMax.x + speedMax.x * t);
 	if(r2 > r)
 		r = r2;
 
 	// ty³
-	r2 = abs(pos_min.z + speed_min.z * t);
+	r2 = abs(posMin.z + speedMin.z * t);
 	if(r2 > r)
 		r = r2;
 
 	// przód
-	r2 = abs(pos_max.z + speed_max.z * t);
+	r2 = abs(posMax.z + speedMax.z * t);
 	if(r2 > r)
 		r = r2;
 
 	// góra
-	r2 = abs(pos_max.y + drop_range(speed_max.y, t));
+	r2 = abs(posMax.y + drop_range(speedMax.y, t));
 	if(r2 > r)
 		r = r2;
 
 	// dó³
-	r2 = abs(pos_min.y + drop_range(speed_min.y, t));
+	r2 = abs(posMin.y + drop_range(speedMin.y, t));
 	if(r2 > r)
 		r = r2;
 
 	radius = sqrt(2 * r * r);
 
 	// nowe
-	manual_delete = 0;
+	manualDelete = 0;
 }
 
 //=================================================================================================
@@ -81,10 +81,10 @@ bool ParticleEmitter::Update(float dt)
 
 	if(destroy && alive == 0)
 	{
-		if(manual_delete == 0)
+		if(manualDelete == 0)
 			delete this;
 		else
-			manual_delete = 2;
+			manualDelete = 2;
 		return true;
 	}
 
@@ -108,13 +108,13 @@ bool ParticleEmitter::Update(float dt)
 	}
 
 	// emisja
-	if(!destroy && (emissions == -1 || emissions > 0) && ((time += dt) >= emission_interval))
+	if(!destroy && (emissions == -1 || emissions > 0) && ((time += dt) >= emissionInterval))
 	{
 		if(emissions > 0)
 			--emissions;
-		time -= emission_interval;
+		time -= emissionInterval;
 
-		int count = min(Random(spawn_min, spawn_max), max_particles - alive);
+		int count = min(Random(spawnMin, spawnMax), maxParticles - alive);
 		vector<Particle>::iterator it2 = particles.begin();
 
 		for(int i = 0; i < count; ++i)
@@ -125,9 +125,9 @@ bool ParticleEmitter::Update(float dt)
 			Particle& p = *it2;
 			p.exists = true;
 			p.gravity = G;
-			p.life = particle_life;
-			p.pos = pos + Vec3::Random(pos_min, pos_max);
-			p.speed = Vec3::Random(speed_min, speed_max);
+			p.life = particleLife;
+			p.pos = pos + Vec3::Random(posMin, posMax);
+			p.speed = Vec3::Random(speedMin, speedMax);
 		}
 
 		alive += count;
@@ -140,24 +140,24 @@ bool ParticleEmitter::Update(float dt)
 void ParticleEmitter::Save(FileWriter& f)
 {
 	f << tex->filename;
-	f << emission_interval;
+	f << emissionInterval;
 	f << life;
-	f << particle_life;
+	f << particleLife;
 	f << alpha;
 	f << size;
 	f << emissions;
-	f << spawn_min;
-	f << spawn_max;
-	f << max_particles;
+	f << spawnMin;
+	f << spawnMax;
+	f << maxParticles;
 	f << mode;
 	f << pos;
-	f << speed_min;
-	f << speed_max;
-	f << pos_min;
-	f << pos_max;
-	f << op_size;
-	f << op_alpha;
-	f << manual_delete;
+	f << speedMin;
+	f << speedMax;
+	f << posMin;
+	f << posMax;
+	f << opSize;
+	f << opAlpha;
+	f << manualDelete;
 	f << time;
 	f << radius;
 	f << particles;
@@ -168,25 +168,25 @@ void ParticleEmitter::Save(FileWriter& f)
 //=================================================================================================
 void ParticleEmitter::Load(FileReader& f)
 {
-	tex = app::res_mgr->Load<Texture>(f.ReadString1());
-	f >> emission_interval;
+	tex = app::resMgr->Load<Texture>(f.ReadString1());
+	f >> emissionInterval;
 	f >> life;
-	f >> particle_life;
+	f >> particleLife;
 	f >> alpha;
 	f >> size;
 	f >> emissions;
-	f >> spawn_min;
-	f >> spawn_max;
-	f >> max_particles;
+	f >> spawnMin;
+	f >> spawnMax;
+	f >> maxParticles;
 	f >> mode;
 	f >> pos;
-	f >> speed_min;
-	f >> speed_max;
-	f >> pos_min;
-	f >> pos_max;
-	f >> op_size;
-	f >> op_alpha;
-	f >> manual_delete;
+	f >> speedMin;
+	f >> speedMax;
+	f >> posMin;
+	f >> posMax;
+	f >> opSize;
+	f >> opAlpha;
+	f >> manualDelete;
 	f >> time;
 	f >> radius;
 	f >> particles;
@@ -328,7 +328,7 @@ void TrailParticleEmitter::Load(FileReader& f)
 	f >> width;
 	const string& tex_id = f.ReadString1();
 	if(!tex_id.empty())
-		tex = app::res_mgr->Load<Texture>(tex_id);
+		tex = app::resMgr->Load<Texture>(tex_id);
 	else
 		tex = nullptr;
 	f >> manual;

@@ -1,7 +1,7 @@
 bl_info = {
 	"name": "Qmsh exporter",
 	"author": "Tomashu",
-	"version": (0, 22, 2),
+	"version": (0, 22, 3),
 	"blender": (2, 78, 0),
 	"location": "File > Export > Qmsh",
 	"description": "Export to Qmsh or Qmsh.tmp",
@@ -78,6 +78,12 @@ def QuoteString(s):
 ################################################################################
 def ProcessMeshObject(data,obj):
 	mesh = obj.to_mesh(bpy.context.scene, data.apply_mod, 'PREVIEW', True)
+	
+	# validate
+	for modifier in obj.modifiers:
+		if isinstance(modifier, bpy.types.ArmatureModifier) and (obj.parent is None or obj.parent != modifier.object):
+			data.Warning("Mesh \"%s\" has armature modifier but no valid parent." % obj.name)
+	
 	# aktualizuj statystyki
 	data.objects = data.objects + 1
 	data.vertices = data.vertices + len(mesh.vertices)
@@ -182,8 +188,6 @@ def ProcessMeshObject(data,obj):
 	
 ################################################################################
 def ProcessArmatureObject(data,obj):
-	armature = obj.data
-	
 	# Zakazany Parent
 	if obj.parent != None:
 		data.Warning("Object \"%s\" has a parent." %obj.name)
@@ -196,14 +200,11 @@ def ProcessArmatureObject(data,obj):
 	data.file.write("\tarmature %s {\n" % QuoteString(obj.name))
 	
 	# Pozycja
-	Location = obj.location
-	data.file.write("\t\t%f,%f,%f\n" % (Location[0], Location[1], Location[2]))
+	data.file.write("\t\t%f,%f,%f\n" % (obj.location[0], obj.location[1], obj.location[2]))
 	# Orientacja
-	Orientation = obj.rotation_euler
-	data.file.write("\t\t%f,%f,%f\n" % (Orientation[0], Orientation[1], Orientation[2]))
+	data.file.write("\t\t%f,%f,%f\n" % (obj.rotation_euler[0], obj.rotation_euler[1], obj.rotation_euler[2]))
 	# Skalowanie
-	Scaling = obj.scale
-	data.file.write("\t\t%f,%f,%f\n" % (Scaling[0], Scaling[1], Scaling[2]))
+	data.file.write("\t\t%f,%f,%f\n" % (obj.scale[0], obj.scale[1], obj.scale[2]))
 	
 	# Bone groups
 	pose = obj.pose
@@ -220,6 +221,7 @@ def ProcessArmatureObject(data,obj):
 		bone_groups[bone_group] = name
 	
 	# Bones
+	armature = obj.data
 	for bone in armature.bones:
 		data.file.write("\t\tbone %s {\n" % QuoteString(bone.name))
 		# Parent
@@ -444,16 +446,16 @@ def RunExport(filepath, config):
 		filepath += '.tmp'
 	data = ExporterData(filepath, config.textureNames, config.useExistingArmature, config.applyModifiers, config.forceTangents)
 	ExportQmsh(data)
-	if config.runConverter:
-		cmd = '"' + config.converterPath + '" "' + filepath + '"'
-		print("Command: %s" % cmd)
-		sub = subprocess.Popen(cmd)
-		result = sub.wait()
-		if result == 2:
-			raise ExporterException("Converter error.")
-		os.remove(data.path)
-		return result == 0
-	return True
+	if not config.runConverter:
+		return data.warnings == 0
+	cmd = '"%s" %s "%s"' % (config.converterPath, config.converterFlags, filepath)
+	print("Command: %s" % cmd)
+	sub = subprocess.Popen(cmd)
+	result = sub.wait()
+	if result == 2:
+		raise ExporterException("Converter error.")
+	os.remove(data.path)
+	return result == 0 and data.warnings == 0
 
 ################################################################################
 class Config:
@@ -470,13 +472,15 @@ class Config:
 		self.forceTangents = s.getboolean('forceTangents')
 		self.runConverter = s.getboolean('runConverter')
 		self.converterPath = s['converterPath']
+		self.converterFlags = s['converterFlags']
 	def Init(self):
 		sett = {'textureNames': 'True',
 				'useExistingArmature': 'False',
 				'applyModifiers': 'True',
 				'forceTangents': 'False',
 				'runConverter': 'True',
-				'converterPath': 'D:\\carpg\\other\\mesh\\converter.exe'}
+				'converterPath': 'D:\\carpg\\other\\mesh\\converter.exe',
+				'converterFlags': ''}
 		if not self.config.has_section('settings'):
 			self.config['settings'] = sett
 			return
@@ -492,6 +496,7 @@ class Config:
 		s['forceTangents'] = str(self.forceTangents)
 		s['runConverter'] = str(self.runConverter)
 		s['converterPath'] = self.converterPath
+		s['converterFlags'] = self.converterFlags
 		with open(self.filepath, 'w') as configfile:
 			self.config.write(configfile)
 
@@ -536,6 +541,10 @@ class QmshExporterOperator(bpy.types.Operator, ExportHelper):
 		name="Converter path",
 		default=config.converterPath)
 		
+	ConverterFlags = StringProperty(
+		name="Converter flags",
+		default=config.converterFlags)
+		
 	def execute(self, context):
 		self.config.textureNames = self.TextureNames
 		self.config.useExistingArmature = self.UseExistingArmature
@@ -543,6 +552,7 @@ class QmshExporterOperator(bpy.types.Operator, ExportHelper):
 		self.config.forceTangents = self.ForceTangents
 		self.config.runConverter = self.RunConverter
 		self.config.converterPath = self.ConverterPath
+		self.config.converterFlags = self.ConverterFlags
 		self.config.Save()
 		try:
 			ok = RunExport(self.properties.filepath, self.config)

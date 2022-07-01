@@ -140,13 +140,13 @@ void ListBox::Update(float dt)
 			UpdateControl(&scrollbar, dt);
 		}
 
-		if(mouse_focus && input->Focus() && PointInRect(gui->cursor_pos, global_pos, realSize))
+		if(mouse_focus && input->Focus() && PointInRect(gui->cursorPos, global_pos, realSize))
 		{
 			int bt = 0;
 
 			if(event_handler2 && gui->DoubleClick(Key::LeftButton))
 			{
-				int new_index = PosToIndex(gui->cursor_pos.y);
+				int new_index = PosToIndex(gui->cursorPos.y);
 				if(new_index != -1 && new_index == selected)
 				{
 					event_handler2(A_DOUBLE_CLICK, selected);
@@ -164,7 +164,7 @@ void ListBox::Update(float dt)
 
 			if(bt > 0)
 			{
-				int new_index = PosToIndex(gui->cursor_pos.y);
+				int new_index = PosToIndex(gui->cursorPos.y);
 				bool ok = true;
 				if(new_index != -1 && new_index != selected)
 					ok = ChangeIndexEvent(new_index, false, false);

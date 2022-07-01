@@ -25,13 +25,13 @@ struct ParticleEmitter
 	};
 
 	TexturePtr tex;
-	float emission_interval, life, particle_life, alpha, size;
-	int emissions, spawn_min, spawn_max, max_particles, mode;
-	Vec3 pos, speed_min, speed_max, pos_min, pos_max;
-	PARTICLE_OP op_size, op_alpha;
+	Vec3 pos, speedMin, speedMax, posMin, posMax;
+	float emissionInterval, life, particleLife, alpha, size;
+	int emissions, spawnMin, spawnMax, maxParticles, mode;
+	PARTICLE_OP opSize, opAlpha;
 
 	// nowe wartoœci, dla kompatybilnoœci zerowane w Init
-	int manual_delete;
+	int manualDelete;
 
 	// automatycznie ustawiane
 	float time, radius;
@@ -45,17 +45,17 @@ struct ParticleEmitter
 	void Load(FileReader& f);
 	float GetAlpha(const Particle &p) const
 	{
-		if(op_alpha == POP_CONST)
+		if(opAlpha == POP_CONST)
 			return alpha;
 		else
-			return Lerp(0.f, alpha, p.life / particle_life);
+			return Lerp(0.f, alpha, p.life / particleLife);
 	}
 	float GetScale(const Particle &p) const
 	{
-		if(op_size == POP_CONST)
+		if(opSize == POP_CONST)
 			return size;
 		else
-			return Lerp(0.f, size, p.life / particle_life);
+			return Lerp(0.f, size, p.life / particleLife);
 	}
 };
 

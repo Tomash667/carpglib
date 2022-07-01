@@ -39,9 +39,9 @@ void MenuList::Draw(ControlDrawData*)
 void MenuList::Update(float dt)
 {
 	selected = -1;
-	if(IsInside(gui->cursor_pos))
+	if(IsInside(gui->cursorPos))
 	{
-		selected = (gui->cursor_pos.y - global_pos.y) / 20;
+		selected = (gui->cursorPos.y - global_pos.y) / 20;
 		if(selected >= (int)items.size())
 			selected = -1;
 	}

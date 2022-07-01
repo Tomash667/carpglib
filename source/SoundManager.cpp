@@ -7,7 +7,7 @@
 
 #include <fmod.hpp>
 
-SoundManager* app::sound_mgr;
+SoundManager* app::soundMgr;
 
 class DefaultDeviceHandler : public IMMNotificationClient
 {
@@ -26,7 +26,7 @@ public:
 	HRESULT STDMETHODCALLTYPE OnDefaultDeviceChanged(EDataFlow flow, ERole role, LPCWSTR)
 	{
 		if(flow == EDataFlow::eRender && role == ERole::eConsole)
-			app::sound_mgr->HandleDefaultDeviceChange(GetDefaultDevice());
+			app::soundMgr->HandleDefaultDeviceChange(GetDefaultDevice());
 		return S_OK;
 	}
 
@@ -91,6 +91,7 @@ disabled(false), soundVolume(50), musicVolume(50)
 //=================================================================================================
 SoundManager::~SoundManager()
 {
+	Buffer::Free(soundBufs);
 	delete handler;
 	criticalSection.Free();
 	if(system)

@@ -142,16 +142,16 @@ void TextBox::Update(float dt)
 
 	if(mouse_focus)
 	{
-		if(PointInRect(gui->cursor_pos, global_pos, real_size))
+		if(PointInRect(gui->cursorPos, global_pos, real_size))
 		{
-			gui->cursor_mode = CURSOR_TEXT;
+			gui->cursorMode = CURSOR_TEXT;
 			if(input->PressedRelease(Key::LeftButton) || input->PressedRelease(Key::RightButton))
 			{
 				// set caret position, update selection
 				bool prev_focus = focus;
 				Int2 new_index, new_pos, prev_index = caret_index;
 				uint char_index;
-				GetCaretPos(gui->cursor_pos, new_index, new_pos, &char_index);
+				GetCaretPos(gui->cursorPos, new_index, new_pos, &char_index);
 				caret_blink = 0.f;
 				TakeFocus(true);
 				if(input->Down(Key::Shift) && prev_focus)
@@ -228,7 +228,7 @@ void TextBox::Update(float dt)
 
 				if(!multiline)
 				{
-					int local_x = gui->cursor_pos.x - global_pos.x - padding;
+					int local_x = gui->cursorPos.x - global_pos.x - padding;
 					if(local_x <= 0.1f * size.x && offset != 0)
 					{
 						offset_move -= dt * MOVE_SPEED;
@@ -255,7 +255,7 @@ void TextBox::Update(float dt)
 				}
 				else
 				{
-					int local_y = gui->cursor_pos.y - global_pos.y - padding;
+					int local_y = gui->cursorPos.y - global_pos.y - padding;
 					float move = 0.f;
 					if(local_y <= 0.1f * size.y)
 						move = -1.f;
@@ -269,7 +269,7 @@ void TextBox::Update(float dt)
 				}
 
 				Int2 new_index, new_pos;
-				GetCaretPos(gui->cursor_pos, new_index, new_pos);
+				GetCaretPos(gui->cursorPos, new_index, new_pos);
 				if(new_index != caret_index)
 				{
 					CalculateSelection(new_index, new_pos);

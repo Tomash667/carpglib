@@ -46,13 +46,13 @@ void InputTextBox::Update(float dt)
 {
 	if(mouse_focus)
 	{
-		if(input->Focus() && IsInside(gui->cursor_pos))
+		if(input->Focus() && IsInside(gui->cursorPos))
 			scrollbar.ApplyMouseWheel();
 
 		bool release_key = false;
-		if(PointInRect(gui->cursor_pos, inputbox_pos, inputbox_size))
+		if(PointInRect(gui->cursorPos, inputbox_pos, inputbox_size))
 		{
-			gui->cursor_mode = CURSOR_TEXT;
+			gui->cursorMode = CURSOR_TEXT;
 			if(!focus && input->Focus() && input->PressedRelease(Key::LeftButton))
 				focus = true;
 		}

@@ -28,7 +28,7 @@ void DialogBox::Draw(ControlDrawData*)
 void DialogBox::DrawPanel(bool background)
 {
 	if(background)
-		gui->DrawArea(Box2d::Create(Int2::Zero, gui->wnd_size), layout->background);
+		gui->DrawArea(Box2d::Create(Int2::Zero, gui->wndSize), layout->background);
 	gui->DrawArea(Box2d::Create(pos, size), layout->box);
 }
 
@@ -69,7 +69,7 @@ void DialogBox::Event(GuiEvent e)
 		result = e - GuiEvent_Custom;
 	else if(e == GuiEvent_Show || e == GuiEvent_Resize)
 	{
-		pos = global_pos = (gui->wnd_size - size) / 2;
+		pos = global_pos = (gui->wndSize - size) / 2;
 		for(uint i = 0; i < bts.size(); ++i)
 			bts[i].global_pos = bts[i].pos + pos;
 	}

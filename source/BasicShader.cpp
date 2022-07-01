@@ -63,10 +63,10 @@ void BasicShader::OnInit()
 	psGlobalsMesh = app::render->CreateConstantBuffer(sizeof(PsGlobalsMesh), "BasicPsGlobalsMesh");
 	psGlobalsColor = app::render->CreateConstantBuffer(sizeof(PsGlobalsColor), "BasicPsGlobalsColor");
 
-	meshes[(int)MeshShape::Box] = app::res_mgr->Get<Mesh>("box.qmsh");
-	meshes[(int)MeshShape::Sphere] = app::res_mgr->Get<Mesh>("sphere.qmsh");
-	meshes[(int)MeshShape::Capsule] = app::res_mgr->Get<Mesh>("capsule.qmsh");
-	meshes[(int)MeshShape::Cylinder] = app::res_mgr->Get<Mesh>("cylinder.qmsh");
+	meshes[(int)MeshShape::Box] = app::resMgr->Get<Mesh>("box.qmsh");
+	meshes[(int)MeshShape::Sphere] = app::resMgr->Get<Mesh>("sphere.qmsh");
+	meshes[(int)MeshShape::Capsule] = app::resMgr->Get<Mesh>("capsule.qmsh");
+	meshes[(int)MeshShape::Cylinder] = app::resMgr->Get<Mesh>("cylinder.qmsh");
 }
 
 //=================================================================================================
@@ -314,6 +314,28 @@ void BasicShader::DrawLine(const Vec3& from, const Vec3& to, float width, Color 
 	};
 
 	DrawQuad(pts, color);
+}
+
+//=================================================================================================
+void BasicShader::DrawFrustum(const FrustumPlanes& frustum, float width, Color color)
+{
+	array<Vec3, 8> pts;
+	frustum.GetPoints(pts);
+
+	DrawLine(pts[FrustumPlanes::NEAR_LEFT_BOTTOM], pts[FrustumPlanes::NEAR_RIGHT_BOTTOM], width, color);
+	DrawLine(pts[FrustumPlanes::NEAR_LEFT_TOP], pts[FrustumPlanes::NEAR_RIGHT_TOP], width, color);
+	DrawLine(pts[FrustumPlanes::NEAR_LEFT_BOTTOM], pts[FrustumPlanes::NEAR_LEFT_TOP], width, color);
+	DrawLine(pts[FrustumPlanes::NEAR_RIGHT_BOTTOM], pts[FrustumPlanes::NEAR_RIGHT_TOP], width, color);
+
+	DrawLine(pts[FrustumPlanes::FAR_LEFT_BOTTOM], pts[FrustumPlanes::FAR_RIGHT_BOTTOM], width, color);
+	DrawLine(pts[FrustumPlanes::FAR_LEFT_TOP], pts[FrustumPlanes::FAR_RIGHT_TOP], width, color);
+	DrawLine(pts[FrustumPlanes::FAR_LEFT_BOTTOM], pts[FrustumPlanes::FAR_LEFT_TOP], width, color);
+	DrawLine(pts[FrustumPlanes::FAR_RIGHT_BOTTOM], pts[FrustumPlanes::FAR_RIGHT_TOP], width, color);
+
+	DrawLine(pts[FrustumPlanes::NEAR_LEFT_BOTTOM], pts[FrustumPlanes::FAR_LEFT_BOTTOM], width, color);
+	DrawLine(pts[FrustumPlanes::NEAR_RIGHT_BOTTOM], pts[FrustumPlanes::FAR_RIGHT_BOTTOM], width, color);
+	DrawLine(pts[FrustumPlanes::NEAR_LEFT_TOP], pts[FrustumPlanes::FAR_LEFT_TOP], width, color);
+	DrawLine(pts[FrustumPlanes::NEAR_RIGHT_TOP], pts[FrustumPlanes::FAR_RIGHT_TOP], width, color);
 }
 
 //=================================================================================================

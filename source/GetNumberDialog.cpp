@@ -14,7 +14,7 @@ GetNumberDialog::GetNumberDialog(const DialogInfo& info) : DialogBox(info), scro
 //=================================================================================================
 void GetNumberDialog::Draw(ControlDrawData*)
 {
-	gui->DrawArea(Box2d::Create(Int2::Zero, gui->wnd_size), layout->background);
+	gui->DrawArea(Box2d::Create(Int2::Zero, gui->wndSize), layout->background);
 	gui->DrawArea(Box2d::Create(global_pos, size), layout->box);
 
 	for(int i = 0; i < 2; ++i)
@@ -50,17 +50,17 @@ void GetNumberDialog::Update(float dt)
 		scrollbar.mouse_focus = focus;
 		scrollbar.Update(dt);
 		bool changed = false;
-		if(scrollbar.change != 0 || gui->mouse_wheel != 0.f)
+		if(scrollbar.change != 0 || gui->mouseWheel != 0.f)
 		{
 			int num = atoi(textBox.GetText().c_str());
 			int newNum = num;
 
-			if(gui->mouse_wheel != 0.f)
+			if(gui->mouseWheel != 0.f)
 			{
 				int change = 1;
 				if(input->Down(Key::Shift))
 					change = max(1, (max_value - min_value) / 20);
-				if(gui->mouse_wheel < 0.f)
+				if(gui->mouseWheel < 0.f)
 					change = -change;
 				newNum += change;
 			}
@@ -144,7 +144,7 @@ void GetNumberDialog::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_WindowResize)
 	{
-		self->pos = self->global_pos = (gui->wnd_size - self->size) / 2;
+		self->pos = self->global_pos = (gui->wndSize - self->size) / 2;
 		self->bts[0].global_pos = self->bts[0].pos + self->global_pos;
 		self->bts[1].global_pos = self->bts[1].pos + self->global_pos;
 		self->textBox.global_pos = self->textBox.pos + self->global_pos;
@@ -211,7 +211,7 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 	self->min_value = min_value;
 	self->max_value = max_value;
 	self->value = value;
-	self->pos = self->global_pos = (gui->wnd_size - self->size) / 2;
+	self->pos = self->global_pos = (gui->wndSize - self->size) / 2;
 	self->bts[0].global_pos = self->bts[0].pos + self->global_pos;
 	self->bts[1].global_pos = self->bts[1].pos + self->global_pos;
 	self->textBox.global_pos = self->textBox.pos + self->global_pos;

@@ -136,6 +136,7 @@ typedef FMOD::Sound* SOUND;
 class btBvhTriangleMeshShape;
 class btCollisionObject;
 class btCollisionShape;
+class btGhostPairCallback;
 class btHeightfieldTerrainShape;
 class btTriangleIndexVertexArray;
 
@@ -148,7 +149,7 @@ namespace app
 	extern Input* input;
 	extern Physics* physics;
 	extern Render* render;
-	extern ResourceManager* res_mgr;
-	extern SceneManager* scene_mgr;
-	extern SoundManager* sound_mgr;
+	extern ResourceManager* resMgr;
+	extern SceneManager* sceneMgr;
+	extern SoundManager* soundMgr;
 }

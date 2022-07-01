@@ -37,7 +37,7 @@ void GuiContainer::Update(float dt)
 			}
 			if(IsSet(it->second, F_CLICK_TO_FOCUS))
 			{
-				if(it->first->IsInside(gui->cursor_pos) && (input->Pressed(Key::LeftButton) || input->Pressed(Key::RightButton)))
+				if(it->first->IsInside(gui->cursorPos) && (input->Pressed(Key::LeftButton) || input->Pressed(Key::RightButton)))
 				{
 					if(!it->first->focus)
 					{

@@ -6,90 +6,26 @@
 #include <Windows.h>
 #include <locale>
 
-const char* CONVERTER_VERSION = "22.2";
+const char* CONVERTER_VERSION = "22.3";
 
-string group_file, output_file;
-GROUP_OPTION gopt;
-bool export_phy, force_output, any_warning;
-
-//=================================================================================================
-// Parsuj plik konfiguracyjny aby wydobyæ nazwê pliku
-//=================================================================================================
-void ParseConfig(ConversionData& cs, std::string& filename)
-{
-	Tokenizer t;
-
-	try
-	{
-		t.FromFile(filename);
-		t.AddKeyword("file", 0);
-		t.AddKeyword("output", 1);
-
-		t.Next();
-		t.AssertKeyword(0);
-		t.Next();
-		t.AssertSymbol(':');
-		t.Next();
-
-		cs.input = t.MustGetString();
-		cs.gopt = GO_FILE;
-		cs.group_file = filename;
-
-		t.Next();
-		if(t.IsKeyword(1) && !force_output)
-		{
-			t.Next();
-			t.AssertSymbol(':');
-			t.Next();
-			cs.output = t.MustGetString();
-		}
-
-		Info("Using configuration file '%s'.", filename.c_str());
-	}
-	catch(const Tokenizer::Exception& ex)
-	{
-		Error("Failed to parse configuration file '%s': %s", filename.c_str(), ex.ToString());
-	}
-}
+bool anyWarning;
 
 //=================================================================================================
 // Przygotuj parametry do konwersji
 //=================================================================================================
-int ConvertToQmsh(std::string& filename)
+int ConvertToQmsh(const string& filename, const string& output, bool exportPhy, bool allowDoubles)
 {
 	ConversionData cs;
-	cs.gopt = GO_ONE;
-	cs.export_phy = export_phy;
+	cs.input = filename;
+	cs.exportPhy = exportPhy;
+	cs.allowDoubles = allowDoubles;
 
-	uint xpos = filename.find_last_of('.');
-	if(xpos != string::npos)
-	{
-		if(filename.substr(xpos) == ".cfg")
-		{
-			try
-			{
-				ParseConfig(cs, filename);
-			}
-			catch(const Tokenizer::Exception& ex)
-			{
-				Error("File '%s' is not configuration file!\n%s", filename.c_str(), ex.ToString());
-			}
-		}
-	}
-
-	if(cs.gopt == GO_ONE)
-	{
-		cs.group_file = group_file;
-		cs.gopt = gopt;
-		cs.input = filename;
-	}
-
-	if(output_file.empty())
+	if(output.empty())
 	{
 		string::size_type pos = cs.input.find_last_of('.');
 		if(pos == string::npos)
 		{
-			if(cs.export_phy)
+			if(cs.exportPhy)
 				cs.output = cs.input + ".phy";
 			else
 				cs.output = cs.input + ".qmsh";
@@ -98,25 +34,14 @@ int ConvertToQmsh(std::string& filename)
 			cs.output = cs.input.substr(0, pos);
 	}
 	else
-		cs.output = output_file;
-
-	if(cs.gopt == GO_CREATE && group_file.empty())
-	{
-		string::size_type pos = cs.input.find_first_of('.');
-		if(pos == string::npos)
-			cs.group_file = cs.input + ".cfg";
-		else
-			cs.group_file = cs.input.substr(0, pos) + ".cfg";
-	}
-
-	cs.force_output = force_output;
+		cs.output = output;
 
 	try
 	{
 		Convert(cs);
 
 		Info("Ok.");
-		return any_warning ? 1 : 0;
+		return anyWarning ? 1 : 0;
 	}
 	catch(cstring err)
 	{
@@ -141,10 +66,10 @@ int main(int argc, char **argv)
 			CONVERTER_VERSION, QMSH::VERSION);
 		return 0;
 	}
-	export_phy = false;
 
+	string output;
 	int result = 0;
-	bool check_subdir = true, force_update = false;
+	bool check_subdir = true, force_update = false, exportPhy = false, allowDoubles = false;
 
 	for(int i = 1; i < argc; ++i)
 	{
@@ -160,12 +85,9 @@ int main(int argc, char **argv)
 					"-h/help/? - list of commands\n"
 					"-v - show converter version and input file versions\n"
 					"-o FILE - output file name\n"
-					"-g1 - use single group (default)\n"
-					"-gf FILE - use animation groups from file\n"
-					"-gcreate - create animation groups and save as file\n"
-					"-gcreaten FILE - create animation groups and save as named file\n"
 					"-phy - export only physic mesh (default extension .phy)\n"
 					"-normal - export normal mesh\n"
+					"-allowdoubles - don't merge vertices with same position/uv/normal\n"
 					"-info FILE - show information about mesh (version etc)\n"
 					"-infodir DIR - show information about all meshes\n"
 					"-details OPTIONS FILE - like info but more details\n"
@@ -183,50 +105,23 @@ int main(int argc, char **argv)
 				printf("Converter version %s\nHandled input file version: %d..%d\nOutput file version: %d\n",
 					CONVERTER_VERSION, QmshTmpLoader::QMSH_TMP_HANDLED_VERSION.x, QmshTmpLoader::QMSH_TMP_HANDLED_VERSION.y, QMSH::VERSION);
 			}
-			else if(str == "-g1")
-				gopt = GO_ONE;
-			else if(str == "-gf")
-			{
-				if(i + 1 < argc)
-				{
-					++i;
-					group_file = argv[i];
-					gopt = GO_FILE;
-				}
-				else
-					printf("Missing FILE name for '-gf'!\n");
-			}
-			else if(str == "-gcreate")
-			{
-				gopt = GO_CREATE;
-				group_file.clear();
-			}
-			else if(str == "-gcreaten")
-			{
-				if(i + 1 < argc)
-				{
-					++i;
-					group_file = argv[i];
-					gopt = GO_CREATE;
-				}
-				else
-					printf("Missing FILE name for '-gcreaten'!\n");
-			}
 			else if(str == "-o")
 			{
 				if(i + 1 < argc)
 				{
 					++i;
-					output_file = argv[i];
-					force_output = true;
+					output = argv[i];
 				}
 				else
-					printf("Missing OUTPUT PATH for '-o'!\n");
+				{
+					Warn("Missing OUTPUT PATH for '-o'!");
+					anyWarning = true;
+				}
 			}
 			else if(str == "-phy")
-				export_phy = true;
+				exportPhy = true;
 			else if(str == "-normal")
-				export_phy = false;
+				exportPhy = false;
 			else if(str == "-info")
 			{
 				if(i + 1 < argc)
@@ -235,7 +130,10 @@ int main(int argc, char **argv)
 					MeshInfo(argv[i]);
 				}
 				else
-					printf("Missing FILE for '-info'!\n");
+				{
+					Warn("Missing FILE for '-info'!");
+					anyWarning = true;
+				}
 			}
 			else if(str == "-infodir")
 			{
@@ -245,7 +143,10 @@ int main(int argc, char **argv)
 					MeshInfoDir(argv[i], check_subdir);
 				}
 				else
-					printf("Missing DIR for '-infodir'!\n");
+				{
+					Warn("Missing DIR for '-infodir'!");
+					anyWarning = true;
+				}
 			}
 			else if(str == "-details")
 			{
@@ -256,7 +157,8 @@ int main(int argc, char **argv)
 				}
 				else
 				{
-					printf("Missing OPTIONS or FILE for '-details'!\n");
+					Warn("Missing OPTIONS or FILE for '-details'!");
+					anyWarning = true;
 					++i;
 				}
 			}
@@ -269,7 +171,8 @@ int main(int argc, char **argv)
 				}
 				else
 				{
-					printf("Missing FILEs for '-compare'!\n");
+					Warn("Missing FILEs for '-compare'!");
+					anyWarning = true;
 					++i;
 				}
 			}
@@ -281,7 +184,10 @@ int main(int argc, char **argv)
 					Upgrade(argv[i], force_update);
 				}
 				else
-					printf("Missing FILE for '-upgrade'!\n");
+				{
+					Warn("Missing FILE for '-upgrade'!");
+					anyWarning = true;
+				}
 			}
 			else if(str == "-upgradedir")
 			{
@@ -291,7 +197,10 @@ int main(int argc, char **argv)
 					UpgradeDir(argv[i], force_update, check_subdir);
 				}
 				else
-					printf("Missing DIR for '-upgradedir'!\n");
+				{
+					Warn("Missing DIR for '-upgradedir'!");
+					anyWarning = true;
+				}
 			}
 			else if(str == "-subdir")
 				check_subdir = true;
@@ -301,16 +210,19 @@ int main(int argc, char **argv)
 				force_update = true;
 			else if(str == "-noforce")
 				force_update = false;
+			else if(str == "-allowdoubles")
+				allowDoubles = true;
 			else
-				printf("Unknown switch \"%s\"!\n", cstr);
+			{
+				Warn("Unknown switch \"%s\"!\n", cstr);
+				anyWarning = true;
+			}
 		}
 		else
 		{
 			string tstr(cstr);
-			result = ConvertToQmsh(tstr);
-			group_file.clear();
-			output_file.clear();
-			gopt = GO_ONE;
+			result = Max(ConvertToQmsh(tstr, output, exportPhy, allowDoubles), result);
+			output.clear();
 		}
 	}
 
@@ -319,6 +231,9 @@ int main(int argc, char **argv)
 		printf("Press any key to exit...");
 		_getch();
 	}
+
+	if(anyWarning && result == 0)
+		result = 1;
 
 	return result;
 }

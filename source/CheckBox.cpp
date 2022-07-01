@@ -26,9 +26,9 @@ void CheckBox::Update(float dt)
 	if(state == DISABLED)
 		return;
 
-	if(input->Focus() && mouse_focus && PointInRect(gui->cursor_pos, global_pos, bt_size))
+	if(input->Focus() && mouse_focus && PointInRect(gui->cursorPos, global_pos, bt_size))
 	{
-		gui->cursor_mode = CURSOR_HOVER;
+		gui->cursorMode = CURSOR_HOVER;
 		if(state == DOWN)
 		{
 			if(input->Up(Key::LeftButton))

@@ -125,11 +125,11 @@ void Grid::Draw(ControlDrawData*)
 				{
 					clipping = &clip_r;
 					clip_r.Left() = 0;
-					clip_r.Right() = gui->wnd_size.x;
+					clip_r.Right() = gui->wndSize.x;
 					if(clip_state == 1)
 					{
 						clip_r.Top() = global_pos.y + height;
-						clip_r.Bottom() = gui->wnd_size.y;
+						clip_r.Bottom() = gui->wndSize.y;
 					}
 					else
 					{
@@ -166,11 +166,11 @@ void Grid::Draw(ControlDrawData*)
 					{
 						clipping = &clip_r;
 						clip_r.Left() = 0;
-						clip_r.Right() = gui->wnd_size.x;
+						clip_r.Right() = gui->wndSize.x;
 						if(clip_state == 1)
 						{
 							clip_r.Top() = global_pos.y + height;
-							clip_r.Bottom() = gui->wnd_size.y;
+							clip_r.Bottom() = gui->wndSize.y;
 						}
 						else
 						{
@@ -200,21 +200,21 @@ void Grid::Update(float dt)
 {
 	if(input->Focus() && focus)
 	{
-		if(gui->cursor_pos.x >= global_pos.x && gui->cursor_pos.x < global_pos.x + total_width
-			&& gui->cursor_pos.y >= global_pos.y + height && gui->cursor_pos.y < global_pos.y + size.y)
+		if(gui->cursorPos.x >= global_pos.x && gui->cursorPos.x < global_pos.x + total_width
+			&& gui->cursorPos.y >= global_pos.y + height && gui->cursorPos.y < global_pos.y + size.y)
 		{
-			int n = (gui->cursor_pos.y - (global_pos.y + height) + int(scroll.offset)) / height;
+			int n = (gui->cursorPos.y - (global_pos.y + height) + int(scroll.offset)) / height;
 			if(n >= 0 && n < items)
 			{
 				if(allow_select)
 				{
-					gui->cursor_mode = CURSOR_HOVER;
+					gui->cursorMode = CURSOR_HOVER;
 					if(input->PressedRelease(Key::LeftButton))
 						selected = n;
 				}
 				if(select_event)
 				{
-					int y = gui->cursor_pos.x - global_pos.x, ysum = 0;
+					int y = gui->cursorPos.x - global_pos.x, ysum = 0;
 					int col = -1;
 
 					for(int i = 0; i < (int)columns.size(); ++i)
@@ -230,7 +230,7 @@ void Grid::Update(float dt)
 					// celowo nie zaznacza 1 kolumny!
 					if(col > 0)
 					{
-						gui->cursor_mode = CURSOR_HOVER;
+						gui->cursorMode = CURSOR_HOVER;
 						if(input->PressedRelease(Key::LeftButton))
 							select_event(n, col, 0);
 						else if(input->PressedRelease(Key::RightButton))
@@ -240,7 +240,7 @@ void Grid::Update(float dt)
 			}
 		}
 
-		if(IsInside(gui->cursor_pos))
+		if(IsInside(gui->cursorPos))
 			scroll.ApplyMouseWheel();
 		scroll.mouse_focus = mouse_focus;
 		scroll.Update(dt);

@@ -59,12 +59,12 @@ void MenuBar::Update(float dt)
 			down = true;
 	}
 
-	if(!mouse_focus || !rect.IsInside(gui->cursor_pos))
+	if(!mouse_focus || !rect.IsInside(gui->cursorPos))
 		return;
 
 	for(Item* item : items)
 	{
-		if(item->rect.IsInside(gui->cursor_pos))
+		if(item->rect.IsInside(gui->cursorPos))
 		{
 			if(down || input->Pressed(Key::LeftButton))
 			{

@@ -19,16 +19,16 @@ struct Scene
 	void ListNodes(SceneBatch& batch);
 	void GatherLights(SceneBatch& batch, SceneNode* node);
 	Vec4 GetAmbientColor() const;
-	Vec4 GetFogColor() const { return fog_color; }
+	Vec4 GetFogColor() const { return fogColor; }
 	Vec4 GetFogParams() const;
-	Vec4 GetLightColor() const { return light_color; }
-	Vec4 GetLightDir() const { return Vec4(light_dir, 1); }
+	Vec4 GetLightColor() const { return lightColor; }
+	Vec4 GetLightDir() const { return Vec4(lightDir, 1); }
 
 	vector<SceneNode*> nodes;
 	vector<Light*> lights, activeLights;
 	Mesh* skybox;
-	Vec3 light_dir;
-	Vec2 fog_range;
-	Color clear_color, ambient_color, light_color, fog_color;
-	bool use_light_dir;
+	Vec3 lightDir;
+	Vec2 fogRange;
+	Color clearColor, ambientColor, lightColor, fogColor;
+	bool useLightDir;
 };

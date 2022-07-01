@@ -9,28 +9,28 @@ inline Int2::Int2()
 {
 }
 
-inline Int2::Int2(int x, int y) : x(x), y(y)
+inline constexpr Int2::Int2(int x, int y) : x(x), y(y)
 {
 }
 
-inline Int2::Int2(const Int2& i) : x(i.x), y(i.y)
+inline constexpr Int2::Int2(const Int2& i) : x(i.x), y(i.y)
 {
 }
 
 template<typename T, typename T2>
-inline Int2::Int2(T x, T2 y) : x((int)x), y((int)y)
+inline constexpr Int2::Int2(T x, T2 y) : x((int)x), y((int)y)
 {
 }
 
-inline Int2::Int2(int xy) : x(xy), y(xy)
+inline constexpr Int2::Int2(int xy) : x(xy), y(xy)
 {
 }
 
-inline Int2::Int2(const Vec2& v) : x(int(v.x)), y(int(v.y))
+inline constexpr Int2::Int2(const Vec2& v) : x(int(v.x)), y(int(v.y))
 {
 }
 
-inline Int2::Int2(const Vec3& v) : x(int(v.x)), y(int(v.z))
+inline constexpr Int2::Int2(const Vec3& v) : x(int(v.x)), y(int(v.z))
 {
 }
 
@@ -243,6 +243,12 @@ inline Int2 Int2::Random(const Int2& i1, const Int2& i2)
 	return Int2(::Random(i1.x, i2.x), ::Random(i1.y, i2.y));
 }
 
+//------------------------------------------------------------------------------
+// Consts
+//------------------------------------------------------------------------------
+
+inline constexpr const Int2 Int2::Zero = Int2(0, 0);
+
 //*************************************************************************************************
 //
 // Rectangle using int
@@ -252,31 +258,31 @@ inline Rect::Rect()
 {
 }
 
-inline Rect::Rect(int x, int y) : p1(x, y), p2(x, y)
+inline constexpr Rect::Rect(int x, int y) : p1(x, y), p2(x, y)
 {
 }
 
-inline Rect::Rect(int x1, int y1, int x2, int y2) : p1(x1, y1), p2(x2, y2)
+inline constexpr Rect::Rect(int x1, int y1, int x2, int y2) : p1(x1, y1), p2(x2, y2)
 {
 }
 
-inline Rect::Rect(const Int2& p) : p1(p), p2(p)
+inline constexpr Rect::Rect(const Int2& p) : p1(p), p2(p)
 {
 }
 
-inline Rect::Rect(const Int2& p1, const Int2& p2) : p1(p1), p2(p2)
+inline constexpr Rect::Rect(const Int2& p1, const Int2& p2) : p1(p1), p2(p2)
 {
 }
 
-inline Rect::Rect(const Rect& box) : p1(box.p1), p2(box.p2)
+inline constexpr Rect::Rect(const Rect& box) : p1(box.p1), p2(box.p2)
 {
 }
 
-inline Rect::Rect(const Box2d& box) : p1(box.v1), p2(box.v2)
+inline constexpr Rect::Rect(const Box2d& box) : p1(box.v1), p2(box.v2)
 {
 }
 
-inline Rect::Rect(const Box2d& box, const Int2& pad) : p1((int)box.v1.x + pad.x, (int)box.v1.y + pad.y), p2((int)box.v2.x - pad.x, (int)box.v2.y - pad.y)
+inline constexpr Rect::Rect(const Box2d& box, const Int2& pad) : p1((int)box.v1.x + pad.x, (int)box.v1.y + pad.y), p2((int)box.v2.x - pad.x, (int)box.v2.y - pad.y)
 {
 }
 
@@ -489,6 +495,12 @@ inline bool Rect::IsInside(const Int2& pos, const Int2& size, const Int2& pt)
 		&& pt.y <= pos.y + size.y;
 }
 
+//------------------------------------------------------------------------------
+// Consts
+//------------------------------------------------------------------------------
+
+inline constexpr const Rect Rect::Zero = Rect(0, 0, 0, 0);
+
 //*************************************************************************************************
 //
 // 2D float point
@@ -498,11 +510,11 @@ inline Vec2::Vec2()
 {
 }
 
-inline Vec2::Vec2(float x, float y) : XMFLOAT2(x, y)
+inline constexpr Vec2::Vec2(float x, float y) : XMFLOAT2(x, y)
 {
 }
 
-inline Vec2::Vec2(const Vec2& v) : XMFLOAT2(v.x, v.y)
+inline constexpr Vec2::Vec2(const Vec2& v) : XMFLOAT2(v.x, v.y)
 {
 }
 
@@ -511,15 +523,15 @@ inline Vec2::Vec2(FXMVECTOR v)
 	XMStoreFloat2(this, v);
 }
 
-inline Vec2::Vec2(float xy) : XMFLOAT2(xy, xy)
+inline constexpr Vec2::Vec2(float xy) : XMFLOAT2(xy, xy)
 {
 }
 
-inline Vec2::Vec2(const Int2& i) : XMFLOAT2(float(i.x), float(i.y))
+inline constexpr Vec2::Vec2(const Int2& i) : XMFLOAT2(float(i.x), float(i.y))
 {
 }
 
-inline Vec2::Vec2(const XMVECTORF32& v) : XMFLOAT2(v.f[0], v.f[1])
+inline constexpr Vec2::Vec2(const XMVECTORF32& v) : XMFLOAT2(v.f[0], v.f[1])
 {
 }
 
@@ -1169,6 +1181,15 @@ inline void Vec2::TransformNormal(const Vec2* varray, size_t count, const Matrix
 	XMVector2TransformNormalStream(resultArray, sizeof(XMFLOAT2), varray, sizeof(XMFLOAT2), count, M);
 }
 
+//------------------------------------------------------------------------------
+// Consts
+//------------------------------------------------------------------------------
+
+inline constexpr const Vec2 Vec2::Zero = Vec2(0.f, 0.f);
+inline constexpr const Vec2 Vec2::One = Vec2(1.f, 1.f);
+inline constexpr const Vec2 Vec2::UnitX = Vec2(1.f, 0.f);
+inline constexpr const Vec2 Vec2::UnitY = Vec2(0.f, 1.f);
+
 //*************************************************************************************************
 //
 // 3D float point
@@ -1178,11 +1199,11 @@ inline Vec3::Vec3()
 {
 }
 
-inline Vec3::Vec3(float x, float y, float z) : XMFLOAT3(x, y, z)
+inline constexpr Vec3::Vec3(float x, float y, float z) : XMFLOAT3(x, y, z)
 {
 }
 
-inline Vec3::Vec3(const Vec3& v) : XMFLOAT3(v.x, v.y, v.z)
+inline constexpr Vec3::Vec3(const Vec3& v) : XMFLOAT3(v.x, v.y, v.z)
 {
 }
 
@@ -1191,11 +1212,11 @@ inline Vec3::Vec3(FXMVECTOR v)
 	XMStoreFloat3(this, v);
 }
 
-inline Vec3::Vec3(const XMVECTORF32& v) : XMFLOAT3(v.f[0], v.f[1], v.f[2])
+inline constexpr Vec3::Vec3(const XMVECTORF32& v) : XMFLOAT3(v.f[0], v.f[1], v.f[2])
 {
 }
 
-inline Vec3::Vec3(const float* f) : XMFLOAT3(f[0], f[1], f[2])
+inline constexpr Vec3::Vec3(const float* f) : XMFLOAT3(f[0], f[1], f[2])
 {
 }
 
@@ -1887,6 +1908,22 @@ inline Vec3 Vec3::TransformZero(const Matrix& m)
 	return result;
 }
 
+//------------------------------------------------------------------------------
+// Consts
+//------------------------------------------------------------------------------
+
+inline constexpr const Vec3 Vec3::Zero = Vec3(0.f, 0.f, 0.f);
+inline constexpr const Vec3 Vec3::One = Vec3(1.f, 1.f, 1.f);
+inline constexpr const Vec3 Vec3::UnitX = Vec3(1.f, 0.f, 0.f);
+inline constexpr const Vec3 Vec3::UnitY = Vec3(0.f, 1.f, 0.f);
+inline constexpr const Vec3 Vec3::UnitZ = Vec3(0.f, 0.f, 1.f);
+inline constexpr const Vec3 Vec3::Up = Vec3(0.f, 1.f, 0.f);
+inline constexpr const Vec3 Vec3::Down = Vec3(0.f, -1.f, 0.f);
+inline constexpr const Vec3 Vec3::Right = Vec3(1.f, 0.f, 0.f);
+inline constexpr const Vec3 Vec3::Left = Vec3(-1.f, 0.f, 0.f);
+inline constexpr const Vec3 Vec3::Forward = Vec3(0.f, 0.f, 1.f);
+inline constexpr const Vec3 Vec3::Backward = Vec3(0.f, 0.f, -1.f);
+
 //*************************************************************************************************
 //
 // 4D float point
@@ -1900,11 +1937,11 @@ inline constexpr Vec4::Vec4(float x, float y, float z, float w) : XMFLOAT4(x, y,
 {
 }
 
-inline Vec4::Vec4(const Vec4& v) : XMFLOAT4(v.x, v.y, v.z, v.w)
+inline constexpr Vec4::Vec4(const Vec4& v) : XMFLOAT4(v.x, v.y, v.z, v.w)
 {
 }
 
-inline Vec4::Vec4(const Vec3& v, float w) : XMFLOAT4(v.x, v.y, v.z, w)
+inline constexpr Vec4::Vec4(const Vec3& v, float w) : XMFLOAT4(v.x, v.y, v.z, w)
 {
 }
 
@@ -1913,7 +1950,7 @@ inline Vec4::Vec4(FXMVECTOR v)
 	XMStoreFloat4(this, v);
 }
 
-inline Vec4::Vec4(const XMVECTORF32& v) : XMFLOAT4(v.f[0], v.f[1], v.f[2], v.f[3])
+inline constexpr Vec4::Vec4(const XMVECTORF32& v) : XMFLOAT4(v.f[0], v.f[1], v.f[2], v.f[3])
 {
 }
 
@@ -2508,6 +2545,17 @@ inline void Vec4::Transform(const Vec4* varray, size_t count, const Matrix& m, V
 	XMVector4TransformStream(resultArray, sizeof(XMFLOAT4), varray, sizeof(XMFLOAT4), count, M);
 }
 
+//------------------------------------------------------------------------------
+// Consts
+//------------------------------------------------------------------------------
+
+inline constexpr const Vec4 Vec4::Zero = Vec4(0.f, 0.f, 0.f, 0.f);
+inline constexpr const Vec4 Vec4::One = Vec4(1.f, 1.f, 1.f, 1.f);
+inline constexpr const Vec4 Vec4::UnitX = Vec4(1.f, 0.f, 0.f, 0.f);
+inline constexpr const Vec4 Vec4::UnitY = Vec4(0.f, 1.f, 0.f, 0.f);
+inline constexpr const Vec4 Vec4::UnitZ = Vec4(0.f, 0.f, 1.f, 0.f);
+inline constexpr const Vec4 Vec4::UnitW = Vec4(0.f, 0.f, 0.f, 1.f);
+
 //*************************************************************************************************
 //
 // 2d box using floats
@@ -2517,31 +2565,31 @@ inline Box2d::Box2d()
 {
 }
 
-inline Box2d::Box2d(float minx, float miny, float maxx, float maxy) : v1(minx, miny), v2(maxx, maxy)
+inline constexpr Box2d::Box2d(float minx, float miny, float maxx, float maxy) : v1(minx, miny), v2(maxx, maxy)
 {
 }
 
-inline Box2d::Box2d(const Vec2& v1, const Vec2& v2) : v1(v1), v2(v2)
+inline constexpr Box2d::Box2d(const Vec2& v1, const Vec2& v2) : v1(v1), v2(v2)
 {
 }
 
-inline Box2d::Box2d(const Box2d& box) : v1(box.v1), v2(box.v2)
+inline constexpr Box2d::Box2d(const Box2d& box) : v1(box.v1), v2(box.v2)
 {
 }
 
-inline Box2d::Box2d(float x, float y) : v1(x, y), v2(x, y)
+inline constexpr Box2d::Box2d(float x, float y) : v1(x, y), v2(x, y)
 {
 }
 
-inline Box2d::Box2d(const Box2d& box, float margin) : v1(box.v1.x - margin, box.v1.y - margin), v2(box.v2.x + margin, box.v2.y + margin)
+inline constexpr Box2d::Box2d(const Box2d& box, float margin) : v1(box.v1.x - margin, box.v1.y - margin), v2(box.v2.x + margin, box.v2.y + margin)
 {
 }
 
-inline Box2d::Box2d(const Vec2& v) : v1(v), v2(v)
+inline constexpr Box2d::Box2d(const Vec2& v) : v1(v), v2(v)
 {
 }
 
-inline Box2d::Box2d(const Rect& r) : v1(Vec2(r.p1)), v2(Vec2(r.p2))
+inline constexpr Box2d::Box2d(const Rect& r) : v1(Vec2(r.p1)), v2(Vec2(r.p2))
 {
 }
 
@@ -2720,6 +2768,13 @@ inline Box2d Box2d::Intersect(const Box2d& a, const Box2d& b)
 	return result;
 }
 
+//------------------------------------------------------------------------------
+// Consts
+//------------------------------------------------------------------------------
+
+inline constexpr const Box2d Box2d::Zero = Box2d(0.f, 0.f, 0.f, 0.f);
+inline constexpr const Box2d Box2d::Unit = Box2d(0.f, 0.f, 1.f, 1.f);
+
 //*************************************************************************************************
 //
 // 3d box using floats
@@ -2729,23 +2784,23 @@ inline Box::Box()
 {
 }
 
-inline Box::Box(float minx, float miny, float minz, float maxx, float maxy, float maxz) : v1(minx, miny, minz), v2(maxx, maxy, maxz)
+inline constexpr Box::Box(float minx, float miny, float minz, float maxx, float maxy, float maxz) : v1(minx, miny, minz), v2(maxx, maxy, maxz)
 {
 }
 
-inline Box::Box(const Vec3& v1, const Vec3& v2) : v1(v1), v2(v2)
+inline constexpr Box::Box(const Vec3& v1, const Vec3& v2) : v1(v1), v2(v2)
 {
 }
 
-inline Box::Box(const Box& box) : v1(box.v1), v2(box.v2)
+inline constexpr Box::Box(const Box& box) : v1(box.v1), v2(box.v2)
 {
 }
 
-inline Box::Box(float x, float y, float z) : v1(x, y, z), v2(x, y, z)
+inline constexpr Box::Box(float x, float y, float z) : v1(x, y, z), v2(x, y, z)
 {
 }
 
-inline Box::Box(const Vec3& v) : v1(v), v2(v)
+inline constexpr Box::Box(const Vec3& v) : v1(v), v2(v)
 {
 }
 
@@ -2916,7 +2971,7 @@ inline Matrix::Matrix()
 {
 }
 
-inline Matrix::Matrix(
+inline constexpr Matrix::Matrix(
 	float m00, float m01, float m02, float m03,
 	float m10, float m11, float m12, float m13,
 	float m20, float m21, float m22, float m23,
@@ -2929,7 +2984,7 @@ inline Matrix::Matrix(
 {
 }
 
-inline Matrix::Matrix(const Vec3& v1, const Vec3& v2, const Vec3& v3) : XMFLOAT4X4(
+inline constexpr Matrix::Matrix(const Vec3& v1, const Vec3& v2, const Vec3& v3) : XMFLOAT4X4(
 	v1.x, v1.y, v1.z, 0,
 	v2.x, v2.y, v2.z, 0,
 	v3.x, v3.y, v3.z, 0,
@@ -2937,7 +2992,7 @@ inline Matrix::Matrix(const Vec3& v1, const Vec3& v2, const Vec3& v3) : XMFLOAT4
 {
 }
 
-inline Matrix::Matrix(const Vec4& v1, const Vec4& v2, const Vec4& v3, const Vec4& v4) : XMFLOAT4X4(
+inline constexpr Matrix::Matrix(const Vec4& v1, const Vec4& v2, const Vec4& v3, const Vec4& v4) : XMFLOAT4X4(
 	v1.x, v1.y, v1.z, v1.w,
 	v2.x, v2.y, v2.z, v2.w,
 	v3.x, v3.y, v3.z, v3.w,
@@ -2945,7 +3000,7 @@ inline Matrix::Matrix(const Vec4& v1, const Vec4& v2, const Vec4& v3, const Vec4
 {
 }
 
-inline Matrix::Matrix(const Matrix& m) : XMFLOAT4X4(
+inline constexpr Matrix::Matrix(const Matrix& m) : XMFLOAT4X4(
 	m._11, m._12, m._13, m._14,
 	m._21, m._22, m._23, m._24,
 	m._31, m._32, m._33, m._34,
@@ -3755,6 +3810,17 @@ inline Matrix Matrix::Translation(float x, float y, float z)
 	return R;
 }
 
+//------------------------------------------------------------------------------
+// Consts
+//------------------------------------------------------------------------------
+
+inline constexpr const Matrix Matrix::IdentityMatrix = Matrix(
+	1.f, 0.f, 0.f, 0.f,
+	0.f, 1.f, 0.f, 0.f,
+	0.f, 0.f, 1.f, 0.f,
+	0.f, 0.f, 0.f, 1.f
+);
+
 //*************************************************************************************************
 //
 // Quaternion
@@ -3764,15 +3830,15 @@ inline Quat::Quat()
 {
 }
 
-inline Quat::Quat(float x, float y, float z, float w) : XMFLOAT4(x, y, z, w)
+inline constexpr Quat::Quat(float x, float y, float z, float w) : XMFLOAT4(x, y, z, w)
 {
 }
 
-inline Quat::Quat(const Vec3& v, float w) : XMFLOAT4(v.x, v.y, v.z, w)
+inline constexpr Quat::Quat(const Vec3& v, float w) : XMFLOAT4(v.x, v.y, v.z, w)
 {
 }
 
-inline Quat::Quat(const Quat& q) : XMFLOAT4(q.x, q.y, q.z, q.w)
+inline constexpr Quat::Quat(const Quat& q) : XMFLOAT4(q.x, q.y, q.z, q.w)
 {
 }
 
@@ -3781,11 +3847,11 @@ inline Quat::Quat(FXMVECTOR v)
 	XMStoreFloat4(this, v);
 }
 
-inline Quat::Quat(const Vec4& v) : XMFLOAT4(v.x, v.y, v.z, v.w)
+inline constexpr Quat::Quat(const Vec4& v) : XMFLOAT4(v.x, v.y, v.z, v.w)
 {
 }
 
-inline Quat::Quat(const XMVECTORF32& v) : XMFLOAT4(v.f[0], v.f[1], v.f[2], v.f[3])
+inline constexpr Quat::Quat(const XMVECTORF32& v) : XMFLOAT4(v.f[0], v.f[1], v.f[2], v.f[3])
 {
 }
 
@@ -4127,6 +4193,12 @@ inline Quat Quat::Slerp(const Quat& q1, const Quat& q2, float t)
 	return result;
 }
 
+//------------------------------------------------------------------------------
+// Consts
+//------------------------------------------------------------------------------
+
+inline constexpr const Quat Quat::Identity = Quat(0.f, 0.f, 0.f, 1.f);
+
 //*************************************************************************************************
 //
 // Quaternion
@@ -4136,11 +4208,11 @@ inline Plane::Plane()
 {
 }
 
-inline Plane::Plane(float x, float y, float z, float w) : XMFLOAT4(x, y, z, w)
+inline constexpr Plane::Plane(float x, float y, float z, float w) : XMFLOAT4(x, y, z, w)
 {
 }
 
-inline Plane::Plane(const Vec3& normal, float d) : XMFLOAT4(normal.x, normal.y, normal.z, d)
+inline constexpr Plane::Plane(const Vec3& normal, float d) : XMFLOAT4(normal.x, normal.y, normal.z, d)
 {
 }
 
@@ -4164,11 +4236,11 @@ inline Plane::Plane(FXMVECTOR v)
 	XMStoreFloat4(this, v);
 }
 
-inline Plane::Plane(const Vec4& v) : XMFLOAT4(v.x, v.y, v.z, v.w)
+inline constexpr Plane::Plane(const Vec4& v) : XMFLOAT4(v.x, v.y, v.z, v.w)
 {
 }
 
-inline Plane::Plane(const XMVECTORF32& v) : XMFLOAT4(v.f[0], v.f[1], v.f[2], v.f[3])
+inline constexpr Plane::Plane(const XMVECTORF32& v) : XMFLOAT4(v.f[0], v.f[1], v.f[2], v.f[3])
 {
 }
 
@@ -4294,3 +4366,5 @@ inline bool Guid::operator != (const Guid& guid) const
 		|| data[2] != guid.data[2]
 		|| data[3] != guid.data[3];
 }
+
+inline constexpr const Guid Guid::Empty = Guid(0, 0, 0, 0);

@@ -41,39 +41,14 @@ void LoadQmshTmp(QMSH* Out, ConversionData& cs)
 
 //====================================================================================================
 // Konwersja qmsh.tmp -> qmsh
-// Lub generowanie pliku konfiguracyjnego
 //====================================================================================================
 void Convert(ConversionData& cs)
 {
 	QMSH Qmsh;
-
 	LoadQmshTmp(&Qmsh, cs);
 
-	if(cs.gopt == GO_CREATE)
-	{
-		Info("Zapisywanie pliku konfiguracyjnego: %s.\n", cs.group_file.c_str());
-
-		TextWriter file(cs.group_file);
-
-		// nazwa pliku
-		file.Write(Format("file: \"%s\"\n", cs.input.c_str()));
-
-		// nazwa pliku wyjœciowego
-		if(cs.force_output)
-			file.Write(Format("output: \"%s\"\n", cs.output.c_str()));
-
-		// liczba koœci, grupy
-		file.Write(Format("bones: %u\ngroups: 1\ngroup: 0 {\n\tname: \"default\"\n\tparent: 0\n};\n", Qmsh.Bones.size()));
-
-		// koœci
-		for(std::vector<shared_ptr<QMSH_BONE> >::iterator it = Qmsh.Bones.begin(), end = Qmsh.Bones.end(); it != end; ++it)
-			file.Write(Format("bone: \"%s\" {\n\tgroup: 0\n\tspecial: 0\n};\n", (*it)->Name.c_str()));
-	}
-	else
-	{
-		QmshSaver saver;
-		saver.SaveQmsh(Qmsh, cs.output);
-	}
+	QmshSaver saver;
+	saver.SaveQmsh(Qmsh, cs.output);
 }
 
 void WriteMeshFlags(byte flags)

@@ -55,7 +55,7 @@ void FlowContainer::Update(float dt)
 
 	if(mouse_focus)
 	{
-		if(IsInside(gui->cursor_pos))
+		if(IsInside(gui->cursorPos))
 		{
 			ok = true;
 
@@ -75,13 +75,13 @@ void FlowContainer::Update(float dt)
 						p.y -= 2;
 						have_button = false;
 					}
-					if(fi->group != -1 && PointInRect(gui->cursor_pos, p, fi->size))
+					if(fi->group != -1 && PointInRect(gui->cursorPos, p, fi->size))
 					{
 						group = fi->group;
 						id = fi->id;
 						if(allow_select && fi->state != Button::DISABLED)
 						{
-							gui->cursor_mode = CURSOR_HOVER;
+							gui->cursorMode = CURSOR_HOVER;
 							if(on_select && input->Pressed(Key::LeftButton))
 							{
 								selected = fi;
@@ -94,11 +94,11 @@ void FlowContainer::Update(float dt)
 				else if(fi->type == FlowItem::Button && fi->state != Button::DISABLED)
 				{
 					have_button = true;
-					if(PointInRect(gui->cursor_pos, p, fi->size))
+					if(PointInRect(gui->cursorPos, p, fi->size))
 					{
 						group = fi->group;
 						id = fi->id;
-						gui->cursor_mode = CURSOR_HOVER;
+						gui->cursorMode = CURSOR_HOVER;
 						if(fi->state == Button::DOWN)
 						{
 							if(input->Up(Key::LeftButton))

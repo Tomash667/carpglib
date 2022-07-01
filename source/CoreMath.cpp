@@ -1,46 +1,5 @@
 #include "Pch.h"
 
-const Int2 Int2::Zero = { 0,0 };
-
-const Rect Rect::Zero = { 0,0,0,0 };
-
-const Vec2 Vec2::Zero = { 0.f, 0.f };
-const Vec2 Vec2::One = { 1.f, 1.f };
-const Vec2 Vec2::UnitX = { 1.f, 0.f };
-const Vec2 Vec2::UnitY = { 0.f, 1.f };
-
-const Vec3 Vec3::Zero = { 0.f, 0.f, 0.f };
-const Vec3 Vec3::One = { 1.f, 1.f, 1.f };
-const Vec3 Vec3::UnitX = { 1.f, 0.f, 0.f };
-const Vec3 Vec3::UnitY = { 0.f, 1.f, 0.f };
-const Vec3 Vec3::UnitZ = { 0.f, 0.f, 1.f };
-const Vec3 Vec3::Up = { 0.f, 1.f, 0.f };
-const Vec3 Vec3::Down = { 0.f, -1.f, 0.f };
-const Vec3 Vec3::Right = { 1.f, 0.f, 0.f };
-const Vec3 Vec3::Left = { -1.f, 0.f, 0.f };
-const Vec3 Vec3::Forward = { 0.f, 0.f, 1.f };
-const Vec3 Vec3::Backward = { 0.f, 0.f, -1.f };
-
-const Vec4 Vec4::Zero = { 0.f, 0.f, 0.f, 0.f };
-const Vec4 Vec4::One = { 1.f, 1.f, 1.f, 1.f };
-const Vec4 Vec4::UnitX = { 1.f, 0.f, 0.f, 0.f };
-const Vec4 Vec4::UnitY = { 0.f, 1.f, 0.f, 0.f };
-const Vec4 Vec4::UnitZ = { 0.f, 0.f, 1.f, 0.f };
-const Vec4 Vec4::UnitW = { 0.f, 0.f, 0.f, 1.f };
-
-const Box2d Box2d::Zero = { 0.f, 0.f, 0.f, 0.f };
-const Box2d Box2d::Unit = { 0.f, 0.f, 1.f, 1.f };
-
-const Matrix Matrix::IdentityMatrix = {
-	1.f, 0.f, 0.f, 0.f,
-	0.f, 1.f, 0.f, 0.f,
-	0.f, 0.f, 1.f, 0.f,
-	0.f, 0.f, 0.f, 1.f
-};
-
-const Quat Quat::Identity = { 0.f, 0.f, 0.f, 1.f };
-
-const Guid Guid::Empty = Guid(0, 0, 0, 0);
 const string Guid::EmptyString = "00000000-0000-0000-0000-000000000000";
 
 void MurmurHash3_x86_32(const void* key, int len, uint32_t seed, void* out);
@@ -250,13 +209,23 @@ void LerpAngle(float& angle, float from, float to, float t)
 	angle = from + t * (to - from);
 }
 
-void AdjustAngle(float& angle, float expected, float max_dif)
+int AdjustAngle(float& angle, float expected, float maxDif)
 {
+	if(angle == expected)
+		return 0;
+
 	float dif = AngleDif(angle, expected);
-	if(dif <= max_dif)
+	if(dif <= maxDif)
+	{
 		angle = expected;
+		return 0;
+	}
 	else
-		angle = Clip(angle + ShortestArc(angle, expected) * max_dif);
+	{
+		float dir = ShortestArc(angle, expected);
+		angle = Clip(angle + dir * maxDif);
+		return dir > 0 ? 1 : -1;
+	}
 }
 
 bool CircleToRectangle(float circlex, float circley, float radius, float rectx, float recty, float w, float h)
@@ -389,10 +358,64 @@ void FrustumPlanes::Set(const Matrix& worldViewProj)
 	planes[5].Normalize();
 }
 
-void FrustumPlanes::GetPoints(Vec3* points) const
+void FrustumPlanes::Set(const array<Vec3, 8>& pts)
 {
-	assert(points);
+	// Left clipping plane
+	planes[0] = Plane(
+		pts[NEAR_LEFT_BOTTOM],
+		pts[NEAR_LEFT_TOP],
+		pts[FAR_LEFT_TOP]);
 
+	// Right clipping plane
+	planes[1] = Plane(
+		pts[FAR_RIGHT_BOTTOM],
+		pts[FAR_RIGHT_TOP],
+		pts[NEAR_RIGHT_TOP]);
+
+	// Top clipping plane
+	planes[2] = Plane(
+		pts[FAR_LEFT_TOP],
+		pts[NEAR_LEFT_TOP],
+		pts[NEAR_RIGHT_TOP]);
+
+	// Bottom clipping plane
+	planes[3] = Plane(
+		pts[NEAR_LEFT_BOTTOM],
+		pts[FAR_LEFT_BOTTOM],
+		pts[FAR_RIGHT_BOTTOM]);
+
+	// Near clipping plane
+	planes[4] = Plane(
+		pts[NEAR_RIGHT_BOTTOM],
+		pts[NEAR_RIGHT_TOP],
+		pts[NEAR_LEFT_TOP]);
+
+	// Far clipping plane
+	planes[5] = Plane(
+		pts[FAR_LEFT_BOTTOM],
+		pts[FAR_LEFT_TOP],
+		pts[FAR_RIGHT_TOP]);
+}
+
+void FrustumPlanes::Construct(const Vec3& from, float rot, float dist, const Vec2& width, const Vec2& height)
+{
+	array<Vec3, 8> pts;
+	Matrix mat = Matrix::RotationY(rot + PI) * Matrix::Translation(from);
+
+	pts[NEAR_LEFT_BOTTOM] = Vec3::Transform(Vec3(-width.x / 2, -height.x / 2, 0), mat);
+	pts[NEAR_RIGHT_BOTTOM] = Vec3::Transform(Vec3(width.x / 2, -height.x / 2, 0), mat);
+	pts[NEAR_LEFT_TOP] = Vec3::Transform(Vec3(-width.x / 2, height.x / 2, 0), mat);
+	pts[NEAR_RIGHT_TOP] = Vec3::Transform(Vec3(width.x / 2, height.x / 2, 0), mat);
+	pts[FAR_LEFT_BOTTOM] = Vec3::Transform(Vec3(-width.y / 2, -height.y / 2, dist), mat);
+	pts[FAR_RIGHT_BOTTOM] = Vec3::Transform(Vec3(width.y / 2, -height.y / 2, dist), mat);
+	pts[FAR_LEFT_TOP] = Vec3::Transform(Vec3(-width.y / 2, height.y / 2, dist), mat);
+	pts[FAR_RIGHT_TOP] = Vec3::Transform(Vec3(width.y / 2, height.y / 2, dist), mat);
+
+	Set(pts);
+}
+
+void FrustumPlanes::GetPoints(array<Vec3, 8>& points) const
+{
 	Plane::Intersect3Planes(planes[4], planes[0], planes[3], points[0]);
 	Plane::Intersect3Planes(planes[4], planes[1], planes[3], points[1]);
 	Plane::Intersect3Planes(planes[4], planes[0], planes[2], points[2]);
@@ -403,10 +426,8 @@ void FrustumPlanes::GetPoints(Vec3* points) const
 	Plane::Intersect3Planes(planes[5], planes[1], planes[2], points[7]);
 }
 
-void FrustumPlanes::GetPoints(const Matrix& worldViewProj, Vec3* points)
+void FrustumPlanes::GetPoints(const Matrix& worldViewProj, array<Vec3, 8>& points)
 {
-	assert(points);
-
 	Matrix worldViewProjInv;
 	worldViewProj.Inverse(worldViewProjInv);
 

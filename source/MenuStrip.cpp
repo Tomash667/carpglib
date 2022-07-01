@@ -157,7 +157,7 @@ void MenuStrip::UpdateMouse()
 	}
 
 	Box2d area = Box2d::Create(global_pos, size);
-	if(!area.IsInside(gui->cursor_pos))
+	if(!area.IsInside(gui->cursorPos))
 	{
 		if(gui->MouseMoved())
 		{
@@ -178,7 +178,7 @@ void MenuStrip::UpdateMouse()
 
 	for(Item& item : items)
 	{
-		if(area.IsInside(gui->cursor_pos))
+		if(area.IsInside(gui->cursorPos))
 		{
 			if(item.enabled && (gui->MouseMoved() || input->Pressed(Key::LeftButton)))
 			{

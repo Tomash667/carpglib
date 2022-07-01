@@ -367,7 +367,7 @@ void TreeView::Draw(ControlDrawData*)
 	}
 
 	if(drag == DRAG_MOVED)
-		gui->DrawSprite(layout->drag_n_drop, gui->cursor_pos + Int2(16, 16));
+		gui->DrawSprite(layout->drag_n_drop, gui->cursorPos + Int2(16, 16));
 }
 
 void TreeView::Draw(TreeNode* node)
@@ -549,7 +549,7 @@ void TreeView::Update(float dt)
 		{
 			const float DRAG_SCROLL_SPEED_MIN = 50.f;
 			const float DRAG_SCROLL_SPEED_MAX = 400.f;
-			int posy = gui->cursor_pos.y - global_pos.y;
+			int posy = gui->cursorPos.y - global_pos.y;
 			if(posy >= 0 && posy <= item_height * 2)
 			{
 				float speed = Lerp(DRAG_SCROLL_SPEED_MIN, DRAG_SCROLL_SPEED_MAX, ((float)(item_height * 2) - posy) / (item_height * 2));
@@ -673,7 +673,7 @@ bool TreeView::Update(TreeNode* node)
 
 	if(offsety + item_height >= 0)
 	{
-		if(gui->cursor_pos.y >= global_pos.y + offsety && gui->cursor_pos.y <= global_pos.y + offsety + item_height)
+		if(gui->cursorPos.y >= global_pos.y + offsety && gui->cursorPos.y <= global_pos.y + offsety + item_height)
 		{
 			above = node;
 
@@ -690,7 +690,7 @@ bool TreeView::Update(TreeNode* node)
 			}
 
 			int offsetx = -(int)hscrollbar.offset;
-			if(node->IsDir() && PointInRect(gui->cursor_pos, global_pos.x + node->pos.x + offsetx, global_pos.y + offsety,
+			if(node->IsDir() && PointInRect(gui->cursorPos, global_pos.x + node->pos.x + offsetx, global_pos.y + offsety,
 				global_pos.x + node->pos.x + 16 + offsetx, global_pos.y + offsety + item_height))
 			{
 				hover = node;

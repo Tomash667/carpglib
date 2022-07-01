@@ -48,33 +48,34 @@ struct MeshInstance
 
 	struct Group
 	{
-		Group() : anim(nullptr), state(0), speed(1.f), prio(0), blend_max(0.33f), frame_end(false)
+		Group() : anim(nullptr), state(0), speed(1.f), prio(0), blendMax(0.33f), frameEnd(false)
 		{
 		}
 
-		float time, speed, blend_time, blend_max;
-		int state, prio, used_group;
+		float time, speed, blendTime, blendMax;
+		int state, prio, usedGroup;
 		union
 		{
 			Mesh::Animation* anim;
 			string* animName; // on preload
 		};
-		bool frame_end;
+		bool frameEnd;
 
-		int GetFrameIndex(bool& hit) const { return anim->GetFrameIndex(time, hit); }
+		int GetFrameIndex(bool& hit) const { assert(anim); return anim->GetFrameIndex(time, hit); }
 		float GetBlendT() const;
-		float GetProgress() const { return time / anim->length; }
+		float GetProgress() const { return anim ? (time / anim->length) : 0; }
 		bool IsActive() const { return IsSet(state, FLAG_GROUP_ACTIVE); }
 		bool IsBlending() const { return IsSet(state, FLAG_BLENDING); }
 		bool IsPlaying() const { return IsSet(state, FLAG_PLAYING); }
-		void SetProgress(float progress) { time = progress * anim->length; }
+		void SetProgress(float progress) { assert(anim); time = progress * anim->length; }
 	};
-	typedef vector<byte>::const_iterator BoneIter;
 
-	explicit MeshInstance(nullptr_t) : preload(true), mesh(nullptr), need_update(true), ptr(nullptr), base_speed(1.f), mat_scale(nullptr) {}
+	typedef delegate<void(void*, Matrix*, int)> PredrawFunc;
+
+	explicit MeshInstance(nullptr_t) : preload(true), mesh(nullptr), needUpdate(true), ptr(nullptr), baseSpeed(1.f), matScale(nullptr) {}
 	explicit MeshInstance(Mesh* mesh);
-	void Play(Mesh::Animation* anim, int flags, uint group = 0);
-	void Play(cstring name, int flags, uint group = 0)
+	void Play(Mesh::Animation* anim, int flags = 0, uint group = 0);
+	void Play(cstring name, int flags = 0, uint group = 0)
 	{
 		Mesh::Animation* anim = mesh->GetAnimation(name);
 		assert(anim);
@@ -104,8 +105,10 @@ struct MeshInstance
 	bool Read(StreamReader& f);
 	bool ApplyPreload(Mesh* mesh);
 	void ClearEndResult();
-	void Changed() { need_update = true; }
+	void Changed() { needUpdate = true; }
 
+	const vector<Matrix>& GetBoneMatrices() const { return matBones; }
+	const Matrix& GetBoneMatrix(uint bone) const { return matBones[bone]; }
 	Group& GetGroup(uint group)
 	{
 		assert(group < mesh->head.n_groups);
@@ -116,15 +119,22 @@ struct MeshInstance
 		assert(group < mesh->head.n_groups);
 		return groups[group];
 	}
-	int GetHighestPriority(uint& group);
-	int GetUsableGroup(uint group);
+	int GetHighestPriority(uint& group) const;
+	Mesh* GetMesh() const { return mesh; }
 	float GetProgress(uint group = 0) const { return GetGroup(group).GetProgress(); }
+	float GetSpeed() const { return baseSpeed; }
+	int GetUsableGroup(uint group) const;
+	void* GetUserPointer() const { return ptr; }
 
 	bool IsActive(uint group = 0) const { return GetGroup(group).IsActive(); }
 	bool IsBlending() const;
-	bool IsEnded(uint group = 0) const { return GetGroup(group).frame_end; }
+	bool IsEnded(uint group = 0) const { return GetGroup(group).frameEnd; }
 
+	void SetPredraw(PredrawFunc predraw) { this->predraw = predraw; }
 	void SetProgress(float progress, uint group = 0) { GetGroup(group).SetProgress(progress); }
+	void SetScaling(Matrix* matScale) { this->matScale = matScale; }
+	void SetSpeed(float baseSpeed) { this->baseSpeed = baseSpeed; }
+	void SetUserPointer(void* ptr) { this->ptr = ptr; }
 
 	static void SaveOptional(StreamWriter& f, MeshInstance* meshInst);
 	static void LoadOptional(StreamReader& f, MeshInstance*& meshInst);
@@ -132,14 +142,13 @@ struct MeshInstance
 private:
 	void SetupBlending(uint group, bool first = true, bool in_update = false);
 
-public:
 	Mesh* mesh;
-	float base_speed;
-	bool need_update, preload;
-	vector<Matrix> mat_bones;
+	vector<Matrix> matBones;
 	vector<Mesh::KeyframeBone> blendb;
 	vector<Group> groups;
-	Matrix* mat_scale;
+	Matrix* matScale;
+	PredrawFunc predraw;
 	void* ptr;
-	static void(*Predraw)(void*, Matrix*, int);
+	float baseSpeed;
+	bool needUpdate, preload;
 };
