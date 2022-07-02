@@ -10,7 +10,7 @@ class Container : public Control
 {
 	friend class Gui;
 public:
-	Container() : auto_focus(false), focus_top(false), dont_focus(false), new_mode(new_mode), manual(false)
+	Container() : manual(false)
 	{
 		focusable = true;
 	}
@@ -33,10 +33,10 @@ public:
 		return ctrls.back();
 	}
 	Control* HitTest();
-
-	bool auto_focus, focus_top, dont_focus, manual;
+	void SetManual(bool manual) { this->manual = manual; }
+	bool IsManual() const { return manual; }
 
 protected:
 	vector<Control*> ctrls;
-	bool inside_loop, new_mode;
+	bool manual, inside_loop;
 };

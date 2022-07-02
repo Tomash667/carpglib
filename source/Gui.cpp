@@ -42,9 +42,7 @@ void Gui::Init()
 	cursorPos = wndSize / 2;
 
 	layer = new Container;
-	layer->auto_focus = true;
 	dialogLayer = new Container;
-	dialogLayer->focus_top = true;
 
 	shader = app::render->GetShader<GuiShader>();
 
@@ -964,11 +962,7 @@ void Gui::Update(float dt, float mouse_speed)
 		if(!focusedCtrl->visible)
 			focusedCtrl = nullptr;
 		else if(dialogLayer->Empty())
-		{
-			layer->dont_focus = true;
 			layer->Update(dt);
-			layer->dont_focus = false;
-		}
 		else
 		{
 			focusedCtrl->LostFocus();
