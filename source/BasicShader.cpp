@@ -63,10 +63,10 @@ void BasicShader::OnInit()
 	psGlobalsMesh = app::render->CreateConstantBuffer(sizeof(PsGlobalsMesh), "BasicPsGlobalsMesh");
 	psGlobalsColor = app::render->CreateConstantBuffer(sizeof(PsGlobalsColor), "BasicPsGlobalsColor");
 
-	meshes[(int)MeshShape::Box] = app::resMgr->Get<Mesh>("box.qmsh");
-	meshes[(int)MeshShape::Sphere] = app::resMgr->Get<Mesh>("sphere.qmsh");
-	meshes[(int)MeshShape::Capsule] = app::resMgr->Get<Mesh>("capsule.qmsh");
-	meshes[(int)MeshShape::Cylinder] = app::resMgr->Get<Mesh>("cylinder.qmsh");
+	meshes[(int)MeshShape::Box] = app::resMgr->Get<Mesh>("builtin/box.qmsh");
+	meshes[(int)MeshShape::Sphere] = app::resMgr->Get<Mesh>("builtin/sphere.qmsh");
+	meshes[(int)MeshShape::Capsule] = app::resMgr->Get<Mesh>("builtin/capsule.qmsh");
+	meshes[(int)MeshShape::Cylinder] = app::resMgr->Get<Mesh>("builtin/cylinder.qmsh");
 }
 
 //=================================================================================================
