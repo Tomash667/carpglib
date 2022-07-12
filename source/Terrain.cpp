@@ -38,11 +38,8 @@ Terrain::~Terrain()
 	SafeRelease(vbStaging);
 	SafeRelease(ib);
 	delete texSplat;
-
 	delete[] parts;
-	// h jest przechowywany w OutsideLocation wiêc nie mo¿na tu usuwaæ
-	//delete[] h;
-	state = 0;
+	delete[] h;
 }
 
 //=================================================================================================

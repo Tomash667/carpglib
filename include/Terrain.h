@@ -88,6 +88,7 @@ public:
 	float GetTileSize() const { return tile_size; }
 
 	//---------------------------
+	void SetPos(const Vec3& pos) { this->pos = pos; }
 	void SetTextures(TexturePtr* textures);
 	void RemoveHeightMap(bool _delete = false);
 	void SetHeightMap(float* h);
