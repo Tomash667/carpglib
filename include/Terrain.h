@@ -94,7 +94,7 @@ public:
 	void SetTextures(TexturePtr* textures);
 	void RemoveHeightMap(bool _delete = false);
 	void SetHeightMap(float* h);
-	bool IsInside(float x, float z) const { return x >= 0.f && z >= 0.f && x < tiles_size && z < tiles_size; }
+	bool IsInside(float x, float z) const;
 	bool IsInside(const Vec3& v) const { return IsInside(v.x, v.z); }
 	void ListVisibleParts(vector<uint>& parts, const FrustumPlanes& frustum) const;
 

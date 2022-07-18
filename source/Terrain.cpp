@@ -588,37 +588,24 @@ void Terrain::SmoothNormals(VTerrain* v)
 float Terrain::GetH(float x, float z) const
 {
 	assert(state > 0);
-
-	// sprawdŸ czy nie jest poza terenem
-	assert(x >= 0.f && z >= 0.f);
+	assert(IsInside(x, z));
 
 	// oblicz które to kafle
 	uint tx, tz;
-	tx = (uint)floor(x / tile_size);
-	tz = (uint)floor(z / tile_size);
+	tx = (uint)floor((x - pos.x) / tile_size);
+	tz = (uint)floor((z - pos.z) / tile_size);
 
 	// sprawdŸ czy nie jest to poza terenem
-	//assert_return(tx < n_tiles && tz < n_tiles, 0.f);
 	// teren na samej krawêdzi wykrywa jako b³¹d
 	if(tx == n_tiles)
-	{
-		if(Equal(x, tiles_size))
-			--tx;
-		else
-			assert(tx < n_tiles);
-	}
+		--tx;
 	if(tz == n_tiles)
-	{
-		if(Equal(z, tiles_size))
-			--tz;
-		else
-			assert(tz < n_tiles);
-	}
+		--tz;
 
 	// oblicz offset od kafla do punktu
 	float offsetx, offsetz;
-	offsetx = (x - tile_size * tx) / tile_size;
-	offsetz = (z - tile_size * tz) / tile_size;
+	offsetx = ((x - pos.x) - tile_size * tx) / tile_size;
+	offsetz = ((z - pos.z) - tile_size * tz) / tile_size;
 
 	// pobierz wysokoœci na krawêdziach
 	float hTopLeft = h[tx + (tz + 1) * width];
@@ -646,34 +633,24 @@ float Terrain::GetH(float x, float z) const
 //=================================================================================================
 void Terrain::GetAngle(float x, float z, Vec3& angle) const
 {
-	// sprawdŸ czy nie jest to poza map¹
-	assert(x >= 0.f && z >= 0.f);
+	assert(IsInside(x, z));
 
 	// oblicz które to kafle
 	uint tx, tz;
-	tx = (uint)floor(x / tile_size);
-	tz = (uint)floor(z / tile_size);
+	tx = (uint)floor((x - pos.x) / tile_size);
+	tz = (uint)floor((z - pos.z) / tile_size);
 
-	// sprawdŸ czy nie jest to poza map¹
+	// sprawdŸ czy nie jest to poza terenem
+	// teren na samej krawêdzi wykrywa jako b³¹d
 	if(tx == n_tiles)
-	{
-		if(Equal(x, tiles_size))
-			--tx;
-		else
-			assert(tx < n_tiles);
-	}
+		--tx;
 	if(tz == n_tiles)
-	{
-		if(Equal(z, tiles_size))
-			--tz;
-		else
-			assert(tz < n_tiles);
-	}
+		--tz;
 
 	// oblicz offset od kafla do punktu
 	float offsetx, offsetz;
-	offsetx = (x - tile_size * tx) / tile_size;
-	offsetz = (z - tile_size * tz) / tile_size;
+	offsetx = ((x - pos.x) - tile_size * tx) / tile_size;
+	offsetz = ((z - pos.z) - tile_size * tz) / tile_size;
 
 	// pobierz wysokoœci na krawêdziach
 	float hTopLeft = h[tx + (tz + 1) * width];
@@ -790,6 +767,15 @@ void Terrain::SetHeightMap(float* _h)
 	assert(_h);
 
 	h = _h;
+}
+
+//=================================================================================================
+bool Terrain::IsInside(float x, float z) const
+{
+	return x >= pos.x
+		&& x <= pos.x + tiles_size
+		&& z >= pos.z
+		&& z <= pos.z + tiles_size;
 }
 
 //=================================================================================================
