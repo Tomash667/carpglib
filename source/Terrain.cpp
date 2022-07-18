@@ -48,7 +48,7 @@ void Terrain::Init(const Options& o)
 	assert(state == 0);
 	assert(o.tile_size > 0.f && o.n_parts > 0 && o.tiles_per_part > 0 && IsPow2(o.tex_size));
 
-	pos = Vec3(0, 0, 0);
+	pos = o.pos;
 	tile_size = o.tile_size;
 	n_parts = o.n_parts;
 	n_parts2 = n_parts * n_parts;
@@ -63,9 +63,8 @@ void Terrain::Init(const Options& o)
 	part_tris = tiles_per_part * tiles_per_part * 2;
 	part_verts = tiles_per_part * tiles_per_part * 6;
 	tex_size = o.tex_size;
-	box.v1 = Vec3(0, 0, 0);
-	box.v2.x = box.v2.z = tile_size * n_tiles;
-	box.v2.y = 0;
+	box.v1 = pos;
+	box.v2 = pos + Vec3(tiles_size, 0, tiles_size);
 
 	h = new float[width2];
 	parts = new Part[n_parts2];
@@ -796,9 +795,12 @@ void Terrain::SetHeightMap(float* _h)
 //=================================================================================================
 void Terrain::ListVisibleParts(vector<uint>& outParts, const FrustumPlanes& frustum) const
 {
-	for(uint i = 0; i < n_parts2; ++i)
+	if(frustum.BoxToFrustum(box))
 	{
-		if(frustum.BoxToFrustum(parts[i].box))
-			outParts.push_back(i);
+		for(uint i = 0; i < n_parts2; ++i)
+		{
+			if(frustum.BoxToFrustum(parts[i].box))
+				outParts.push_back(i);
+		}
 	}
 }

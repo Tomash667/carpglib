@@ -11,6 +11,9 @@ public:
 	//---------------------------
 	struct Options
 	{
+		Options() : pos(Vec3::Zero) {}
+
+		Vec3 pos;
 		float tile_size;
 		uint n_parts;
 		uint tiles_per_part;
@@ -88,7 +91,6 @@ public:
 	float GetTileSize() const { return tile_size; }
 
 	//---------------------------
-	void SetPos(const Vec3& pos) { this->pos = pos; }
 	void SetTextures(TexturePtr* textures);
 	void RemoveHeightMap(bool _delete = false);
 	void SetHeightMap(float* h);
