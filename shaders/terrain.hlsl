@@ -59,7 +59,7 @@ TERRAIN_OUTPUT VsMain(in TERRAIN_INPUT In)
 	Out.pos = mul(float4(In.pos,1), matCombined);
 	Out.tex = In.tex;
 	Out.texBlend = In.texBlend;
-	Out.normal = mul(float4(In.normal,1), matWorld).xyz;
+	Out.normal = mul(float4(In.normal,1), (float3x3)matWorld).xyz;
 	Out.posViewZ = Out.pos.w;
 	return Out;
 }
@@ -82,8 +82,7 @@ float4 PsMain(in TERRAIN_OUTPUT In) : SV_TARGET
 	
 	float4 diffuse = colorDiffuse * saturate(dot(lightDir,In.normal));
 
-	float4 new_texel = float4( texColor.xyz * saturate(colorAmbient +
-		diffuse).xyz, texColor.w );
+	float4 new_texel = float4( texColor.xyz * saturate(colorAmbient + diffuse).xyz, texColor.w );
 
 	float l = saturate((In.posViewZ-fogParam.x)/fogParam.z);
 	new_texel = lerp(new_texel, fogColor, l);

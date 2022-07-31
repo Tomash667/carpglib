@@ -5,6 +5,7 @@
 #include "DirectX.h"
 #include "Render.h"
 #include "Scene.h"
+#include "SceneManager.h"
 #include "Terrain.h"
 #include "Texture.h"
 
@@ -95,6 +96,8 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 		psg.lightDir = scene->GetLightDir();
 		psg.fogColor = scene->GetFogColor();
 		psg.fogParam = scene->GetFogParams();
+		if(!app::sceneMgr->useLighting)
+			psg.colorAmbient = Vec4::One;
 	}
 
 	// set textures
