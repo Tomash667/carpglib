@@ -26,6 +26,7 @@ fontLoader(nullptr), lastClick(Key::LeftButton), lastClickTimer(1.f)
 Gui::~Gui()
 {
 	DeleteElements(createdDialogs);
+	DeleteElements(registeredControls);
 	delete masterLayout;
 	delete layer;
 	delete dialogLayer;
@@ -2361,4 +2362,11 @@ void Gui::SetOverlay(Overlay* newOverlay)
 	assert(!overlay); // TODO
 	overlay = newOverlay;
 	Add(overlay);
+}
+
+//=================================================================================================
+void Gui::RegisterControl(Control* control)
+{
+	assert(control);
+	registeredControls.push_back(control);
 }

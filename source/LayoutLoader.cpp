@@ -522,6 +522,7 @@ void LayoutLoader::RegisterControls()
 
 	c = AddControl<layout::TextBox>("TextBox");
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::TextBox, background));
+	c->AddEntry("background_error", Entry::AreaLayout, offsetof(layout::TextBox, background_error));
 	c->AddEntry("font", Entry::Font, offsetof(layout::TextBox, font));
 	c->AddEntry("font_color", Entry::Color, offsetof(layout::TextBox, font_color));
 	c->AddEntry("selection_color", Entry::Color, offsetof(layout::TextBox, selection_color));

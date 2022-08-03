@@ -201,6 +201,8 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 		scroll.size = Int2(300 - 64, 16);
 		scroll.total = 100;
 		scroll.part = 5;
+
+		gui->RegisterControl(self);
 	}
 
 	self->result = -1;

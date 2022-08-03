@@ -216,6 +216,7 @@ public:
 		assert(key >= Key::LeftButton && key <= Key::X2Button);
 		return doubleclk[(int)key - 1];
 	}
+	void RegisterControl(Control* control);
 
 	Matrix mViewProj;
 	Int2 cursorPos, prevCursorPos, wndSize;
@@ -249,6 +250,7 @@ private:
 	FontLoader* fontLoader;
 	GuiShader* shader;
 	vector<DialogBox*> createdDialogs;
+	vector<Control*> registeredControls;
 	Container* layer, *dialogLayer;
 	VGui vBuf[256 * 6], vBuf2[256 * 6];
 	HitboxContext tmpHitboxContext;

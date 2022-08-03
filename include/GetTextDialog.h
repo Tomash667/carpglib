@@ -7,17 +7,18 @@
 //-----------------------------------------------------------------------------
 struct GetTextDialogParams
 {
-	GetTextDialogParams(cstring text, string& input_str) : text(text), input_str(&input_str), parent(nullptr), event(nullptr), limit(0), lines(1), width(300),
-		custom_names(nullptr), multiline(false)
+	GetTextDialogParams(cstring text, string& inputStr) : text(text), inputStr(&inputStr), parent(nullptr), event(nullptr), validate(nullptr), limit(0),
+		lines(1), width(300), customNames(nullptr), multiline(false)
 	{
 	}
 
 	Control* parent;
 	DialogEvent event;
+	delegate<bool()> validate;
 	cstring text;
-	string* input_str;
+	string* inputStr;
 	int limit, lines, width;
-	cstring* custom_names;
+	cstring* customNames;
 	bool multiline;
 };
 
@@ -33,18 +34,17 @@ public:
 
 	static GetTextDialog* Show(const GetTextDialogParams& params);
 
-	explicit GetTextDialog(const DialogInfo& info);
-
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
-	static GetTextDialog* self;
-
 private:
+	explicit GetTextDialog(const DialogInfo& info);
 	void Create(const GetTextDialogParams& params);
 
-	string* input_str;
+	static GetTextDialog* self;
+	string* inputStr;
+	delegate<bool()> validate;
 	TextBox textBox;
 	bool singleline;
 };

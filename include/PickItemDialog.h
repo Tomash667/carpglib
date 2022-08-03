@@ -60,8 +60,6 @@ public:
 
 	static PickItemDialog* Show(PickItemDialogParams& params);
 
-	static PickItemDialog* self;
-
 private:
 	enum Id
 	{
@@ -77,6 +75,7 @@ private:
 	void Create(PickItemDialogParams& params);
 	void OnSelect();
 
+	static PickItemDialog* self;
 	FlowContainer flow;
 	TooltipController::Callback get_tooltip;
 	int multiple;
