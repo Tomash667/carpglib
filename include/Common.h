@@ -88,6 +88,7 @@ class Overlay;
 class Panel;
 class PickItemDialog;
 class TextBox;
+class TooltipController;
 class TreeView;
 
 // Windows types
