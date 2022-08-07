@@ -43,6 +43,10 @@ inline int Rand()
 {
 	return internal::rng();
 }
+inline uint RandU()
+{
+	return internal::rng();
+}
 inline int Rand(int a)
 {
 	return Rand() % a;
