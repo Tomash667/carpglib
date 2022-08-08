@@ -44,10 +44,6 @@ void SceneManager::ListNodes()
 //=================================================================================================
 void SceneManager::Draw()
 {
-	batch.Clear();
-	batch.camera = camera;
-	batch.gatherLights = useLighting && !scene->useLightDir;
-	scene->ListNodes(batch);
 	batch.Process();
 
 	superShader->Prepare();
@@ -154,4 +150,13 @@ void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 
 		superShader->Draw(node);
 	}
+}
+
+//=================================================================================================
+SceneBatch& SceneManager::GetBatch()
+{
+	batch.Clear();
+	batch.camera = camera;
+	batch.gatherLights = useLighting && !scene->useLightDir;
+	return batch;
 }

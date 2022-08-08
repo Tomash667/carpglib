@@ -17,6 +17,7 @@ public:
 	void DrawAlphaSceneNodes(SceneBatch& batch);
 
 	Scene* GetScene() { return scene; }
+	SceneBatch& GetBatch();
 
 	bool useLighting, useFog, useNormalmap, useSpecularmap;
 
