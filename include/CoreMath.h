@@ -1454,6 +1454,7 @@ struct FrustumPlanes
 	// Return points on edge of frustum
 	void GetPoints(array<Vec3, 8>& points) const;
 	static void GetPoints(const Matrix& worldViewProj, array<Vec3, 8>& points);
+	Box2d GetBox2d() const;
 	// Checks if point is inside frustum
 	bool PointInFrustum(const Vec3 &p) const;
 	// Checks if box collide with frustum

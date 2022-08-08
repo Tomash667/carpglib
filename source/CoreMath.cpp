@@ -441,6 +441,28 @@ void FrustumPlanes::GetPoints(const Matrix& worldViewProj, array<Vec3, 8>& point
 		points[i] = Vec3::Transform(P[i], worldViewProjInv);
 }
 
+Box2d FrustumPlanes::GetBox2d() const
+{
+	array<Vec3, 8> pts;
+	GetPoints(pts);
+	float minx, minz, maxx, maxz;
+	minx = maxx = pts[0].x;
+	minz = maxz = pts[0].z;
+	for(int i = 1; i < 8; ++i)
+	{
+		const Vec3& pt = pts[i];
+		if(pt.x < minx)
+			minx = pt.x;
+		else if(pt.x > maxx)
+			maxx = pt.x;
+		if(pt.z < minz)
+			minz = pt.z;
+		else if(pt.z > maxz)
+			maxz = pt.z;
+	}
+	return Box2d(minx, minz, maxx, maxz);
+}
+
 bool FrustumPlanes::PointInFrustum(const Vec3 &p) const
 {
 	for(int i = 0; i < 6; ++i)
