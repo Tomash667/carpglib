@@ -9,12 +9,12 @@ void MurmurHash3_x86_32(const void* key, int len, uint32_t seed, void* out);
 //=================================================================================================
 std::minstd_rand internal::rng;
 
-int RandVal()
+uint RandVal()
 {
 	// ugly hack
 	static_assert(sizeof(internal::rng) == sizeof(uint), "Failed to get random seed, implementation changed.");
 	uint seed = *(uint*)&internal::rng;
-	return (int)seed;
+	return seed;
 }
 
 void Srand()

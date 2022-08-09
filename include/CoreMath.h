@@ -38,7 +38,7 @@ inline void Srand(uint seed)
 {
 	internal::rng.seed(seed);
 }
-int RandVal();
+uint RandVal();
 inline int Rand()
 {
 	return internal::rng();

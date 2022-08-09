@@ -301,6 +301,23 @@ void Terrain::SetHeight(float height)
 }
 
 //=================================================================================================
+void Terrain::SetBordersHeight(float height)
+{
+	assert(state > 0);
+	for(uint i = 0; i < width; ++i)
+	{
+		// back
+		h[i] = height;
+		// front
+		h[i + (width - 1) * width] = height;
+		// left
+		h[i * width] = height;
+		// right
+		h[width - 1 + i * width] = height;
+	}
+}
+
+//=================================================================================================
 void Terrain::RandomizeHeight(float hmin, float hmax)
 {
 	assert(state > 0);
@@ -315,9 +332,6 @@ void Terrain::RoundHeight()
 {
 	assert(state > 0);
 
-	float sum;
-	int count;
-
 #define H(xx,zz) h[x+(xx)+(z+(zz))*width]
 
 	// aby przyœpieszyæ t¹ funkcje mo¿na by obliczyæ najpierw dla krawêdzi a
@@ -328,8 +342,8 @@ void Terrain::RoundHeight()
 	{
 		for(uint x = 0; x < width; ++x)
 		{
-			count = 1;
-			sum = H(0, 0);
+			int count = 1;
+			float sum = H(0, 0);
 
 			// wysokoœæ z prawej
 			if(x < width - 1)
@@ -357,6 +371,22 @@ void Terrain::RoundHeight()
 			}
 			// mo¿na by dodaæ jeszcze elementy na ukos
 			H(0, 0) = sum / count;
+		}
+	}
+}
+
+
+//=================================================================================================
+void Terrain::RoundHeightWithoutBorders()
+{
+	assert(state > 0);
+
+	for(uint z = 1; z < width - 1; ++z)
+	{
+		for(uint x = 1; x < width - 1; ++x)
+		{
+			float sum = H(0, 0) + H(1, 0) + H(-1, 0) + H(0, 1) + H(0, -1);
+			H(0, 0) = sum / 5;
 		}
 	}
 }

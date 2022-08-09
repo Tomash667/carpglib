@@ -57,9 +57,11 @@ public:
 	void RebuildUv();
 	void Make(bool smooth = true);
 	void SetHeight(float height);
+	void SetBordersHeight(float height);
 	void ClearHeight() { SetHeight(0.f); }
 	void RandomizeHeight(float hmin, float hmax);
 	void RoundHeight();
+	void RoundHeightWithoutBorders();
 	void Randomize();
 	void CalculateBox();
 	void SmoothNormals();
