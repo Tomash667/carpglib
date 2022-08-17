@@ -77,6 +77,7 @@ class DrawBox;
 class Grid;
 class GuiDialog;
 class GuiElement;
+class InputTextBox;
 class Label;
 class Layout;
 class ListBox;

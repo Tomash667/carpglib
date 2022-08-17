@@ -4,7 +4,7 @@
 #include "Input.h"
 
 //=================================================================================================
-InputTextBox::InputTextBox() : added(false), background_color(Color::None)
+InputTextBox::InputTextBox() : added(false), lose_focus(true), esc_clear(true), background_color(Color::None), max_lines(100), max_cache(10)
 {
 }
 
