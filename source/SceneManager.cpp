@@ -47,6 +47,7 @@ void SceneManager::Draw()
 	batch.Process();
 
 	superShader->Prepare();
+	superShader->SetScene(scene, camera);
 
 	if(!batch.nodeGroups.empty())
 		DrawSceneNodes(batch.nodes, batch.nodeGroups);

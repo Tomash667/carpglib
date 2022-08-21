@@ -4,7 +4,7 @@
 #include "Input.h"
 
 //=================================================================================================
-InputTextBox::InputTextBox() : added(false), lose_focus(true), esc_clear(true), background_color(Color::None), max_lines(100), max_cache(10)
+InputTextBox::InputTextBox() : added(false), lose_focus(false), esc_clear(true), background_color(Color::None), max_lines(100), max_cache(10)
 {
 }
 
@@ -67,6 +67,7 @@ void InputTextBox::Update(float dt)
 		if(release_key)
 			input->Released(Key::LeftButton);
 	}
+
 	if(focus)
 	{
 		caret_blink += dt * 2;
@@ -130,6 +131,7 @@ void InputTextBox::Update(float dt)
 					input_str.clear();
 					input_counter = -1;
 				}
+
 				if(lose_focus)
 				{
 					focus = false;
