@@ -75,9 +75,9 @@ float4 PsMain(in TERRAIN_OUTPUT In) : SV_TARGET
 	float4 c3 = tex3.Sample(sampler0, In.tex);
 	float4 c4 = tex4.Sample(sampler0, In.tex);
 	
-	float4 texColor = lerp(c0,c1,a.b);
+	float4 texColor = lerp(c0,c1,a.r);
 	texColor = lerp(texColor,c2,a.g);
-	texColor = lerp(texColor,c3,a.r);
+	texColor = lerp(texColor,c3,a.b);
 	texColor = lerp(texColor,c4,a.a);
 	
 	float4 diffuse = colorDiffuse * saturate(dot(lightDir,In.normal));
