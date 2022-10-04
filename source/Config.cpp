@@ -275,7 +275,7 @@ Config::Result Config::Load(cstring defaultFilename)
 			else
 			{
 				if(t.IsSymbol('{'))
-					value = t.GetBlock();
+					value = t.ParseBlock();
 				else
 					value = t.GetTokenString();
 			}

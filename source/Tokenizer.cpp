@@ -1191,7 +1191,7 @@ void Tokenizer::Parse(Color& c)
 }
 
 //=================================================================================================
-const string& Tokenizer::GetBlock(char open, char close, bool include_symbol)
+const string& Tokenizer::ParseBlock(char open, char close, bool include_symbol)
 {
 	AssertSymbol(open);
 	int opened = 1;

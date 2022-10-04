@@ -349,31 +349,31 @@ namespace tokenizer
 		{
 			return StartUnexpected().Add(expected_token, what, what2).Get();
 		}
-		__declspec(noreturn) void Throw(cstring msg)
+		__declspec(noreturn) void Throw(cstring msg) const
 		{
 			formatter.Throw(msg);
 		}
 		template<typename T>
-		__declspec(noreturn) void Throw(cstring msg, T arg, ...)
+		__declspec(noreturn) void Throw(cstring msg, T arg, ...) const
 		{
 			cstring err = FormatList(msg, (va_list)&arg);
 			formatter.Throw(err);
 		}
-		__declspec(noreturn) void ThrowAt(uint line, uint charpos, cstring msg)
+		__declspec(noreturn) void ThrowAt(uint line, uint charpos, cstring msg) const
 		{
 			formatter.ThrowAt(line, charpos, msg);
 		}
 		template<typename T>
-		__declspec(noreturn) void ThrowAt(uint line, uint charpos, cstring msg, T arg, ...)
+		__declspec(noreturn) void ThrowAt(uint line, uint charpos, cstring msg, T arg, ...) const
 		{
 			cstring err = FormatList(msg, (va_list)&arg);
 			formatter.ThrowAt(line, charpos, err);
 		}
-		cstring Expecting(cstring what)
+		cstring Expecting(cstring what) const
 		{
 			return Format("Expecting %s, found %s.", what, GetTokenValue(normal_seek));
 		}
-		__declspec(noreturn) void ThrowExpecting(cstring what)
+		__declspec(noreturn) void ThrowExpecting(cstring what) const
 		{
 			formatter.Throw(Expecting(what));
 		}
@@ -462,10 +462,15 @@ namespace tokenizer
 		}
 		void AssertEof() const { AssertToken(T_EOF); }
 		void AssertItem() const { AssertToken(T_ITEM); }
-		void AssertItem(cstring item)
+		void AssertItem(cstring item) const
 		{
 			if(!IsItem(item))
 				Unexpected(T_ITEM, (int*)item);
+		}
+		void AssertItemOrString() const
+		{
+			if(!IsItemOrString())
+				Throw("Expected item or string.");
 		}
 		void AssertString() const { AssertToken(T_STRING); }
 		void AssertChar() const { AssertToken(T_CHAR); }
@@ -507,7 +512,7 @@ namespace tokenizer
 			if(!IsKeywordGroup(group))
 				Unexpected(T_KEYWORD_GROUP, &group);
 		}
-		int AssertKeywordGroup(std::initializer_list<int> const& groups)
+		int AssertKeywordGroup(std::initializer_list<int> const& groups) const
 		{
 			int group = IsKeywordGroup(groups);
 			if(group == MISSING_GROUP)
@@ -641,7 +646,6 @@ namespace tokenizer
 			}
 			return EMPTY_GROUP;
 		}
-		const string& GetBlock(char open = '{', char close = '}', bool include_symbol = true);
 		const string& GetItemOrString() const
 		{
 			assert(IsItemOrString());
@@ -663,14 +667,6 @@ namespace tokenizer
 		{
 			AssertString();
 			return GetString();
-		}
-		const string& MustGetStringTrim()
-		{
-			AssertString();
-			Trim(normal_seek.item);
-			if(normal_seek.item.empty())
-				Throw("Expected not empty string.");
-			return normal_seek.item;
 		}
 		char MustGetChar() const
 		{
@@ -745,7 +741,7 @@ namespace tokenizer
 			return GetKeywordGroup(id);
 		}
 		template<typename T>
-		T MustGetKeywordGroup(std::initializer_list<T> const& groups)
+		T MustGetKeywordGroup(std::initializer_list<T> const& groups) const
 		{
 			int group = IsKeywordGroup(groups);
 			if(group == MISSING_GROUP)
@@ -766,6 +762,11 @@ namespace tokenizer
 		{
 			if(!IsItem() && !IsKeyword())
 				StartUnexpected().Add(T_ITEM).Add(T_KEYWORD).Throw();
+			return normal_seek.item;
+		}
+		const string& MustGetItemOrString() const
+		{
+			AssertItemOrString();
 			return normal_seek.item;
 		}
 
@@ -805,6 +806,7 @@ namespace tokenizer
 		void Parse(Vec3& v);
 		void Parse(Vec4& v);
 		void Parse(Color& c);
+		const string& ParseBlock(char open = '{', char close = '}', bool include_symbol = true);
 		void ParseFlags(int group, int& flags);
 		void ParseFlags(std::initializer_list<FlagGroup> const& flags);
 		int ParseTop(int group, delegate<bool(int)> action);
