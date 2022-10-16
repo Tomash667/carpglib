@@ -443,6 +443,12 @@ inline float Round10(float value)
 	return round(value * 10) / 10 + 0.0f;
 }
 
+inline float RoundTo(float value, int n)
+{
+	// +0 required to get rid of (0, -0) flickering
+	return round(value * n) / n + 0.0f;
+}
+
 // Return module
 inline constexpr int Modulo(int a, int mod)
 {
