@@ -188,7 +188,9 @@ inline int Int2::Random() const
 
 inline int Int2::Distance(const Int2& i1, const Int2& i2)
 {
-	return abs(i1.x - i2.x) + abs(i1.y - i2.y);
+	const int x = i1.x - i2.x;
+	const int y = i1.y - i2.y;
+	return (int)sqrt((float)(x * x + y * y));
 }
 
 inline Int2 Int2::Lerp(const Int2& i1, const Int2& i2, float t)
