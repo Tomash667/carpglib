@@ -47,6 +47,7 @@ class SkyboxShader;
 class SoundManager;
 class SuperShader;
 class TerrainShader;
+typedef SceneNode* SceneNodePtr;
 
 // Resource types
 struct Font;

@@ -258,6 +258,12 @@ inline T RandomItem(std::initializer_list<T> cont)
 	return *it;
 }
 
+template<typename T, uint N>
+inline T RandomItem(const array<T, N>& arr)
+{
+	return arr[Rand() % N];
+}
+
 template<typename It>
 inline void Shuffle(It begin, It end)
 {

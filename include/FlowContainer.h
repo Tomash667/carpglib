@@ -57,6 +57,7 @@ namespace layout
 	struct FlowContainer : public Control
 	{
 		AreaLayout box;
+		AreaLayout hover;
 		AreaLayout selection;
 		Font* font;
 		Font* font_section;

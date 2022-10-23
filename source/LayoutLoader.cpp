@@ -409,6 +409,7 @@ void LayoutLoader::RegisterControls()
 
 	c = AddControl<layout::FlowContainer>("FlowContainer");
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::FlowContainer, box));
+	c->AddEntry("hover", Entry::AreaLayout, offsetof(layout::FlowContainer, hover));
 	c->AddEntry("selection", Entry::AreaLayout, offsetof(layout::FlowContainer, selection));
 	c->AddEntry("font", Entry::Font, offsetof(layout::FlowContainer, font));
 	c->AddEntry("font_section", Entry::Font, offsetof(layout::FlowContainer, font_section));

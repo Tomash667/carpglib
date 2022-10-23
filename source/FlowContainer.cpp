@@ -65,6 +65,15 @@ void FlowContainer::Update(float dt)
 			Int2 off(0, (int)scroll.offset);
 			bool have_button = false;
 
+			if(allow_select)
+			{
+				for(FlowItem* fi : items)
+				{
+					if(fi->state == Button::HOVER)
+						fi->state = Button::NONE;
+				}
+			}
+
 			for(FlowItem* fi : items)
 			{
 				Int2 p = fi->pos - off + global_pos;
@@ -75,6 +84,7 @@ void FlowContainer::Update(float dt)
 						p.y -= 2;
 						have_button = false;
 					}
+
 					if(fi->group != -1 && PointInRect(gui->cursorPos, p, fi->size))
 					{
 						group = fi->group;
@@ -88,6 +98,8 @@ void FlowContainer::Update(float dt)
 								on_select();
 								return;
 							}
+							else if(fi->state == Button::NONE)
+								fi->state = Button::HOVER;
 						}
 					}
 				}
@@ -159,12 +171,12 @@ void FlowContainer::Draw(ControlDrawData*)
 			if(rect.Bottom() < global_pos.y)
 				continue;
 
-			if(fi->state == Button::DOWN)
+			if(fi->state == Button::DOWN || fi->state == Button::HOVER)
 			{
 				Rect rs = { global_pos.x + 2, rect.Top(), global_pos.x + sizex, rect.Bottom() };
 				Rect out;
 				if(Rect::Intersect(rs, clip, out))
-					gui->DrawArea(Box2d(out), layout->selection);
+					gui->DrawArea(Box2d(out), fi->state == Button::DOWN ? layout->selection : layout->hover);
 			}
 
 			if(!gui->DrawText(fi->type == FlowItem::Section ? layout->font_section : layout->font, fi->text, flags,
@@ -251,17 +263,20 @@ void FlowContainer::Reposition()
 				if(have_button)
 				{
 					fi->size = layout->font->CalculateSize(fi->text, sizex - 2 - button_size.x);
+					fi->size.x = sizex - 2 - button_size.x;
 					fi->pos = Int2(4 + button_size.x, y);
 				}
 				else
 				{
 					fi->size = layout->font->CalculateSize(fi->text, sizex);
+					fi->size.x = sizex;
 					fi->pos = Int2(2, y);
 				}
 			}
 			else
 			{
 				fi->size = layout->font_section->CalculateSize(fi->text, sizex);
+				fi->size.x = sizex;
 				fi->pos = Int2(2, y);
 			}
 			have_button = false;
