@@ -287,6 +287,13 @@ inline bool IsInside(const vector<T>* v, const T& elem)
 	return IsInside(*v, elem);
 }
 
+template<typename T, uint N>
+void CopyItems(vector<T>& items, const array<T, N>& arr)
+{
+	items.resize(N);
+	memcpy(items.data(), arr.data(), sizeof(T) * N);
+}
+
 //-----------------------------------------------------------------------------
 // Object pool pattern
 //-----------------------------------------------------------------------------
