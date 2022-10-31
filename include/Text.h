@@ -95,7 +95,13 @@ cstring EscapeChar(char c, string& out);
 cstring ToString(const wchar_t* str);
 const wchar_t* ToWString(cstring str);
 void Replace(string& s, cstring in_chars, cstring out_chars);
-inline bool EndsWith(std::string const& value, std::string const& ending)
+inline bool StartsWith(const string& value, const string& start)
+{
+	if(value.size() < start.size())
+		return false;
+	return std::equal(start.begin(), start.end(), value.begin());
+}
+inline bool EndsWith(const string& value, const string& ending)
 {
 	if(ending.size() > value.size())
 		return false;

@@ -34,6 +34,8 @@ public:
 	void Reset(bool cache = false);
 	void Add(Cstring str);
 	void CheckLines();
+	const string& GetInput() const { return input_str; }
+	void SetInput(const string& str) { input_str = str; }
 
 	int max_lines, max_cache;
 	InputEvent event;
