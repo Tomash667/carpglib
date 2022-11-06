@@ -158,6 +158,11 @@ inline Int2 operator * (int a, const Int2& i)
 	return i * a;
 }
 
+inline Vec2 operator * (float a, const Int2& i)
+{
+	return Vec2(a * i.x, a * i.y);
+}
+
 //------------------------------------------------------------------------------
 // Methods
 //------------------------------------------------------------------------------
