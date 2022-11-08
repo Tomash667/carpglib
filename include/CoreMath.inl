@@ -281,7 +281,11 @@ inline constexpr Rect::Rect(const Int2& p1, const Int2& p2) : p1(p1), p2(p2)
 {
 }
 
-inline constexpr Rect::Rect(const Rect& box) : p1(box.p1), p2(box.p2)
+inline constexpr Rect::Rect(const Rect& rect) : p1(rect.p1), p2(rect.p2)
+{
+}
+
+inline constexpr Rect::Rect(const Rect& rect, int pad) : p1(rect.p1.x - pad, rect.p1.y - pad), p2(rect.p2.x + pad, rect.p2.y + pad)
 {
 }
 

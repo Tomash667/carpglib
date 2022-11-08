@@ -572,7 +572,8 @@ struct Rect
 	constexpr Rect(int x1, int y1, int x2, int y2);
 	constexpr Rect(const Int2& p);
 	constexpr Rect(const Int2& p1, const Int2& p2);
-	constexpr Rect(const Rect& box);
+	constexpr Rect(const Rect& rect);
+	constexpr Rect(const Rect& rect, int pad);
 	explicit constexpr Rect(const Box2d& box);
 	constexpr Rect(const Box2d& box, const Int2& pad);
 

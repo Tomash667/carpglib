@@ -178,6 +178,7 @@ public:
 	{
 		DrawArea(color, rect.LeftTop(), rect.Size(), clip_rect);
 	}
+	void DrawRect(Color color, const Rect& rect, int width = 1);
 	void SetLayout(Layout* layout);
 	Layout* GetLayout() const { return masterLayout; }
 	void DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect = nullptr, Color* tint = nullptr);
