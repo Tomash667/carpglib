@@ -52,8 +52,8 @@ PickItemDialog* PickItemDialog::Show(PickItemDialogParams& params)
 		info.name = "PickItemDialog";
 		info.parent = nullptr;
 		info.pause = false;
-		info.order = ORDER_NORMAL;
-		info.type = DIALOG_CUSTOM;
+		info.order = DialogOrder::Normal;
+		info.type = DialogType::Custom;
 
 		self = new PickItemDialog(info);
 
@@ -72,7 +72,7 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 {
 	result = -1;
 	parent = params.parent;
-	order = parent ? static_cast<DialogBox*>(parent)->order : ORDER_NORMAL;
+	order = GetOrder(params.parent);
 	event = params.event;
 	getTooltip = params.getTooltip;
 	if(params.getTooltip)

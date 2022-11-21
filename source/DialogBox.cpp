@@ -47,10 +47,27 @@ void DialogBox::Update(float dt)
 	{
 		if(bts[0].state != Button::DISABLED)
 		{
-			if(input->PressedRelease(Key::Escape))
-				result = (type == DIALOG_OK ? BUTTON_OK : BUTTON_NO);
-			else if(input->PressedRelease(Key::Enter) || input->PressedRelease(Key::Spacebar))
-				result = (type == DIALOG_OK ? BUTTON_OK : BUTTON_YES);
+			switch(type)
+			{
+			case DialogType::Ok:
+				if(input->PressedRelease(Key::Escape) || input->PressedRelease(Key::Enter) || input->PressedRelease(Key::Spacebar))
+					result = BUTTON_OK;
+				break;
+			case DialogType::YesNo:
+				if(input->PressedRelease(Key::Enter) || input->PressedRelease(Key::Spacebar))
+					result = BUTTON_YES;
+				else if(input->PressedRelease(Key::Escape))
+					result = BUTTON_NO;
+				break;
+			case DialogType::YesNoCancel:
+				if(input->PressedRelease(Key::N1))
+					result = BUTTON_YES;
+				else if(input->PressedRelease(Key::N2))
+					result = BUTTON_NO;
+				else if(input->PressedRelease(Key::Escape))
+					result = BUTTON_CANCEL;
+				break;
+			}
 		}
 	}
 
@@ -73,6 +90,13 @@ void DialogBox::Event(GuiEvent e)
 		for(uint i = 0; i < bts.size(); ++i)
 			bts[i].global_pos = bts[i].pos + pos;
 	}
+}
+
+//=================================================================================================
+DialogOrder DialogBox::GetOrder(Control* control)
+{
+	DialogBox* dialogBox = dynamic_cast<DialogBox*>(control);
+	return dialogBox ? dialogBox->order : DialogOrder::Normal;
 }
 
 //=================================================================================================

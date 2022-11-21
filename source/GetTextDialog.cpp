@@ -129,8 +129,8 @@ GetTextDialog* GetTextDialog::Show(const GetTextDialogParams& params)
 		info.name = "GetTextDialog";
 		info.parent = nullptr;
 		info.pause = false;
-		info.order = ORDER_NORMAL;
-		info.type = DIALOG_CUSTOM;
+		info.order = DialogOrder::Normal;
+		info.type = DialogType::Custom;
 
 		self = new GetTextDialog(info);
 		self->bts.resize(2);
@@ -191,7 +191,7 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	// ustaw parametry
 	result = -1;
 	parent = params.parent;
-	order = parent ? static_cast<DialogBox*>(parent)->order : ORDER_NORMAL;
+	order = GetOrder(params.parent);
 	event = params.event;
 	validate = params.validate;
 	text = params.text;

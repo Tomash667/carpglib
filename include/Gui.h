@@ -1,6 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "DialogInfo.h"
 #include "Font.h"
 #include "VertexDeclaration.h"
 #include "Key.h"
@@ -53,43 +54,6 @@ enum CursorMode
 	CURSOR_HOVER,
 	CURSOR_TEXT,
 	CURSOR_MAX
-};
-
-//-----------------------------------------------------------------------------
-enum GUI_DialogType
-{
-	DIALOG_OK,
-	DIALOG_YESNO,
-	DIALOG_CUSTOM
-};
-
-//-----------------------------------------------------------------------------
-typedef delegate<void(int)> DialogEvent;
-typedef delegate<void(int, int)> DialogEvent2;
-
-//-----------------------------------------------------------------------------
-enum DialogOrder
-{
-	ORDER_NORMAL,
-	ORDER_TOP,
-	ORDER_TOPMOST
-};
-
-//-----------------------------------------------------------------------------
-struct DialogInfo
-{
-	DialogInfo() : custom_names(nullptr), img(nullptr), have_tick(false), ticked(false), auto_wrap(false), type(DIALOG_OK), parent(nullptr), order(ORDER_TOP), pause(true)
-	{
-	}
-
-	string name, text;
-	GUI_DialogType type;
-	Control* parent;
-	DialogEvent event;
-	DialogOrder order;
-	cstring* custom_names, tick_text;
-	Texture* img;
-	bool pause, have_tick, ticked, auto_wrap;
 };
 
 //-----------------------------------------------------------------------------

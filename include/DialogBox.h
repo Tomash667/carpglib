@@ -42,8 +42,10 @@ public:
 
 	void CloseDialog() { gui->CloseDialog(this); }
 
+	static DialogOrder GetOrder(Control* control);
+
 	string name, text;
-	GUI_DialogType type;
+	DialogType type;
 	DialogEvent event;
 	DialogOrder order;
 	vector<Button> bts;

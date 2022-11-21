@@ -169,8 +169,8 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 		info.name = "GetNumberDialog";
 		info.parent = nullptr;
 		info.pause = false;
-		info.order = ORDER_NORMAL;
-		info.type = DIALOG_CUSTOM;
+		info.order = DialogOrder::Normal;
+		info.type = DialogType::Custom;
 
 		self = new GetNumberDialog(info);
 		self->size = Int2(300, 200);
@@ -207,7 +207,7 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 
 	self->result = -1;
 	self->parent = parent;
-	self->order = static_cast<DialogBox*>(parent)->order;
+	self->order = GetOrder(parent);
 	self->event = event;
 	self->text = text;
 	self->min_value = min_value;
