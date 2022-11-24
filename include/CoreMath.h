@@ -399,6 +399,12 @@ inline constexpr bool IsPow2(T x)
 	return ((x > 0) && ((x & (x - 1)) == 0));
 }
 
+template<typename T>
+inline constexpr T Pow2(const T value)
+{
+	return value * value;
+}
+
 // Round up to next highest power of 2
 template<typename T>
 inline constexpr T NextPow2(T x)
