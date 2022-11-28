@@ -35,4 +35,5 @@ public:
 	MeshInstance* lastMeshInst;
 	CamMode mode;
 	bool details;
+	BasicShader* shader;
 };
