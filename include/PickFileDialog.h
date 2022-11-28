@@ -33,8 +33,6 @@ public:
 	using LayoutControl<layout::PickFileDialog>::layout;
 
 	static void Show(const PickFileDialogOptions& options);
-	static void Destroy();
-
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;

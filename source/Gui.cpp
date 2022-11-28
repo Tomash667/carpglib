@@ -25,6 +25,7 @@ fontLoader(nullptr), lastClick(Key::LeftButton), lastClickTimer(1.f)
 Gui::~Gui()
 {
 	DeleteElements(created_dialogs);
+	DeleteElements(registeredControls);
 	delete master_layout;
 	delete layer;
 	delete dialog_layer;
@@ -910,7 +911,6 @@ void Gui::Update(float dt, float mouse_speed)
 {
 	// update cursor
 	cursor_mode = CURSOR_NORMAL;
-	mouse_wheel = app::input->GetMouseWheel();
 	prev_cursor_pos = cursor_pos;
 	if(NeedCursor() && mouse_speed > 0)
 	{
@@ -2350,4 +2350,11 @@ void Gui::SetLayout(Layout* master_layout)
 	this->master_layout = master_layout;
 	if(!layout)
 		layout = master_layout->Get<layout::Gui>();
+}
+
+//=================================================================================================
+void Gui::RegisterControl(Control* control)
+{
+	assert(control);
+	registeredControls.push_back(control);
 }

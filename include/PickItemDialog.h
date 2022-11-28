@@ -40,6 +40,7 @@ class PickItemDialog : public DialogBox, public LayoutControl<layout::PickItemDi
 public:
 	using LayoutControl<layout::PickItemDialog>::layout;
 
+	static PickItemDialog* Show(PickItemDialogParams& params);
 	void GetSelected(int& group, int& id) const
 	{
 		if(!selected.empty())
@@ -58,10 +59,6 @@ public:
 		return selected;
 	}
 
-	static PickItemDialog* Show(PickItemDialogParams& params);
-
-	static PickItemDialog* self;
-
 private:
 	enum Id
 	{
@@ -77,6 +74,7 @@ private:
 	void Create(PickItemDialogParams& params);
 	void OnSelect();
 
+	static PickItemDialog* self;
 	FlowContainer flow;
 	TooltipController::Callback get_tooltip;
 	int multiple;

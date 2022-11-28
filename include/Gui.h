@@ -216,13 +216,13 @@ public:
 		assert(key >= Key::LeftButton && key <= Key::X2Button);
 		return doubleclk[(int)key - 1];
 	}
+	void RegisterControl(Control* control);
 
 	Matrix mViewProj;
 	Int2 cursor_pos, prev_cursor_pos, wnd_size;
 	CursorMode cursor_mode;
 	cstring txOk, txYes, txNo, txCancel;
 	Control* focused_ctrl;
-	float mouse_wheel;
 
 private:
 	struct DrawLineContext
@@ -249,6 +249,7 @@ private:
 	FontLoader* fontLoader;
 	GuiShader* shader;
 	vector<DialogBox*> created_dialogs;
+	vector<Control*> registeredControls;
 	Container* layer, *dialog_layer;
 	VGui vBuf[256 * 6], vBuf2[256 * 6];
 	HitboxContext tmpHitboxContext;

@@ -16,16 +16,14 @@ public:
 	};
 
 	static GetNumberDialog* Show(Control* parent, DialogEvent event, cstring text, int min_value, int max_value, int* value);
-
-	explicit GetNumberDialog(const DialogInfo& info);
-
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
-	static GetNumberDialog* self;
-
 private:
+	explicit GetNumberDialog(const DialogInfo& info);
+
+	static GetNumberDialog* self;
 	int min_value, max_value;
 	int* value;
 	TextBox textBox;

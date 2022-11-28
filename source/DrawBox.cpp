@@ -27,7 +27,7 @@ void DrawBox::Update(float dt)
 {
 	if(mouse_focus)
 	{
-		float change = gui->mouse_wheel;
+		float change = input->GetMouseWheel();
 		if(change > 0)
 		{
 			while(change > 0)

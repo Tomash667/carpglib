@@ -116,15 +116,13 @@ PickFileDialog::~PickFileDialog()
 {
 }
 
-void PickFileDialog::Destroy()
-{
-	delete self;
-}
-
 void PickFileDialog::Show(const PickFileDialogOptions& options)
 {
 	if(!self)
+	{
 		self = new PickFileDialog;
+		gui->RegisterControl(self);
+	}
 	self->Setup(options);
 	gui->GetOverlay()->ShowDialog(self);
 }

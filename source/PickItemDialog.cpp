@@ -56,6 +56,8 @@ PickItemDialog* PickItemDialog::Show(PickItemDialogParams& params)
 		info.type = DIALOG_CUSTOM;
 
 		self = new PickItemDialog(info);
+
+		gui->RegisterControl(self);
 	}
 
 	self->Create(params);

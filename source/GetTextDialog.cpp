@@ -20,8 +20,8 @@ void GetTextDialog::Draw(ControlDrawData*)
 	for(int i = 0; i < 2; ++i)
 		bts[i].Draw();
 
-	Rect r = { global_pos.x + 16,global_pos.y + 16,global_pos.x + size.x,global_pos.y + size.y };
-	gui->DrawText(layout->font, text, DTF_CENTER, Color::Black, r);
+	Rect r = { global_pos.x + 16, global_pos.y + 16, global_pos.x + size.x - 16, global_pos.y + 60 - 16 };
+	gui->DrawText(layout->font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 
 	textBox.Draw();
 }
@@ -132,6 +132,8 @@ GetTextDialog* GetTextDialog::Show(const GetTextDialogParams& params)
 		bt2.parent = self;
 
 		self->textBox.pos = Int2(25, 60);
+
+		gui->RegisterControl(self);
 	}
 
 	self->Create(params);
@@ -151,7 +153,7 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	if(!params.multiline || params.lines < 1)
 		lines = 1;
 
-	size = Int2(params.width, 180 + lines * 20);
+	size = Int2(params.width, 140 + lines * 20);
 	textBox.size = Int2(params.width - 50, 15 + lines * 20);
 	textBox.SetMultiline(params.multiline);
 	textBox.limit = params.limit;

@@ -32,18 +32,15 @@ public:
 	};
 
 	static GetTextDialog* Show(const GetTextDialogParams& params);
-
-	explicit GetTextDialog(const DialogInfo& info);
-
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
-	static GetTextDialog* self;
-
 private:
+	explicit GetTextDialog(const DialogInfo& info);
 	void Create(const GetTextDialogParams& params);
 
+	static GetTextDialog* self;
 	string* input_str;
 	TextBox textBox;
 	bool singleline;
