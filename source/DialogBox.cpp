@@ -76,6 +76,13 @@ void DialogBox::Event(GuiEvent e)
 }
 
 //=================================================================================================
+DialogOrder DialogBox::GetOrder(Control* control)
+{
+	DialogBox* dialogBox = dynamic_cast<DialogBox*>(control);
+	return dialogBox ? dialogBox->order : DialogOrder::Normal;
+}
+
+//=================================================================================================
 DialogWithCheckbox::DialogWithCheckbox(const DialogInfo& info) : DialogBox(info)
 {
 }

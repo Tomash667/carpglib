@@ -34,13 +34,13 @@ class DialogBox : public Control, public LayoutControl<layout::DialogBox>
 public:
 	explicit DialogBox(const DialogInfo& info);
 
-	void Draw() override;
-	void Update(float dt) override;
-	void Event(GuiEvent e) override;
-
-	virtual void Setup(const Int2& textSize) {}
-
 	void CloseDialog() { gui->CloseDialog(this); }
+	void Draw() override;
+	void Event(GuiEvent e) override;
+	virtual void Setup(const Int2& textSize) {}
+	void Update(float dt) override;
+
+	static DialogOrder GetOrder(Control* control);
 
 	string name, text;
 	GUI_DialogType type;
@@ -73,10 +73,9 @@ class DialogWithImage : public DialogBox
 public:
 	explicit DialogWithImage(const DialogInfo& info);
 
+	const Int2& GetImageSize() const { return imgSize; }
 	void Draw() override;
 	void Setup(const Int2& textSize) override;
-
-	const Int2& GetImageSize() const { return imgSize; }
 
 private:
 	Texture* img;

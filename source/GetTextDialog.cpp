@@ -42,10 +42,11 @@ void GetTextDialog::Update(float dt)
 		textBox.focus = true;
 		textBox.Update(dt);
 
-		if(textBox.GetText().empty())
-			bts[1].state = Button::DISABLED;
-		else if(bts[1].state == Button::DISABLED)
-			bts[1].state = Button::NONE;
+		if(prevText != textBox.GetText())
+		{
+			prevText = textBox.GetText();
+			UpdateButtons();
+		}
 
 		if(result == -1)
 		{
@@ -111,7 +112,7 @@ GetTextDialog* GetTextDialog::Show(const GetTextDialogParams& params)
 		info.name = "GetTextDialog";
 		info.parent = nullptr;
 		info.pause = false;
-		info.order = ORDER_NORMAL;
+		info.order = DialogOrder::Normal;
 		info.type = DIALOG_CUSTOM;
 
 		self = new GetTextDialog(info);
@@ -173,14 +174,36 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	// ustaw parametry
 	result = -1;
 	parent = params.parent;
-	order = parent ? static_cast<DialogBox*>(parent)->order : ORDER_NORMAL;
+	order = GetOrder(params.parent);
 	event = params.event;
+	validate = params.validate;
 	text = params.text;
 	inputStr = params.inputStr;
+	prevText = *inputStr;
+	UpdateButtons();
 
 	// ustaw pozycjê
 	pos = globalPos = (gui->wndSize - size) / 2;
 	bt1.globalPos = bt1.pos + globalPos;
 	bt2.globalPos = bt2.pos + globalPos;
 	textBox.globalPos = textBox.pos + globalPos;
+}
+
+//=================================================================================================
+void GetTextDialog::UpdateButtons()
+{
+	const string& text = textBox.GetText();
+	bool ok;
+	if(validate)
+		ok = validate(text);
+	else
+		ok = !text.empty();
+
+	if(ok)
+	{
+		if(bts[1].state == Button::DISABLED)
+			bts[1].state = Button::NONE;
+	}
+	else
+		bts[1].state = Button::DISABLED;
 }

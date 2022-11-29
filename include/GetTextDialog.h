@@ -14,6 +14,7 @@ struct GetTextDialogParams
 
 	Control* parent;
 	DialogEvent event;
+	delegate<bool(const string&)> validate;
 	cstring text;
 	string* inputStr;
 	int limit, lines, width;
@@ -39,9 +40,12 @@ public:
 private:
 	explicit GetTextDialog(const DialogInfo& info);
 	void Create(const GetTextDialogParams& params);
+	void UpdateButtons();
 
 	static GetTextDialog* self;
 	string* inputStr;
+	string prevText;
+	delegate<bool(const string&)> validate;
 	TextBox textBox;
 	bool singleline;
 };

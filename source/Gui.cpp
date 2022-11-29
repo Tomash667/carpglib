@@ -1303,7 +1303,7 @@ void Gui::ShowDialog(DialogBox* d)
 		d->focus = true;
 		d->Event(GuiEvent_GainFocus);
 	}
-	else if(d->order == ORDER_TOPMOST)
+	else if(d->order == DialogOrder::TopMost)
 	{
 		// dezaktywuj aktualny i aktywuj nowy
 		Control* prev_d = dialogLayer->Top();
@@ -1316,7 +1316,7 @@ void Gui::ShowDialog(DialogBox* d)
 	else
 	{
 		// szukaj pierwszego dialogu który jest wy¿ej ni¿ ten
-		DialogOrder above_order = DialogOrder(d->order + 1);
+		DialogOrder above_order = DialogOrder((int)d->order + 1);
 		vector<DialogBox*>& ctrls = (vector<DialogBox*>&)dialogLayer->GetControls();
 		vector<DialogBox*>::iterator first_above = ctrls.end();
 		for(vector<DialogBox*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
@@ -1492,15 +1492,8 @@ void Gui::SimpleDialog(cstring text, Control* parent, cstring name)
 	di.parent = parent;
 	di.pause = false;
 	di.text = text;
-	di.order = ORDER_NORMAL;
+	di.order = DialogBox::GetOrder(parent);
 	di.type = DIALOG_OK;
-
-	if(parent)
-	{
-		DialogBox* d = dynamic_cast<DialogBox*>(parent);
-		if(d)
-			di.order = d->order;
-	}
 
 	ShowDialog(di);
 }

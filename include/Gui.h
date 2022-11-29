@@ -51,18 +51,18 @@ typedef delegate<void(int)> DialogEvent;
 typedef delegate<void(int, int)> DialogEvent2;
 
 //-----------------------------------------------------------------------------
-enum DialogOrder
+enum class DialogOrder
 {
-	ORDER_NORMAL,
-	ORDER_TOP,
-	ORDER_TOPMOST
+	Normal,
+	Top,
+	TopMost
 };
 
 //-----------------------------------------------------------------------------
 struct DialogInfo
 {
-	DialogInfo() : customNames(nullptr), img(nullptr), haveTick(false), ticked(false), autoWrap(false), type(DIALOG_OK), parent(nullptr), order(ORDER_TOP),
-		pause(true)
+	DialogInfo() : customNames(nullptr), img(nullptr), haveTick(false), ticked(false), autoWrap(false), type(DIALOG_OK), parent(nullptr),
+		order(DialogOrder::Top), pause(true)
 	{
 	}
 

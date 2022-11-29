@@ -172,7 +172,7 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 		info.name = "GetNumberDialog";
 		info.parent = nullptr;
 		info.pause = false;
-		info.order = ORDER_NORMAL;
+		info.order = DialogOrder::Normal;
 		info.type = DIALOG_CUSTOM;
 
 		self = new GetNumberDialog(info);
@@ -210,7 +210,7 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 
 	self->result = -1;
 	self->parent = parent;
-	self->order = static_cast<DialogBox*>(parent)->order;
+	self->order = GetOrder(parent);
 	self->event = event;
 	self->text = text;
 	self->minValue = minValue;
