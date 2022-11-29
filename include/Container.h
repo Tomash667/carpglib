@@ -5,22 +5,22 @@
 
 //-----------------------------------------------------------------------------
 // Gui controls container
-// new_mode - delete childs, different auto focus
+// isNew - delete childs, different auto focus
 class Container : public Control
 {
 	friend class Gui;
 public:
-	explicit Container(bool new_mode = false) : Control(new_mode), auto_focus(false), focus_top(false), dont_focus(false), new_mode(new_mode)
+	explicit Container(bool isNew = false) : Control(isNew), autoFocus(false), focusTop(false), dontFocus(false)
 	{
 		focusable = true;
 	}
 	~Container();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	bool NeedCursor() const override;
-	void SetDisabled(bool new_disabled) override;
+	void SetDisabled(bool disabled) override;
 
 	void Add(Control* ctrl);
 	bool AnythingVisible() const;
@@ -33,9 +33,9 @@ public:
 		return ctrls.back();
 	}
 
-	bool auto_focus, focus_top, dont_focus;
+	bool autoFocus, focusTop, dontFocus;
 
 protected:
 	vector<Control*> ctrls;
-	bool inside_loop, new_mode;
+	bool insideLoop;
 };

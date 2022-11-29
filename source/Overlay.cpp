@@ -17,13 +17,13 @@ Overlay::~Overlay()
 		RemoveElement(ctrls, static_cast<Control*>(menu));
 }
 
-void Overlay::Draw(ControlDrawData*)
+void Overlay::Draw()
 {
 	Container::Draw();
 
 	for(GuiDialog* dialog : dialogs)
 	{
-		gui->DrawArea(Box2d::Create(Int2::Zero, gui->wnd_size), layout->background);
+		gui->DrawArea(Box2d::Create(Int2::Zero, gui->wndSize), layout->background);
 		dialog->Draw();
 	}
 
@@ -33,13 +33,13 @@ void Overlay::Draw(ControlDrawData*)
 
 void Overlay::Update(float dt)
 {
-	mouse_focus = true;
+	mouseFocus = true;
 	clicked = nullptr;
 
 	// close menu if old dialog window is open
 	if(gui->HaveDialog())
 	{
-		mouse_focus = false;
+		mouseFocus = false;
 		CloseMenus();
 	}
 
@@ -50,7 +50,7 @@ void Overlay::Update(float dt)
 	for(auto it = dialogs.rbegin(), end = dialogs.rend(); it != end; ++it)
 		UpdateControl(*it, dt);
 	if(!dialogs.empty())
-		mouse_focus = false;
+		mouseFocus = false;
 	for(GuiDialog* dialog : dialogs_to_close)
 		RemoveElement(dialogs, dialog);
 	dialogs_to_close.clear();
@@ -101,7 +101,7 @@ void Overlay::ShowDialog(GuiDialog* dialog)
 	CloseMenus();
 	dialogs.push_back(dialog);
 	dialog->Initialize();
-	dialog->SetPosition((gui->wnd_size - dialog->GetSize()) / 2);
+	dialog->SetPosition((gui->wndSize - dialog->GetSize()) / 2);
 }
 
 void Overlay::CloseDialog(GuiDialog* dialog)
@@ -128,10 +128,10 @@ void Overlay::CloseMenu(MenuStrip* menu)
 void Overlay::CheckFocus(Control* ctrl, bool pressed)
 {
 	assert(ctrl);
-	if(!ctrl->mouse_focus)
+	if(!ctrl->mouseFocus)
 		return;
 
-	ctrl->mouse_focus = false;
+	ctrl->mouseFocus = false;
 
 	if(input->PressedRelease(Key::LeftButton)
 		|| input->PressedRelease(Key::RightButton)

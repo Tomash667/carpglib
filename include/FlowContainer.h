@@ -70,35 +70,34 @@ public:
 	FlowContainer();
 	~FlowContainer();
 
-	void Update(float dt);
-	void Draw(ControlDrawData* cdd = nullptr);
 	FlowItem* Add();
 	void Clear();
-	// set group & index only if there is selection
-	void GetSelected(int& group, int& id);
-	void UpdateSize(const Int2& pos, const Int2& size, bool visible);
-	void UpdatePos(const Int2& parent_pos);
-	void Reposition();
+	void Draw();
 	FlowItem* Find(int group, int id);
-	void ResetScrollbar() { scroll.offset = 0.f; }
-	void SetItems(vector<FlowItem*>& _items);
 	int GetHeight() const { return scroll.total; }
+	void GetSelected(int& group, int& id);
+	void Reposition();
+	void ResetScrollbar() { scroll.offset = 0.f; }
+	void SetItems(vector<FlowItem*>& items);
+	void Update(float dt);
+	void UpdatePos(const Int2& parentPos);
+	void UpdateSize(const Int2& pos, const Int2& size, bool visible);
+	void UpdateText();
 	void UpdateText(FlowItem* item, cstring text, bool batch = false);
 	void UpdateText(int group, int id, cstring text, bool batch = false) { UpdateText(Find(group, id), text, batch); }
-	void UpdateText();
 
 	vector<FlowItem*> items;
-	ButtonEvent on_button;
-	CustomButton* button_tex;
-	Int2 button_size;
-	bool word_warp, allow_select;
-	VoidF on_select;
+	ButtonEvent onButton;
+	VoidF onSelect;
+	CustomButton* buttonTex;
+	Int2 buttonSize;
+	bool wordWrap, allowSelect;
 	FlowItem* selected;
 
 private:
-	void UpdateScrollbar(int new_size);
+	void UpdateScrollbar(int size);
 
 	int group, id;
 	Scrollbar scroll;
-	bool batch_changes;
+	bool batchChanges;
 };

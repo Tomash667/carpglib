@@ -11,9 +11,9 @@ SplitPanel::~SplitPanel()
 	delete panel2;
 }
 
-void SplitPanel::Draw(ControlDrawData*)
+void SplitPanel::Draw()
 {
-	gui->DrawArea(Box2d::Create(global_pos, size), layout->background);
+	gui->DrawArea(Box2d::Create(globalPos, size), layout->background);
 	gui->DrawArea(Box2d(split_global), horizontal ? layout->horizontal : layout->vertical);
 
 	panel1->Draw();
@@ -91,10 +91,10 @@ void SplitPanel::Update(GuiEvent e, bool resize, bool move)
 
 	if(move)
 	{
-		global_pos = pos + parent->global_pos;
-		panel1->global_pos = panel1->pos + global_pos;
-		panel2->global_pos = panel2->pos + global_pos;
-		split_global += global_pos;
+		globalPos = pos + parent->globalPos;
+		panel1->globalPos = panel1->pos + globalPos;
+		panel2->globalPos = panel2->pos + globalPos;
+		split_global += globalPos;
 	}
 
 	if(e != GuiEvent_Initialize)

@@ -33,7 +33,7 @@ public:
 	using LayoutControl<layout::PickFileDialog>::layout;
 
 	static void Show(const PickFileDialogOptions& options);
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;
 
@@ -82,6 +82,7 @@ private:
 	bool result, preview;
 };
 
+//-----------------------------------------------------------------------------
 struct PickFileDialogOptions
 {
 	PickFileDialog::Handler handler;

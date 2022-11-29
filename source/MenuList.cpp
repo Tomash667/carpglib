@@ -16,17 +16,17 @@ MenuList::~MenuList()
 }
 
 //=================================================================================================
-void MenuList::Draw(ControlDrawData*)
+void MenuList::Draw()
 {
-	gui->DrawArea(Box2d::Create(global_pos, size), layout->box);
+	gui->DrawArea(Box2d::Create(globalPos, size), layout->box);
 
 	if(selected != -1)
 	{
-		Rect r2 = { global_pos.x + 4, global_pos.y + 4 + selected * 20, global_pos.x + size.x - 4, global_pos.y + 24 + selected * 20 };
+		Rect r2 = { globalPos.x + 4, globalPos.y + 4 + selected * 20, globalPos.x + size.x - 4, globalPos.y + 24 + selected * 20 };
 		gui->DrawArea(Box2d(r2), layout->selection);
 	}
 
-	Rect rect = { global_pos.x + 5, global_pos.y + 5, global_pos.x + size.x - 5, global_pos.y + 25 };
+	Rect rect = { globalPos.x + 5, globalPos.y + 5, globalPos.x + size.x - 5, globalPos.y + 25 };
 	for(GuiElement* e : items)
 	{
 		gui->DrawText(layout->font, e->ToString(), DTF_SINGLELINE, Color::Black, rect, &rect);
@@ -39,9 +39,9 @@ void MenuList::Draw(ControlDrawData*)
 void MenuList::Update(float dt)
 {
 	selected = -1;
-	if(IsInside(gui->cursor_pos))
+	if(IsInside(gui->cursorPos))
 	{
-		selected = (gui->cursor_pos.y - global_pos.y) / 20;
+		selected = (gui->cursorPos.y - globalPos.y) / 20;
 		if(selected >= (int)items.size())
 			selected = -1;
 	}

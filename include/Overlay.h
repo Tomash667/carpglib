@@ -23,7 +23,7 @@ public:
 	~Overlay();
 
 	bool NeedCursor() const override { return true; }
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 
 	void CloseDialog(GuiDialog* dialog);

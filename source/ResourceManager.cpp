@@ -9,7 +9,7 @@
 #include "SoundManager.h"
 #include "WICTextureLoader.h"
 
-ResourceManager* app::res_mgr;
+ResourceManager* app::resMgr;
 
 extern byte box_qmsh[];
 extern byte sphere_qmsh[];
@@ -630,7 +630,7 @@ void ResourceManager::LoadVertexData(VertexData* vd)
 //=================================================================================================
 void ResourceManager::LoadSoundOrMusic(Sound* sound)
 {
-	int result = app::sound_mgr->LoadSound(sound);
+	int result = app::soundMgr->LoadSound(sound);
 	if(result != 0)
 		throw Format("ResourceManager: Failed to load %s '%s' (%d).", sound->type == ResourceType::Music ? "music" : "sound", sound->path.c_str(), result);
 }

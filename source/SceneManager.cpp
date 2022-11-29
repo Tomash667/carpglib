@@ -8,7 +8,7 @@
 #include "SceneNode.h"
 #include "SuperShader.h"
 
-SceneManager* app::scene_mgr;
+SceneManager* app::sceneMgr;
 
 //=================================================================================================
 SceneManager::SceneManager() : use_lighting(true), use_fog(true), use_normalmap(true), use_specularmap(true)

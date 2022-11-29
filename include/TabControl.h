@@ -75,7 +75,7 @@ public:
 	~TabControl();
 
 	void Dock(Control* c) override;
-	void Draw(ControlDrawData* cdd) override;
+	void Draw() override;
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;
 

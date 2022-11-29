@@ -9,12 +9,12 @@ InputTextBox::InputTextBox() : added(false), background_color(Color::None)
 }
 
 //=================================================================================================
-void InputTextBox::Draw(ControlDrawData*)
+void InputTextBox::Draw()
 {
 	// t³o
 	if(background_color != Color::None)
 	{
-		Rect r0 = { global_pos.x, global_pos.y, global_pos.x + textbox_size.x, global_pos.y + textbox_size.y };
+		Rect r0 = { globalPos.x, globalPos.y, globalPos.x + textbox_size.x, globalPos.y + textbox_size.y };
 		gui->DrawArea(background_color, r0);
 
 		r0.Top() = inputbox_pos.y;
@@ -23,13 +23,13 @@ void InputTextBox::Draw(ControlDrawData*)
 	}
 
 	// box na tekst
-	gui->DrawArea(Box2d::Create(global_pos, textbox_size), layout->box);
+	gui->DrawArea(Box2d::Create(globalPos, textbox_size), layout->box);
 
 	// box na input
 	gui->DrawArea(Box2d::Create(inputbox_pos, inputbox_size), layout->box);
 
 	// tekst
-	Rect rc = { global_pos.x + 4, global_pos.y + 4, global_pos.x + textbox_size.x - 4, global_pos.y + textbox_size.y - 4 };
+	Rect rc = { globalPos.x + 4, globalPos.y + 4, globalPos.x + textbox_size.x - 4, globalPos.y + textbox_size.y - 4 };
 	Rect r = { rc.Left(), rc.Top() - int(scrollbar.offset), rc.Right(), rc.Bottom() - int(scrollbar.offset) - 20 };
 	gui->DrawText(layout->font, text, 0, Color::Black, r, &rc, nullptr, nullptr, &lines);
 
@@ -44,15 +44,15 @@ void InputTextBox::Draw(ControlDrawData*)
 //=================================================================================================
 void InputTextBox::Update(float dt)
 {
-	if(mouse_focus)
+	if(mouseFocus)
 	{
-		if(input->Focus() && IsInside(gui->cursor_pos))
+		if(input->Focus() && IsInside(gui->cursorPos))
 			scrollbar.ApplyMouseWheel();
 
 		bool release_key = false;
-		if(PointInRect(gui->cursor_pos, inputbox_pos, inputbox_size))
+		if(Rect::IsInside(gui->cursorPos, inputbox_pos, inputbox_size))
 		{
-			gui->cursor_mode = CURSOR_TEXT;
+			gui->SetCursorMode(CURSOR_TEXT);
 			if(!focus && input->Focus() && input->PressedRelease(Key::LeftButton))
 				focus = true;
 		}
@@ -62,7 +62,7 @@ void InputTextBox::Update(float dt)
 			release_key = true;
 		}
 
-		scrollbar.mouse_focus = mouse_focus;
+		scrollbar.mouseFocus = mouseFocus;
 		scrollbar.Update(dt);
 		if(release_key)
 			input->Released(Key::LeftButton);
@@ -186,19 +186,19 @@ void InputTextBox::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_Moved)
 	{
-		global_pos = pos + parent->global_pos;
-		inputbox_pos = global_pos + Int2(0, textbox_size.y + 6);
-		scrollbar.global_pos = global_pos + scrollbar.pos;
+		globalPos = pos + parent->globalPos;
+		inputbox_pos = globalPos + Int2(0, textbox_size.y + 6);
+		scrollbar.globalPos = globalPos + scrollbar.pos;
 	}
 	else if(e == GuiEvent_Resize)
 	{
-		global_pos = parent->global_pos;
+		globalPos = parent->globalPos;
 		size = parent->size;
 		textbox_size = size - Int2(18, 30);
-		inputbox_pos = global_pos + Int2(0, textbox_size.y + 6);
+		inputbox_pos = globalPos + Int2(0, textbox_size.y + 6);
 		inputbox_size = Int2(textbox_size.x, 24);
 		scrollbar.pos = Int2(textbox_size.x + 2, 0);
-		scrollbar.global_pos = global_pos + scrollbar.pos;
+		scrollbar.globalPos = globalPos + scrollbar.pos;
 		scrollbar.size = Int2(16, textbox_size.y);
 		scrollbar.part = textbox_size.y - 8;
 
@@ -258,14 +258,14 @@ void InputTextBox::OnChar(char c)
 void InputTextBox::Init()
 {
 	textbox_size = size - Int2(18, 30);
-	inputbox_pos = global_pos + Int2(0, textbox_size.y + 6);
+	inputbox_pos = globalPos + Int2(0, textbox_size.y + 6);
 	inputbox_size = Int2(textbox_size.x, 24);
 	scrollbar.pos = Int2(textbox_size.x + 2, 0);
 	scrollbar.size = Int2(16, textbox_size.y);
 	scrollbar.total = 0;
 	scrollbar.part = textbox_size.y - 8;
 	scrollbar.offset = 0.f;
-	scrollbar.global_pos = global_pos + scrollbar.pos;
+	scrollbar.globalPos = globalPos + scrollbar.pos;
 	cache.resize(max_cache);
 	Reset();
 }

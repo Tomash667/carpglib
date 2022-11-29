@@ -27,7 +27,7 @@ void GuiContainer::Update(float dt)
 	for(Iter it = items.begin(), end = items.end(); it != end; ++it)
 	{
 		if(IsSet(it->second, F_MOUSE_FOCUS))
-			it->first->mouse_focus = focus;
+			it->first->mouseFocus = focus;
 		if(focus)
 		{
 			if(!focus_ctrl && IsSet(it->second, F_FOCUS))
@@ -37,7 +37,7 @@ void GuiContainer::Update(float dt)
 			}
 			if(IsSet(it->second, F_CLICK_TO_FOCUS))
 			{
-				if(it->first->IsInside(gui->cursor_pos) && (input->Pressed(Key::LeftButton) || input->Pressed(Key::RightButton)))
+				if(it->first->IsInside(gui->cursorPos) && (input->Pressed(Key::LeftButton) || input->Pressed(Key::RightButton)))
 				{
 					if(!it->first->focus)
 					{
@@ -169,10 +169,10 @@ void GuiContainer::LostFocus()
 }
 
 //=================================================================================================
-void GuiContainer::Move(const Int2& global_pos)
+void GuiContainer::Move(const Int2& globalPos)
 {
 	for(Iter it = items.begin(), end = items.end(); it != end; ++it)
-		it->first->global_pos = global_pos + it->first->pos;
+		it->first->globalPos = globalPos + it->first->pos;
 }
 
 //=================================================================================================

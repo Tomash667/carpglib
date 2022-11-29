@@ -121,7 +121,7 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 		stream.Read(sub.name);
 		const string& tex_name = stream.ReadString1();
 		if(!tex_name.empty())
-			sub.tex = app::res_mgr->LoadInstant<Texture>(tex_name);
+			sub.tex = app::resMgr->LoadInstant<Texture>(tex_name);
 		else
 			sub.tex = nullptr;
 
@@ -137,7 +137,7 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 			if(!tex_name.empty())
 			{
 				head.flags |= F_NORMAL_MAP;
-				sub.tex_normal = app::res_mgr->LoadInstant<Texture>(tex_name);
+				sub.tex_normal = app::resMgr->LoadInstant<Texture>(tex_name);
 				stream.Read(sub.normal_factor);
 			}
 			else
@@ -151,7 +151,7 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 		if(!tex_name_specular.empty())
 		{
 			head.flags |= F_SPECULAR_MAP;
-			sub.tex_specular = app::res_mgr->LoadInstant<Texture>(tex_name_specular);
+			sub.tex_specular = app::resMgr->LoadInstant<Texture>(tex_name_specular);
 			stream.Read(sub.specular_factor);
 			stream.Read(sub.specular_color_factor);
 		}

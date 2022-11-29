@@ -16,17 +16,17 @@ Slider::Slider() : hold(false), minstep(false)
 }
 
 //=================================================================================================
-void Slider::Draw(ControlDrawData*)
+void Slider::Draw()
 {
 	const int D = 150;
 
-	bt[0].global_pos = bt[0].pos = global_pos;
-	bt[1].global_pos = bt[1].pos = bt[0].pos + Int2(D, 0);
+	bt[0].globalPos = bt[0].pos = globalPos;
+	bt[1].globalPos = bt[1].pos = bt[0].pos + Int2(D, 0);
 
 	for(int i = 0; i < 2; ++i)
 		bt[i].Draw();
 
-	Rect r0 = { global_pos.x + 32, global_pos.y - 16, global_pos.x + D, global_pos.y + 48 };
+	Rect r0 = { globalPos.x + 32, globalPos.y - 16, globalPos.x + D, globalPos.y + 48 };
 	gui->DrawText(layout->font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r0);
 }
 
@@ -35,7 +35,7 @@ void Slider::Update(float dt)
 {
 	for(int i = 0; i < 2; ++i)
 	{
-		bt[i].mouse_focus = mouse_focus;
+		bt[i].mouseFocus = mouseFocus;
 		bt[i].Update(dt);
 	}
 

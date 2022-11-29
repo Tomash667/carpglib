@@ -29,7 +29,7 @@ public:
 	SplitPanel();
 	~SplitPanel();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;
 

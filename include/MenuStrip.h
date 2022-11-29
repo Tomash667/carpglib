@@ -54,13 +54,13 @@ public:
 	MenuStrip(vector<GuiElement*>& items, int min_width = 0);
 	~MenuStrip();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void OnChar(char c) override;
 	void Update(float dt) override;
 
 	// internal! call only from Overlay -> Move to better place
 	void ShowAt(const Int2& pos);
-	void ShowMenu() { ShowMenu(gui->cursor_pos); }
+	void ShowMenu() { ShowMenu(gui->cursorPos); }
 	void ShowMenu(const Int2& pos);
 	void OnClose()
 	{

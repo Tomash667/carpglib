@@ -16,19 +16,19 @@
 Gui* app::gui;
 
 //=================================================================================================
-Gui::Gui() : cursor_mode(CURSOR_NORMAL), focused_ctrl(nullptr), master_layout(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), shader(nullptr),
-fontLoader(nullptr), lastClick(Key::LeftButton), lastClickTimer(1.f)
+Gui::Gui() : cursorMode(CURSOR_NORMAL), focusedCtrl(nullptr), masterLayout(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), shader(nullptr),
+fontLoader(nullptr), lastClick(Key::LeftButton), lastClickTimer(1.f), clipRect(nullptr)
 {
 }
 
 //=================================================================================================
 Gui::~Gui()
 {
-	DeleteElements(created_dialogs);
+	DeleteElements(createdDialogs);
 	DeleteElements(registeredControls);
-	delete master_layout;
+	delete masterLayout;
 	delete layer;
-	delete dialog_layer;
+	delete dialogLayer;
 	delete fontLoader;
 }
 
@@ -37,13 +37,13 @@ void Gui::Init()
 {
 	Control::input = app::input;
 	Control::gui = this;
-	wnd_size = app::engine->GetClientSize();
-	cursor_pos = wnd_size / 2;
+	wndSize = app::engine->GetClientSize();
+	cursorPos = wndSize / 2;
 
 	layer = new Container;
-	layer->auto_focus = true;
-	dialog_layer = new Container;
-	dialog_layer->focus_top = true;
+	layer->autoFocus = true;
+	dialogLayer = new Container;
+	dialogLayer->focusTop = true;
 
 	app::render->RegisterShader(shader = new GuiShader);
 
@@ -82,7 +82,7 @@ Font* Gui::GetFont(cstring name, int size, int weight, int outline)
 	assert(name && size > 0 && InRange(weight, 1, 9) && outline >= 0);
 
 	string res_name = Format("%s;%d;%d;%d", name, size, weight, outline);
-	Font* existing_font = app::res_mgr->TryGet<Font>(res_name);
+	Font* existing_font = app::resMgr->TryGet<Font>(res_name);
 	if(existing_font)
 		return existing_font;
 
@@ -91,7 +91,7 @@ Font* Gui::GetFont(cstring name, int size, int weight, int outline)
 	font->state = ResourceState::Loaded;
 	font->path = res_name;
 	font->filename = font->path.c_str();
-	app::res_mgr->AddResource(font);
+	app::resMgr->AddResource(font);
 
 	return font;
 }
@@ -392,8 +392,8 @@ void Gui::DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int
 						assert(ctx.hc->open == HitboxOpen::No);
 						ctx.hc->open = HitboxOpen::Group;
 						ctx.hc->region.Left() = INT_MAX;
-						ctx.hc->group_index = index;
-						ctx.hc->group_index2 = index2;
+						ctx.hc->groupIndex = index;
+						ctx.hc->groupIndex2 = index2;
 					}
 				}
 				else if(c == '-')
@@ -407,8 +407,8 @@ void Gui::DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int
 						{
 							Hitbox& h = Add1(ctx.hc->hitbox);
 							h.rect = ctx.hc->region;
-							h.index = ctx.hc->group_index;
-							h.index2 = ctx.hc->group_index2;
+							h.index = ctx.hc->groupIndex;
+							h.index2 = ctx.hc->groupIndex2;
 						}
 					}
 				}
@@ -562,8 +562,8 @@ void Gui::DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int
 			h.index = ctx.hc->counter;
 		else
 		{
-			h.index = ctx.hc->group_index;
-			h.index2 = ctx.hc->group_index2;
+			h.index = ctx.hc->groupIndex;
+			h.index2 = ctx.hc->groupIndex2;
 		}
 		ctx.hc->region.Left() = INT_MAX;
 	}
@@ -741,7 +741,7 @@ void Gui::DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, 
 //=================================================================================================
 void Gui::Draw(bool draw_layers, bool draw_dialogs)
 {
-	wnd_size = app::engine->GetClientSize();
+	wndSize = app::engine->GetClientSize();
 
 	if(!draw_layers && !draw_dialogs)
 		return;
@@ -752,16 +752,16 @@ void Gui::Draw(bool draw_layers, bool draw_dialogs)
 	if(draw_layers)
 		layer->Draw();
 	if(draw_dialogs)
-		dialog_layer->Draw();
+		dialogLayer->Draw();
 
 	// draw cursor
 	if(NeedCursor())
 	{
 		assert(layout);
-		Int2 pos = cursor_pos;
-		if(cursor_mode == CURSOR_TEXT)
+		Int2 pos = cursorPos;
+		if(cursorMode == CURSOR_TEXT)
 			pos -= Int2(3, 8);
-		DrawSprite(layout->cursor[cursor_mode], pos);
+		DrawSprite(layout->cursor[cursorMode], pos);
 	}
 }
 
@@ -910,23 +910,23 @@ void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Colo
 void Gui::Update(float dt, float mouse_speed)
 {
 	// update cursor
-	cursor_mode = CURSOR_NORMAL;
-	prev_cursor_pos = cursor_pos;
+	cursorMode = CURSOR_NORMAL;
+	prevCursorPos = cursorPos;
 	if(NeedCursor() && mouse_speed > 0)
 	{
-		cursor_pos += app::input->GetMouseDif() * mouse_speed;
-		if(cursor_pos.x < 0)
-			cursor_pos.x = 0;
-		if(cursor_pos.y < 0)
-			cursor_pos.y = 0;
-		if(cursor_pos.x >= wnd_size.x)
-			cursor_pos.x = wnd_size.x - 1;
-		if(cursor_pos.y >= wnd_size.y)
-			cursor_pos.y = wnd_size.y - 1;
-		app::engine->SetUnlockPoint(cursor_pos);
+		cursorPos += app::input->GetMouseDif() * mouse_speed;
+		if(cursorPos.x < 0)
+			cursorPos.x = 0;
+		if(cursorPos.y < 0)
+			cursorPos.y = 0;
+		if(cursorPos.x >= wndSize.x)
+			cursorPos.x = wndSize.x - 1;
+		if(cursorPos.y >= wndSize.y)
+			cursorPos.y = wndSize.y - 1;
+		app::engine->SetUnlockPoint(cursorPos);
 	}
 	else
-		app::engine->SetUnlockPoint(wnd_size / 2);
+		app::engine->SetUnlockPoint(wndSize / 2);
 
 	// handle double click
 	for(int i = 0; i < 5; ++i)
@@ -937,7 +937,7 @@ void Gui::Update(float dt, float mouse_speed)
 		const Key key = Key(i + 1);
 		if(app::input->Pressed(key))
 		{
-			if(lastClick == key && lastClickTimer <= 0.5f && abs(cursor_pos.x - lastClickPos.x) <= 4 && abs(cursor_pos.y - lastClickPos.y) <= 4)
+			if(lastClick == key && lastClickTimer <= 0.5f && abs(cursorPos.x - lastClickPos.x) <= 4 && abs(cursorPos.y - lastClickPos.y) <= 4)
 			{
 				doubleclk[i] = true;
 				lastClickTimer = 1.f;
@@ -946,7 +946,7 @@ void Gui::Update(float dt, float mouse_speed)
 			{
 				lastClick = key;
 				lastClickTimer = 0.f;
-				lastClickPos = cursor_pos;
+				lastClickPos = cursorPos;
 			}
 			handled = true;
 			break;
@@ -955,33 +955,33 @@ void Gui::Update(float dt, float mouse_speed)
 	if(!handled)
 		lastClickTimer += dt;
 
-	layer->focus = dialog_layer->Empty();
+	layer->focus = dialogLayer->Empty();
 
-	if(focused_ctrl)
+	if(focusedCtrl)
 	{
-		if(!focused_ctrl->visible)
-			focused_ctrl = nullptr;
-		else if(dialog_layer->Empty())
+		if(!focusedCtrl->visible)
+			focusedCtrl = nullptr;
+		else if(dialogLayer->Empty())
 		{
-			layer->dont_focus = true;
+			layer->dontFocus = true;
 			layer->Update(dt);
-			layer->dont_focus = false;
+			layer->dontFocus = false;
 		}
 		else
 		{
-			focused_ctrl->LostFocus();
-			focused_ctrl = nullptr;
+			focusedCtrl->LostFocus();
+			focusedCtrl = nullptr;
 		}
 	}
 
-	if(!focused_ctrl)
+	if(!focusedCtrl)
 	{
-		dialog_layer->focus = true;
-		dialog_layer->Update(dt);
+		dialogLayer->focus = true;
+		dialogLayer->Update(dt);
 		layer->Update(dt);
 	}
 
-	app::engine->SetUnlockPoint(wnd_size / 2);
+	app::engine->SetUnlockPoint(wndSize / 2);
 }
 
 //=================================================================================================
@@ -1177,14 +1177,14 @@ void Gui::SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* 
 //=================================================================================================
 DialogBox* Gui::ShowDialog(const DialogInfo& info)
 {
-	assert(!(info.have_tick && info.img)); // not allowed together
+	assert(!(info.haveTick && info.img)); // TODO
 
 	DialogBox* d;
 	int extra_limit = 0;
 	Int2 min_size(0, 0);
 
 	// create dialog
-	if(info.have_tick)
+	if(info.haveTick)
 		d = new DialogWithCheckbox(info);
 	else if(info.img)
 	{
@@ -1196,15 +1196,15 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 	}
 	else
 		d = new DialogBox(info);
-	created_dialogs.push_back(d);
+	createdDialogs.push_back(d);
 
 	// calculate size
 	Font* font = d->layout->font;
 	Int2 text_size;
-	if(!info.auto_wrap)
+	if(!info.autoWrap)
 		text_size = font->CalculateSize(info.text);
 	else
-		text_size = font->CalculateSizeWrap(info.text, wnd_size, 24 + 32 + extra_limit);
+		text_size = font->CalculateSizeWrap(info.text, wndSize, 24 + 32 + extra_limit);
 	d->size = text_size + Int2(24 + extra_limit, 24 + max(0, min_size.y - text_size.y));
 
 	// set buttons
@@ -1224,10 +1224,10 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 		Button& bt1 = d->bts[0],
 			& bt2 = d->bts[1];
 
-		if(info.custom_names)
+		if(info.customNames)
 		{
-			bt1.text = (info.custom_names[0] ? info.custom_names[0] : txYes);
-			bt2.text = (info.custom_names[1] ? info.custom_names[1] : txNo);
+			bt1.text = (info.customNames[0] ? info.customNames[0] : txYes);
+			bt2.text = (info.customNames[1] ? info.customNames[1] : txNo);
 		}
 		else
 		{
@@ -1253,15 +1253,15 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 	d->size.y += d->bts[0].size.y + 8;
 
 	// checkbox
-	if(info.have_tick)
+	if(info.haveTick)
 	{
 		d->size.y += 32;
 		DialogWithCheckbox* dwc = static_cast<DialogWithCheckbox*>(d);
-		dwc->checkbox.bt_size = Int2(32, 32);
+		dwc->checkbox.btSize = Int2(32, 32);
 		dwc->checkbox.checked = info.ticked;
 		dwc->checkbox.id = GuiEvent_Custom + BUTTON_CHECKED;
 		dwc->checkbox.parent = dwc;
-		dwc->checkbox.text = info.tick_text;
+		dwc->checkbox.text = info.tickText;
 		dwc->checkbox.pos = Int2(12, 40);
 		dwc->checkbox.size = Int2(d->size.x - 24, 32);
 	}
@@ -1283,7 +1283,7 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 	}
 
 	// dodaj
-	d->need_delete = true;
+	d->needDelete = true;
 	d->Setup(text_size);
 	ShowDialog(d);
 
@@ -1296,20 +1296,20 @@ void Gui::ShowDialog(DialogBox* d)
 	d->visible = true;
 	d->Event(GuiEvent_Show);
 
-	if(dialog_layer->Empty())
+	if(dialogLayer->Empty())
 	{
 		// nie ma ¿adnych innych dialogów, aktywuj
-		dialog_layer->Add(d);
+		dialogLayer->Add(d);
 		d->focus = true;
 		d->Event(GuiEvent_GainFocus);
 	}
 	else if(d->order == ORDER_TOPMOST)
 	{
 		// dezaktywuj aktualny i aktywuj nowy
-		Control* prev_d = dialog_layer->Top();
+		Control* prev_d = dialogLayer->Top();
 		prev_d->focus = false;
 		prev_d->Event(GuiEvent_LostFocus);
-		dialog_layer->Add(d);
+		dialogLayer->Add(d);
 		d->focus = true;
 		d->Event(GuiEvent_GainFocus);
 	}
@@ -1317,7 +1317,7 @@ void Gui::ShowDialog(DialogBox* d)
 	{
 		// szukaj pierwszego dialogu który jest wy¿ej ni¿ ten
 		DialogOrder above_order = DialogOrder(d->order + 1);
-		vector<DialogBox*>& ctrls = (vector<DialogBox*>&)dialog_layer->GetControls();
+		vector<DialogBox*>& ctrls = (vector<DialogBox*>&)dialogLayer->GetControls();
 		vector<DialogBox*>::iterator first_above = ctrls.end();
 		for(vector<DialogBox*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
 		{
@@ -1331,10 +1331,10 @@ void Gui::ShowDialog(DialogBox* d)
 		if(first_above == ctrls.end())
 		{
 			// brak nadrzêdnego dialogu, dezaktywuj aktualny i aktywuj nowy
-			Control* prev_d = dialog_layer->Top();
+			Control* prev_d = dialogLayer->Top();
 			prev_d->focus = false;
 			prev_d->Event(GuiEvent_LostFocus);
-			dialog_layer->Add(d);
+			dialogLayer->Add(d);
 			d->focus = true;
 			d->Event(GuiEvent_GainFocus);
 		}
@@ -1345,7 +1345,7 @@ void Gui::ShowDialog(DialogBox* d)
 		}
 	}
 
-	dialog_layer->inside_loop = false;
+	dialogLayer->insideLoop = false;
 }
 
 //=================================================================================================
@@ -1353,14 +1353,14 @@ bool Gui::CloseDialog(DialogBox* d)
 {
 	assert(d);
 
-	if(dialog_layer->Empty() || !HaveDialog(d))
+	if(dialogLayer->Empty() || !HaveDialog(d))
 		return false;
 
-	Control* prev_top = dialog_layer->Top();
+	Control* prev_top = dialogLayer->Top();
 	CloseDialogInternal(d);
-	if(!dialog_layer->Empty() && prev_top != dialog_layer->Top())
+	if(!dialogLayer->Empty() && prev_top != dialogLayer->Top())
 	{
-		Control* next_d = dialog_layer->Top();
+		Control* next_d = dialogLayer->Top();
 		next_d->focus = true;
 		next_d->Event(GuiEvent_GainFocus);
 	}
@@ -1375,11 +1375,11 @@ void Gui::CloseDialogInternal(DialogBox* d)
 
 	d->Event(GuiEvent_Close);
 	d->visible = false;
-	dialog_layer->Remove(d);
+	dialogLayer->Remove(d);
 
-	if(!dialog_layer->Empty())
+	if(!dialogLayer->Empty())
 	{
-		vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+		vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialogLayer->GetControls();
 		static vector<DialogBox*> to_remove;
 		for(vector<DialogBox*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
 		{
@@ -1394,9 +1394,9 @@ void Gui::CloseDialogInternal(DialogBox* d)
 		}
 	}
 
-	if(d->need_delete)
+	if(d->needDelete)
 	{
-		RemoveElement(created_dialogs, d);
+		RemoveElement(createdDialogs, d);
 		delete d;
 	}
 }
@@ -1406,17 +1406,17 @@ bool Gui::HaveTopDialog(cstring name) const
 {
 	assert(name);
 
-	if(dialog_layer->Empty())
+	if(dialogLayer->Empty())
 		return false;
 
-	DialogBox* d = static_cast<DialogBox*>(dialog_layer->Top());
+	DialogBox* d = static_cast<DialogBox*>(dialogLayer->Top());
 	return d->name == name;
 }
 
 //=================================================================================================
 bool Gui::HaveDialog() const
 {
-	return !dialog_layer->Empty();
+	return !dialogLayer->Empty();
 }
 
 //=================================================================================================
@@ -1432,27 +1432,27 @@ void Gui::DrawSpriteFull(Texture* t, const Color color)
 	v->tex = Vec2(0, 0);
 	++v;
 
-	v->pos = Vec2(float(wnd_size.x), 0);
+	v->pos = Vec2(float(wndSize.x), 0);
 	v->color = col;
 	v->tex = Vec2(1, 0);
 	++v;
 
-	v->pos = Vec2(0, float(wnd_size.y));
+	v->pos = Vec2(0, float(wndSize.y));
 	v->color = col;
 	v->tex = Vec2(0, 1);
 	++v;
 
-	v->pos = Vec2(0, float(wnd_size.y));
+	v->pos = Vec2(0, float(wndSize.y));
 	v->color = col;
 	v->tex = Vec2(0, 1);
 	++v;
 
-	v->pos = Vec2(float(wnd_size.x), 0);
+	v->pos = Vec2(float(wndSize.x), 0);
 	v->color = col;
 	v->tex = Vec2(1, 0);
 	++v;
 
-	v->pos = Vec2(float(wnd_size.x), float(wnd_size.y));
+	v->pos = Vec2(float(wndSize.x), float(wndSize.y));
 	v->color = col;
 	v->tex = Vec2(1, 1);
 	++v;
@@ -1463,7 +1463,7 @@ void Gui::DrawSpriteFull(Texture* t, const Color color)
 //=================================================================================================
 void Gui::DrawSpriteFullWrap(Texture* t, Color color)
 {
-	Rect rect(Int2::Zero, wnd_size);
+	Rect rect(Int2::Zero, wndSize);
 	shader->SetWrap(true);
 	DrawSpriteRectPart(t, rect, rect, color);
 	shader->SetWrap(false);
@@ -1475,7 +1475,7 @@ void Gui::OnChar(char c)
 	if((c != (char)Key::Backspace && c != (char)Key::Enter && byte(c) < 0x20) || c == '`')
 		return;
 
-	for(vector<OnCharHandler*>::iterator it = on_char.begin(), end = on_char.end(); it != end; ++it)
+	for(vector<OnCharHandler*>::iterator it = onChar.begin(), end = onChar.end(); it != end; ++it)
 	{
 		Control* ctrl = dynamic_cast<Control*>(*it);
 		if(ctrl->visible)
@@ -1550,7 +1550,7 @@ void Gui::DrawSpriteRect(Texture* t, const Rect& rect, Color color)
 bool Gui::HaveDialog(cstring name)
 {
 	assert(name);
-	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialogLayer->GetControls();
 	for(DialogBox* dialog : dialogs)
 	{
 		if(dialog->name == name)
@@ -1563,7 +1563,7 @@ bool Gui::HaveDialog(cstring name)
 bool Gui::HaveDialog(DialogBox* dialog)
 {
 	assert(dialog);
-	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialogLayer->GetControls();
 	for(auto d : dialogs)
 	{
 		if(d == dialog)
@@ -1575,17 +1575,17 @@ bool Gui::HaveDialog(DialogBox* dialog)
 //=================================================================================================
 bool Gui::AnythingVisible() const
 {
-	return !dialog_layer->Empty() || layer->AnythingVisible();
+	return !dialogLayer->Empty() || layer->AnythingVisible();
 }
 
 //=================================================================================================
 void Gui::OnResize()
 {
-	wnd_size = app::engine->GetClientSize();
-	cursor_pos = wnd_size / 2;
-	app::engine->SetUnlockPoint(cursor_pos);
+	wndSize = app::engine->GetClientSize();
+	cursorPos = wndSize / 2;
+	app::engine->SetUnlockPoint(cursorPos);
 	layer->Event(GuiEvent_WindowResize);
-	dialog_layer->Event(GuiEvent_WindowResize);
+	dialogLayer->Event(GuiEvent_WindowResize);
 }
 
 //=================================================================================================
@@ -1772,7 +1772,7 @@ void Gui::DrawLine(const Vec2& from, const Vec2& to, Color color, float width)
 //=================================================================================================
 bool Gui::NeedCursor()
 {
-	if(!dialog_layer->Empty())
+	if(!dialogLayer->Empty())
 		return true;
 	else
 		return layer->visible && layer->NeedCursor();
@@ -1821,8 +1821,8 @@ bool Gui::To2dPoint(const Vec3& pos, Int2& pt)
 		v3 /= v4.w;
 	}
 
-	pt.x = int(v3.x * (wnd_size.x / 2) + (wnd_size.x / 2));
-	pt.y = -int(v3.y * (wnd_size.y / 2) - (wnd_size.y / 2));
+	pt.x = int(v3.x * (wndSize.x / 2) + (wndSize.x / 2));
+	pt.y = -int(v3.y * (wndSize.y / 2) - (wndSize.y / 2));
 
 	return true;
 }
@@ -1901,28 +1901,28 @@ void Gui::DrawSpriteTransformPart(Texture* t, const Matrix& mat, const Rect& par
 //=================================================================================================
 void Gui::CloseDialogs()
 {
-	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialogLayer->GetControls();
 	for(DialogBox* dialog : dialogs)
 	{
-		if(!OR2_EQ(dialog->type, DIALOG_OK, DIALOG_YESNO))
+		if(dialog->type == DIALOG_CUSTOM)
 			dialog->Event(GuiEvent_Close);
-		if(dialog->need_delete)
+		if(dialog->needDelete)
 		{
 			if(IsDebug())
-				RemoveElementTry(created_dialogs, dialog);
+				RemoveElementTry(createdDialogs, dialog);
 			delete dialog;
 		}
 	}
 	dialogs.clear();
-	dialog_layer->inside_loop = false;
-	assert(created_dialogs.empty());
-	created_dialogs.clear();
+	dialogLayer->insideLoop = false;
+	assert(createdDialogs.empty());
+	createdDialogs.clear();
 }
 
 //=================================================================================================
 bool Gui::HavePauseDialog() const
 {
-	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialogLayer->GetControls();
 	for(vector<DialogBox*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
 	{
 		if((*it)->pause)
@@ -1935,9 +1935,9 @@ bool Gui::HavePauseDialog() const
 DialogBox* Gui::GetDialog(cstring name)
 {
 	assert(name);
-	if(dialog_layer->Empty())
+	if(dialogLayer->Empty())
 		return nullptr;
-	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialogLayer->GetControls();
 	for(vector<DialogBox*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
 	{
 		if((*it)->name == name)
@@ -2192,7 +2192,7 @@ bool Gui::DrawText2(DrawTextOptions& options)
 			// tekst pionowo po œrodku lub na dole
 			uint line_begin, line_end, line_index = 0;
 			int line_width;
-			while(options.font->SplitLine(line_begin, line_end, line_width, line_index, options.str, options.str_length, options.flags, width))
+			while(options.font->SplitLine(line_begin, line_end, line_width, line_index, options.str, options.strLength, options.flags, width))
 			{
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
@@ -2230,7 +2230,7 @@ bool Gui::DrawText2(DrawTextOptions& options)
 		}
 		else
 		{
-			for(uint line_index = options.lines_start, lines_max = min(options.lines_end, options.lines->size()); line_index < lines_max; ++line_index)
+			for(uint line_index = options.linesStart, lines_max = min(options.linesEnd, options.lines->size()); line_index < lines_max; ++line_index)
 			{
 				auto& line = options.lines->at(line_index);
 
@@ -2280,7 +2280,7 @@ bool Gui::DrawText2(DrawTextOptions& options)
 			// oblicz wszystkie linijki
 			uint line_begin, line_end, line_index = 0;
 			int line_width;
-			while(options.font->SplitLine(line_begin, line_end, line_width, line_index, options.str, options.str_length, options.flags, width))
+			while(options.font->SplitLine(line_begin, line_end, line_width, line_index, options.str, options.strLength, options.flags, width))
 				lines_data.push_back(TextLine(line_begin, line_end, line_width));
 
 			options.lines = &lines_data;
@@ -2293,7 +2293,7 @@ bool Gui::DrawText2(DrawTextOptions& options)
 		else
 			y = options.rect.Top() + (options.rect.SizeY() - int(options.lines->size()) * options.font->height) / 2;
 
-		for(uint line_index = options.lines_start, lines_max = min(options.lines_end, options.lines->size()); line_index < lines_max; ++line_index)
+		for(uint line_index = options.linesStart, lines_max = min(options.linesEnd, options.lines->size()); line_index < lines_max; ++line_index)
 		{
 			auto& line = options.lines->at(line_index);
 
@@ -2344,12 +2344,12 @@ bool Gui::DrawText2(DrawTextOptions& options)
 }
 
 //=================================================================================================
-void Gui::SetLayout(Layout* master_layout)
+void Gui::SetLayout(Layout* masterLayout)
 {
-	assert(master_layout);
-	this->master_layout = master_layout;
+	assert(masterLayout);
+	this->masterLayout = masterLayout;
 	if(!layout)
-		layout = master_layout->Get<layout::Gui>();
+		layout = masterLayout->Get<layout::Gui>();
 }
 
 //=================================================================================================
@@ -2357,4 +2357,12 @@ void Gui::RegisterControl(Control* control)
 {
 	assert(control);
 	registeredControls.push_back(control);
+}
+
+//=================================================================================================
+Box2d* Gui::SetClipRect(Box2d* clipRect)
+{
+	Box2d* prevClipRect = this->clipRect;
+	this->clipRect = clipRect;
+	return prevClipRect;
 }

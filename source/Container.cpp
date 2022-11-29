@@ -4,7 +4,7 @@
 //=================================================================================================
 Container::~Container()
 {
-	if(new_mode)
+	if(isNew)
 		DeleteElements(ctrls);
 }
 
@@ -14,7 +14,7 @@ void Container::Add(Control* ctrl)
 	assert(ctrl);
 	ctrl->parent = this;
 	ctrls.push_back(ctrl);
-	inside_loop = false;
+	insideLoop = false;
 
 	if(IsInitialized())
 		ctrl->Initialize();
@@ -35,25 +35,25 @@ bool Container::AnythingVisible() const
 }
 
 //=================================================================================================
-void Container::Draw(ControlDrawData* cdd)
+void Container::Draw()
 {
 	for(Control* c : ctrls)
 	{
 		if(!c->visible)
 			continue;
 
-		if(auto_focus)
+		if(autoFocus)
 			c->focus = focus;
-		c->Draw(cdd);
+		c->Draw();
 	}
 }
 
 //=================================================================================================
 void Container::Update(float dt)
 {
-	inside_loop = true;
+	insideLoop = true;
 
-	if(new_mode)
+	if(isNew)
 	{
 		for(vector<Control*>::reverse_iterator it = ctrls.rbegin(), end = ctrls.rend(); it != end; ++it)
 		{
@@ -61,11 +61,11 @@ void Container::Update(float dt)
 			if(!c.visible)
 				continue;
 			UpdateControl(&c, dt);
-			if(!inside_loop)
+			if(!insideLoop)
 				return;
 		}
 	}
-	else if(dont_focus)
+	else if(dontFocus)
 	{
 		for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
 		{
@@ -73,12 +73,12 @@ void Container::Update(float dt)
 			{
 				(*it)->LostFocus();
 				(*it)->Update(dt);
-				if(!inside_loop)
+				if(!insideLoop)
 					return;
 			}
 		}
 	}
-	else if(focus_top)
+	else if(focusTop)
 	{
 		for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
 		{
@@ -89,7 +89,7 @@ void Container::Update(float dt)
 				else
 					(*it)->LostFocus();
 				(*it)->Update(dt);
-				if(!inside_loop)
+				if(!insideLoop)
 					return;
 			}
 		}
@@ -119,19 +119,19 @@ void Container::Update(float dt)
 				else
 					c->LostFocus();
 				c->Update(dt);
-				if(!inside_loop)
+				if(!insideLoop)
 					return;
 			}
 		}
 	}
 
-	inside_loop = false;
+	insideLoop = false;
 }
 
 //=================================================================================================
 void Container::Event(GuiEvent e)
 {
-	if(new_mode)
+	if(isNew)
 	{
 		switch(e)
 		{
@@ -148,7 +148,7 @@ void Container::Event(GuiEvent e)
 		case GuiEvent_Moved:
 			for(Control* c : ctrls)
 			{
-				c->global_pos = c->pos + global_pos;
+				c->globalPos = c->pos + globalPos;
 				c->Event(GuiEvent_Moved);
 			}
 			break;
@@ -173,14 +173,14 @@ bool Container::NeedCursor() const
 }
 
 //=================================================================================================
-void Container::SetDisabled(bool new_disabled)
+void Container::SetDisabled(bool disabled)
 {
-	if(new_disabled == disabled)
+	if(this->disabled == disabled)
 		return;
 
 	for(Control* c : ctrls)
-		c->SetDisabled(new_disabled);
-	disabled = new_disabled;
+		c->SetDisabled(disabled);
+	this->disabled = disabled;
 }
 
 //=================================================================================================
@@ -200,5 +200,5 @@ void Container::Remove(Control* ctrl)
 	else
 		RemoveElementOrder(ctrls, ctrl);
 
-	inside_loop = false;
+	insideLoop = false;
 }

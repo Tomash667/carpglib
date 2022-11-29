@@ -348,9 +348,9 @@ void TreeView::CalculatePos(TreeNode* node, Int2& offset, int& max_width)
 	}
 }
 
-void TreeView::Draw(ControlDrawData*)
+void TreeView::Draw()
 {
-	Box2d box = Box2d::Create(global_pos, size);
+	Box2d box = Box2d::Create(globalPos, size);
 	gui->DrawArea(box, layout->background);
 
 	if(hscrollbar.visible)
@@ -358,17 +358,18 @@ void TreeView::Draw(ControlDrawData*)
 	if(vscrollbar.visible)
 		vscrollbar.Draw();
 
-	clip_rect = Box2d::Create(global_pos + Int2(1, 1), area_size);
+	clip_rect = Box2d::Create(globalPos + Int2(1, 1), area_size);
 	Draw(this);
 
 	if(text_box->visible)
 	{
-		ControlDrawData cdd = { &clip_rect };
-		text_box->Draw(&cdd);
+		Box2d* prevClipRect = gui->SetClipRect(&clip_rect);
+		text_box->Draw();
+		gui->SetClipRect(prevClipRect);
 	}
 
 	if(drag == DRAG_MOVED)
-		gui->DrawSprite(layout->drag_n_drop, gui->cursor_pos + Int2(16, 16));
+		gui->DrawSprite(layout->drag_n_drop, gui->cursorPos + Int2(16, 16));
 }
 
 void TreeView::Draw(TreeNode* node)
@@ -381,7 +382,7 @@ void TreeView::Draw(TreeNode* node)
 	{
 		// selection
 		if(node->selected || (drag == DRAG_MOVED && node == above && CanDragAndDrop()))
-			gui->DrawArea(Box2d::Create(global_pos + Int2(1, 1 + offsety), Int2(area_size.x, item_height)), layout->selected, &clip_rect);
+			gui->DrawArea(Box2d::Create(globalPos + Int2(1, 1 + offsety), Int2(area_size.x, item_height)), layout->selected, &clip_rect);
 
 		if(node->IsDir())
 		{
@@ -401,7 +402,7 @@ void TreeView::Draw(TreeNode* node)
 				else
 					area = &layout->button_down;
 			}
-			gui->DrawArea(Box2d::Create(global_pos + Int2(node->pos.x + offsetx, offsety), area->size), *area, &clip_rect);
+			gui->DrawArea(Box2d::Create(globalPos + Int2(node->pos.x + offsetx, offsety), area->size), *area, &clip_rect);
 			offsetx += area->size.x;
 		}
 
@@ -409,10 +410,10 @@ void TreeView::Draw(TreeNode* node)
 		if(node != edited)
 		{
 			const Rect r = {
-				global_pos.x + node->pos.x + offsetx,
-				global_pos.y + offsety,
-				global_pos.x + size.x,
-				global_pos.y + item_height + offsety
+				globalPos.x + node->pos.x + offsetx,
+				globalPos.y + offsety,
+				globalPos.x + size.x,
+				globalPos.y + item_height + offsety
 			};
 			const Rect clipRect(clip_rect);
 			gui->DrawText(layout->font, node->text, DTF_LEFT | DTF_VCENTER | DTF_SINGLELINE, layout->font_color, r, &clipRect);
@@ -441,19 +442,19 @@ void TreeView::Event(GuiEvent e)
 		vscrollbar.size = Int2(16, size.y);
 		vscrollbar.part = size.y;
 		vscrollbar.pos = Int2(size.x - 16, 0);
-		vscrollbar.global_pos = global_pos + vscrollbar.pos;
+		vscrollbar.globalPos = globalPos + vscrollbar.pos;
 		hscrollbar.size = Int2(size.x, 16);
 		hscrollbar.part = size.x;
 		hscrollbar.pos = Int2(0, size.y - 16);
-		hscrollbar.global_pos = global_pos + hscrollbar.pos;
+		hscrollbar.globalPos = globalPos + hscrollbar.pos;
 		CalculatePos();
 		break;
 	case GuiEvent_LostFocus:
 		drag = DRAG_NO;
 		break;
 	case GuiEvent_Moved:
-		vscrollbar.global_pos = global_pos + vscrollbar.pos;
-		hscrollbar.global_pos = global_pos + hscrollbar.pos;
+		vscrollbar.globalPos = globalPos + vscrollbar.pos;
+		hscrollbar.globalPos = globalPos + hscrollbar.pos;
 		break;
 	case GuiEvent_Resize:
 		break;
@@ -523,7 +524,7 @@ void TreeView::Update(float dt)
 	}
 
 	// scrollbars
-	bool old_mouse_focus = mouse_focus;
+	bool old_mouse_focus = mouseFocus;
 	if(hscrollbar.visible)
 	{
 		UpdateControl(&hscrollbar, dt);
@@ -539,7 +540,7 @@ void TreeView::Update(float dt)
 
 	// recursively update nodes
 	above = nullptr;
-	if(mouse_focus)
+	if(mouseFocus)
 		Update(this);
 
 	// drag & drop
@@ -550,7 +551,7 @@ void TreeView::Update(float dt)
 		{
 			const float DRAG_SCROLL_SPEED_MIN = 50.f;
 			const float DRAG_SCROLL_SPEED_MAX = 400.f;
-			int posy = gui->cursor_pos.y - global_pos.y;
+			int posy = gui->cursorPos.y - globalPos.y;
 			if(posy >= 0 && posy <= item_height * 2)
 			{
 				float speed = Lerp(DRAG_SCROLL_SPEED_MIN, DRAG_SCROLL_SPEED_MAX, ((float)(item_height * 2) - posy) / (item_height * 2));
@@ -674,7 +675,7 @@ bool TreeView::Update(TreeNode* node)
 
 	if(offsety + item_height >= 0)
 	{
-		if(gui->cursor_pos.y >= global_pos.y + offsety && gui->cursor_pos.y <= global_pos.y + offsety + item_height)
+		if(gui->cursorPos.y >= globalPos.y + offsety && gui->cursorPos.y <= globalPos.y + offsety + item_height)
 		{
 			above = node;
 
@@ -691,8 +692,8 @@ bool TreeView::Update(TreeNode* node)
 			}
 
 			int offsetx = -(int)hscrollbar.offset;
-			if(node->IsDir() && PointInRect(gui->cursor_pos, global_pos.x + node->pos.x + offsetx, global_pos.y + offsety,
-				global_pos.x + node->pos.x + 16 + offsetx, global_pos.y + offsety + item_height))
+			if(node->IsDir() && Rect::IsInside(gui->cursorPos, globalPos.x + node->pos.x + offsetx, globalPos.y + offsety,
+				globalPos.x + node->pos.x + 16 + offsetx, globalPos.y + offsety + item_height))
 			{
 				hover = node;
 				if(input->Pressed(Key::LeftButton))
@@ -1097,7 +1098,7 @@ void TreeView::SetAllCollapsed(bool new_collapsed)
 void TreeView::SetTextboxLocation()
 {
 	int startpos = edited->pos.x;
-	Int2 pos = global_pos + edited->pos;
+	Int2 pos = globalPos + edited->pos;
 	pos.x -= (int)hscrollbar.offset + 4;
 	pos.y -= (int)vscrollbar.offset + 2;
 	if(edited->IsDir())

@@ -56,7 +56,7 @@ Notification* Notifications::Add(cstring text, Texture* icon, float timer)
 }
 
 //=================================================================================================
-void Notifications::Draw(ControlDrawData*)
+void Notifications::Draw()
 {
 	if(notifications.empty())
 		return;
@@ -77,7 +77,7 @@ void Notifications::Draw(ControlDrawData*)
 			real_box_size.y += 40;
 
 		const int alpha = int(255 * n->t2);
-		Int2 offset(gui->wnd_size.x - real_box_size.x - 8, offset_y);
+		Int2 offset(gui->wndSize.x - real_box_size.x - 8, offset_y);
 		Color tint(255, 255, 255, alpha);
 
 		gui->DrawArea(Box2d::Create(offset, real_box_size), layout->box, nullptr, &tint);
@@ -179,20 +179,20 @@ void Notifications::Update(float dt)
 			{
 				real_box_size.y += 40;
 
-				Int2 offset(gui->wnd_size.x - real_box_size.x - 8, offset_y);
+				Int2 offset(gui->wndSize.x - real_box_size.x - 8, offset_y);
 				Rect rect = { offset.x + 8 + 64, offset.y + 8, offset.x + box_size.x - 8, offset.y + box_size.y - 8 };
 
 				int text_size2 = rect.SizeX();
-				if(PointInRect(gui->cursor_pos, Int2(rect.p1.x + 4, offset.y + real_box_size.y - 46), Int2(text_size2 / 2 - 8, 36)))
+				if(Rect::IsInside(gui->cursorPos, Int2(rect.p1.x + 4, offset.y + real_box_size.y - 46), Int2(text_size2 / 2 - 8, 36)))
 					n->active = 1;
-				else if(PointInRect(gui->cursor_pos, Int2(rect.p1.x + text_size2 / 2 + 4, offset.y + real_box_size.y - 46), Int2(text_size2 / 2 - 8, 36)))
+				else if(Rect::IsInside(gui->cursorPos, Int2(rect.p1.x + text_size2 / 2 + 4, offset.y + real_box_size.y - 46), Int2(text_size2 / 2 - 8, 36)))
 					n->active = 2;
 				else
 					n->active = 0;
 
 				if(n->active != 0 && !gui->HaveDialog())
 				{
-					gui->cursor_mode = CURSOR_HOVER;
+					gui->SetCursorMode(CURSOR_HOVER);
 					if(input->Pressed(Key::LeftButton))
 					{
 						n->callback(n->active == 1);

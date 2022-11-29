@@ -34,8 +34,8 @@ void FlowItem::Set(int _group, int _id, int _tex_id, bool disabled)
 }
 
 //=================================================================================================
-FlowContainer::FlowContainer() : id(-1), group(-1), on_button(nullptr), button_size(0, 0), word_warp(true), allow_select(false), selected(nullptr),
-batch_changes(false), button_tex(nullptr)
+FlowContainer::FlowContainer() : id(-1), group(-1), onButton(nullptr), buttonSize(0, 0), wordWrap(true), allowSelect(false), selected(nullptr),
+batchChanges(false), buttonTex(nullptr)
 {
 	size = Int2(-1, -1);
 }
@@ -53,9 +53,9 @@ void FlowContainer::Update(float dt)
 	group = -1;
 	id = -1;
 
-	if(mouse_focus)
+	if(mouseFocus)
 	{
-		if(IsInside(gui->cursor_pos))
+		if(IsInside(gui->cursorPos))
 		{
 			ok = true;
 
@@ -67,7 +67,7 @@ void FlowContainer::Update(float dt)
 
 			for(FlowItem* fi : items)
 			{
-				Int2 p = fi->pos - off + global_pos;
+				Int2 p = fi->pos - off + globalPos;
 				if(fi->type == FlowItem::Item)
 				{
 					if(have_button)
@@ -75,17 +75,17 @@ void FlowContainer::Update(float dt)
 						p.y -= 2;
 						have_button = false;
 					}
-					if(fi->group != -1 && PointInRect(gui->cursor_pos, p, fi->size))
+					if(fi->group != -1 && Rect::IsInside(gui->cursorPos, p, fi->size))
 					{
 						group = fi->group;
 						id = fi->id;
-						if(allow_select && fi->state != Button::DISABLED)
+						if(allowSelect && fi->state != Button::DISABLED)
 						{
-							gui->cursor_mode = CURSOR_HOVER;
-							if(on_select && input->Pressed(Key::LeftButton))
+							gui->SetCursorMode(CURSOR_HOVER);
+							if(onSelect && input->Pressed(Key::LeftButton))
 							{
 								selected = fi;
-								on_select();
+								onSelect();
 								return;
 							}
 						}
@@ -94,17 +94,17 @@ void FlowContainer::Update(float dt)
 				else if(fi->type == FlowItem::Button && fi->state != Button::DISABLED)
 				{
 					have_button = true;
-					if(PointInRect(gui->cursor_pos, p, fi->size))
+					if(Rect::IsInside(gui->cursorPos, p, fi->size))
 					{
 						group = fi->group;
 						id = fi->id;
-						gui->cursor_mode = CURSOR_HOVER;
+						gui->SetCursorMode(CURSOR_HOVER);
 						if(fi->state == Button::DOWN)
 						{
 							if(input->Up(Key::LeftButton))
 							{
 								fi->state = Button::HOVER;
-								on_button(fi->group, fi->id);
+								onButton(fi->group, fi->id);
 								return;
 							}
 						}
@@ -121,7 +121,7 @@ void FlowContainer::Update(float dt)
 			}
 		}
 
-		scroll.mouse_focus = mouse_focus;
+		scroll.mouseFocus = mouseFocus;
 		scroll.Update(dt);
 	}
 
@@ -136,32 +136,32 @@ void FlowContainer::Update(float dt)
 }
 
 //=================================================================================================
-void FlowContainer::Draw(ControlDrawData*)
+void FlowContainer::Draw()
 {
-	gui->DrawArea(Box2d::Create(global_pos, size - Int2(16, 0)), layout->box);
+	gui->DrawArea(Box2d::Create(globalPos, size - Int2(16, 0)), layout->box);
 
 	scroll.Draw();
 
 	int sizex = size.x - 16;
 
 	Rect rect;
-	Rect clip = Rect::Create(global_pos + Int2(2, 2), Int2(sizex - 2, size.y - 2));
+	Rect clip = Rect::Create(globalPos + Int2(2, 2), Int2(sizex - 2, size.y - 2));
 	int offset = (int)scroll.offset;
-	uint flags = (word_warp ? 0 : DTF_SINGLELINE) | DTF_PARSE_SPECIAL;
+	uint flags = (wordWrap ? 0 : DTF_SINGLELINE) | DTF_PARSE_SPECIAL;
 
 	for(FlowItem* fi : items)
 	{
 		if(fi->type != FlowItem::Button)
 		{
-			rect = Rect::Create(global_pos + fi->pos - Int2(0, offset), fi->size);
+			rect = Rect::Create(globalPos + fi->pos - Int2(0, offset), fi->size);
 
 			// text above box
-			if(rect.Bottom() < global_pos.y)
+			if(rect.Bottom() < globalPos.y)
 				continue;
 
 			if(fi->state == Button::DOWN)
 			{
-				Rect rs = { global_pos.x + 2, rect.Top(), global_pos.x + sizex, rect.Bottom() };
+				Rect rs = { globalPos.x + 2, rect.Top(), globalPos.x + sizex, rect.Bottom() };
 				Rect out;
 				if(Rect::Intersect(rs, clip, out))
 					gui->DrawArea(Box2d(out), layout->selection);
@@ -174,13 +174,13 @@ void FlowContainer::Draw(ControlDrawData*)
 		else
 		{
 			// button above or below box
-			if(global_pos.y + fi->pos.y - offset + fi->size.y < global_pos.y
-				|| global_pos.y + fi->pos.y - offset > global_pos.y + size.y)
+			if(globalPos.y + fi->pos.y - offset + fi->size.y < globalPos.y
+				|| globalPos.y + fi->pos.y - offset > globalPos.y + size.y)
 				continue;
 
-			const AreaLayout& area = button_tex[fi->tex_id].tex[fi->state];
+			const AreaLayout& area = buttonTex[fi->tex_id].tex[fi->state];
 			const Box2d clipRect(clip);
-			gui->DrawArea(Box2d::Create(global_pos + fi->pos - Int2(0, offset), area.size), area, &clipRect);
+			gui->DrawArea(Box2d::Create(globalPos + fi->pos - Int2(0, offset), area.size), area, &clipRect);
 		}
 	}
 }
@@ -197,10 +197,11 @@ FlowItem* FlowContainer::Add()
 void FlowContainer::Clear()
 {
 	FlowItem::Pool.Free(items);
-	batch_changes = false;
+	batchChanges = false;
 }
 
 //=================================================================================================
+// set group & index only if there is selection
 void FlowContainer::GetSelected(int& _group, int& _id)
 {
 	if(group != -1)
@@ -213,7 +214,7 @@ void FlowContainer::GetSelected(int& _group, int& _id)
 //=================================================================================================
 void FlowContainer::UpdateSize(const Int2& _pos, const Int2& _size, bool _visible)
 {
-	global_pos = pos = _pos;
+	globalPos = pos = _pos;
 	if(size.y != _size.y && _visible)
 	{
 		size = _size;
@@ -221,16 +222,16 @@ void FlowContainer::UpdateSize(const Int2& _pos, const Int2& _size, bool _visibl
 	}
 	else
 		size = _size;
-	scroll.global_pos = scroll.pos = global_pos + Int2(size.x - 17, 0);
+	scroll.globalPos = scroll.pos = globalPos + Int2(size.x - 17, 0);
 	scroll.size = Int2(16, size.y);
 	scroll.part = size.y;
 }
 
 //=================================================================================================
-void FlowContainer::UpdatePos(const Int2& parent_pos)
+void FlowContainer::UpdatePos(const Int2& parentPos)
 {
-	global_pos = pos + parent_pos;
-	scroll.global_pos = scroll.pos = global_pos + Int2(size.x - 17, 0);
+	globalPos = pos + parentPos;
+	scroll.globalPos = scroll.pos = globalPos + Int2(size.x - 17, 0);
 	scroll.size = Int2(16, size.y);
 	scroll.part = size.y;
 }
@@ -238,7 +239,7 @@ void FlowContainer::UpdatePos(const Int2& parent_pos)
 //=================================================================================================
 void FlowContainer::Reposition()
 {
-	int sizex = (word_warp ? size.x - 20 : 10000);
+	int sizex = (wordWrap ? size.x - 20 : 10000);
 	int y = 2;
 	bool have_button = false;
 
@@ -250,8 +251,8 @@ void FlowContainer::Reposition()
 			{
 				if(have_button)
 				{
-					fi->size = layout->font->CalculateSize(fi->text, sizex - 2 - button_size.x);
-					fi->pos = Int2(4 + button_size.x, y);
+					fi->size = layout->font->CalculateSize(fi->text, sizex - 2 - buttonSize.x);
+					fi->pos = Int2(4 + buttonSize.x, y);
 				}
 				else
 				{
@@ -269,7 +270,7 @@ void FlowContainer::Reposition()
 		}
 		else
 		{
-			fi->size = button_size;
+			fi->size = buttonSize;
 			fi->pos = Int2(2, y);
 			have_button = true;
 		}
@@ -291,10 +292,10 @@ FlowItem* FlowContainer::Find(int _group, int _id)
 }
 
 //=================================================================================================
-void FlowContainer::SetItems(vector<FlowItem*>& _items)
+void FlowContainer::SetItems(vector<FlowItem*>& items)
 {
 	Clear();
-	items = std::move(_items);
+	this->items = std::move(items);
 	Reposition();
 	ResetScrollbar();
 }
@@ -306,15 +307,15 @@ void FlowContainer::UpdateText(FlowItem* item, cstring text, bool batch)
 
 	item->text = text;
 
-	int sizex = (word_warp ? size.x - 20 : 10000);
-	Int2 new_size = layout->font->CalculateSize(text, (item->pos.x == 2 ? sizex : sizex - 2 - button_size.x));
+	int sizex = (wordWrap ? size.x - 20 : 10000);
+	Int2 new_size = layout->font->CalculateSize(text, (item->pos.x == 2 ? sizex : sizex - 2 - buttonSize.x));
 
 	if(new_size.y != item->size.y)
 	{
 		item->size = new_size;
 
 		if(batch)
-			batch_changes = true;
+			batchChanges = true;
 		else
 			UpdateText();
 	}
@@ -328,7 +329,7 @@ void FlowContainer::UpdateText(FlowItem* item, cstring text, bool batch)
 //=================================================================================================
 void FlowContainer::UpdateText()
 {
-	batch_changes = false;
+	batchChanges = false;
 
 	int y = 2;
 	bool have_button = false;
@@ -338,7 +339,7 @@ void FlowContainer::UpdateText()
 		if(fi->type != FlowItem::Button)
 		{
 			if(fi->type != FlowItem::Section && have_button)
-				fi->pos = Int2(4 + button_size.x, y);
+				fi->pos = Int2(4 + buttonSize.x, y);
 			else
 				fi->pos = Int2(2, y);
 			have_button = false;
@@ -355,9 +356,9 @@ void FlowContainer::UpdateText()
 }
 
 //=================================================================================================
-void FlowContainer::UpdateScrollbar(int new_size)
+void FlowContainer::UpdateScrollbar(int size)
 {
-	scroll.total = new_size;
+	scroll.total = size;
 	if(scroll.offset + scroll.part > scroll.total)
 		scroll.offset = max(0.f, float(scroll.total - scroll.part));
 }

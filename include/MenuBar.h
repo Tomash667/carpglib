@@ -48,7 +48,7 @@ public:
 	MenuBar();
 	~MenuBar();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 

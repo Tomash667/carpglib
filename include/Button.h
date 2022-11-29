@@ -34,18 +34,16 @@ public:
 
 	Button();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
-	void Update(float dt) override;
-
+	void Draw() override;
 	DialogEvent GetHandler() const { return handler; }
-
-	void SetHandler(DialogEvent new_handler) { handler = new_handler; }
+	void SetHandler(DialogEvent handler) { this->handler = handler; }
+	void Update(float dt) override;
 
 	string text;
 	State state;
 	int id;
 	Texture* img;
-	Int2 force_img_size;
+	Int2 forceImgSize;
 	CustomButton* custom;
 	bool hold;
 

@@ -13,7 +13,7 @@ MenuBar::~MenuBar()
 	DeleteElements(items);
 }
 
-void MenuBar::Draw(ControlDrawData*)
+void MenuBar::Draw()
 {
 	// backgroud
 	gui->DrawArea(rect, layout->background);
@@ -59,12 +59,12 @@ void MenuBar::Update(float dt)
 			down = true;
 	}
 
-	if(!mouse_focus || !rect.IsInside(gui->cursor_pos))
+	if(!mouseFocus || !rect.IsInside(gui->cursorPos))
 		return;
 
 	for(Item* item : items)
 	{
-		if(item->rect.IsInside(gui->cursor_pos))
+		if(item->rect.IsInside(gui->cursorPos))
 		{
 			if(down || input->Pressed(Key::LeftButton))
 			{
@@ -132,15 +132,15 @@ void MenuBar::AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const 
 void MenuBar::Update(bool move, bool resize)
 {
 	assert(parent);
-	Int2 prev_pos = global_pos;
+	Int2 prev_pos = globalPos;
 	if(move)
-		global_pos = parent->global_pos;
+		globalPos = parent->globalPos;
 	if(resize)
 		size = Int2(parent->size.x, layout->font->height + layout->padding.y + layout->item_padding.y * 2);
-	rect = Box2d::Create(global_pos, size);
+	rect = Box2d::Create(globalPos, size);
 	if(move)
 	{
-		Vec2 offset = Vec2(global_pos - prev_pos);
+		Vec2 offset = Vec2(globalPos - prev_pos);
 		for(Item* item : items)
 			item->rect += offset;
 	}

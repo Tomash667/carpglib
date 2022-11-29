@@ -24,7 +24,7 @@ public:
 	InputTextBox();
 
 	// from Control
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	// from OnCharHandler

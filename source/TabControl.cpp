@@ -18,11 +18,11 @@ TabControl::~TabControl()
 void TabControl::Dock(Control* c)
 {
 	assert(c);
-	Int2 area_pos = GetAreaPos() + global_pos;
+	Int2 area_pos = GetAreaPos() + globalPos;
 	Int2 area_size = GetAreaSize();
-	if(c->global_pos != area_pos)
+	if(c->globalPos != area_pos)
 	{
-		c->global_pos = area_pos;
+		c->globalPos = area_pos;
 		if(c->IsInitialized())
 			c->Event(GuiEvent_Moved);
 	}
@@ -34,9 +34,9 @@ void TabControl::Dock(Control* c)
 	}
 }
 
-void TabControl::Draw(ControlDrawData*)
+void TabControl::Draw()
 {
-	Box2d body_rect = Box2d::Create(global_pos, size);
+	Box2d body_rect = Box2d::Create(globalPos, size);
 	gui->DrawArea(body_rect, layout->background);
 
 	gui->DrawArea(line, layout->line);
@@ -44,16 +44,16 @@ void TabControl::Draw(ControlDrawData*)
 	Box2d rectf;
 	if(tab_offset > 0)
 	{
-		rectf.v1.x = (float)global_pos.x;
-		rectf.v1.y = (float)global_pos.y + (height - layout->button_prev.size.y) / 2;
+		rectf.v1.x = (float)globalPos.x;
+		rectf.v1.y = (float)globalPos.y + (height - layout->button_prev.size.y) / 2;
 		rectf.v2 = rectf.v1 + Vec2(layout->button_prev.size);
 		gui->DrawArea(rectf, arrow_hover == -1 ? layout->button_prev_hover : layout->button_prev);
 	}
 
 	if(tab_offset_max != tabs.size())
 	{
-		rectf.v1.x = (float)global_pos.x + size.x - layout->button_next.size.x;
-		rectf.v1.y = (float)global_pos.y + (height - layout->button_next.size.y) / 2;
+		rectf.v1.x = (float)globalPos.x + size.x - layout->button_next.size.x;
+		rectf.v1.y = (float)globalPos.y + (height - layout->button_next.size.y) / 2;
 		rectf.v2 = rectf.v1 + Vec2(layout->button_next.size);
 		gui->DrawArea(rectf, arrow_hover == 1 ? layout->button_next_hover : layout->button_next);
 	}
@@ -130,15 +130,15 @@ void TabControl::Update(float dt)
 	if(selected)
 		selected->close_hover = false;
 
-	if(mouse_focus && IsInside(gui->cursor_pos))
+	if(mouseFocus && IsInside(gui->cursorPos))
 	{
 		Box2d rectf;
 		if(tab_offset > 0)
 		{
-			rectf.v1.x = (float)global_pos.x;
-			rectf.v1.y = (float)global_pos.y + (height - layout->button_prev.size.y) / 2;
+			rectf.v1.x = (float)globalPos.x;
+			rectf.v1.y = (float)globalPos.y + (height - layout->button_prev.size.y) / 2;
 			rectf.v2 = rectf.v1 + Vec2(layout->button_prev.size);
-			if(rectf.IsInside(gui->cursor_pos))
+			if(rectf.IsInside(gui->cursorPos))
 			{
 				arrow_hover = -1;
 				if(input->Pressed(Key::LeftButton))
@@ -151,10 +151,10 @@ void TabControl::Update(float dt)
 
 		if(tab_offset_max != tabs.size())
 		{
-			rectf.v1.x = (float)global_pos.x + size.x - layout->button_next.size.x;
-			rectf.v1.y = (float)global_pos.y + (height - layout->button_next.size.y) / 2;
+			rectf.v1.x = (float)globalPos.x + size.x - layout->button_next.size.x;
+			rectf.v1.y = (float)globalPos.y + (height - layout->button_next.size.y) / 2;
 			rectf.v2 = rectf.v1 + Vec2(layout->button_next.size);
-			if(rectf.IsInside(gui->cursor_pos))
+			if(rectf.IsInside(gui->cursorPos))
 			{
 				arrow_hover = 1;
 				if(input->Pressed(Key::LeftButton))
@@ -168,14 +168,14 @@ void TabControl::Update(float dt)
 		for(int i = tab_offset; i < tab_offset_max; ++i)
 		{
 			Tab* tab = tabs[i];
-			if(tab->rect.IsInside(gui->cursor_pos))
+			if(tab->rect.IsInside(gui->cursorPos))
 			{
 				if(tab != selected)
 				{
 					hover = tab;
 					hover->mode = Tab::Hover;
 				}
-				if(tab->close_rect.IsInside(gui->cursor_pos))
+				if(tab->close_rect.IsInside(gui->cursorPos))
 				{
 					tab->close_hover = true;
 					if(input->Pressed(Key::LeftButton))
@@ -319,7 +319,7 @@ void TabControl::Update(bool move, bool resize)
 	if(move)
 	{
 		if(!IsDocked())
-			global_pos = parent->global_pos + pos;
+			globalPos = parent->globalPos + pos;
 		CalculateRect();
 	}
 
@@ -330,9 +330,9 @@ void TabControl::Update(bool move, bool resize)
 	}
 
 	int p = (layout->padding_active.y - layout->padding.y);
-	line.v1.x = (float)global_pos.x;
-	line.v2.x = (float)global_pos.x + size.x;
-	line.v1.y = (float)(global_pos.y + height - p / 2);
+	line.v1.x = (float)globalPos.x;
+	line.v2.x = (float)globalPos.x + size.x;
+	line.v1.y = (float)(globalPos.y + height - p / 2);
 	line.v2.y = line.v1.y + p / 2;
 }
 
@@ -352,7 +352,7 @@ void TabControl::CalculateRect(Tab& tab, int offset)
 	Int2 pad = (tab.mode == Tab::Down ? layout->padding_active : layout->padding);
 	int p = (layout->padding_active.y - layout->padding.y);
 
-	tab.rect.v1 = Vec2((float)global_pos.x + offset, (float)global_pos.y);
+	tab.rect.v1 = Vec2((float)globalPos.x + offset, (float)globalPos.y);
 	tab.rect.v2 = tab.rect.v1 + Vec2(tab.size);
 	if(tab.mode == Tab::Down)
 		tab.rect.v2.y += (layout->padding_active.y - layout->padding.y);
@@ -388,7 +388,7 @@ bool TabControl::SelectInternal(Tab* tab)
 		if(!selected->panel->IsInitialized())
 		{
 			selected->panel->pos = Int2(1, height + 1);
-			selected->panel->global_pos = global_pos + selected->panel->pos;
+			selected->panel->globalPos = globalPos + selected->panel->pos;
 			selected->panel->size = size - Int2(2, height + 2);
 			selected->panel->Initialize();
 		}

@@ -34,11 +34,11 @@ class DialogBox : public Control, public LayoutControl<layout::DialogBox>
 public:
 	explicit DialogBox(const DialogInfo& info);
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
-	virtual void Setup(const Int2& text_size) {}
+	virtual void Setup(const Int2& textSize) {}
 
 	void CloseDialog() { gui->CloseDialog(this); }
 
@@ -48,7 +48,7 @@ public:
 	DialogOrder order;
 	vector<Button> bts;
 	int result;
-	bool pause, need_delete;
+	bool pause, needDelete;
 
 protected:
 	void DrawPanel(bool background = true);
@@ -60,7 +60,7 @@ class DialogWithCheckbox : public DialogBox
 public:
 	explicit DialogWithCheckbox(const DialogInfo& info);
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
@@ -73,13 +73,13 @@ class DialogWithImage : public DialogBox
 public:
 	explicit DialogWithImage(const DialogInfo& info);
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
-	void Setup(const Int2& text_size) override;
+	void Draw() override;
+	void Setup(const Int2& textSize) override;
 
-	const Int2& GetImageSize() const { return img_size; }
+	const Int2& GetImageSize() const { return imgSize; }
 
 private:
 	Texture* img;
-	Int2 img_size, img_pos;
-	Rect text_rect;
+	Int2 imgSize, imgPos;
+	Rect textRect;
 };

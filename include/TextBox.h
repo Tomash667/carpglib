@@ -24,7 +24,7 @@ public:
 	~TextBox();
 
 	// from Control
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	// from OnCharHandler
@@ -33,7 +33,7 @@ public:
 	virtual void OnTextChanged() {}
 
 	void AddScrollbar();
-	void Move(const Int2& global_pos);
+	void Move(const Int2& globalPos);
 	void Add(cstring str);
 	void CalculateOffset(bool center);
 	void Reset();

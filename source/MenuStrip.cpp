@@ -65,14 +65,14 @@ MenuStrip::~MenuStrip()
 {
 }
 
-void MenuStrip::Draw(ControlDrawData*)
+void MenuStrip::Draw()
 {
-	Box2d area = Box2d::Create(global_pos, size);
+	Box2d area = Box2d::Create(globalPos, size);
 	gui->DrawArea(area, layout->background);
 
 	Vec2 item_size((float)size.x - (layout->padding.x) * 2,
 		(float)layout->font->height + layout->item_padding.y * 2);
-	area.v1 = Vec2(global_pos + layout->padding);
+	area.v1 = Vec2(globalPos + layout->padding);
 	area.v2 = area.v1 + item_size;
 	float offset = item_size.y;
 	Rect r;
@@ -145,7 +145,7 @@ void MenuStrip::Update(float dt)
 
 void MenuStrip::UpdateMouse()
 {
-	if(!mouse_focus)
+	if(!mouseFocus)
 	{
 		if(!focus)
 		{
@@ -156,8 +156,8 @@ void MenuStrip::UpdateMouse()
 		return;
 	}
 
-	Box2d area = Box2d::Create(global_pos, size);
-	if(!area.IsInside(gui->cursor_pos))
+	Box2d area = Box2d::Create(globalPos, size);
+	if(!area.IsInside(gui->cursorPos))
 	{
 		if(gui->MouseMoved())
 		{
@@ -172,13 +172,13 @@ void MenuStrip::UpdateMouse()
 
 	Vec2 item_size((float)size.x - (layout->padding.x) * 2,
 		(float)layout->font->height + layout->item_padding.y * 2);
-	area.v1 = Vec2(global_pos + layout->padding);
+	area.v1 = Vec2(globalPos + layout->padding);
 	area.v2 = area.v1 + item_size;
 	float offset = item_size.y;
 
 	for(Item& item : items)
 	{
-		if(area.IsInside(gui->cursor_pos))
+		if(area.IsInside(gui->cursorPos))
 		{
 			if(item.enabled && (gui->MouseMoved() || input->Pressed(Key::LeftButton)))
 			{
@@ -238,7 +238,7 @@ void MenuStrip::ShowAt(const Int2& _pos)
 		selected->hover = false;
 	selected = nullptr;
 	pos = _pos;
-	global_pos = pos;
+	globalPos = pos;
 	Show();
 }
 

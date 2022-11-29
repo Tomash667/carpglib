@@ -19,7 +19,7 @@ class Slider : public Control, public LayoutControl<layout::Slider>
 public:
 	Slider();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 

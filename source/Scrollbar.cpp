@@ -4,14 +4,14 @@
 #include "Input.h"
 
 //=================================================================================================
-Scrollbar::Scrollbar(bool hscrollbar, bool is_new) : Control(is_new), clicked(false), hscrollbar(hscrollbar), manual_change(false), offset(0.f)
+Scrollbar::Scrollbar(bool hscrollbar, bool isNew) : Control(isNew), clicked(false), hscrollbar(hscrollbar), manual_change(false), offset(0.f)
 {
 }
 
 //=================================================================================================
-void Scrollbar::Draw(ControlDrawData* cdd)
+void Scrollbar::Draw()
 {
-	gui->DrawArea(Box2d::Create(global_pos, size), layout->tex);
+	gui->DrawArea(Box2d::Create(globalPos, size), layout->tex);
 
 	int s_pos, s_size;
 	if(hscrollbar)
@@ -26,7 +26,7 @@ void Scrollbar::Draw(ControlDrawData* cdd)
 			s_pos = int(float(offset) / total * size.x);
 			s_size = int(float(part) / total * size.x);
 		}
-		gui->DrawArea(Box2d::Create(Int2(global_pos.x + s_pos, global_pos.y), Int2(s_size, size.y)), layout->tex2);
+		gui->DrawArea(Box2d::Create(Int2(globalPos.x + s_pos, globalPos.y), Int2(s_size, size.y)), layout->tex2);
 	}
 	else
 	{
@@ -40,7 +40,7 @@ void Scrollbar::Draw(ControlDrawData* cdd)
 			s_pos = int(float(offset) / total * size.y);
 			s_size = int(float(part) / total * size.y);
 		}
-		gui->DrawArea(Box2d::Create(Int2(global_pos.x, global_pos.y + s_pos), Int2(size.x, s_size)), layout->tex2);
+		gui->DrawArea(Box2d::Create(Int2(globalPos.x, globalPos.y + s_pos), Int2(size.x, s_size)), layout->tex2);
 	}
 }
 
@@ -52,7 +52,7 @@ void Scrollbar::Update(float dt)
 
 	change = 0;
 
-	Int2 cpos = gui->cursor_pos - global_pos;
+	Int2 cpos = gui->cursorPos - globalPos;
 
 	if(clicked)
 	{
@@ -96,7 +96,7 @@ void Scrollbar::Update(float dt)
 			}
 		}
 	}
-	else if(mouse_focus && input->Pressed(Key::LeftButton))
+	else if(mouseFocus && input->Pressed(Key::LeftButton))
 	{
 		if(cpos.x >= 0 && cpos.y >= 0 && cpos.x < size.x && cpos.y < size.y)
 		{
@@ -135,7 +135,7 @@ void Scrollbar::Update(float dt)
 			}
 		}
 
-		if(is_new)
+		if(isNew)
 			TakeFocus(true);
 	}
 }
@@ -153,7 +153,7 @@ bool Scrollbar::ApplyMouseWheel()
 	if(wheel != 0.f)
 	{
 		LostFocus();
-		float mod = (!is_new ? (input->Down(Key::Shift) ? 1.f : 0.2f) : 0.2f);
+		float mod = (!isNew ? (input->Down(Key::Shift) ? 1.f : 0.2f) : 0.2f);
 		float prev_offset = offset;
 		offset -= part * wheel * mod;
 		if(offset < 0.f)

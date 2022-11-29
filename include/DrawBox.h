@@ -7,19 +7,16 @@ class DrawBox : public Control
 public:
 	DrawBox();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
-	void Update(float dt) override;
-
+	void Draw() override;
 	Texture* GetTexture() const { return tex; }
-
 	bool IsTexture() const { return tex != nullptr; }
-
 	void SetTexture(Texture* tex);
+	void Update(float dt) override;
 
 private:
 	Texture* tex;
-	Int2 tex_size, click_point;
-	float scale, default_scale;
+	Int2 texSize, clickPoint;
+	float scale, defaultScale;
 	Vec2 move;
 	bool clicked;
 };

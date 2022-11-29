@@ -4,12 +4,12 @@
 #include "Input.h"
 
 //=================================================================================================
-Button::Button() : state(NONE), img(nullptr), hold(false), force_img_size(0, 0), custom(nullptr)
+Button::Button() : state(NONE), img(nullptr), hold(false), forceImgSize(0, 0), custom(nullptr)
 {
 }
 
 //=================================================================================================
-void Button::Draw(ControlDrawData*)
+void Button::Draw()
 {
 	State real_state = state;
 	if(disabled)
@@ -17,13 +17,13 @@ void Button::Draw(ControlDrawData*)
 
 	if(!custom)
 	{
-		gui->DrawArea(Box2d::Create(global_pos, size), layout->tex[real_state]);
+		gui->DrawArea(Box2d::Create(globalPos, size), layout->tex[real_state]);
 
 		Rect r = {
-			global_pos.x + layout->padding,
-			global_pos.y + layout->padding,
-			global_pos.x + size.x - layout->padding * 2,
-			global_pos.y + size.y - layout->padding * 2
+			globalPos.x + layout->padding,
+			globalPos.y + layout->padding,
+			globalPos.x + size.x - layout->padding * 2,
+			globalPos.y + size.y - layout->padding * 2
 		};
 
 		if(state == DOWN)
@@ -39,7 +39,7 @@ void Button::Draw(ControlDrawData*)
 			}
 
 			Matrix mat;
-			Int2 required_size = force_img_size, img_size;
+			Int2 required_size = forceImgSize, img_size;
 			Vec2 scale;
 			img->ResizeImage(required_size, img_size, scale);
 
@@ -65,7 +65,7 @@ void Button::Draw(ControlDrawData*)
 		gui->DrawText(layout->font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r, &r);
 	}
 	else
-		gui->DrawArea(Box2d::Create(global_pos, size), custom->tex[real_state]);
+		gui->DrawArea(Box2d::Create(globalPos, size), custom->tex[real_state]);
 }
 
 //=================================================================================================
@@ -74,9 +74,9 @@ void Button::Update(float dt)
 	if(state == DISABLED || disabled)
 		return;
 
-	if(input->Focus() && mouse_focus && IsInside(gui->cursor_pos))
+	if(input->Focus() && mouseFocus && IsInside(gui->cursorPos))
 	{
-		gui->cursor_mode = CURSOR_HOVER;
+		gui->SetCursorMode(CURSOR_HOVER);
 		if(state == DOWN)
 		{
 			bool apply = false;

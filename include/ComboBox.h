@@ -16,20 +16,21 @@ public:
 
 	ComboBox();
 	~ComboBox();
-	void Draw(ControlDrawData* = nullptr) override;
-	void Event(GuiEvent e) override;
-	void Update(float dt) override;
-	void OnTextChanged() override;
-	void ClearItems();
+
 	void AddItem(GuiElement* e);
-	void Reset();
-	void OnSelect(int index);
+	void ClearItems();
+	void Draw() override;
+	void Event(GuiEvent e) override;
 	GuiElement* GetSelectedItem();
+	void OnSelect(int index);
+	void OnTextChanged() override;
+	void Reset();
+	void Update(float dt) override;
 
 	delegate<void(GuiElement*)> destructor;
 
 private:
 	MenuList menu;
 	int selected;
-	bool menu_changed;
+	bool menuChanged;
 };

@@ -7,25 +7,6 @@
 #include "FlowContainer.h"
 
 //-----------------------------------------------------------------------------
-struct PickItemDialogParams
-{
-	PickItemDialogParams() : event(nullptr), get_tooltip(nullptr), parent(nullptr), multiple(0), size_min(300, 200), size_max(300, 512)
-	{
-	}
-
-	vector<FlowItem*> items;
-	int multiple;
-	DialogEvent event;
-	TooltipController::Callback get_tooltip;
-	Control* parent;
-	string text;
-	Int2 size_min, size_max; // size.x is always taken from size_min for now
-
-	void AddItem(cstring item_text, int group, int id, bool disabled = false);
-	void AddSeparator(cstring item_text);
-};
-
-//-----------------------------------------------------------------------------
 namespace layout
 {
 	struct PickItemDialog : public DialogBox
@@ -33,6 +14,25 @@ namespace layout
 		CustomButton close;
 	};
 }
+
+//-----------------------------------------------------------------------------
+struct PickItemDialogParams
+{
+	PickItemDialogParams() : event(nullptr), getTooltip(nullptr), parent(nullptr), multiple(0), sizeMin(300, 200), sizeMax(300, 512)
+	{
+	}
+
+	Control* parent;
+	DialogEvent event;
+	TooltipController::Callback getTooltip;
+	vector<FlowItem*> items;
+	string text;
+	Int2 sizeMin, sizeMax; // size.x is always taken from sizeMin for now
+	int multiple;
+
+	void AddItem(cstring itemText, int group, int id, bool disabled = false);
+	void AddSeparator(cstring itemText);
+};
 
 //-----------------------------------------------------------------------------
 class PickItemDialog : public DialogBox, public LayoutControl<layout::PickItemDialog>
@@ -67,7 +67,7 @@ private:
 
 	explicit PickItemDialog(const DialogInfo& info);
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
@@ -76,9 +76,9 @@ private:
 
 	static PickItemDialog* self;
 	FlowContainer flow;
-	TooltipController::Callback get_tooltip;
-	int multiple;
+	TooltipController::Callback getTooltip;
 	Button btClose;
 	TooltipController tooltip;
 	vector<FlowItem*> selected;
+	int multiple;
 };

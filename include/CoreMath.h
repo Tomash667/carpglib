@@ -621,7 +621,8 @@ struct Rect
 	static Rect Create(const Int2& pos, const Int2& size, int pad);
 	static Rect Intersect(const Rect& r1, const Rect& r2);
 	static bool Intersect(const Rect& r1, const Rect& r2, Rect& result);
-	static bool IsInside(const Int2& pos, const Int2& size, const Int2& pt);
+	static bool IsInside(const Int2& pt, const Int2& pos, const Int2& size);
+	static bool IsInside(const Int2& pt, int left, int top, int right, int bottom);
 
 	// Constants
 	static const Rect Zero;

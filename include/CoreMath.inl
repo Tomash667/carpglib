@@ -465,12 +465,17 @@ inline bool Rect::Intersect(const Rect& r1, const Rect& r2, Rect& result)
 		return false;
 }
 
-inline bool Rect::IsInside(const Int2& pos, const Int2& size, const Int2& pt)
+inline bool Rect::IsInside(const Int2& pt, const Int2& pos, const Int2& size)
 {
 	return pt.x >= pos.x
 		&& pt.y >= pos.y
 		&& pt.x <= pos.x + size.x
 		&& pt.y <= pos.y + size.y;
+}
+
+inline bool Rect::IsInside(const Int2& pt, int left, int top, int right, int bottom)
+{
+	return pt.x >= left && pt.y >= top && pt.x < right && pt.y < bottom;
 }
 
 //*************************************************************************************************

@@ -12,15 +12,15 @@ GetTextDialog::GetTextDialog(const DialogInfo& info) : DialogBox(info), singleli
 }
 
 //=================================================================================================
-void GetTextDialog::Draw(ControlDrawData*)
+void GetTextDialog::Draw()
 {
-	gui->DrawArea(Box2d::Create(Int2::Zero, gui->wnd_size), layout->background);
-	gui->DrawArea(Box2d::Create(global_pos, size), layout->box);
+	gui->DrawArea(Box2d::Create(Int2::Zero, gui->wndSize), layout->background);
+	gui->DrawArea(Box2d::Create(globalPos, size), layout->box);
 
 	for(int i = 0; i < 2; ++i)
 		bts[i].Draw();
 
-	Rect r = { global_pos.x + 16, global_pos.y + 16, global_pos.x + size.x - 16, global_pos.y + 60 - 16 };
+	Rect r = { globalPos.x + 16, globalPos.y + 16, globalPos.x + size.x - 16, globalPos.y + 60 - 16 };
 	gui->DrawText(layout->font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 
 	textBox.Draw();
@@ -29,16 +29,14 @@ void GetTextDialog::Draw(ControlDrawData*)
 //=================================================================================================
 void GetTextDialog::Update(float dt)
 {
-	textBox.mouse_focus = focus;
+	textBox.mouseFocus = focus;
 
 	if(input->Focus() && focus)
 	{
 		for(int i = 0; i < 2; ++i)
 		{
-			bts[i].mouse_focus = focus;
+			bts[i].mouseFocus = focus;
 			bts[i].Update(dt);
-			if(result != -1)
-				goto got_result;
 		}
 
 		textBox.focus = true;
@@ -65,9 +63,8 @@ void GetTextDialog::Update(float dt)
 
 		if(result != -1)
 		{
-		got_result:
 			if(result == BUTTON_OK)
-				*input_str = textBox.GetText();
+				*inputStr = textBox.GetText();
 			gui->CloseDialog(this);
 			if(event)
 				event(result);
@@ -90,10 +87,10 @@ void GetTextDialog::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_WindowResize)
 	{
-		self->pos = self->global_pos = (gui->wnd_size - self->size) / 2;
-		self->bts[0].global_pos = self->bts[0].pos + self->global_pos;
-		self->bts[1].global_pos = self->bts[1].pos + self->global_pos;
-		self->textBox.global_pos = self->textBox.pos + self->global_pos;
+		self->pos = self->globalPos = (gui->wndSize - self->size) / 2;
+		self->bts[0].globalPos = self->bts[0].pos + self->globalPos;
+		self->bts[1].globalPos = self->bts[1].pos + self->globalPos;
+		self->textBox.globalPos = self->textBox.pos + self->globalPos;
 	}
 	else if(e >= GuiEvent_Custom)
 	{
@@ -157,15 +154,15 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	textBox.size = Int2(params.width - 50, 15 + lines * 20);
 	textBox.SetMultiline(params.multiline);
 	textBox.limit = params.limit;
-	textBox.SetText(params.input_str->c_str());
+	textBox.SetText(params.inputStr->c_str());
 
 	// ustaw przyciski
 	bt1.pos = Int2(size.x - 100 - 16, size.y - 40 - 16);
 	bt2.pos = Int2(16, size.y - 40 - 16);
-	if(params.custom_names)
+	if(params.customNames)
 	{
-		bt1.text = (params.custom_names[0] ? params.custom_names[0] : gui->txCancel);
-		bt2.text = (params.custom_names[1] ? params.custom_names[1] : gui->txOk);
+		bt1.text = (params.customNames[0] ? params.customNames[0] : gui->txCancel);
+		bt2.text = (params.customNames[1] ? params.customNames[1] : gui->txOk);
 	}
 	else
 	{
@@ -179,11 +176,11 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	order = parent ? static_cast<DialogBox*>(parent)->order : ORDER_NORMAL;
 	event = params.event;
 	text = params.text;
-	input_str = params.input_str;
+	inputStr = params.inputStr;
 
 	// ustaw pozycjê
-	pos = global_pos = (gui->wnd_size - size) / 2;
-	bt1.global_pos = bt1.pos + global_pos;
-	bt2.global_pos = bt2.pos + global_pos;
-	textBox.global_pos = textBox.pos + global_pos;
+	pos = globalPos = (gui->wndSize - size) / 2;
+	bt1.globalPos = bt1.pos + globalPos;
+	bt2.globalPos = bt2.pos + globalPos;
+	textBox.globalPos = textBox.pos + globalPos;
 }

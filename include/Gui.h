@@ -30,23 +30,6 @@ struct Hitbox
 };
 
 //-----------------------------------------------------------------------------
-enum class HitboxOpen
-{
-	No,
-	Yes,
-	Group
-};
-
-//-----------------------------------------------------------------------------
-struct HitboxContext
-{
-	vector<Hitbox>* hitbox;
-	int counter, group_index, group_index2;
-	HitboxOpen open;
-	Rect region;
-};
-
-//-----------------------------------------------------------------------------
 enum CursorMode
 {
 	CURSOR_NORMAL,
@@ -78,7 +61,8 @@ enum DialogOrder
 //-----------------------------------------------------------------------------
 struct DialogInfo
 {
-	DialogInfo() : custom_names(nullptr), img(nullptr), have_tick(false), ticked(false), auto_wrap(false), type(DIALOG_OK), parent(nullptr), order(ORDER_TOP), pause(true)
+	DialogInfo() : customNames(nullptr), img(nullptr), haveTick(false), ticked(false), autoWrap(false), type(DIALOG_OK), parent(nullptr), order(ORDER_TOP),
+		pause(true)
 	{
 	}
 
@@ -87,9 +71,9 @@ struct DialogInfo
 	Control* parent;
 	DialogEvent event;
 	DialogOrder order;
-	cstring* custom_names, tick_text;
+	cstring* customNames, tickText;
 	Texture* img;
-	bool pause, have_tick, ticked, auto_wrap;
+	bool pause, haveTick, ticked, autoWrap;
 };
 
 //-----------------------------------------------------------------------------
@@ -120,6 +104,21 @@ namespace layout
 // GUI
 class Gui
 {
+	enum class HitboxOpen
+	{
+		No,
+		Yes,
+		Group
+	};
+
+	struct HitboxContext
+	{
+		vector<Hitbox>* hitbox;
+		int counter, groupIndex, groupIndex2;
+		HitboxOpen open;
+		Rect region;
+	};
+
 public:
 	Gui();
 	~Gui();
@@ -153,8 +152,8 @@ public:
 	bool HaveDialog() const;
 	void DrawSpriteFull(Texture* t, Color color = Color::White);
 	void DrawSpriteFullWrap(Texture* t, Color color = Color::White);
-	void AddOnCharHandler(OnCharHandler* h) { on_char.push_back(h); }
-	void RemoveOnCharHandler(OnCharHandler* h) { RemoveElement(on_char, h); }
+	void AddOnCharHandler(OnCharHandler* h) { onChar.push_back(h); }
+	void RemoveOnCharHandler(OnCharHandler* h) { RemoveElement(onChar, h); }
 	void SimpleDialog(cstring text, Control* parent, cstring name = "simple");
 	void DrawSpriteRect(Texture* t, const Rect& rect, Color color = Color::White);
 	bool HaveDialog(cstring name);
@@ -179,11 +178,11 @@ public:
 		DrawArea(color, rect.LeftTop(), rect.Size(), clip_rect);
 	}
 	void SetLayout(Layout* layout);
-	Layout* GetLayout() const { return master_layout; }
+	Layout* GetLayout() const { return masterLayout; }
 	void DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect = nullptr, Color* tint = nullptr);
 	void SetOverlay(Overlay* overlay) { this->overlay = overlay; }
 	Overlay* GetOverlay() const { return overlay; }
-	bool MouseMoved() const { return cursor_pos != prev_cursor_pos; }
+	bool MouseMoved() const { return cursorPos != prevCursorPos; }
 	void SetClipboard(cstring text);
 	cstring GetClipboard();
 	Rect GetSpriteRect(Texture* t, const Matrix& mat, const Rect* part = nullptr, const Rect* clipping = nullptr);
@@ -200,13 +199,13 @@ public:
 		int* hitbox_counter;
 		const vector<TextLine>* lines;
 		Vec2 scale;
-		uint lines_start;
-		uint lines_end;
-		uint str_length;
+		uint linesStart;
+		uint linesEnd;
+		uint strLength;
 
 		DrawTextOptions(Font* font, Cstring str) : font(font), str(str), rect(Rect::Zero), flags(DTF_LEFT), color(Color::Black),
-			clipping(nullptr), hitboxes(nullptr), hitbox_counter(nullptr), lines(nullptr), scale(Vec2::One), lines_start(0), lines_end(UINT_MAX),
-			str_length(strlen(str))
+			clipping(nullptr), hitboxes(nullptr), hitbox_counter(nullptr), lines(nullptr), scale(Vec2::One), linesStart(0), linesEnd(UINT_MAX),
+			strLength(strlen(str))
 		{
 		}
 	};
@@ -217,12 +216,13 @@ public:
 		return doubleclk[(int)key - 1];
 	}
 	void RegisterControl(Control* control);
+	void SetCursorMode(CursorMode cursorMode) { this->cursorMode = cursorMode; }
+	Box2d* SetClipRect(Box2d* clipRect);
+	Box2d* GetClipRect() const { return clipRect; }
 
 	Matrix mViewProj;
-	Int2 cursor_pos, prev_cursor_pos, wnd_size;
-	CursorMode cursor_mode;
+	Int2 cursorPos, wndSize;
 	cstring txOk, txYes, txNo, txCancel;
-	Control* focused_ctrl;
 
 private:
 	struct DrawLineContext
@@ -248,17 +248,20 @@ private:
 
 	FontLoader* fontLoader;
 	GuiShader* shader;
-	vector<DialogBox*> created_dialogs;
-	vector<Control*> registeredControls;
-	Container* layer, *dialog_layer;
-	VGui vBuf[256 * 6], vBuf2[256 * 6];
-	HitboxContext tmpHitboxContext;
-	vector<OnCharHandler*> on_char;
-	bool grayscale, doubleclk[5];
-	Key lastClick;
-	float lastClickTimer;
-	Int2 lastClickPos;
-	Layout* master_layout;
+	Layout* masterLayout;
 	layout::Gui* layout;
 	Overlay* overlay;
+	vector<DialogBox*> createdDialogs;
+	vector<Control*> registeredControls;
+	Container* layer, *dialogLayer;
+	Control* focusedCtrl;
+	Box2d* clipRect;
+	VGui vBuf[256 * 6], vBuf2[256 * 6];
+	HitboxContext tmpHitboxContext;
+	vector<OnCharHandler*> onChar;
+	Key lastClick;
+	CursorMode cursorMode;
+	float lastClickTimer;
+	Int2 lastClickPos, prevCursorPos;
+	bool grayscale, doubleclk[5];
 };

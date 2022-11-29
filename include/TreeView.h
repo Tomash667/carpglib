@@ -154,7 +154,7 @@ public:
 	TreeView();
 	~TreeView();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Event(GuiEvent e) override;
 	void OnChar(char c) override;
 	void Update(float dt) override;

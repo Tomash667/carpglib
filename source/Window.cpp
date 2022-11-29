@@ -12,7 +12,7 @@ Window::~Window()
 {
 }
 
-void Window::Draw(ControlDrawData*)
+void Window::Draw()
 {
 	gui->DrawArea(body_rect, layout->background);
 
@@ -26,8 +26,9 @@ void Window::Draw(ControlDrawData*)
 		}
 	}
 
-	ControlDrawData cdd = { &body_rect };
-	Container::Draw(&cdd);
+	Box2d* prevClipRect = gui->SetClipRect(&body_rect);
+	Container::Draw();
+	gui->SetClipRect(prevClipRect);
 }
 
 void Window::Update(float dt)
@@ -42,7 +43,7 @@ void Window::Event(GuiEvent e)
 	case GuiEvent_Initialize:
 		{
 			if(fullscreen)
-				size = gui->wnd_size;
+				size = gui->wndSize;
 			if(menu)
 				menu->Initialize();
 			CalculateArea();
@@ -56,7 +57,7 @@ void Window::Event(GuiEvent e)
 					c->pos = Int2(0, 0);
 					c->size = Int2(area.Size());
 				}
-				c->global_pos = c->pos + offset + global_pos;
+				c->globalPos = c->pos + offset + globalPos;
 				c->Initialize();
 			}
 		}
@@ -64,7 +65,7 @@ void Window::Event(GuiEvent e)
 	case GuiEvent_WindowResize:
 		{
 			if(fullscreen)
-				size = gui->wnd_size;
+				size = gui->wndSize;
 			CalculateArea();
 			if(menu)
 				menu->Event(GuiEvent_Resize);
@@ -78,7 +79,7 @@ void Window::Event(GuiEvent e)
 					c->pos = Int2(0, 0);
 					c->size = Int2(area.Size());
 				}
-				c->global_pos = c->pos + offset + global_pos;
+				c->globalPos = c->pos + offset + globalPos;
 				c->Initialize();
 			}
 		}
@@ -89,7 +90,7 @@ void Window::Event(GuiEvent e)
 			Int2 offset = Int2(area.v1);
 			for(Control* c : ctrls)
 			{
-				c->global_pos = c->pos + global_pos + offset;
+				c->globalPos = c->pos + globalPos + offset;
 				c->Event(GuiEvent_Moved);
 			}
 		}
@@ -124,8 +125,8 @@ void Window::SetMenu(MenuBar* _menu)
 
 void Window::CalculateArea()
 {
-	body_rect = Box2d(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + size.y));
-	header_rect = Box2d(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + layout->header_height));
+	body_rect = Box2d(float(globalPos.x), float(globalPos.y), float(globalPos.x + size.x), float(globalPos.y + size.y));
+	header_rect = Box2d(float(globalPos.x), float(globalPos.y), float(globalPos.x + size.x), float(globalPos.y + layout->header_height));
 	area.v1 = Vec2(0, 0);
 	if(!borderless)
 		area.v1.y += layout->header_height;

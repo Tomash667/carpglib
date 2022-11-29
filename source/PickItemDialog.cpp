@@ -7,23 +7,23 @@
 PickItemDialog* PickItemDialog::self;
 
 //=================================================================================================
-void PickItemDialogParams::AddItem(cstring item_text, int group, int id, bool disabled)
+void PickItemDialogParams::AddItem(cstring itemText, int group, int id, bool disabled)
 {
 	FlowItem* item = FlowItem::Pool.Get();
 	item->type = FlowItem::Item;
 	item->group = group;
 	item->id = id;
-	item->text = item_text;
+	item->text = itemText;
 	item->state = (!disabled ? Button::NONE : Button::DISABLED);
 	items.push_back(item);
 }
 
 //=================================================================================================
-void PickItemDialogParams::AddSeparator(cstring item_text)
+void PickItemDialogParams::AddSeparator(cstring itemText)
 {
 	FlowItem* item = FlowItem::Pool.Get();
 	item->type = FlowItem::Section;
-	item->text = item_text;
+	item->text = itemText;
 	item->state = Button::NONE;
 	items.push_back(item);
 }
@@ -33,8 +33,8 @@ PickItemDialog::PickItemDialog(const DialogInfo&  info) : DialogBox(info)
 {
 	DialogBox::layout = layout;
 
-	flow.allow_select = true;
-	flow.on_select = VoidF(this, &PickItemDialog::OnSelect);
+	flow.allowSelect = true;
+	flow.onSelect = VoidF(this, &PickItemDialog::OnSelect);
 
 	btClose.custom = &layout->close;
 	btClose.id = Cancel;
@@ -74,54 +74,52 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 	parent = params.parent;
 	order = parent ? static_cast<DialogBox*>(parent)->order : ORDER_NORMAL;
 	event = params.event;
-	get_tooltip = params.get_tooltip;
-	if(params.get_tooltip)
-		tooltip.Init(params.get_tooltip);
+	getTooltip = params.getTooltip;
+	if(params.getTooltip)
+		tooltip.Init(params.getTooltip);
 	multiple = params.multiple;
-	size.x = params.size_min.x;
+	size.x = params.sizeMin.x;
 	text = std::move(params.text);
 	flow.pos = Int2(16, 64);
 	flow.size = Int2(size.x - 32, 10000);
 	flow.SetItems(params.items);
-	int flow_sizey = flow.GetHeight();
-	flow_sizey += 64;
-	if(flow_sizey < params.size_min.y)
-		flow_sizey = params.size_min.y;
-	else if(flow_sizey > params.size_max.y)
-		flow_sizey = params.size_max.y;
-	size.y = flow_sizey;
-	pos = global_pos = (gui->wnd_size - size) / 2;
+	size.y = flow.GetHeight() + 64;
+	if(size.y < params.sizeMin.y)
+		size.y = params.sizeMin.y;
+	else if(size.y > params.sizeMax.y)
+		size.y = params.sizeMax.y;
+	pos = globalPos = (gui->wndSize - size) / 2;
 	flow.UpdateSize(Int2(16, 64), Int2(size.x - 32, size.y - 80), true);
 	btClose.pos = Int2(size.x - 48, 16);
-	btClose.global_pos = global_pos + btClose.pos;
+	btClose.globalPos = globalPos + btClose.pos;
 	selected.clear();
 }
 
 //=================================================================================================
-void PickItemDialog::Draw(ControlDrawData*)
+void PickItemDialog::Draw()
 {
 	DrawPanel();
 
 	btClose.Draw();
 
-	Rect r = { global_pos.x + 16, global_pos.y + 16, global_pos.x + size.x - 56, global_pos.y + size.y };
+	Rect r = { globalPos.x + 16, globalPos.y + 16, globalPos.x + size.x - 56, globalPos.y + size.y };
 	gui->DrawText(layout->font, text, DTF_CENTER, Color::Black, r);
 
 	flow.Draw();
-	if(get_tooltip)
+	if(getTooltip)
 		tooltip.Draw();
 }
 
 //=================================================================================================
 void PickItemDialog::Update(float dt)
 {
-	btClose.mouse_focus = focus;
+	btClose.mouseFocus = focus;
 	btClose.Update(dt);
 
-	flow.mouse_focus = focus;
+	flow.mouseFocus = focus;
 	flow.Update(dt);
 
-	if(get_tooltip)
+	if(getTooltip)
 	{
 		int group = -1, id = -1;
 		flow.GetSelected(group, id);
@@ -146,9 +144,9 @@ void PickItemDialog::Event(GuiEvent e)
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
 		// recenter
-		pos = global_pos = (gui->wnd_size - size) / 2;
+		pos = globalPos = (gui->wndSize - size) / 2;
 		flow.UpdatePos(pos);
-		btClose.global_pos = global_pos + btClose.pos;
+		btClose.globalPos = globalPos + btClose.pos;
 	}
 	else if(e == Cancel)
 	{

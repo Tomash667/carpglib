@@ -56,17 +56,17 @@ void SceneBatch::Add(SceneNode* node, int sub)
 			node->flags |= SceneNode::F_HAVE_WEIGHTS;
 		if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
 			node->flags |= SceneNode::F_HAVE_TANGENTS;
-		if(app::scene_mgr->use_normalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
+		if(app::sceneMgr->use_normalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
 			node->flags |= SceneNode::F_NORMAL_MAP;
-		if(app::scene_mgr->use_specularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))
+		if(app::sceneMgr->use_specularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))
 			node->flags |= SceneNode::F_SPECULAR_MAP;
 		node->subs = SceneNode::SPLIT_MASK;
 	}
 	else
 	{
-		if(app::scene_mgr->use_normalmap && mesh.subs[sub].tex_normal)
+		if(app::sceneMgr->use_normalmap && mesh.subs[sub].tex_normal)
 			node->flags |= SceneNode::F_NORMAL_MAP;
-		if(app::scene_mgr->use_specularmap && mesh.subs[sub].tex_specular)
+		if(app::sceneMgr->use_specularmap && mesh.subs[sub].tex_specular)
 			node->flags |= SceneNode::F_SPECULAR_MAP;
 		node->subs = SceneNode::SPLIT_INDEX | sub;
 	}

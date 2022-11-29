@@ -31,7 +31,7 @@ public:
 	Window(bool fullscreen = false, bool borderless = false);
 	~Window();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;
 

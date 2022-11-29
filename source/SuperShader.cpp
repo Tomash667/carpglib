@@ -294,10 +294,10 @@ void SuperShader::PrepareDecals()
 	app::render->SetDepthState(Render::DEPTH_READ);
 	app::render->SetRasterState(Render::RASTER_NORMAL);
 
-	const bool use_fog = app::scene_mgr->use_lighting && app::scene_mgr->use_fog;
+	const bool use_fog = app::sceneMgr->use_lighting && app::sceneMgr->use_fog;
 
 	SetShader(GetShaderId(false, false, false, use_fog, false, false,
-		!scene->use_light_dir && app::scene_mgr->use_lighting, scene->use_light_dir && app::scene_mgr->use_lighting));
+		!scene->use_light_dir && app::sceneMgr->use_lighting, scene->use_light_dir && app::sceneMgr->use_lighting));
 }
 
 //=================================================================================================

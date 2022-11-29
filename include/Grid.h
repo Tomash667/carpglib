@@ -56,11 +56,11 @@ public:
 
 	Grid();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 
 	void Init();
-	void Move(Int2& global_pos);
+	void Move(Int2& globalPos);
 	void LostFocus() { scroll.LostFocus(); }
 	void AddColumn(Type type, int width, cstring title = nullptr);
 	void AddItem();

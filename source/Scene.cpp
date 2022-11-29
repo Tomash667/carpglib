@@ -52,7 +52,7 @@ void Scene::GatherLights(SceneBatch& batch, SceneNode* node)
 //=================================================================================================
 Vec4 Scene::GetAmbientColor() const
 {
-	if(app::scene_mgr->use_lighting)
+	if(app::sceneMgr->use_lighting)
 		return ambient_color;
 	return Vec4::One;
 }
@@ -60,7 +60,7 @@ Vec4 Scene::GetAmbientColor() const
 //=================================================================================================
 Vec4 Scene::GetFogParams() const
 {
-	if(app::scene_mgr->use_lighting && app::scene_mgr->use_fog)
+	if(app::sceneMgr->use_lighting && app::sceneMgr->use_fog)
 		return Vec4(fog_range.x, fog_range.y, fog_range.y - fog_range.x, 1);
 	return Vec4(999, 1000, 1, 0);
 }

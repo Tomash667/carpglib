@@ -29,9 +29,9 @@ wnd_size(DEFAULT_WINDOW_SIZE), client_size(wnd_size)
 	app::gui = new Gui;
 	app::input = new Input;
 	app::render = new Render;
-	app::res_mgr = new ResourceManager;
-	app::scene_mgr = new SceneManager;
-	app::sound_mgr = new SoundManager;
+	app::resMgr = new ResourceManager;
+	app::sceneMgr = new SceneManager;
+	app::soundMgr = new SoundManager;
 }
 
 //=================================================================================================
@@ -98,17 +98,17 @@ void Engine::LoadConfiguration(Config& cfg)
 	}
 	app::render->SetVsync(cfg.GetBool("vsync", true));
 	app::render->SetMultisampling(cfg.GetInt("multisampling"), cfg.GetInt("multisampling_quality"));
-	app::scene_mgr->use_normalmap = cfg.GetBool("use_normalmap", true);
-	app::scene_mgr->use_specularmap = cfg.GetBool("use_specularmap", true);
+	app::sceneMgr->use_normalmap = cfg.GetBool("use_normalmap", true);
+	app::sceneMgr->use_specularmap = cfg.GetBool("use_specularmap", true);
 
 	// sound/music settings
 	if(cfg.GetBool("nosound"))
-		app::sound_mgr->Disable();
-	app::sound_mgr->SetSoundVolume(Clamp(cfg.GetInt("sound_volume", 100), 0, 100));
-	app::sound_mgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
+		app::soundMgr->Disable();
+	app::soundMgr->SetSoundVolume(Clamp(cfg.GetInt("sound_volume", 100), 0, 100));
+	app::soundMgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
 	Guid soundDevice;
 	if(soundDevice.TryParse(cfg.GetString("sound_device", Guid::EmptyString)))
-		app::sound_mgr->SetDevice(soundDevice);
+		app::soundMgr->SetDevice(soundDevice);
 }
 
 //=================================================================================================
@@ -134,11 +134,11 @@ void Engine::Cleanup()
 	app::app->OnCleanup();
 
 	delete app::input;
-	delete app::res_mgr;
+	delete app::resMgr;
 	delete app::render;
 	delete app::gui;
-	delete app::scene_mgr;
-	delete app::sound_mgr;
+	delete app::sceneMgr;
+	delete app::soundMgr;
 
 	CustomCollisionWorld::Cleanup(phy_world);
 }
@@ -241,7 +241,7 @@ void Engine::DoTick(bool update_game)
 
 	app::app->OnDraw();
 	app::input->Update();
-	app::sound_mgr->Update(dt);
+	app::soundMgr->Update(dt);
 }
 
 //=================================================================================================
@@ -592,11 +592,11 @@ void Engine::Init()
 {
 	InitWindow();
 	app::render->Init();
-	app::sound_mgr->Init();
+	app::soundMgr->Init();
 	phy_world = CustomCollisionWorld::Init();
-	app::res_mgr->Init();
+	app::resMgr->Init();
 	app::gui->Init();
-	app::scene_mgr->Init();
+	app::sceneMgr->Init();
 	initialized = true;
 }
 

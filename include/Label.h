@@ -20,7 +20,7 @@ class Label : public Control, public LayoutControl<layout::Label>
 {
 public:
 	Label(cstring text, bool auto_size = true);
-	void Draw(ControlDrawData*) override;
+	void Draw() override;
 	const string& GetText() const { return text; }
 	bool IsAutoSize() const { return auto_size; }
 	void SetText(Cstring s);

@@ -23,7 +23,7 @@ public:
 	typedef delegate<void(TooltipController*, int, int, bool)> Callback;
 
 	TooltipController() : imgSize(Int2::Zero) {}
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Init(Callback get_text);
 	void Clear();
 	void Refresh() { FormatBox(true); }
