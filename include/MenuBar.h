@@ -10,14 +10,14 @@ namespace layout
 	{
 		AreaLayout background;
 		AreaLayout button;
-		AreaLayout button_hover;
-		AreaLayout button_down;
+		AreaLayout buttonHover;
+		AreaLayout buttonDown;
 		Font* font;
 		Int2 padding;
-		Int2 item_padding;
-		Color font_color;
-		Color font_color_hover;
-		Color font_color_down;
+		Int2 itemPadding;
+		Color fontColor;
+		Color fontColorHover;
+		Color fontColorDown;
 	};
 }
 
@@ -54,7 +54,7 @@ public:
 
 	void AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const & items);
 	void ChangeMenu(int offset);
-	void SetHandler(MenuStrip::Handler _handler) { handler = _handler; }
+	void SetHandler(MenuStrip::Handler handler) { this->handler = handler; }
 
 private:
 	void Update(bool move, bool resize);

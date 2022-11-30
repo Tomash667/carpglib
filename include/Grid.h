@@ -69,10 +69,10 @@ public:
 	void Reset();
 
 	vector<Column> columns;
-	int items, height, selected, total_width;
+	int items, height, selected, totalWidth;
 	GridEvent event;
 	Scrollbar scroll;
 	vector<Texture*> imgset;
-	SelectGridEvent select_event;
-	bool allow_select, single_line;
+	SelectGridEvent selectEvent;
+	bool allowSelect, singleLine;
 };

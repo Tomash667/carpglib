@@ -6,7 +6,7 @@
 #include "MenuBar.h"
 #include "Overlay.h"
 
-MenuStrip::MenuStrip(vector<SimpleMenuCtor>& _items, int min_width) : selected(nullptr)
+MenuStrip::MenuStrip(vector<SimpleMenuCtor>& _items, int minWIdth) : selected(nullptr)
 {
 	items.resize(_items.size());
 	for(uint i = 0, size = _items.size(); i < size; ++i)
@@ -20,10 +20,10 @@ MenuStrip::MenuStrip(vector<SimpleMenuCtor>& _items, int min_width) : selected(n
 		item2.enabled = true;
 	}
 
-	CalculateWidth(min_width);
+	CalculateWidth(minWIdth);
 }
 
-MenuStrip::MenuStrip(vector<GuiElement*>& _items, int min_width) : selected(nullptr)
+MenuStrip::MenuStrip(vector<GuiElement*>& _items, int minWIdth) : selected(nullptr)
 {
 	items.resize(_items.size());
 	for(uint i = 0, size = _items.size(); i < size; ++i)
@@ -37,10 +37,10 @@ MenuStrip::MenuStrip(vector<GuiElement*>& _items, int min_width) : selected(null
 		item2.enabled = true;
 	}
 
-	CalculateWidth(min_width);
+	CalculateWidth(minWIdth);
 }
 
-void MenuStrip::CalculateWidth(int min_width)
+void MenuStrip::CalculateWidth(int minWIdth)
 {
 	int max_width = 0;
 	Font* font = layout->font;
@@ -52,11 +52,11 @@ void MenuStrip::CalculateWidth(int min_width)
 			max_width = width;
 	}
 
-	size = Int2(max_width + (layout->padding.x + layout->item_padding.x) * 2,
-		(font->height + (layout->item_padding.y) * 2) * items.size() + layout->padding.y * 2);
+	size = Int2(max_width + (layout->padding.x + layout->itemPadding.x) * 2,
+		(font->height + (layout->itemPadding.y) * 2) * items.size() + layout->padding.y * 2);
 
-	if(size.x < min_width)
-		size.x = min_width;
+	if(size.x < minWIdth)
+		size.x = minWIdth;
 
 	SetOnCharHandler(true);
 }
@@ -71,7 +71,7 @@ void MenuStrip::Draw()
 	gui->DrawArea(area, layout->background);
 
 	Vec2 item_size((float)size.x - (layout->padding.x) * 2,
-		(float)layout->font->height + layout->item_padding.y * 2);
+		(float)layout->font->height + layout->itemPadding.y * 2);
 	area.v1 = Vec2(globalPos + layout->padding);
 	area.v2 = area.v1 + item_size;
 	float offset = item_size.y;
@@ -80,16 +80,16 @@ void MenuStrip::Draw()
 	for(Item& item : items)
 	{
 		if(item.hover)
-			gui->DrawArea(area, layout->button_hover);
+			gui->DrawArea(area, layout->buttonHover);
 
 		Color color;
 		if(!item.enabled)
-			color = layout->font_color_disabled;
+			color = layout->fontColorDisabled;
 		else if(item.hover)
-			color = layout->font_color_hover;
+			color = layout->fontColorHover;
 		else
-			color = layout->font_color;
-		r = Rect(area, layout->item_padding);
+			color = layout->fontColor;
+		r = Rect(area, layout->itemPadding);
 		gui->DrawText(layout->font, item.text, DTF_LEFT, color, r);
 
 		area += Vec2(0, offset);
@@ -171,7 +171,7 @@ void MenuStrip::UpdateMouse()
 	}
 
 	Vec2 item_size((float)size.x - (layout->padding.x) * 2,
-		(float)layout->font->height + layout->item_padding.y * 2);
+		(float)layout->font->height + layout->itemPadding.y * 2);
 	area.v1 = Vec2(globalPos + layout->padding);
 	area.v2 = area.v1 + item_size;
 	float offset = item_size.y;
@@ -211,13 +211,13 @@ void MenuStrip::UpdateKeyboard()
 		ChangeIndex(-1);
 	else if(input->PressedRelease(Key::Left))
 	{
-		if(parent_menu_bar)
-			parent_menu_bar->ChangeMenu(-1);
+		if(parentMenuBar)
+			parentMenuBar->ChangeMenu(-1);
 	}
 	else if(input->PressedRelease(Key::Right))
 	{
-		if(parent_menu_bar)
-			parent_menu_bar->ChangeMenu(+1);
+		if(parentMenuBar)
+			parentMenuBar->ChangeMenu(+1);
 	}
 	else if(input->PressedRelease(Key::Enter))
 	{

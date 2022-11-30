@@ -7,10 +7,10 @@ static const int INVALID_INDEX = -1;
 static const float TIMER = 0.3f;
 
 //=================================================================================================
-void TooltipController::Init(Callback get_text)
+void TooltipController::Init(Callback getText)
 {
-	assert(get_text);
-	this->get_text = get_text;
+	assert(getText);
+	this->getText = getText;
 	Clear();
 }
 
@@ -106,34 +106,34 @@ void TooltipController::Draw()
 	Rect r;
 
 	// big text
-	if(!big_text.empty())
+	if(!bigText.empty())
 	{
-		r = r_big_text;
+		r = rBigText;
 		r += pos;
-		gui->DrawText(layout->font_big, big_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a), r);
+		gui->DrawText(layout->fontBig, bigText, DTF_PARSE_SPECIAL, Color(0, 0, 0, a), r);
 	}
 
 	// text
 	if(!text.empty())
 	{
-		r = r_text;
+		r = rText;
 		r += pos;
 		gui->DrawText(layout->font, text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a), r);
 	}
 
 	// small text
-	if(!small_text.empty())
+	if(!smallText.empty())
 	{
-		r = r_small_text;
+		r = rSmallText;
 		r += pos;
-		gui->DrawText(layout->font_small, small_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a), r);
+		gui->DrawText(layout->fontSmall, smallText, DTF_PARSE_SPECIAL, Color(0, 0, 0, a), r);
 	}
 }
 
 //=================================================================================================
 void TooltipController::FormatBox(bool refresh)
 {
-	get_text(this, group, id, refresh);
+	getText(this, group, id, refresh);
 
 	if(!anything)
 		return;
@@ -152,15 +152,15 @@ void TooltipController::FormatBox(bool refresh)
 		img_size = Int2::Zero;
 
 	// big text
-	if(!big_text.empty())
+	if(!bigText.empty())
 	{
-		Int2 text_size = layout->font_big->CalculateSize(big_text, 400);
+		Int2 text_size = layout->fontBig->CalculateSize(bigText, 400);
 		w = text_size.x;
 		h = text_size.y + 12;
-		r_big_text.Left() = 0;
-		r_big_text.Right() = w;
-		r_big_text.Top() = 12;
-		r_big_text.Bottom() = h + 12;
+		rBigText.Left() = 0;
+		rBigText.Right() = w;
+		rBigText.Top() = 12;
+		rBigText.Bottom() = h + 12;
 	}
 
 	// text
@@ -174,11 +174,11 @@ void TooltipController::FormatBox(bool refresh)
 		text_size = layout->font->CalculateSize(text, 400);
 		if(text_size.x > w)
 			w = text_size.x;
-		r_text.Left() = 0;
-		r_text.Right() = w;
-		r_text.Top() = h;
+		rText.Left() = 0;
+		rText.Right() = w;
+		rText.Top() = h;
 		h += text_size.y;
-		r_text.Bottom() = h;
+		rText.Bottom() = h;
 	}
 
 	int shift = 12;
@@ -191,27 +191,27 @@ void TooltipController::FormatBox(bool refresh)
 	}
 
 	// small text
-	if(!small_text.empty())
+	if(!smallText.empty())
 	{
 		if(h)
 			h += 5;
-		Int2 text_size = layout->font_small->CalculateSize(small_text, 400);
+		Int2 text_size = layout->fontSmall->CalculateSize(smallText, 400);
 		text_size.x += 12;
 		if(text_size.x > w)
 			w = text_size.x;
-		r_small_text.Left() = 12;
-		r_small_text.Right() = w;
-		r_small_text.Top() = h;
+		rSmallText.Left() = 12;
+		rSmallText.Right() = w;
+		rSmallText.Top() = h;
 		h += text_size.y;
-		r_small_text.Bottom() = h;
+		rSmallText.Bottom() = h;
 
 		int img_bot = img_size.y + 24;
-		if(r_small_text.Top() < img_bot)
+		if(rSmallText.Top() < img_bot)
 		{
-			int dif = r_small_text.SizeY();
-			r_small_text.Top() = img_bot;
-			r_small_text.Bottom() = img_bot + dif;
-			h = r_small_text.Bottom();
+			int dif = rSmallText.SizeY();
+			rSmallText.Top() = img_bot;
+			rSmallText.Bottom() = img_bot + dif;
+			h = rSmallText.Bottom();
 		}
 	}
 	else if(img && h < img_size.y + 12)
@@ -220,8 +220,8 @@ void TooltipController::FormatBox(bool refresh)
 	w += 24;
 	h += 12;
 
-	r_big_text += Int2(shift, 0);
-	r_text += Int2(shift, 0);
+	rBigText += Int2(shift, 0);
+	rText += Int2(shift, 0);
 
 	size = Int2(w, h);
 }

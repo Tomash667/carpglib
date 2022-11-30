@@ -20,7 +20,7 @@ namespace layout
 class TextBox : public Control, public LayoutControl<layout::TextBox>, public OnCharHandler
 {
 public:
-	explicit TextBox(bool is_new = false);
+	explicit TextBox(bool isNew = false);
 	~TextBox();
 
 	// from Control
@@ -33,7 +33,7 @@ public:
 	virtual void OnTextChanged() {}
 
 	void AddScrollbar();
-	void Move(const Int2& globalPos);
+	void Move(const Int2& movePos);
 	void Add(cstring str);
 	void CalculateOffset(bool center);
 	void Reset();
@@ -45,18 +45,18 @@ public:
 	bool IsMultiline() const { return multiline; }
 	bool IsNumeric() const { return numeric; }
 	bool IsReadonly() const { return readonly; }
-	void SetMultiline(bool new_multiline) { assert(!initialized); multiline = new_multiline; }
-	void SetNumeric(bool new_numeric) { numeric = new_numeric; }
-	void SetReadonly(bool new_readonly) { readonly = new_readonly; }
+	void SetMultiline(bool multiline) { assert(!initialized); this->multiline = multiline; }
+	void SetNumeric(bool numeric) { this->numeric = numeric; }
+	void SetReadonly(bool readonly) { this->readonly = readonly; }
 
-	int limit, num_min, num_max;
+	int limit, numMin, numMax;
 	cstring label;
 	Scrollbar* scrollbar;
 
 private:
 	void ValidateNumber();
-	void GetCaretPos(const Int2& in_pos, Int2& index, Int2& pos, uint* char_index = nullptr);
-	void CalculateSelection(const Int2& new_index, const Int2& new_pos);
+	void GetCaretPos(const Int2& inPos, Int2& index, Int2& pos, uint* charIndex = nullptr);
+	void CalculateSelection(const Int2& newIndex, const Int2& newPos);
 	void CalculateSelection(Int2 index1, Int2 pos1, Int2 index2, Int2 pos2);
 	void DeleteSelection();
 	Int2 IndexToPos(const Int2& index);
@@ -64,9 +64,9 @@ private:
 	void UpdateFontLines();
 
 	string text;
-	vector<Font::Line> font_lines;
-	Int2 real_size, text_size, caret_pos, select_start_pos, select_end_pos, caret_index, select_start_index, select_end_index, select_fixed_index;
-	float caret_blink, offset_move;
-	int offset, last_y_move;
-	bool added, down, readonly, multiline, numeric, require_scrollbar;
+	vector<Font::Line> fontLines;
+	Int2 realSize, textSize, caretPos, caretIndex, selectStartPos, selectEndPos, selectStartIndex, selectEndIndex, selectFixedIndex;
+	float caretBlink, offsetMove;
+	int offset, lastYMove;
+	bool added, down, readonly, multiline, numeric, requireScrollbar;
 };

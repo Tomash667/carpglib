@@ -16,13 +16,13 @@ namespace layout
 	struct MenuStrip : public Control
 	{
 		AreaLayout background;
-		AreaLayout button_hover;
+		AreaLayout buttonHover;
 		Font* font;
 		Int2 padding;
-		Int2 item_padding;
-		Color font_color;
-		Color font_color_hover;
-		Color font_color_disabled;
+		Int2 itemPadding;
+		Color fontColor;
+		Color fontColorHover;
+		Color fontColorDisabled;
 	};
 }
 
@@ -39,7 +39,7 @@ public:
 
 		bool IsEnabled() const { return enabled; }
 
-		void SetEnabled(bool _enabled) { enabled = _enabled; }
+		void SetEnabled(bool enabled) { this->enabled = enabled; }
 
 	private:
 		string text;
@@ -50,8 +50,8 @@ public:
 	typedef delegate<void(int)> Handler;
 	typedef delegate<void()> OnCloseHandler;
 
-	MenuStrip(vector<SimpleMenuCtor>& items, int min_width = 0);
-	MenuStrip(vector<GuiElement*>& items, int min_width = 0);
+	MenuStrip(vector<SimpleMenuCtor>& items, int minWIdth = 0);
+	MenuStrip(vector<GuiElement*>& items, int minWIdth = 0);
 	~MenuStrip();
 
 	void Draw() override;
@@ -64,30 +64,30 @@ public:
 	void ShowMenu(const Int2& pos);
 	void OnClose()
 	{
-		if(on_close_handler)
-			on_close_handler();
+		if(onCloseHandler)
+			onCloseHandler();
 	}
 	Item* FindItem(int action);
-	void SetHandler(Handler _handler) { handler = _handler; }
-	void SetOnCloseHandler(OnCloseHandler _on_close_handler) { on_close_handler = _on_close_handler; }
-	void SetOwner(MenuBar* _parent_menu_bar, int _index)
+	void SetHandler(Handler handler) { this->handler = handler; }
+	void SetOnCloseHandler(OnCloseHandler parentMenuBar) { this->onCloseHandler = parentMenuBar; }
+	void SetOwner(MenuBar* parentMenuBar, int menuBarIndex)
 	{
-		parent_menu_bar = _parent_menu_bar;
-		menu_bar_index = _index;
+		this->parentMenuBar = parentMenuBar;
+		this->menuBarIndex = menuBarIndex;
 	}
 	void SetSelectedIndex(int index);
 	bool IsOpen();
 
 private:
-	void CalculateWidth(int min_width);
+	void CalculateWidth(int minWIdth);
 	void ChangeIndex(int dir);
 	void UpdateMouse();
 	void UpdateKeyboard();
 
 	Handler handler;
-	OnCloseHandler on_close_handler;
+	OnCloseHandler onCloseHandler;
 	vector<Item> items;
 	Item* selected;
-	MenuBar* parent_menu_bar;
-	int menu_bar_index;
+	MenuBar* parentMenuBar;
+	int menuBarIndex;
 };

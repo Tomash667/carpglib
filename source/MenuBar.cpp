@@ -21,30 +21,30 @@ void MenuBar::Draw()
 	// items
 	for(Item* item : items)
 	{
-		AreaLayout* area_layout;
-		Color font_color;
+		AreaLayout* areaLayout;
+		Color fontColor;
 		switch(item->mode)
 		{
 		case Item::Up:
 		default:
-			area_layout = &layout->button;
-			font_color = layout->font_color;
+			areaLayout = &layout->button;
+			fontColor = layout->fontColor;
 			break;
 		case Item::Hover:
-			area_layout = &layout->button_hover;
-			font_color = layout->font_color_hover;
+			areaLayout = &layout->buttonHover;
+			fontColor = layout->fontColorHover;
 			break;
 		case Item::Down:
-			area_layout = &layout->button_down;
-			font_color = layout->font_color_down;
+			areaLayout = &layout->buttonDown;
+			fontColor = layout->fontColorDown;
 			break;
 		}
 
 		// item background
-		gui->DrawArea(item->rect, *area_layout);
+		gui->DrawArea(item->rect, *areaLayout);
 
 		// item text
-		gui->DrawText(layout->font, item->text, DTF_CENTER | DTF_VCENTER, font_color, Rect(item->rect));
+		gui->DrawText(layout->font, item->text, DTF_CENTER | DTF_VCENTER, fontColor, Rect(item->rect));
 	}
 }
 
@@ -115,8 +115,8 @@ void MenuBar::AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const 
 {
 	assert(text);
 
-	float item_height = (float)layout->font->height + layout->item_padding.y * 2;
-	float item_width = (float)layout->font->CalculateSize(text).x + layout->item_padding.x * 2;
+	float item_height = (float)layout->font->height + layout->itemPadding.y * 2;
+	float item_width = (float)layout->font->CalculateSize(text).x + layout->itemPadding.x * 2;
 
 	Item* item = new Item;
 	item->text = text;
@@ -136,7 +136,7 @@ void MenuBar::Update(bool move, bool resize)
 	if(move)
 		globalPos = parent->globalPos;
 	if(resize)
-		size = Int2(parent->size.x, layout->font->height + layout->padding.y + layout->item_padding.y * 2);
+		size = Int2(parent->size.x, layout->font->height + layout->padding.y + layout->itemPadding.y * 2);
 	rect = Box2d::Create(globalPos, size);
 	if(move)
 	{

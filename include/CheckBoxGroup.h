@@ -13,7 +13,7 @@ namespace layout
 		AreaLayout box;
 		AreaLayout checked;
 		Font* font;
-		Color font_color;
+		Color fontColor;
 	};
 }
 

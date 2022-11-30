@@ -4,7 +4,7 @@
 #include "Input.h"
 
 //=================================================================================================
-GuiContainer::GuiContainer() : focus(false), focus_ctrl(nullptr), give_focus(nullptr)
+GuiContainer::GuiContainer() : focus(false), focusCtrl(nullptr), giveFocus(nullptr)
 {
 }
 
@@ -19,7 +19,7 @@ void GuiContainer::Draw()
 void GuiContainer::Update(float dt)
 {
 	// przeka¿ focus kontrolce
-	if(focus && give_focus)
+	if(focus && giveFocus)
 		CheckGiveFocus();
 
 	// aktualizuj
@@ -30,10 +30,10 @@ void GuiContainer::Update(float dt)
 			it->first->mouseFocus = focus;
 		if(focus)
 		{
-			if(!focus_ctrl && IsSet(it->second, F_FOCUS))
+			if(!focusCtrl && IsSet(it->second, F_FOCUS))
 			{
-				focus_ctrl = it->first;
-				focus_ctrl->GainFocus();
+				focusCtrl = it->first;
+				focusCtrl->GainFocus();
 			}
 			if(IsSet(it->second, F_CLICK_TO_FOCUS))
 			{
@@ -41,10 +41,10 @@ void GuiContainer::Update(float dt)
 				{
 					if(!it->first->focus)
 					{
-						if(focus_ctrl)
-							focus_ctrl->LostFocus();
-						focus_ctrl = it->first;
-						focus_ctrl->GainFocus();
+						if(focusCtrl)
+							focusCtrl->LostFocus();
+						focusCtrl = it->first;
+						focusCtrl->GainFocus();
 					}
 				}
 			}
@@ -59,7 +59,7 @@ void GuiContainer::Update(float dt)
 		Iter begin = items.begin(), end = items.end(), start;
 		for(start = begin; start != end; ++start)
 		{
-			if(start->first == focus_ctrl)
+			if(start->first == focusCtrl)
 				break;
 		}
 		if(start == end)
@@ -122,10 +122,10 @@ void GuiContainer::Update(float dt)
 		// zmiana focus
 		if(new_item != end)
 		{
-			if(focus_ctrl)
-				focus_ctrl->LostFocus();
-			focus_ctrl = new_item->first;
-			focus_ctrl->GainFocus();
+			if(focusCtrl)
+				focusCtrl->LostFocus();
+			focusCtrl = new_item->first;
+			focusCtrl->GainFocus();
 		}
 	}
 }
@@ -138,16 +138,16 @@ void GuiContainer::GainFocus()
 
 	focus = true;
 	// aktywuj coœ
-	if(give_focus)
+	if(giveFocus)
 		CheckGiveFocus();
-	else if(!focus_ctrl)
+	else if(!focusCtrl)
 	{
 		for(Iter it = items.begin(), end = items.end(); it != end; ++it)
 		{
 			if(IsSet(it->second, F_FOCUS))
 			{
-				focus_ctrl = it->first;
-				focus_ctrl->GainFocus();
+				focusCtrl = it->first;
+				focusCtrl->GainFocus();
 				break;
 			}
 		}
@@ -161,10 +161,10 @@ void GuiContainer::LostFocus()
 		return;
 
 	focus = false;
-	if(focus_ctrl)
+	if(focusCtrl)
 	{
-		focus_ctrl->LostFocus();
-		focus_ctrl = nullptr;
+		focusCtrl->LostFocus();
+		focusCtrl = nullptr;
 	}
 }
 
@@ -181,19 +181,19 @@ void GuiContainer::CheckGiveFocus()
 	bool ok = false;
 	for(Iter it = items.begin(), end = items.end(); it != end; ++it)
 	{
-		if(it->first == give_focus)
+		if(it->first == giveFocus)
 		{
-			if(focus_ctrl != it->first)
+			if(focusCtrl != it->first)
 			{
-				if(focus_ctrl)
-					focus_ctrl->LostFocus();
-				focus_ctrl = give_focus;
-				focus_ctrl->GainFocus();
+				if(focusCtrl)
+					focusCtrl->LostFocus();
+				focusCtrl = giveFocus;
+				focusCtrl->GainFocus();
 			}
 			ok = true;
 			break;
 		}
 	}
-	give_focus = nullptr;
+	giveFocus = nullptr;
 	assert(ok);
 }

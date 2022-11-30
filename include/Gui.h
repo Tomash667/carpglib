@@ -124,7 +124,7 @@ public:
 	~Gui();
 	void Init();
 	void SetText(cstring ok, cstring yes, cstring no, cstring cancel);
-	void Draw(bool draw_layers, bool draw_dialogs);
+	void Draw(bool drawLayers, bool drawDialogs);
 	bool AddFont(cstring filename);
 	Font* GetFont(cstring name, int size, int weight = 4, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)
@@ -138,10 +138,10 @@ public:
 		/$n - nie przerywaj tekstu a¿ do nastêpnego takiego symbolu (np $njakiœ tekst$n - ten tekst nigdy nie zostanie rozdzielony pomiêdzy dwie linijki)
 	*/
 	bool DrawText(Font* font, Cstring str, uint flags, Color color, const Rect& rect, const Rect* clipping = nullptr,
-		vector<Hitbox>* hitboxes = nullptr, int* hitbox_counter = nullptr, const vector<TextLine>* lines = nullptr);
+		vector<Hitbox>* hitboxes = nullptr, int* hitboxCounter = nullptr, const vector<TextLine>* lines = nullptr);
 	void Add(Control* ctrl);
-	void DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Color color, int corner = 16, int size = 64, const Box2d* clip_rect = nullptr);
-	void Update(float dt, float mouse_speed);
+	void DrawItem(Texture* t, const Int2& itemPos, const Int2& itemSize, Color color, int corner = 16, int size = 64, const Box2d* clipRect = nullptr);
+	void Update(float dt, float mouseSpeed);
 	void DrawSprite(Texture* t, const Int2& pos, Color color = Color::White, const Rect* clipping = nullptr);
 	void OnChar(char c);
 	DialogBox* ShowDialog(const DialogInfo& info);
@@ -164,7 +164,7 @@ public:
 	void DrawSpriteTransform(Texture* t, const Matrix& mat, Color color = Color::White);
 	void DrawLine(const Vec2& from, const Vec2& to, Color color = Color::Black, float width = 1.f);
 	bool NeedCursor();
-	bool DrawText3D(Font* font, Cstring text, uint flags, Color color, const Vec3& pos, Rect* text_rect = nullptr);
+	bool DrawText3D(Font* font, Cstring text, uint flags, Color color, const Vec3& pos, Rect* textRect = nullptr);
 	bool To2dPoint(const Vec3& pos, Int2& pt);
 	static bool Intersect(vector<Hitbox>& hitboxes, const Int2& pt, int* index, int* index2 = nullptr);
 	void DrawSpriteTransformPart(Texture* t, const Matrix& mat, const Rect& part, Color color = Color::White);
@@ -172,14 +172,14 @@ public:
 	bool HavePauseDialog() const;
 	DialogBox* GetDialog(cstring name);
 	void DrawSprite2(Texture* t, const Matrix& mat, const Rect* part = nullptr, const Rect* clipping = nullptr, Color color = Color::White);
-	void DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* clip_rect = nullptr);
-	void DrawArea(Color color, const Rect& rect, const Box2d* clip_rect = nullptr)
+	void DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* clipRect = nullptr);
+	void DrawArea(Color color, const Rect& rect, const Box2d* clipRect = nullptr)
 	{
-		DrawArea(color, rect.LeftTop(), rect.Size(), clip_rect);
+		DrawArea(color, rect.LeftTop(), rect.Size(), clipRect);
 	}
 	void SetLayout(Layout* layout);
 	Layout* GetLayout() const { return masterLayout; }
-	void DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect = nullptr, Color* tint = nullptr);
+	void DrawArea(const Box2d& rect, const AreaLayout& areaLayout, const Box2d* clipRect = nullptr, Color* tint = nullptr);
 	void SetOverlay(Overlay* overlay) { this->overlay = overlay; }
 	Overlay* GetOverlay() const { return overlay; }
 	bool MouseMoved() const { return cursorPos != prevCursorPos; }
@@ -196,7 +196,7 @@ public:
 		Rect rect;
 		const Rect* clipping;
 		vector<Hitbox>* hitboxes;
-		int* hitbox_counter;
+		int* hitboxCounter;
 		const vector<TextLine>* lines;
 		Vec2 scale;
 		uint linesStart;
@@ -204,7 +204,7 @@ public:
 		uint strLength;
 
 		DrawTextOptions(Font* font, Cstring str) : font(font), str(str), rect(Rect::Zero), flags(DTF_LEFT), color(Color::Black),
-			clipping(nullptr), hitboxes(nullptr), hitbox_counter(nullptr), lines(nullptr), scale(Vec2::One), linesStart(0), linesEnd(UINT_MAX),
+			clipping(nullptr), hitboxes(nullptr), hitboxCounter(nullptr), lines(nullptr), scale(Vec2::One), linesStart(0), linesEnd(UINT_MAX),
 			strLength(strlen(str))
 		{
 		}

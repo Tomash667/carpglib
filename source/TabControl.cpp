@@ -6,7 +6,7 @@
 
 static ObjectPool<TabControl::Tab> tab_pool;
 
-TabControl::TabControl(bool own_panels) : selected(nullptr), hover(nullptr), own_panels(own_panels), tab_offset(0), tab_offset_max(0), arrow_hover(0)
+TabControl::TabControl(bool ownPanels) : selected(nullptr), hover(nullptr), ownPanels(ownPanels), tabOffset(0), tabOffsetMax(0), arrowHover(0)
 {
 }
 
@@ -42,24 +42,24 @@ void TabControl::Draw()
 	gui->DrawArea(line, layout->line);
 
 	Box2d rectf;
-	if(tab_offset > 0)
+	if(tabOffset > 0)
 	{
 		rectf.v1.x = (float)globalPos.x;
-		rectf.v1.y = (float)globalPos.y + (height - layout->button_prev.size.y) / 2;
-		rectf.v2 = rectf.v1 + Vec2(layout->button_prev.size);
-		gui->DrawArea(rectf, arrow_hover == -1 ? layout->button_prev_hover : layout->button_prev);
+		rectf.v1.y = (float)globalPos.y + (height - layout->buttonPrev.size.y) / 2;
+		rectf.v2 = rectf.v1 + Vec2(layout->buttonPrev.size);
+		gui->DrawArea(rectf, arrowHover == -1 ? layout->buttonPrevHover : layout->buttonPrev);
 	}
 
-	if(tab_offset_max != tabs.size())
+	if(tabOffsetMax != tabs.size())
 	{
-		rectf.v1.x = (float)globalPos.x + size.x - layout->button_next.size.x;
-		rectf.v1.y = (float)globalPos.y + (height - layout->button_next.size.y) / 2;
-		rectf.v2 = rectf.v1 + Vec2(layout->button_next.size);
-		gui->DrawArea(rectf, arrow_hover == 1 ? layout->button_next_hover : layout->button_next);
+		rectf.v1.x = (float)globalPos.x + size.x - layout->buttonNext.size.x;
+		rectf.v1.y = (float)globalPos.y + (height - layout->buttonNext.size.y) / 2;
+		rectf.v2 = rectf.v1 + Vec2(layout->buttonNext.size);
+		gui->DrawArea(rectf, arrowHover == 1 ? layout->buttonNextHover : layout->buttonNext);
 	}
 
 	Rect rect;
-	for(int i = tab_offset; i < tab_offset_max; ++i)
+	for(int i = tabOffset; i < tabOffsetMax; ++i)
 	{
 		Tab* tab = tabs[i];
 		AreaLayout* button;
@@ -70,28 +70,28 @@ void TabControl::Draw()
 		default:
 		case Tab::Up:
 			button = &layout->button;
-			color = layout->font_color;
+			color = layout->fontColor;
 			break;
 		case Tab::Hover:
-			button = &layout->button_hover;
-			color = layout->font_color_hover;
+			button = &layout->buttonHover;
+			color = layout->fontColorHover;
 			break;
 		case Tab::Down:
-			button = &layout->button_down;
-			color = layout->font_color_down;
+			button = &layout->buttonDown;
+			color = layout->fontColorDown;
 			break;
 		}
-		if(tab->close_hover)
-			close = &layout->close_hover;
+		if(tab->closeHover)
+			close = &layout->closeHover;
 		else
 			close = &layout->close;
 
 		gui->DrawArea(tab->rect, *button);
 		rect = Rect(tab->rect, layout->padding);
 		gui->DrawText(layout->font, tab->text, DTF_LEFT | DTF_VCENTER, color, rect);
-		gui->DrawArea(tab->close_rect, *close);
+		gui->DrawArea(tab->closeRect, *close);
 
-		if(tab->have_changes)
+		if(tab->haveChanges)
 			gui->DrawArea(Color::Red, Int2(tab->rect.LeftTop()), Int2(2, (int)tab->rect.SizeY()));
 	}
 
@@ -119,53 +119,53 @@ void TabControl::Event(GuiEvent e)
 
 void TabControl::Update(float dt)
 {
-	arrow_hover = 0;
+	arrowHover = 0;
 
 	if(hover)
 	{
 		hover->mode = Tab::Up;
-		hover->close_hover = false;
+		hover->closeHover = false;
 		hover = nullptr;
 	}
 	if(selected)
-		selected->close_hover = false;
+		selected->closeHover = false;
 
 	if(mouseFocus && IsInside(gui->cursorPos))
 	{
 		Box2d rectf;
-		if(tab_offset > 0)
+		if(tabOffset > 0)
 		{
 			rectf.v1.x = (float)globalPos.x;
-			rectf.v1.y = (float)globalPos.y + (height - layout->button_prev.size.y) / 2;
-			rectf.v2 = rectf.v1 + Vec2(layout->button_prev.size);
+			rectf.v1.y = (float)globalPos.y + (height - layout->buttonPrev.size.y) / 2;
+			rectf.v2 = rectf.v1 + Vec2(layout->buttonPrev.size);
 			if(rectf.IsInside(gui->cursorPos))
 			{
-				arrow_hover = -1;
+				arrowHover = -1;
 				if(input->Pressed(Key::LeftButton))
 				{
-					--tab_offset;
+					--tabOffset;
 					CalculateTabOffsetMax();
 				}
 			}
 		}
 
-		if(tab_offset_max != tabs.size())
+		if(tabOffsetMax != tabs.size())
 		{
-			rectf.v1.x = (float)globalPos.x + size.x - layout->button_next.size.x;
-			rectf.v1.y = (float)globalPos.y + (height - layout->button_next.size.y) / 2;
-			rectf.v2 = rectf.v1 + Vec2(layout->button_next.size);
+			rectf.v1.x = (float)globalPos.x + size.x - layout->buttonNext.size.x;
+			rectf.v1.y = (float)globalPos.y + (height - layout->buttonNext.size.y) / 2;
+			rectf.v2 = rectf.v1 + Vec2(layout->buttonNext.size);
 			if(rectf.IsInside(gui->cursorPos))
 			{
-				arrow_hover = 1;
+				arrowHover = 1;
 				if(input->Pressed(Key::LeftButton))
 				{
-					++tab_offset;
+					++tabOffset;
 					CalculateTabOffsetMax();
 				}
 			}
 		}
 
-		for(int i = tab_offset; i < tab_offset_max; ++i)
+		for(int i = tabOffset; i < tabOffsetMax; ++i)
 		{
 			Tab* tab = tabs[i];
 			if(tab->rect.IsInside(gui->cursorPos))
@@ -175,9 +175,9 @@ void TabControl::Update(float dt)
 					hover = tab;
 					hover->mode = Tab::Hover;
 				}
-				if(tab->close_rect.IsInside(gui->cursorPos))
+				if(tab->closeRect.IsInside(gui->cursorPos))
 				{
-					tab->close_hover = true;
+					tab->closeHover = true;
 					if(input->Pressed(Key::LeftButton))
 						tab->Close();
 				}
@@ -207,9 +207,9 @@ TabControl::Tab* TabControl::AddTab(cstring id, cstring text, Panel* panel, bool
 	tab->text = text;
 	tab->panel = panel;
 	tab->mode = Tab::Up;
-	tab->close_hover = false;
+	tab->closeHover = false;
 	tab->size = layout->font->CalculateSize(text) + layout->padding * 2 + Int2(layout->close.size.x + layout->padding.x, 0);
-	tab->have_changes = false;
+	tab->haveChanges = false;
 	tabs.push_back(tab);
 	CalculateTabOffsetMax();
 
@@ -235,7 +235,7 @@ TabControl::Tab* TabControl::AddTab(cstring id, cstring text, Panel* panel, bool
 
 void TabControl::Clear()
 {
-	if(own_panels)
+	if(ownPanels)
 	{
 		for(Tab* tab : tabs)
 			delete tab->panel;
@@ -243,8 +243,8 @@ void TabControl::Clear()
 	tab_pool.Free(tabs);
 	selected = nullptr;
 	hover = nullptr;
-	total_width = 0;
-	arrow_hover = 0;
+	totalWidth = 0;
+	arrowHover = 0;
 }
 
 TabControl::Tab* TabControl::Find(cstring id)
@@ -259,13 +259,13 @@ TabControl::Tab* TabControl::Find(cstring id)
 
 Int2 TabControl::GetAreaPos() const
 {
-	int height = layout->font->height + layout->padding_active.y;
+	int height = layout->font->height + layout->paddingActive.y;
 	return Int2(0, height);
 }
 
 Int2 TabControl::GetAreaSize() const
 {
-	int height = layout->font->height + layout->padding_active.y;
+	int height = layout->font->height + layout->paddingActive.y;
 	return Int2(size.x, size.y - height);
 }
 
@@ -296,12 +296,12 @@ void TabControl::Close(Tab* tab)
 	}
 	tab_pool.Free(tab);
 	tabs.erase(tabs.begin() + index);
-	if(tab_offset > (int)tabs.size())
-		--tab_offset;
+	if(tabOffset > (int)tabs.size())
+		--tabOffset;
 	CalculateTabOffsetMax();
 }
 
-void TabControl::Select(Tab* tab, bool scroll_to)
+void TabControl::Select(Tab* tab, bool scrollTo)
 {
 	if(tab == selected)
 		return;
@@ -309,7 +309,7 @@ void TabControl::Select(Tab* tab, bool scroll_to)
 	{
 		if(selected == hover)
 			hover = nullptr;
-		if(tab && scroll_to)
+		if(tab && scrollTo)
 			ScrollTo(tab);
 	}
 }
@@ -325,11 +325,11 @@ void TabControl::Update(bool move, bool resize)
 
 	if(resize)
 	{
-		height = layout->font->height + layout->padding_active.y;
-		allowed_size = (int)(size.x - layout->button_prev.size.x - layout->button_next.region.SizeX());
+		height = layout->font->height + layout->paddingActive.y;
+		allowedSize = (int)(size.x - layout->buttonPrev.size.x - layout->buttonNext.region.SizeX());
 	}
 
-	int p = (layout->padding_active.y - layout->padding.y);
+	int p = (layout->paddingActive.y - layout->padding.y);
 	line.v1.x = (float)globalPos.x;
 	line.v2.x = (float)globalPos.x + size.x;
 	line.v1.y = (float)(globalPos.y + height - p / 2);
@@ -338,33 +338,33 @@ void TabControl::Update(bool move, bool resize)
 
 void TabControl::CalculateRect()
 {
-	total_width = (int)layout->button_prev.size.x;
-	for(int i = tab_offset; i < tab_offset_max; ++i)
+	totalWidth = (int)layout->buttonPrev.size.x;
+	for(int i = tabOffset; i < tabOffsetMax; ++i)
 	{
 		Tab* tab = tabs[i];
-		CalculateRect(*tab, total_width);
-		total_width += tab->size.x;
+		CalculateRect(*tab, totalWidth);
+		totalWidth += tab->size.x;
 	}
 }
 
 void TabControl::CalculateRect(Tab& tab, int offset)
 {
-	Int2 pad = (tab.mode == Tab::Down ? layout->padding_active : layout->padding);
-	int p = (layout->padding_active.y - layout->padding.y);
+	Int2 pad = (tab.mode == Tab::Down ? layout->paddingActive : layout->padding);
+	int p = (layout->paddingActive.y - layout->padding.y);
 
 	tab.rect.v1 = Vec2((float)globalPos.x + offset, (float)globalPos.y);
 	tab.rect.v2 = tab.rect.v1 + Vec2(tab.size);
 	if(tab.mode == Tab::Down)
-		tab.rect.v2.y += (layout->padding_active.y - layout->padding.y);
+		tab.rect.v2.y += (layout->paddingActive.y - layout->padding.y);
 	else
 	{
 		tab.rect.v1.y += p / 2;
 		tab.rect.v1.y += p;
 	}
 
-	tab.close_rect.v1.x = tab.rect.v2.x - pad.x - layout->close.size.x;
-	tab.close_rect.v1.y = tab.rect.v1.y + (tab.rect.SizeY() - layout->close.size.y) / 2;
-	tab.close_rect.v2 = tab.close_rect.v1 + Vec2(layout->close.size);
+	tab.closeRect.v1.x = tab.rect.v2.x - pad.x - layout->close.size.x;
+	tab.closeRect.v1.y = tab.rect.v1.y + (tab.rect.SizeY() - layout->close.size.y) / 2;
+	tab.closeRect.v2 = tab.closeRect.v1 + Vec2(layout->close.size);
 }
 
 bool TabControl::SelectInternal(Tab* tab)
@@ -404,9 +404,9 @@ void TabControl::ScrollTo(Tab* tab)
 {
 	assert(tab);
 	int index = GetIndex(tabs, tab);
-	if(index >= tab_offset && index < tab_offset_max)
+	if(index >= tabOffset && index < tabOffsetMax)
 		return;
-	tab_offset = index;
+	tabOffset = index;
 	CalculateTabOffsetMax();
 }
 
@@ -414,24 +414,24 @@ void TabControl::CalculateTabOffsetMax()
 {
 	int width = 0;
 
-	for(int i = tab_offset, count = tabs.size(); i < count; ++i)
+	for(int i = tabOffset, count = tabs.size(); i < count; ++i)
 	{
 		width += tabs[i]->size.x;
-		if(width > allowed_size)
+		if(width > allowedSize)
 		{
-			tab_offset_max = i;
+			tabOffsetMax = i;
 			CalculateRect();
 			return;
 		}
 	}
 
-	tab_offset_max = tabs.size();
+	tabOffsetMax = tabs.size();
 
-	for(int i = tab_offset - 1; i >= 0; --i)
+	for(int i = tabOffset - 1; i >= 0; --i)
 	{
 		width += tabs[i]->size.x;
-		if(width < allowed_size)
-			--tab_offset;
+		if(width < allowedSize)
+			--tabOffset;
 	}
 
 	CalculateRect();

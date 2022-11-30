@@ -41,43 +41,43 @@ void Slider::Update(float dt)
 
 	if(hold)
 	{
-		if(hold_state == -1)
+		if(holdState == -1)
 		{
 			if(bt[0].state == Button::NONE)
-				hold_state = 0;
+				holdState = 0;
 			else
 			{
-				if(hold_tmp > 0.f)
-					hold_tmp = 0.f;
-				hold_tmp -= hold_val*dt;
-				int count = (int)ceil(hold_tmp);
+				if(holdTmp > 0.f)
+					holdTmp = 0.f;
+				holdTmp -= holdVal * dt;
+				int count = (int)ceil(holdTmp);
 				if(count)
 				{
 					val += count;
 					if(val < minv)
 						val = minv;
-					hold_tmp -= count;
+					holdTmp -= count;
 					parent->Event((GuiEvent)id);
 					minstep = true;
 				}
 			}
 		}
-		else if(hold_state == +1)
+		else if(holdState == +1)
 		{
 			if(bt[1].state == Button::NONE)
-				hold_state = 0;
+				holdState = 0;
 			else
 			{
-				if(hold_tmp < 0.f)
-					hold_tmp = 0.f;
-				hold_tmp += hold_val*dt;
-				int count = (int)floor(hold_tmp);
+				if(holdTmp < 0.f)
+					holdTmp = 0.f;
+				holdTmp += holdVal * dt;
+				int count = (int)floor(holdTmp);
 				if(count)
 				{
 					val += count;
 					if(val > maxv)
 						val = maxv;
-					hold_tmp -= count;
+					holdTmp -= count;
 					parent->Event((GuiEvent)id);
 					minstep = true;
 				}
@@ -96,10 +96,10 @@ void Slider::Event(GuiEvent e)
 			if(hold)
 			{
 				if(bt[0].state == Button::DOWN)
-					hold_state = -1;
+					holdState = -1;
 				else
 				{
-					hold_state = 0;
+					holdState = 0;
 					if(!minstep)
 					{
 						--val;
@@ -122,10 +122,10 @@ void Slider::Event(GuiEvent e)
 			if(hold)
 			{
 				if(bt[1].state == Button::DOWN)
-					hold_state = +1;
+					holdState = +1;
 				else
 				{
-					hold_state = 0;
+					holdState = 0;
 					if(!minstep)
 					{
 						++val;
@@ -149,6 +149,6 @@ void Slider::SetHold(bool _hold)
 	hold = _hold;
 	for(int i = 0; i < 2; ++i)
 		bt[i].hold = hold;
-	hold_tmp = 0.f;
-	hold_state = 0;
+	holdTmp = 0.f;
+	holdState = 0;
 }

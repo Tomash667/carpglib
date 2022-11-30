@@ -34,7 +34,7 @@ void CheckBoxGroup::Draw()
 		gui->DrawArea(r, item->checked ? layout->checked : layout->box);
 
 		re = Rect(text_x, text_y, globalPos.x + size.x - 2, text_y + offset + 50);
-		gui->DrawText(layout->font, item->name, DTF_LEFT | DTF_SINGLELINE, layout->font_color, re);
+		gui->DrawText(layout->font, item->name, DTF_LEFT | DTF_SINGLELINE, layout->fontColor, re);
 
 		offset += rowHeight;
 	}

@@ -167,7 +167,7 @@ void FlowContainer::Draw()
 					gui->DrawArea(Box2d(out), layout->selection);
 			}
 
-			if(!gui->DrawText(fi->type == FlowItem::Section ? layout->font_section : layout->font, fi->text, flags,
+			if(!gui->DrawText(fi->type == FlowItem::Section ? layout->fontSection : layout->font, fi->text, flags,
 				(fi->state != Button::DISABLED ? Color::Black : Color(64, 64, 64)), rect, &clip))
 				break;
 		}
@@ -262,7 +262,7 @@ void FlowContainer::Reposition()
 			}
 			else
 			{
-				fi->size = layout->font_section->CalculateSize(fi->text, sizex);
+				fi->size = layout->fontSection->CalculateSize(fi->text, sizex);
 				fi->pos = Int2(2, y);
 			}
 			have_button = false;

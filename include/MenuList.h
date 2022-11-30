@@ -30,7 +30,7 @@ public:
 	void Reset();
 	void AddItem(GuiElement* e);
 	void AddItem(cstring text) { AddItem(new DefaultGuiElement(text)); }
-	void AddItems(vector<GuiElement*>& items, bool items_owner = true);
+	void AddItems(vector<GuiElement*>& items, bool itemsOwner = true);
 	int GetIndex() { return selected; }
 	GuiElement* GetItem() { return selected == -1 ? nullptr : items[selected]; }
 	void PrepareItem(cstring text);
@@ -42,5 +42,5 @@ public:
 
 private:
 	int w, selected;
-	bool items_owner;
+	bool itemsOwner;
 };

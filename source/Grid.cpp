@@ -4,7 +4,7 @@
 #include "Input.h"
 
 //=================================================================================================
-Grid::Grid() : items(0), height(20), selected(-1), allow_select(true), single_line(false), select_event(nullptr)
+Grid::Grid() : items(0), height(20), selected(-1), allowSelect(true), singleLine(false), selectEvent(nullptr)
 {
 }
 
@@ -39,7 +39,7 @@ void Grid::Draw()
 	Rect clip_r;
 
 	uint text_flags = DTF_CENTER | DTF_VCENTER;
-	if(single_line)
+	if(singleLine)
 		text_flags |= DTF_SINGLELINE;
 
 	for(int i = 0; i < items; ++i)
@@ -63,9 +63,9 @@ void Grid::Draw()
 			clip_state = 0;
 
 		// zaznaczenie t³a
-		if(i == selected && allow_select)
+		if(i == selected && allowSelect)
 		{
-			Rect r2 = { x, y, x + total_width, y + height };
+			Rect r2 = { x, y, x + totalWidth, y + height };
 			if(clip_state == 1)
 				r2.Top() = globalPos.y + height;
 			else if(clip_state == 2)
@@ -200,19 +200,19 @@ void Grid::Update(float dt)
 {
 	if(input->Focus() && focus)
 	{
-		if(gui->cursorPos.x >= globalPos.x && gui->cursorPos.x < globalPos.x + total_width
+		if(gui->cursorPos.x >= globalPos.x && gui->cursorPos.x < globalPos.x + totalWidth
 			&& gui->cursorPos.y >= globalPos.y + height && gui->cursorPos.y < globalPos.y + size.y)
 		{
 			int n = (gui->cursorPos.y - (globalPos.y + height) + int(scroll.offset)) / height;
 			if(n >= 0 && n < items)
 			{
-				if(allow_select)
+				if(allowSelect)
 				{
 					gui->SetCursorMode(CURSOR_HOVER);
 					if(input->PressedRelease(Key::LeftButton))
 						selected = n;
 				}
-				if(select_event)
+				if(selectEvent)
 				{
 					int y = gui->cursorPos.x - globalPos.x, ysum = 0;
 					int col = -1;
@@ -232,9 +232,9 @@ void Grid::Update(float dt)
 					{
 						gui->SetCursorMode(CURSOR_HOVER);
 						if(input->PressedRelease(Key::LeftButton))
-							select_event(n, col, 0);
+							selectEvent(n, col, 0);
 						else if(input->PressedRelease(Key::RightButton))
-							select_event(n, col, 1);
+							selectEvent(n, col, 1);
 					}
 				}
 			}
@@ -256,9 +256,9 @@ void Grid::Init()
 	scroll.part = scroll.size.y;
 	scroll.offset = 0;
 
-	total_width = 0;
+	totalWidth = 0;
 	for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it)
-		total_width += it->width;
+		totalWidth += it->width;
 }
 
 //=================================================================================================

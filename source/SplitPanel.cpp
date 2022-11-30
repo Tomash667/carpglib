@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "SplitPanel.h"
 
-SplitPanel::SplitPanel() : min_size1(0), min_size2(0), panel1(nullptr), panel2(nullptr), allow_move(true), horizontal(true), splitter_size(3)
+SplitPanel::SplitPanel() : minSize1(0), minSize2(0), panel1(nullptr), panel2(nullptr), allowMove(true), horizontal(true), splitterSize(3)
 {
 }
 
@@ -14,7 +14,7 @@ SplitPanel::~SplitPanel()
 void SplitPanel::Draw()
 {
 	gui->DrawArea(Box2d::Create(globalPos, size), layout->background);
-	gui->DrawArea(Box2d(split_global), horizontal ? layout->horizontal : layout->vertical);
+	gui->DrawArea(Box2d(splitGlobal), horizontal ? layout->horizontal : layout->vertical);
 
 	panel1->Draw();
 	panel2->Draw();
@@ -71,19 +71,19 @@ void SplitPanel::Update(GuiEvent e, bool resize, bool move)
 		Int2 size_left = size;
 		if(horizontal)
 		{
-			size_left.x -= splitter_size;
+			size_left.x -= splitterSize;
 			panel1->size = Int2(size_left.x / 2 - padding.x * 2, size_left.y - padding.y * 2);
 			panel1->pos = padding;
-			split = Rect::Create(Int2(panel1->size.x + padding.x * 2, 0), Int2(splitter_size, size.y));
+			split = Rect::Create(Int2(panel1->size.x + padding.x * 2, 0), Int2(splitterSize, size.y));
 			panel2->size = Int2(size_left.x - panel1->size.x - padding.x * 2, size_left.y - padding.y * 2);
 			panel2->pos = Int2(split.p1.x + padding.x, padding.y);
 		}
 		else
 		{
-			size_left.y -= splitter_size;
+			size_left.y -= splitterSize;
 			panel1->size = Int2(size_left.x - padding.x * 2, size_left.y / 2 - padding.y * 2);
 			panel1->pos = padding;
-			split = Rect::Create(Int2(0, panel1->size.y + padding.y), Int2(size.x, splitter_size));
+			split = Rect::Create(Int2(0, panel1->size.y + padding.y), Int2(size.x, splitterSize));
 			panel2->size = Int2(size_left.x - padding.x * 2, size_left.y - panel1->size.y - padding.y * 2);
 			panel2->pos = Int2(padding.x, split.p1.y + padding.y);
 		}
@@ -94,7 +94,7 @@ void SplitPanel::Update(GuiEvent e, bool resize, bool move)
 		globalPos = pos + parent->globalPos;
 		panel1->globalPos = panel1->pos + globalPos;
 		panel2->globalPos = panel2->pos + globalPos;
-		split_global += globalPos;
+		splitGlobal += globalPos;
 	}
 
 	if(e != GuiEvent_Initialize)
@@ -121,5 +121,5 @@ void SplitPanel::SetPanel2(Panel* panel)
 void SplitPanel::SetSplitterSize(uint _splitter_size)
 {
 	assert(!initialized);
-	splitter_size = _splitter_size;
+	this->splitterSize = _splitter_size;
 }

@@ -28,10 +28,10 @@ public:
 	int minv, maxv, val, id;
 	string text;
 	Button bt[2];
-	float hold_val;
+	float holdVal;
 
 private:
-	float hold_tmp;
-	int hold_state;
+	float holdTmp;
+	int holdState;
 	bool hold, minstep;
 };

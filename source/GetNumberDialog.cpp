@@ -220,11 +220,11 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 	self->bts[0].globalPos = self->bts[0].pos + self->globalPos;
 	self->bts[1].globalPos = self->bts[1].pos + self->globalPos;
 	self->textBox.globalPos = self->textBox.pos + self->globalPos;
-	self->textBox.num_min = minValue;
-	self->textBox.num_max = maxValue;
+	self->textBox.numMin = minValue;
+	self->textBox.numMax = maxValue;
 	self->scrollbar.globalPos = self->scrollbar.pos + self->globalPos;
 	self->scrollbar.offset = 0;
-	self->scrollbar.manual_change = true;
+	self->scrollbar.manualChange = true;
 	self->textBox.SetText(Format("%d", *value));
 
 	gui->ShowDialog(self);

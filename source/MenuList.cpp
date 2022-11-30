@@ -4,14 +4,14 @@
 #include "Input.h"
 
 //=================================================================================================
-MenuList::MenuList(bool is_new) : Control(is_new), event_handler(nullptr), w(0), selected(-1), items_owner(true)
+MenuList::MenuList(bool is_new) : Control(is_new), event_handler(nullptr), w(0), selected(-1), itemsOwner(true)
 {
 }
 
 //=================================================================================================
 MenuList::~MenuList()
 {
-	if(items_owner)
+	if(itemsOwner)
 		DeleteElements(items);
 }
 
@@ -88,10 +88,10 @@ void MenuList::AddItem(GuiElement* e)
 }
 
 //=================================================================================================
-void MenuList::AddItems(vector<GuiElement*>& new_items, bool is_owner)
+void MenuList::AddItems(vector<GuiElement*>& newItems, bool itemsOwner)
 {
-	items_owner = is_owner;
-	for(GuiElement* e : new_items)
+	this->itemsOwner = itemsOwner;
+	for(GuiElement* e : newItems)
 	{
 		assert(e);
 		items.push_back(e);

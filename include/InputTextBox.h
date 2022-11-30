@@ -35,16 +35,16 @@ public:
 	void Add(Cstring str);
 	void CheckLines();
 
-	string text, input_str;
+	string text, inputStr;
 	vector<TextLine> lines;
 	vector<string> cache;
-	int max_lines, max_cache, input_counter, last_input_counter;
+	int maxLines, maxCache, inputCounter, lastInputCounter;
 	Scrollbar scrollbar;
-	Int2 textbox_size, inputbox_size, inputbox_pos;
+	Int2 textboxSize, inputboxSize, inputboxPos;
 	InputEvent event;
-	Color background_color;
-	bool added, lose_focus, esc_clear;
+	Color backgroundColor;
+	bool added, loseFocus, escClear;
 
 private:
-	float caret_blink;
+	float caretBlink;
 };

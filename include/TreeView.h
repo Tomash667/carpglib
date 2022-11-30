@@ -20,14 +20,14 @@ namespace layout
 		AreaLayout background;
 		AreaLayout selected;
 		AreaLayout button;
-		AreaLayout button_hover;
-		AreaLayout button_down;
-		AreaLayout button_down_hover;
+		AreaLayout buttonHover;
+		AreaLayout buttonDown;
+		AreaLayout buttonDownHover;
 		Font* font;
-		Color font_color;
-		int level_offset;
-		Texture* text_box_background;
-		Texture* drag_n_drop;
+		Color fontColor;
+		int levelOffset;
+		Texture* textBoxBackground;
+		Texture* dragAndDrop;
 	};
 }
 
@@ -75,7 +75,7 @@ private:
 	};
 
 public:
-	TreeNode(bool is_dir = false);
+	TreeNode(bool isDir = false);
 	virtual ~TreeNode();
 
 	void AddChild(TreeNode* node, bool expand = true);
@@ -100,18 +100,18 @@ public:
 	const string& GetText() const { return text; }
 	TreeView* GetTree() { return tree; }
 	bool IsCollapsed() const { return collapsed; }
-	bool IsDir() const { return is_dir; }
+	bool IsDir() const { return isDir; }
 	bool IsEmpty() const { return childs.empty(); }
 	bool IsRoot() const { return parent == nullptr; }
 	bool IsSelected() const { return selected; }
 
-	void SetCollapsed(bool new_collapsed);
-	void SetData(void* new_data) { data = new_data; }
+	void SetCollapsed(bool collapsed);
+	void SetData(void* data) { this->data = data; }
 	void SetText(Cstring s);
 
 private:
 	void CalculateWidth();
-	void CalculatePath(bool send_event);
+	void CalculatePath(bool sendEvent);
 
 	string text, path;
 	TreeView* tree;
@@ -119,8 +119,8 @@ private:
 	vector<TreeNode*> childs;
 	void* data;
 	Int2 pos;
-	int width, end_offset;
-	bool selected, is_dir, collapsed;
+	int width, endOffset;
+	bool selected, isDir, collapsed;
 };
 
 //-----------------------------------------------------------------------------
@@ -174,15 +174,15 @@ public:
 	TreeNode* GetCurrentNode() { return current; }
 	Handler GetHandler() const { return handler; }
 	MenuStrip* GetMenu() const { return menu; }
-	string& GetNewName() { return new_name; }
-	TreeNode* GetSelectedNode() { return selected_nodes.empty() ? nullptr : selected_nodes[0]; }
-	vector<TreeNode*>& GetSelectedNodes() { return selected_nodes; }
+	string& GetNewName() { return newName; }
+	TreeNode* GetSelectedNode() { return selectedNodes.empty() ? nullptr : selectedNodes[0]; }
+	vector<TreeNode*>& GetSelectedNodes() { return selectedNodes; }
 
-	bool HaveSelected() const { return !selected_nodes.empty(); }
-	bool IsMultipleNodesSelected() const { return selected_nodes.size() > 1u; }
+	bool HaveSelected() const { return !selectedNodes.empty(); }
+	bool IsMultipleNodesSelected() const { return selectedNodes.size() > 1u; }
 
-	void SetHandler(Handler new_handler) { handler = new_handler; }
-	void SetMenu(MenuStrip* new_menu) { menu = new_menu; }
+	void SetHandler(Handler handler) { this->handler = handler; }
+	void SetMenu(MenuStrip* menu) { this->menu = menu; }
 
 private:
 	enum DRAG_MODE
@@ -193,32 +193,32 @@ private:
 	};
 
 	void CalculatePos();
-	void CalculatePos(TreeNode* node, Int2& offset, int& max_width);
+	void CalculatePos(TreeNode* node, Int2& offset, int& maxWidth);
 	bool CanDragAndDrop();
 	void Draw(TreeNode* node);
-	void EndEdit(bool apply, bool set_focus);
+	void EndEdit(bool apply, bool setFocus);
 	TreeNode* GetNextNode(int dir);
 	void MoveCurrent(int dir, bool add);
-	bool MoveNode(TreeNode* node, TreeNode* new_parent);
+	bool MoveNode(TreeNode* node, TreeNode* newParent);
 	void RemoveSelection(TreeNode* node);
 	bool Update(TreeNode* node);
 	void OnSelect(int id);
-	bool SelectNode(TreeNode* node, bool add, bool right_click, bool ctrl);
+	bool SelectNode(TreeNode* node, bool add, bool rightClick, bool ctrl);
 	void SelectRange(TreeNode* node1, TreeNode* node2);
 	void SelectChildNodes();
 	void SelectChildNodes(TreeNode* node);
 	void SelectTopSelectedNodes();
 	void SetTextboxLocation();
 
-	vector<TreeNode*> selected_nodes;
-	TreeNode* current, *hover, *edited, *fixed, *drag_node, *above;
+	vector<TreeNode*> selectedNodes;
+	TreeNode* current, *hover, *edited, *fixed, *dragNode, *above;
 	Handler handler;
 	MenuStrip* menu;
 	Scrollbar hscrollbar, vscrollbar;
-	TextBox* text_box;
-	string new_name;
-	int item_height, level_offset;
+	TextBox* textBox;
+	string newName;
+	int itemHeight, levelOffset;
 	DRAG_MODE drag;
-	Int2 total_size, area_size;
-	Box2d clip_rect;
+	Int2 totalSize, areaSize;
+	Box2d clipRect;
 };

@@ -14,19 +14,19 @@ Window::~Window()
 
 void Window::Draw()
 {
-	gui->DrawArea(body_rect, layout->background);
+	gui->DrawArea(bodyRect, layout->background);
 
 	if(!borderless)
 	{
-		gui->DrawArea(header_rect, layout->header);
+		gui->DrawArea(headerRect, layout->header);
 		if(!text.empty())
 		{
-			Rect r(header_rect, layout->padding);
-			gui->DrawText(layout->font, text, DTF_LEFT | DTF_VCENTER, layout->font_color, r, &r);
+			Rect r(headerRect, layout->padding);
+			gui->DrawText(layout->font, text, DTF_LEFT | DTF_VCENTER, layout->fontColor, r, &r);
 		}
 	}
 
-	Box2d* prevClipRect = gui->SetClipRect(&body_rect);
+	Box2d* prevClipRect = gui->SetClipRect(&bodyRect);
 	Container::Draw();
 	gui->SetClipRect(prevClipRect);
 }
@@ -101,8 +101,8 @@ void Window::Event(GuiEvent e)
 	default:
 		if(e >= GuiEvent_Custom)
 		{
-			if(event_proxy)
-				event_proxy->Event(e);
+			if(eventProxy)
+				eventProxy->Event(e);
 		}
 		else
 			Container::Event(e);
@@ -112,7 +112,7 @@ void Window::Event(GuiEvent e)
 
 void Window::SetAreaSize(const Int2& area_size)
 {
-	Int2 new_size = area_size + Int2(0, layout->header_height);
+	Int2 new_size = area_size + Int2(0, layout->headerHeight);
 	SetSize(new_size);
 }
 
@@ -125,11 +125,11 @@ void Window::SetMenu(MenuBar* _menu)
 
 void Window::CalculateArea()
 {
-	body_rect = Box2d(float(globalPos.x), float(globalPos.y), float(globalPos.x + size.x), float(globalPos.y + size.y));
-	header_rect = Box2d(float(globalPos.x), float(globalPos.y), float(globalPos.x + size.x), float(globalPos.y + layout->header_height));
+	bodyRect = Box2d(float(globalPos.x), float(globalPos.y), float(globalPos.x + size.x), float(globalPos.y + size.y));
+	headerRect = Box2d(float(globalPos.x), float(globalPos.y), float(globalPos.x + size.x), float(globalPos.y + layout->headerHeight));
 	area.v1 = Vec2(0, 0);
 	if(!borderless)
-		area.v1.y += layout->header_height;
+		area.v1.y += layout->headerHeight;
 	if(menu)
 		area.v1.y += menu->size.y;
 	area.v2 = Vec2(size);

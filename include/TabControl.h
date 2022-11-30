@@ -11,20 +11,20 @@ namespace layout
 		AreaLayout background;
 		AreaLayout line;
 		AreaLayout button;
-		AreaLayout button_hover;
-		AreaLayout button_down;
+		AreaLayout buttonHover;
+		AreaLayout buttonDown;
 		AreaLayout close;
-		AreaLayout close_hover;
-		AreaLayout button_prev;
-		AreaLayout button_prev_hover;
-		AreaLayout button_next;
-		AreaLayout button_next_hover;
+		AreaLayout closeHover;
+		AreaLayout buttonPrev;
+		AreaLayout buttonPrevHover;
+		AreaLayout buttonNext;
+		AreaLayout buttonNextHover;
 		Font* font;
 		Int2 padding;
-		Int2 padding_active;
-		Color font_color;
-		Color font_color_hover;
-		Color font_color_down;
+		Int2 paddingActive;
+		Color fontColor;
+		Color fontColorHover;
+		Color fontColorDown;
 	};
 }
 
@@ -48,18 +48,18 @@ public:
 		Panel* panel;
 		Mode mode;
 		Int2 size;
-		Box2d rect, close_rect;
-		bool close_hover, have_changes;
+		Box2d rect, closeRect;
+		bool closeHover, haveChanges;
 
 	public:
 		void Close() { parent->Close(this); }
-		bool GetHaveChanges() const { return have_changes; }
+		bool GetHaveChanges() const { return haveChanges; }
 		const string& GetId() const { return id; }
 		TabControl* GetTabControl() const { return parent; }
 		const string& GetText() const { return text; }
 		bool IsSelected() const { return mode == Mode::Down; }
 		void Select() { parent->Select(this); }
-		void SetHaveChanges(bool _have_changes) { have_changes = _have_changes; }
+		void SetHaveChanges(bool haveChanges) { this->haveChanges = haveChanges; }
 	};
 
 	typedef delegate<bool(int, int)> Handler;
@@ -71,7 +71,7 @@ public:
 		A_BEFORE_CLOSE
 	};
 
-	TabControl(bool own_panels = true);
+	TabControl(bool ownPanels = true);
 	~TabControl();
 
 	void Dock(Control* c) override;
@@ -87,8 +87,8 @@ public:
 	Int2 GetAreaSize() const;
 	Tab* GetCurrentTab() const { return selected; }
 	Handler GetHandler() { return handler; }
-	void Select(Tab* tab, bool scroll_to = true);
-	void SetHandler(Handler _handler) { handler = _handler; }
+	void Select(Tab* tab, bool scrollTo = true);
+	void SetHandler(Handler handler) { this->handler = handler; }
 	void ScrollTo(Tab* tab);
 
 private:
@@ -103,7 +103,7 @@ private:
 	Tab* hover;
 	Box2d line;
 	Handler handler;
-	int height, total_width, tab_offset, tab_offset_max, allowed_size;
-	int arrow_hover; // -1-prev, 0-none, 1-next
-	bool own_panels;
+	int height, totalWidth, tabOffset, tabOffsetMax, allowedSize;
+	int arrowHover; // -1-prev, 0-none, 1-next
+	bool ownPanels;
 };

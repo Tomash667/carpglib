@@ -4,7 +4,7 @@
 #include "Input.h"
 
 //=================================================================================================
-Scrollbar::Scrollbar(bool hscrollbar, bool isNew) : Control(isNew), clicked(false), hscrollbar(hscrollbar), manual_change(false), offset(0.f)
+Scrollbar::Scrollbar(bool hscrollbar, bool isNew) : Control(isNew), clicked(false), hscrollbar(hscrollbar), manualChange(false), offset(0.f)
 {
 }
 
@@ -62,7 +62,7 @@ void Scrollbar::Update(float dt)
 		{
 			if(hscrollbar)
 			{
-				int dif = cpos.x - click_pt.x;
+				int dif = cpos.x - clickedPt.x;
 				float move = float(dif) * total / size.x;
 				bool changed = true;
 				if(offset + move < 0)
@@ -73,13 +73,13 @@ void Scrollbar::Update(float dt)
 					changed = false;
 				offset += move;
 				if(changed)
-					click_pt.x += int(move / total * size.x);
+					clickedPt.x += int(move / total * size.x);
 				else
-					click_pt.x = cpos.x;
+					clickedPt.x = cpos.x;
 			}
 			else
 			{
-				int dif = cpos.y - click_pt.y;
+				int dif = cpos.y - clickedPt.y;
 				float move = float(dif) * total / size.y;
 				bool changed = true;
 				if(offset + move < 0)
@@ -90,9 +90,9 @@ void Scrollbar::Update(float dt)
 					changed = false;
 				offset += move;
 				if(changed)
-					click_pt.y += int(move / total * size.y);
+					clickedPt.y += int(move / total * size.y);
 				else
-					click_pt.y = cpos.y;
+					clickedPt.y = cpos.y;
 			}
 		}
 	}
@@ -105,14 +105,14 @@ void Scrollbar::Update(float dt)
 			{
 				input->SetState(Key::LeftButton, Input::IS_DOWN);
 				clicked = true;
-				click_pt = cpos;
+				clickedPt = cpos;
 			}
 			else
 			{
 				input->SetState(Key::LeftButton, Input::IS_UP);
 				if(pos_o < offset)
 				{
-					if(!manual_change)
+					if(!manualChange)
 					{
 						offset -= part;
 						if(offset < 0)
@@ -123,7 +123,7 @@ void Scrollbar::Update(float dt)
 				}
 				else
 				{
-					if(!manual_change)
+					if(!manualChange)
 					{
 						offset += part;
 						if(offset + part > total)
@@ -167,17 +167,17 @@ bool Scrollbar::ApplyMouseWheel()
 }
 
 //=================================================================================================
-void Scrollbar::UpdateTotal(int new_total)
+void Scrollbar::UpdateTotal(int total)
 {
-	total = new_total;
+	this->total = total;
 	if(offset + part > total)
 		offset = max(0.f, float(total - part));
 }
 
 //=================================================================================================
-void Scrollbar::UpdateOffset(float _change)
+void Scrollbar::UpdateOffset(float change)
 {
-	offset += _change;
+	offset += change;
 	if(offset < 0)
 		offset = 0;
 	else if(offset + part > total)

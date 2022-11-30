@@ -38,6 +38,6 @@ public:
 	void CheckGiveFocus();
 
 	vector<GuiItem> items;
-	Control* focus_ctrl, *give_focus;
+	Control* focusCtrl, *giveFocus;
 	bool focus;
 };

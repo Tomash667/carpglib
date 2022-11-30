@@ -4,7 +4,7 @@
 #include "Input.h"
 
 //=================================================================================================
-InputTextBox::InputTextBox() : added(false), background_color(Color::None)
+InputTextBox::InputTextBox() : added(false), backgroundColor(Color::None)
 {
 }
 
@@ -12,30 +12,30 @@ InputTextBox::InputTextBox() : added(false), background_color(Color::None)
 void InputTextBox::Draw()
 {
 	// t³o
-	if(background_color != Color::None)
+	if(backgroundColor != Color::None)
 	{
-		Rect r0 = { globalPos.x, globalPos.y, globalPos.x + textbox_size.x, globalPos.y + textbox_size.y };
-		gui->DrawArea(background_color, r0);
+		Rect r0 = { globalPos.x, globalPos.y, globalPos.x + textboxSize.x, globalPos.y + textboxSize.y };
+		gui->DrawArea(backgroundColor, r0);
 
-		r0.Top() = inputbox_pos.y;
-		r0.Bottom() = r0.Top() + inputbox_size.y;
-		gui->DrawArea(background_color, r0);
+		r0.Top() = inputboxPos.y;
+		r0.Bottom() = r0.Top() + inputboxSize.y;
+		gui->DrawArea(backgroundColor, r0);
 	}
 
 	// box na tekst
-	gui->DrawArea(Box2d::Create(globalPos, textbox_size), layout->box);
+	gui->DrawArea(Box2d::Create(globalPos, textboxSize), layout->box);
 
 	// box na input
-	gui->DrawArea(Box2d::Create(inputbox_pos, inputbox_size), layout->box);
+	gui->DrawArea(Box2d::Create(inputboxPos, inputboxSize), layout->box);
 
 	// tekst
-	Rect rc = { globalPos.x + 4, globalPos.y + 4, globalPos.x + textbox_size.x - 4, globalPos.y + textbox_size.y - 4 };
+	Rect rc = { globalPos.x + 4, globalPos.y + 4, globalPos.x + textboxSize.x - 4, globalPos.y + textboxSize.y - 4 };
 	Rect r = { rc.Left(), rc.Top() - int(scrollbar.offset), rc.Right(), rc.Bottom() - int(scrollbar.offset) - 20 };
 	gui->DrawText(layout->font, text, 0, Color::Black, r, &rc, nullptr, nullptr, &lines);
 
 	// input
-	Rect r2 = { inputbox_pos.x + 4, inputbox_pos.y, inputbox_pos.x + inputbox_size.x - 4, inputbox_pos.y + inputbox_size.y };
-	gui->DrawText(layout->font, caret_blink >= 0.f ? Format("%s|", input_str.c_str()) : input_str, DTF_LEFT | DTF_VCENTER, Color::Black, r2, &r2);
+	Rect r2 = { inputboxPos.x + 4, inputboxPos.y, inputboxPos.x + inputboxSize.x - 4, inputboxPos.y + inputboxSize.y };
+	gui->DrawText(layout->font, caretBlink >= 0.f ? Format("%s|", inputStr.c_str()) : inputStr, DTF_LEFT | DTF_VCENTER, Color::Black, r2, &r2);
 
 	// scrollbar
 	scrollbar.Draw();
@@ -50,7 +50,7 @@ void InputTextBox::Update(float dt)
 			scrollbar.ApplyMouseWheel();
 
 		bool release_key = false;
-		if(Rect::IsInside(gui->cursorPos, inputbox_pos, inputbox_size))
+		if(Rect::IsInside(gui->cursorPos, inputboxPos, inputboxSize))
 		{
 			gui->SetCursorMode(CURSOR_TEXT);
 			if(!focus && input->Focus() && input->PressedRelease(Key::LeftButton))
@@ -69,78 +69,78 @@ void InputTextBox::Update(float dt)
 	}
 	if(focus)
 	{
-		caret_blink += dt * 2;
-		if(caret_blink >= 1.f)
-			caret_blink = -1.f;
+		caretBlink += dt * 2;
+		if(caretBlink >= 1.f)
+			caretBlink = -1.f;
 		if(input->Focus())
 		{
 			if(input->PressedRelease(Key::Up))
 			{
 				// poprzednia komenda
-				if(input_counter == -1)
+				if(inputCounter == -1)
 				{
-					input_counter = last_input_counter - 1;
-					if(input_counter != -1)
-						input_str = cache[input_counter];
+					inputCounter = lastInputCounter - 1;
+					if(inputCounter != -1)
+						inputStr = cache[inputCounter];
 				}
 				else
 				{
-					--input_counter;
-					if(input_counter == -1)
-						input_counter = last_input_counter - 1;
-					input_str = cache[input_counter];
+					--inputCounter;
+					if(inputCounter == -1)
+						inputCounter = lastInputCounter - 1;
+					inputStr = cache[inputCounter];
 				}
 			}
 			else if(input->PressedRelease(Key::Down))
 			{
 				// nastêpna komenda
-				++input_counter;
-				if(input_counter == last_input_counter)
+				++inputCounter;
+				if(inputCounter == lastInputCounter)
 				{
-					if(last_input_counter == 0)
-						input_counter = -1;
+					if(lastInputCounter == 0)
+						inputCounter = -1;
 					else
-						input_counter = 0;
+						inputCounter = 0;
 				}
-				if(input_counter != -1)
-					input_str = cache[input_counter];
+				if(inputCounter != -1)
+					inputStr = cache[inputCounter];
 			}
 			if(input->PressedRelease(Key::Enter))
 			{
-				if(!input_str.empty())
+				if(!inputStr.empty())
 				{
 					// dodaj ostatni¹ komendê
-					if(last_input_counter == 0 || cache[last_input_counter - 1] != input_str)
+					if(lastInputCounter == 0 || cache[lastInputCounter - 1] != inputStr)
 					{
-						if(last_input_counter == max_cache)
+						if(lastInputCounter == maxCache)
 						{
-							for(int i = 0; i < max_cache - 1; ++i)
+							for(int i = 0; i < maxCache - 1; ++i)
 								cache[i] = cache[i + 1];
-							cache[max_cache - 1] = input_str;
+							cache[maxCache - 1] = inputStr;
 						}
 						else
 						{
-							cache[last_input_counter] = input_str;
-							++last_input_counter;
+							cache[lastInputCounter] = inputStr;
+							++lastInputCounter;
 						}
 					}
 					// wykonaj
-					event(input_str);
+					event(inputStr);
 					// wyczyœæ
-					input_str.clear();
-					input_counter = -1;
+					inputStr.clear();
+					inputCounter = -1;
 				}
-				if(lose_focus)
+				if(loseFocus)
 				{
 					focus = false;
 					Event(GuiEvent_LostFocus);
 				}
 			}
-			else if(esc_clear && input->PressedRelease(Key::Escape))
+			else if(escClear && input->PressedRelease(Key::Escape))
 			{
-				input_str.clear();
-				input_counter = -1;
-				if(lose_focus)
+				inputStr.clear();
+				inputCounter = -1;
+				if(loseFocus)
 				{
 					focus = false;
 					Event(GuiEvent_LostFocus);
@@ -149,13 +149,13 @@ void InputTextBox::Update(float dt)
 		}
 	}
 	else
-		caret_blink = -1.f;
+		caretBlink = -1.f;
 
 	if(focus)
 	{
 		if(!added)
 		{
-			caret_blink = 0.f;
+			caretBlink = 0.f;
 			added = true;
 			gui->AddOnCharHandler(this);
 		}
@@ -164,7 +164,7 @@ void InputTextBox::Update(float dt)
 	{
 		if(added)
 		{
-			caret_blink = -1.f;
+			caretBlink = -1.f;
 			added = false;
 			gui->RemoveOnCharHandler(this);
 		}
@@ -179,7 +179,7 @@ void InputTextBox::Event(GuiEvent e)
 		scrollbar.LostFocus();
 		if(added)
 		{
-			caret_blink = -1.f;
+			caretBlink = -1.f;
 			added = false;
 			gui->RemoveOnCharHandler(this);
 		}
@@ -187,23 +187,23 @@ void InputTextBox::Event(GuiEvent e)
 	else if(e == GuiEvent_Moved)
 	{
 		globalPos = pos + parent->globalPos;
-		inputbox_pos = globalPos + Int2(0, textbox_size.y + 6);
+		inputboxPos = globalPos + Int2(0, textboxSize.y + 6);
 		scrollbar.globalPos = globalPos + scrollbar.pos;
 	}
 	else if(e == GuiEvent_Resize)
 	{
 		globalPos = parent->globalPos;
 		size = parent->size;
-		textbox_size = size - Int2(18, 30);
-		inputbox_pos = globalPos + Int2(0, textbox_size.y + 6);
-		inputbox_size = Int2(textbox_size.x, 24);
-		scrollbar.pos = Int2(textbox_size.x + 2, 0);
+		textboxSize = size - Int2(18, 30);
+		inputboxPos = globalPos + Int2(0, textboxSize.y + 6);
+		inputboxSize = Int2(textboxSize.x, 24);
+		scrollbar.pos = Int2(textboxSize.x + 2, 0);
 		scrollbar.globalPos = globalPos + scrollbar.pos;
-		scrollbar.size = Int2(16, textbox_size.y);
-		scrollbar.part = textbox_size.y - 8;
+		scrollbar.size = Int2(16, textboxSize.y);
+		scrollbar.part = textboxSize.y - 8;
 
 		size_t OutBegin, OutEnd, InOutIndex = 0;
-		int OutWidth, Width = textbox_size.x - 8;
+		int OutWidth, Width = textboxSize.x - 8;
 		cstring Text = text.c_str();
 		size_t TextEnd = text.length();
 
@@ -216,7 +216,7 @@ void InputTextBox::Event(GuiEvent e)
 
 		CheckLines();
 
-		scrollbar.total = lines.size()*layout->font->height;
+		scrollbar.total = lines.size() * layout->font->height;
 		if(skip_to_end)
 		{
 			scrollbar.offset = float(scrollbar.total - scrollbar.part);
@@ -230,7 +230,7 @@ void InputTextBox::Event(GuiEvent e)
 	{
 		if(!added)
 		{
-			caret_blink = 0.f;
+			caretBlink = 0.f;
 			added = true;
 			gui->AddOnCharHandler(this);
 		}
@@ -243,45 +243,45 @@ void InputTextBox::OnChar(char c)
 	if(c == 0x08)
 	{
 		// backspace
-		if(!input_str.empty())
-			input_str.resize(input_str.size() - 1);
+		if(!inputStr.empty())
+			inputStr.resize(inputStr.size() - 1);
 	}
 	else if(c == 0x0D)
 	{
 		// pomiñ znak
 	}
 	else
-		input_str.push_back(c);
+		inputStr.push_back(c);
 }
 
 //=================================================================================================
 void InputTextBox::Init()
 {
-	textbox_size = size - Int2(18, 30);
-	inputbox_pos = globalPos + Int2(0, textbox_size.y + 6);
-	inputbox_size = Int2(textbox_size.x, 24);
-	scrollbar.pos = Int2(textbox_size.x + 2, 0);
-	scrollbar.size = Int2(16, textbox_size.y);
+	textboxSize = size - Int2(18, 30);
+	inputboxPos = globalPos + Int2(0, textboxSize.y + 6);
+	inputboxSize = Int2(textboxSize.x, 24);
+	scrollbar.pos = Int2(textboxSize.x + 2, 0);
+	scrollbar.size = Int2(16, textboxSize.y);
 	scrollbar.total = 0;
-	scrollbar.part = textbox_size.y - 8;
+	scrollbar.part = textboxSize.y - 8;
 	scrollbar.offset = 0.f;
 	scrollbar.globalPos = globalPos + scrollbar.pos;
-	cache.resize(max_cache);
+	cache.resize(maxCache);
 	Reset();
 }
 
 //=================================================================================================
 void InputTextBox::Reset(bool reset_cache)
 {
-	input_str.clear();
+	inputStr.clear();
 	text.clear();
 	lines.clear();
-	input_counter = -1;
-	caret_blink = 0.f;
+	inputCounter = -1;
+	caretBlink = 0.f;
 	scrollbar.offset = 0.f;
 	scrollbar.total = 0;
 	if(reset_cache)
-		last_input_counter = 0;
+		lastInputCounter = 0;
 }
 
 //=================================================================================================
@@ -293,7 +293,7 @@ void InputTextBox::Add(Cstring str)
 	text += str.s;
 
 	size_t OutBegin, OutEnd;
-	int OutWidth, Width = textbox_size.x - 8;
+	int OutWidth, Width = textboxSize.x - 8;
 	cstring Text = text.c_str();
 	size_t TextEnd = text.length();
 
@@ -306,7 +306,7 @@ void InputTextBox::Add(Cstring str)
 	// usuñ nadmiarowe linijki z pocz¹tku
 	CheckLines();
 
-	scrollbar.total = lines.size()*layout->font->height;
+	scrollbar.total = lines.size() * layout->font->height;
 	if(skip_to_end)
 	{
 		scrollbar.offset = float(scrollbar.total - scrollbar.part);
@@ -320,9 +320,9 @@ void InputTextBox::Add(Cstring str)
 //=================================================================================================
 void InputTextBox::CheckLines()
 {
-	if((int)lines.size() > max_lines)
+	if((int)lines.size() > maxLines)
 	{
-		lines.erase(lines.begin(), lines.begin() + lines.size() - max_lines);
+		lines.erase(lines.begin(), lines.begin() + lines.size() - maxLines);
 		int offset = lines[0].begin;
 		text.erase(0, offset);
 		for(vector<TextLine>::iterator it = lines.begin(), end = lines.end(); it != end; ++it)

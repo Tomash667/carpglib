@@ -6,7 +6,7 @@
 #include "Input.h"
 #include "MenuStrip.h"
 
-Overlay::Overlay() : Container(true), focused(nullptr), to_add(nullptr)
+Overlay::Overlay() : Container(true), focused(nullptr), toAdd(nullptr)
 {
 }
 
@@ -51,9 +51,9 @@ void Overlay::Update(float dt)
 		UpdateControl(*it, dt);
 	if(!dialogs.empty())
 		mouseFocus = false;
-	for(GuiDialog* dialog : dialogs_to_close)
+	for(GuiDialog* dialog : dialogsToClose)
 		RemoveElement(dialogs, dialog);
-	dialogs_to_close.clear();
+	dialogsToClose.clear();
 
 	// update controls
 	Container::Update(dt);
@@ -74,24 +74,24 @@ void Overlay::Update(float dt)
 			menus.push_back(leftover);
 	}
 
-	for(MenuStrip* menu : menus_to_close)
+	for(MenuStrip* menu : menusToClose)
 		RemoveElement(menus, menu);
-	menus_to_close.clear();
+	menusToClose.clear();
 
-	if(to_add)
+	if(toAdd)
 	{
-		menus.push_back(to_add);
+		menus.push_back(toAdd);
 		if(focused)
 		{
 			focused->focus = false;
 			if(focused->IsOnCharHandler())
 				gui->RemoveOnCharHandler(dynamic_cast<OnCharHandler*>(focused));
 		}
-		to_add->focus = true;
-		focused = to_add;
-		if(to_add->IsOnCharHandler())
-			gui->AddOnCharHandler(dynamic_cast<OnCharHandler*>(to_add));
-		to_add = nullptr;
+		toAdd->focus = true;
+		focused = toAdd;
+		if(toAdd->IsOnCharHandler())
+			gui->AddOnCharHandler(dynamic_cast<OnCharHandler*>(toAdd));
+		toAdd = nullptr;
 	}
 }
 
@@ -107,22 +107,22 @@ void Overlay::ShowDialog(GuiDialog* dialog)
 void Overlay::CloseDialog(GuiDialog* dialog)
 {
 	assert(dialog);
-	dialogs_to_close.push_back(dialog);
+	dialogsToClose.push_back(dialog);
 }
 
-void Overlay::ShowMenu(MenuStrip* menu, const Int2& _pos)
+void Overlay::ShowMenu(MenuStrip* menu, const Int2& pos)
 {
 	assert(menu);
 	CloseMenus();
-	to_add = menu;
-	menu->ShowAt(_pos);
+	toAdd = menu;
+	menu->ShowAt(pos);
 }
 
 void Overlay::CloseMenu(MenuStrip* menu)
 {
 	assert(menu);
 	menu->OnClose();
-	menus_to_close.push_back(menu);
+	menusToClose.push_back(menu);
 }
 
 void Overlay::CheckFocus(Control* ctrl, bool pressed)
@@ -181,9 +181,9 @@ void Overlay::CloseMenus()
 	for(MenuStrip* menu : menus)
 		menu->OnClose();
 	menus.clear();
-	if(to_add)
+	if(toAdd)
 	{
-		to_add->OnClose();
-		to_add = nullptr;
+		toAdd->OnClose();
+		toAdd = nullptr;
 	}
 }

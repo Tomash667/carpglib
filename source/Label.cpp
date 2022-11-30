@@ -1,9 +1,9 @@
 #include "Pch.h"
 #include "Label.h"
 
-Label::Label(cstring text, bool auto_size) : text(text), auto_size(auto_size)
+Label::Label(cstring text, bool autoSize) : text(text), autoSize(autoSize)
 {
-	if(auto_size)
+	if(autoSize)
 		CalculateSize();
 }
 
@@ -21,13 +21,13 @@ void Label::SetText(Cstring s)
 
 void Label::SetSize(const Int2& _size)
 {
-	assert(!auto_size);
+	assert(!autoSize);
 	size = _size;
 }
 
 void Label::CalculateSize()
 {
-	if(!auto_size)
+	if(!autoSize)
 		return;
 	size = layout->font->CalculateSize(text) + layout->padding * 2;
 }

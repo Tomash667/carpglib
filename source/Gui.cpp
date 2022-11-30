@@ -99,7 +99,7 @@ Font* Gui::GetFont(cstring name, int size, int weight, int outline)
 //=================================================================================================
 // Draw text - rewritten from TFQ
 bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect& rect, const Rect* clipping, vector<Hitbox>* hitboxes,
-	int* hitbox_counter, const vector<TextLine>* lines)
+	int* hitboxCounter, const vector<TextLine>* lines)
 {
 	assert(font);
 
@@ -124,7 +124,7 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 	{
 		ctx.hc = &tmpHitboxContext;
 		ctx.hc->hitbox = hitboxes;
-		ctx.hc->counter = (hitbox_counter ? *hitbox_counter : 0);
+		ctx.hc->counter = (hitboxCounter ? *hitboxCounter : 0);
 		ctx.hc->open = HitboxOpen::No;
 	}
 	else
@@ -270,8 +270,8 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 	if(ctx.inBuffer > 0)
 		shader->Draw(font->tex, vBuf, ctx.inBuffer);
 
-	if(hitbox_counter)
-		*hitbox_counter = ctx.hc->counter;
+	if(hitboxCounter)
+		*hitboxCounter = ctx.hc->counter;
 
 	return !bottom_clip;
 }
@@ -739,19 +739,19 @@ void Gui::DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, 
 }
 
 //=================================================================================================
-void Gui::Draw(bool draw_layers, bool draw_dialogs)
+void Gui::Draw(bool drawLayers, bool drawDialogs)
 {
 	wndSize = app::engine->GetClientSize();
 
-	if(!draw_layers && !draw_dialogs)
+	if(!drawLayers && !drawDialogs)
 		return;
 
 	shader->Prepare();
 
 	// rysowanie
-	if(draw_layers)
+	if(drawLayers)
 		layer->Draw();
-	if(draw_dialogs)
+	if(drawDialogs)
 		dialogLayer->Draw();
 
 	// draw cursor
@@ -772,30 +772,30 @@ void Gui::Add(Control* ctrl)
 }
 
 //=================================================================================================
-void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Color color, int corner, int size, const Box2d* clip_rect)
+void Gui::DrawItem(Texture* t, const Int2& itemPos, const Int2& itemSize, Color color, int corner, int size, const Box2d* clipRect)
 {
 	assert(t && t->IsLoaded());
 
-	GuiRect gui_rect;
-	gui_rect.Set(item_pos, item_size);
+	GuiRect guiRect;
+	guiRect.Set(itemPos, itemSize);
 
 	bool require_clip = false;
-	if(clip_rect)
+	if(clipRect)
 	{
-		int result = gui_rect.RequireClip(*clip_rect);
+		int result = guiRect.RequireClip(*clipRect);
 		if(result == -1)
 			return;
 		else if(result == 1)
 			require_clip = true;
 	}
 
-	if(item_size.x < corner || item_size.y < corner)
+	if(itemSize.x < corner || itemSize.y < corner)
 	{
-		if(item_size.x == 0 || item_size.y == 0)
+		if(itemSize.x == 0 || itemSize.y == 0)
 			return;
 
-		Rect r = { item_pos.x, item_pos.y, item_pos.x + item_size.x, item_pos.y + item_size.y };
-		assert(!clip_rect);
+		Rect r = { itemPos.x, itemPos.y, itemPos.x + itemSize.x, itemPos.y + itemSize.y };
+		assert(!clipRect);
 		DrawSpriteRect(t, r, color);
 		return;
 	}
@@ -832,25 +832,25 @@ void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Colo
 	};
 
 	Vec2 ipos[16] = {
-		Vec2(float(item_pos.x), float(item_pos.y)),
-		Vec2(float(item_pos.x + corner), float(item_pos.y)),
-		Vec2(float(item_pos.x + item_size.x - corner), float(item_pos.y)),
-		Vec2(float(item_pos.x + item_size.x), float(item_pos.y)),
+		Vec2(float(itemPos.x), float(itemPos.y)),
+		Vec2(float(itemPos.x + corner), float(itemPos.y)),
+		Vec2(float(itemPos.x + itemSize.x - corner), float(itemPos.y)),
+		Vec2(float(itemPos.x + itemSize.x), float(itemPos.y)),
 
-		Vec2(float(item_pos.x), float(item_pos.y + corner)),
-		Vec2(float(item_pos.x + corner), float(item_pos.y + corner)),
-		Vec2(float(item_pos.x + item_size.x - corner), float(item_pos.y + corner)),
-		Vec2(float(item_pos.x + item_size.x), float(item_pos.y + corner)),
+		Vec2(float(itemPos.x), float(itemPos.y + corner)),
+		Vec2(float(itemPos.x + corner), float(itemPos.y + corner)),
+		Vec2(float(itemPos.x + itemSize.x - corner), float(itemPos.y + corner)),
+		Vec2(float(itemPos.x + itemSize.x), float(itemPos.y + corner)),
 
-		Vec2(float(item_pos.x), float(item_pos.y + item_size.y - corner)),
-		Vec2(float(item_pos.x + corner), float(item_pos.y + item_size.y - corner)),
-		Vec2(float(item_pos.x + item_size.x - corner), float(item_pos.y + item_size.y - corner)),
-		Vec2(float(item_pos.x + item_size.x), float(item_pos.y + item_size.y - corner)),
+		Vec2(float(itemPos.x), float(itemPos.y + itemSize.y - corner)),
+		Vec2(float(itemPos.x + corner), float(itemPos.y + itemSize.y - corner)),
+		Vec2(float(itemPos.x + itemSize.x - corner), float(itemPos.y + itemSize.y - corner)),
+		Vec2(float(itemPos.x + itemSize.x), float(itemPos.y + itemSize.y - corner)),
 
-		Vec2(float(item_pos.x), float(item_pos.y + item_size.y)),
-		Vec2(float(item_pos.x + corner), float(item_pos.y + item_size.y)),
-		Vec2(float(item_pos.x + item_size.x - corner), float(item_pos.y + item_size.y)),
-		Vec2(float(item_pos.x + item_size.x), float(item_pos.y + item_size.y)),
+		Vec2(float(itemPos.x), float(itemPos.y + itemSize.y)),
+		Vec2(float(itemPos.x + corner), float(itemPos.y + itemSize.y)),
+		Vec2(float(itemPos.x + itemSize.x - corner), float(itemPos.y + itemSize.y)),
+		Vec2(float(itemPos.x + itemSize.x), float(itemPos.y + itemSize.y)),
 	};
 
 	Vec2 itex[16] = {
@@ -883,10 +883,10 @@ void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Colo
 		{
 			int index1 = ids[i * 2 + 0];
 			int index2 = ids[i * 2 + 1];
-			gui_rect.Set(ipos[index1], ipos[index2], itex[index1], itex[index2]);
-			if(gui_rect.Clip(*clip_rect))
+			guiRect.Set(ipos[index1], ipos[index2], itex[index1], itex[index2]);
+			if(guiRect.Clip(*clipRect))
 			{
-				gui_rect.Populate(v, col);
+				guiRect.Populate(v, col);
 				++inBuffer;
 			}
 		}
@@ -897,8 +897,8 @@ void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Colo
 		{
 			int index1 = ids[i * 2 + 0];
 			int index2 = ids[i * 2 + 1];
-			gui_rect.Set(ipos[index1], ipos[index2], itex[index1], itex[index2]);
-			gui_rect.Populate(v, col);
+			guiRect.Set(ipos[index1], ipos[index2], itex[index1], itex[index2]);
+			guiRect.Populate(v, col);
 		}
 		inBuffer = 9;
 	}
@@ -907,14 +907,14 @@ void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Colo
 }
 
 //=================================================================================================
-void Gui::Update(float dt, float mouse_speed)
+void Gui::Update(float dt, float mouseSpeed)
 {
 	// update cursor
 	cursorMode = CURSOR_NORMAL;
 	prevCursorPos = cursorPos;
-	if(NeedCursor() && mouse_speed > 0)
+	if(NeedCursor() && mouseSpeed > 0)
 	{
-		cursorPos += app::input->GetMouseDif() * mouse_speed;
+		cursorPos += app::input->GetMouseDif() * mouseSpeed;
 		if(cursorPos.x < 0)
 			cursorPos.x = 0;
 		if(cursorPos.y < 0)
@@ -1772,7 +1772,7 @@ bool Gui::NeedCursor()
 }
 
 //=================================================================================================
-bool Gui::DrawText3D(Font* font, Cstring text, uint flags, Color color, const Vec3& pos, Rect* text_rect)
+bool Gui::DrawText3D(Font* font, Cstring text, uint flags, Color color, const Vec3& pos, Rect* textRect)
 {
 	assert(font);
 
@@ -1785,8 +1785,8 @@ bool Gui::DrawText3D(Font* font, Cstring text, uint flags, Color color, const Ve
 	if(!IsSet(flags, DTF_DONT_DRAW))
 		DrawText(font, text, flags, color, r);
 
-	if(text_rect)
-		*text_rect = r;
+	if(textRect)
+		*textRect = r;
 
 	return true;
 }
@@ -1992,75 +1992,75 @@ Rect Gui::GetSpriteRect(Texture* t, const Matrix& mat, const Rect* part, const R
 }
 
 //=================================================================================================
-void Gui::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* clip_rect)
+void Gui::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* clipRect)
 {
-	GuiRect gui_rect;
-	gui_rect.Set(pos, size);
-	if(!clip_rect || gui_rect.Clip(*clip_rect))
+	GuiRect guiRect;
+	guiRect.Set(pos, size);
+	if(!clipRect || guiRect.Clip(*clipRect))
 	{
 		Vec4 col = Color(color);
 		VGui* v = vBuf;
-		gui_rect.Populate(v, col);
+		guiRect.Populate(v, col);
 		shader->Draw(nullptr, vBuf, 1);
 	}
 }
 
 //=================================================================================================
-void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect, Color* tint)
+void Gui::DrawArea(const Box2d& rect, const AreaLayout& areaLayout, const Box2d* clipRect, Color* tint)
 {
-	if(area_layout.mode == AreaLayout::Mode::None)
+	if(areaLayout.mode == AreaLayout::Mode::None)
 		return;
 
-	Color color = area_layout.color;
+	Color color = areaLayout.color;
 	if(tint)
 		color *= *tint;
 
-	if(area_layout.mode == AreaLayout::Mode::Item)
+	if(areaLayout.mode == AreaLayout::Mode::Item)
 	{
-		DrawItem(area_layout.tex, Int2(rect.LeftTop()), Int2(rect.Size()), color, area_layout.size.x, area_layout.size.y, clip_rect);
+		DrawItem(areaLayout.tex, Int2(rect.LeftTop()), Int2(rect.Size()), color, areaLayout.size.x, areaLayout.size.y, clipRect);
 	}
 	else
 	{
 		// background
-		if(area_layout.mode == AreaLayout::Mode::Image && area_layout.background_color != Color::None)
+		if(areaLayout.mode == AreaLayout::Mode::Image && areaLayout.backgroundColor != Color::None)
 		{
-			assert(!clip_rect);
+			assert(!clipRect);
 			VGui* v = vBuf;
-			AddRect(v, rect.LeftTop(), rect.RightBottom(), Color(area_layout.background_color));
+			AddRect(v, rect.LeftTop(), rect.RightBottom(), Color(areaLayout.backgroundColor));
 			shader->Draw(nullptr, vBuf, 1);
 		}
 
 		// image/color
-		GuiRect gui_rect;
+		GuiRect guiRect;
 		TEX tex;
-		if(area_layout.mode >= AreaLayout::Mode::Image)
+		if(areaLayout.mode >= AreaLayout::Mode::Image)
 		{
-			tex = area_layout.tex->tex;
-			gui_rect.Set(rect, &area_layout.region);
+			tex = areaLayout.tex->tex;
+			guiRect.Set(rect, &areaLayout.region);
 		}
 		else
 		{
 			tex = nullptr;
-			gui_rect.Set(rect, nullptr);
+			guiRect.Set(rect, nullptr);
 		}
-		if(clip_rect)
+		if(clipRect)
 		{
-			if(!gui_rect.Clip(*clip_rect))
+			if(!guiRect.Clip(*clipRect))
 				return;
 		}
 
 		VGui* v = vBuf;
-		gui_rect.Populate(v, color);
+		guiRect.Populate(v, color);
 		shader->Draw(tex, vBuf, 1);
 
-		if(area_layout.mode != AreaLayout::Mode::BorderColor)
+		if(areaLayout.mode != AreaLayout::Mode::BorderColor)
 			return;
 
 		// border
-		assert(!clip_rect);
+		assert(!clipRect);
 		v = vBuf;
-		Vec4 col = area_layout.border_color;
-		float s = (float)area_layout.width;
+		Vec4 col = areaLayout.borderColor;
+		float s = (float)areaLayout.width;
 		AddRect(v, rect.LeftTop(), rect.RightTop() + Vec2(-s, s), col);
 		AddRect(v, rect.LeftTop(), rect.LeftBottom() + Vec2(s, 0), col);
 		AddRect(v, rect.RightTop() + Vec2(-s, 0), rect.RightBottom(), col);
@@ -2170,7 +2170,7 @@ bool Gui::DrawText2(DrawTextOptions& options)
 	{
 		ctx.hc = &tmpHitboxContext;
 		ctx.hc->hitbox = options.hitboxes;
-		ctx.hc->counter = (options.hitbox_counter ? *options.hitbox_counter : 0);
+		ctx.hc->counter = (options.hitboxCounter ? *options.hitboxCounter : 0);
 		ctx.hc->open = HitboxOpen::No;
 	}
 	else
@@ -2330,8 +2330,8 @@ bool Gui::DrawText2(DrawTextOptions& options)
 	if(ctx.inBuffer > 0)
 		shader->Draw(ctx.font->tex, vBuf, ctx.inBuffer);
 
-	if(options.hitbox_counter)
-		*options.hitbox_counter = ctx.hc->counter;
+	if(options.hitboxCounter)
+		*options.hitboxCounter = ctx.hc->counter;
 
 	return !bottom_clip;
 }

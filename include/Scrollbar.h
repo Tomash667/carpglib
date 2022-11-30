@@ -16,7 +16,7 @@ namespace layout
 class Scrollbar : public Control, public LayoutControl<layout::Scrollbar>
 {
 public:
-	explicit Scrollbar(bool hscrollbar = false, bool is_new = false);
+	explicit Scrollbar(bool hscrollbar = false, bool isNew = false);
 
 	void Draw() override;
 	void Update(float dt) override;
@@ -24,14 +24,14 @@ public:
 	void LostFocus();
 	// porusza scrollbar myszk¹, zwraca czy cokolwiek siê zmieni³o
 	bool ApplyMouseWheel();
-	void SetValue(float p) { offset = float(total - part)*p; }
+	void SetValue(float p) { offset = float(total - part) * p; }
 	float GetValue() const { return offset / float(total - part); }
-	void UpdateTotal(int new_total);
+	void UpdateTotal(int total);
 	void UpdateOffset(float change);
 	bool IsRequired() const { return total > part; }
 
 	int total, part, change;
 	float offset;
-	Int2 click_pt;
-	bool clicked, hscrollbar, manual_change;
+	Int2 clickedPt;
+	bool clicked, hscrollbar, manualChange;
 };

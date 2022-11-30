@@ -6,24 +6,6 @@
 #include "Button.h"
 
 //-----------------------------------------------------------------------------
-// for backward compatibility, still used in CreateCharacterPanel
-struct OldFlowItem
-{
-	bool section;
-	int group, id, y;
-	float part;
-
-	OldFlowItem(int group, int id, int y) : section(true), group(group), id(id), y(y)
-	{
-	}
-
-	OldFlowItem(int group, int id, int min, int max, int value, int y) : section(false), group(group), id(id), y(y)
-	{
-		part = float(value - min) / (max - min);
-	}
-};
-
-//-----------------------------------------------------------------------------
 struct FlowItem
 {
 	enum Type
@@ -59,7 +41,7 @@ namespace layout
 		AreaLayout box;
 		AreaLayout selection;
 		Font* font;
-		Font* font_section;
+		Font* fontSection;
 	};
 }
 

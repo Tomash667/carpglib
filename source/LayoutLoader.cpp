@@ -218,13 +218,13 @@ void LayoutLoader::ParseControl(const string& name)
 					break;
 				case AreaLayout::Mode::BorderColor:
 					area.color = Color::White;
-					area.border_color = Color::Black;
+					area.borderColor = Color::Black;
 					area.width = 1;
 					break;
 				case AreaLayout::Mode::Image:
 					area.tex = nullptr;
 					area.color = Color::White;
-					area.background_color = Color::None;
+					area.backgroundColor = Color::None;
 					area.size = Int2::Zero;
 					break;
 				case AreaLayout::Mode::Item:
@@ -279,13 +279,13 @@ void LayoutLoader::ParseControl(const string& name)
 						break;
 					case AK_BORDER_COLOR:
 						if(area.mode != AreaLayout::Mode::BorderColor)
-							t.Throw("This area layout don't support 'border_color' entry.");
-						t.Parse(area.border_color);
+							t.Throw("This area layout don't support 'borderColor' entry.");
+						t.Parse(area.borderColor);
 						break;
 					case AK_BACKGROUND_COLOR:
 						if(area.mode != AreaLayout::Mode::Image)
-							t.Throw("This area layout don't support 'background_color' entry.");
-						t.Parse(area.background_color);
+							t.Throw("This area layout don't support 'backgroundColor' entry.");
+						t.Parse(area.backgroundColor);
 						break;
 					}
 				}
@@ -351,8 +351,8 @@ void LayoutLoader::RegisterKeywords()
 		{"size",AK_SIZE},
 		{"color",AK_COLOR},
 		{"rect",AK_RECT},
-		{"border_color",AK_BORDER_COLOR},
-		{"background_color",AK_BACKGROUND_COLOR}
+		{"borderColor",AK_BORDER_COLOR},
+		{"backgroundColor",AK_BACKGROUND_COLOR}
 		});
 
 	t.AddKeywords(G_FONT, {
@@ -377,17 +377,17 @@ void LayoutLoader::RegisterControls()
 
 	c = AddControl<layout::Button>("Button");
 	c->AddEntry("tex", Entry::AreaLayout, offsetof(layout::Button, tex[Button::NONE]));
-	c->AddEntry("tex_hover", Entry::AreaLayout, offsetof(layout::Button, tex[Button::HOVER]));
-	c->AddEntry("tex_down", Entry::AreaLayout, offsetof(layout::Button, tex[Button::DOWN]));
-	c->AddEntry("tex_disabled", Entry::AreaLayout, offsetof(layout::Button, tex[Button::DISABLED]));
+	c->AddEntry("texHover", Entry::AreaLayout, offsetof(layout::Button, tex[Button::HOVER]));
+	c->AddEntry("texDown", Entry::AreaLayout, offsetof(layout::Button, tex[Button::DOWN]));
+	c->AddEntry("texDisabled", Entry::AreaLayout, offsetof(layout::Button, tex[Button::DISABLED]));
 	c->AddEntry("font", Entry::Font, offsetof(layout::Button, font));
 	c->AddEntry("padding", Entry::Int, offsetof(layout::Button, padding));
 
 	c = AddControl<layout::CheckBox>("CheckBox");
 	c->AddEntry("tex", Entry::AreaLayout, offsetof(layout::CheckBox, tex[CheckBox::NONE]));
-	c->AddEntry("tex_hover", Entry::AreaLayout, offsetof(layout::CheckBox, tex[CheckBox::HOVER]));
-	c->AddEntry("tex_down", Entry::AreaLayout, offsetof(layout::CheckBox, tex[CheckBox::DOWN]));
-	c->AddEntry("tex_disabled", Entry::AreaLayout, offsetof(layout::CheckBox, tex[CheckBox::DISABLED]));
+	c->AddEntry("texHover", Entry::AreaLayout, offsetof(layout::CheckBox, tex[CheckBox::HOVER]));
+	c->AddEntry("texDown", Entry::AreaLayout, offsetof(layout::CheckBox, tex[CheckBox::DOWN]));
+	c->AddEntry("texDisabled", Entry::AreaLayout, offsetof(layout::CheckBox, tex[CheckBox::DISABLED]));
 	c->AddEntry("font", Entry::Font, offsetof(layout::CheckBox, font));
 	c->AddEntry("tick", Entry::AreaLayout, offsetof(layout::CheckBox, tick));
 
@@ -396,7 +396,7 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::CheckBoxGroup, box));
 	c->AddEntry("checked", Entry::AreaLayout, offsetof(layout::CheckBoxGroup, checked));
 	c->AddEntry("font", Entry::Font, offsetof(layout::CheckBoxGroup, font));
-	c->AddEntry("font_color", Entry::Color, offsetof(layout::CheckBoxGroup, font_color));
+	c->AddEntry("fontColor", Entry::Color, offsetof(layout::CheckBoxGroup, fontColor));
 
 	c = AddControl<layout::DialogBox>("DialogBox");
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::DialogBox, background));
@@ -407,7 +407,7 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::FlowContainer, box));
 	c->AddEntry("selection", Entry::AreaLayout, offsetof(layout::FlowContainer, selection));
 	c->AddEntry("font", Entry::Font, offsetof(layout::FlowContainer, font));
-	c->AddEntry("font_section", Entry::Font, offsetof(layout::FlowContainer, font_section));
+	c->AddEntry("fontSection", Entry::Font, offsetof(layout::FlowContainer, fontSection));
 
 	c = AddControl<layout::Grid>("Grid");
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::Grid, box));
@@ -416,8 +416,8 @@ void LayoutLoader::RegisterControls()
 
 	c = AddControl<layout::Gui>("Gui");
 	c->AddEntry("cursor", Entry::Image, offsetof(layout::Gui, cursor[CURSOR_NORMAL]));
-	c->AddEntry("cursor_hover", Entry::Image, offsetof(layout::Gui, cursor[CURSOR_HOVER]));
-	c->AddEntry("cursor_text", Entry::Image, offsetof(layout::Gui, cursor[CURSOR_TEXT]));
+	c->AddEntry("cursorHover", Entry::Image, offsetof(layout::Gui, cursor[CURSOR_HOVER]));
+	c->AddEntry("cursorText", Entry::Image, offsetof(layout::Gui, cursor[CURSOR_TEXT]));
 
 	c = AddControl<layout::InputTextBox>("InputTextBox");
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::InputTextBox, box));
@@ -430,21 +430,21 @@ void LayoutLoader::RegisterControls()
 	c = AddControl<layout::ListBox>("ListBox");
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::ListBox, box));
 	c->AddEntry("selection", Entry::AreaLayout, offsetof(layout::ListBox, selection));
-	c->AddEntry("down_arrow", Entry::Image, offsetof(layout::ListBox, down_arrow));
+	c->AddEntry("downArrow", Entry::Image, offsetof(layout::ListBox, downArrow));
 	c->AddEntry("font", Entry::Font, offsetof(layout::ListBox, font));
-	c->AddEntry("auto_padding", Entry::Int, offsetof(layout::ListBox, auto_padding));
+	c->AddEntry("autoPadding", Entry::Int, offsetof(layout::ListBox, autoPadding));
 
 	c = AddControl<layout::MenuBar>("MenuBar");
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::MenuBar, background));
 	c->AddEntry("button", Entry::AreaLayout, offsetof(layout::MenuBar, button));
-	c->AddEntry("button_hover", Entry::AreaLayout, offsetof(layout::MenuBar, button_hover));
-	c->AddEntry("button_down", Entry::AreaLayout, offsetof(layout::MenuBar, button_down));
+	c->AddEntry("buttonHover", Entry::AreaLayout, offsetof(layout::MenuBar, buttonHover));
+	c->AddEntry("buttonDown", Entry::AreaLayout, offsetof(layout::MenuBar, buttonDown));
 	c->AddEntry("font", Entry::Font, offsetof(layout::MenuBar, font));
 	c->AddEntry("padding", Entry::Int2, offsetof(layout::MenuBar, padding));
-	c->AddEntry("item_padding", Entry::Int2, offsetof(layout::MenuBar, item_padding));
-	c->AddEntry("font_color", Entry::Color, offsetof(layout::MenuBar, font_color));
-	c->AddEntry("font_color_hover", Entry::Color, offsetof(layout::MenuBar, font_color_hover));
-	c->AddEntry("font_color_down", Entry::Color, offsetof(layout::MenuBar, font_color_down));
+	c->AddEntry("itemPadding", Entry::Int2, offsetof(layout::MenuBar, itemPadding));
+	c->AddEntry("fontColor", Entry::Color, offsetof(layout::MenuBar, fontColor));
+	c->AddEntry("fontColorHover", Entry::Color, offsetof(layout::MenuBar, fontColorHover));
+	c->AddEntry("fontColorDown", Entry::Color, offsetof(layout::MenuBar, fontColorDown));
 
 	c = AddControl<layout::MenuList>("MenuList");
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::MenuList, box));
@@ -453,11 +453,13 @@ void LayoutLoader::RegisterControls()
 
 	c = AddControl<layout::MenuStrip>("MenuStrip");
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::MenuStrip, background));
-	c->AddEntry("button_hover", Entry::AreaLayout, offsetof(layout::MenuStrip, button_hover));
+	c->AddEntry("buttonHover", Entry::AreaLayout, offsetof(layout::MenuStrip, buttonHover));
 	c->AddEntry("font", Entry::Font, offsetof(layout::MenuStrip, font));
 	c->AddEntry("padding", Entry::Int2, offsetof(layout::MenuStrip, padding));
-	c->AddEntry("item_padding", Entry::Int2, offsetof(layout::MenuStrip, item_padding));
-	c->AddEntry("font_color_disabled", Entry::Color, offsetof(layout::MenuStrip, font_color_disabled));
+	c->AddEntry("itemPadding", Entry::Int2, offsetof(layout::MenuStrip, itemPadding));
+	c->AddEntry("fontColor", Entry::Color, offsetof(layout::MenuStrip, fontColor));
+	c->AddEntry("fontColorHover", Entry::Color, offsetof(layout::MenuStrip, fontColorHover));
+	c->AddEntry("fontColorDisabled", Entry::Color, offsetof(layout::MenuStrip, fontColorDisabled));
 
 	c = AddControl<layout::Notifications>("Notifications");
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::Notifications, box));
@@ -500,17 +502,17 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::TabControl, background));
 	c->AddEntry("line", Entry::AreaLayout, offsetof(layout::TabControl, line));
 	c->AddEntry("button", Entry::AreaLayout, offsetof(layout::TabControl, button));
-	c->AddEntry("button_hover", Entry::AreaLayout, offsetof(layout::TabControl, button_hover));
-	c->AddEntry("button_down", Entry::AreaLayout, offsetof(layout::TabControl, button_down));
+	c->AddEntry("buttonHover", Entry::AreaLayout, offsetof(layout::TabControl, buttonHover));
+	c->AddEntry("buttonDown", Entry::AreaLayout, offsetof(layout::TabControl, buttonDown));
 	c->AddEntry("font", Entry::Font, offsetof(layout::TabControl, font));
 	c->AddEntry("padding", Entry::Int2, offsetof(layout::TabControl, padding));
-	c->AddEntry("padding_active", Entry::Int2, offsetof(layout::TabControl, padding_active));
+	c->AddEntry("paddingActive", Entry::Int2, offsetof(layout::TabControl, paddingActive));
 	c->AddEntry("close", Entry::AreaLayout, offsetof(layout::TabControl, close));
-	c->AddEntry("close_hover", Entry::AreaLayout, offsetof(layout::TabControl, close_hover));
-	c->AddEntry("button_prev", Entry::AreaLayout, offsetof(layout::TabControl, button_prev));
-	c->AddEntry("button_prev_hover", Entry::AreaLayout, offsetof(layout::TabControl, button_prev_hover));
-	c->AddEntry("button_next", Entry::AreaLayout, offsetof(layout::TabControl, button_next));
-	c->AddEntry("button_next_hover", Entry::AreaLayout, offsetof(layout::TabControl, button_next_hover));
+	c->AddEntry("closeHover", Entry::AreaLayout, offsetof(layout::TabControl, closeHover));
+	c->AddEntry("buttonPrev", Entry::AreaLayout, offsetof(layout::TabControl, buttonPrev));
+	c->AddEntry("buttonPrevHover", Entry::AreaLayout, offsetof(layout::TabControl, buttonPrevHover));
+	c->AddEntry("buttonNext", Entry::AreaLayout, offsetof(layout::TabControl, buttonNext));
+	c->AddEntry("buttonNextHover", Entry::AreaLayout, offsetof(layout::TabControl, buttonNextHover));
 
 	c = AddControl<layout::TextBox>("TextBox");
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::TextBox, background));
@@ -519,26 +521,28 @@ void LayoutLoader::RegisterControls()
 	c = AddControl<layout::TooltipController>("TooltipController");
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::TooltipController, box));
 	c->AddEntry("font", Entry::Font, offsetof(layout::TooltipController, font));
-	c->AddEntry("font_big", Entry::Font, offsetof(layout::TooltipController, font_big));
-	c->AddEntry("font_small", Entry::Font, offsetof(layout::TooltipController, font_small));
+	c->AddEntry("fontBig", Entry::Font, offsetof(layout::TooltipController, fontBig));
+	c->AddEntry("fontSmall", Entry::Font, offsetof(layout::TooltipController, fontSmall));
 
 	c = AddControl<layout::TreeView>("TreeView");
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::TreeView, background));
-	c->AddEntry("button", Entry::AreaLayout, offsetof(layout::TreeView, button));
-	c->AddEntry("button_hover", Entry::AreaLayout, offsetof(layout::TreeView, button_hover));
-	c->AddEntry("button_down", Entry::AreaLayout, offsetof(layout::TreeView, button_down));
-	c->AddEntry("button_down_hover", Entry::AreaLayout, offsetof(layout::TreeView, button_down_hover));
 	c->AddEntry("selected", Entry::AreaLayout, offsetof(layout::TreeView, selected));
-	c->AddEntry("text_box_background", Entry::Image, offsetof(layout::TreeView, text_box_background));
-	c->AddEntry("drag_n_drop", Entry::Image, offsetof(layout::TreeView, drag_n_drop));
+	c->AddEntry("button", Entry::AreaLayout, offsetof(layout::TreeView, button));
+	c->AddEntry("buttonHover", Entry::AreaLayout, offsetof(layout::TreeView, buttonHover));
+	c->AddEntry("buttonDown", Entry::AreaLayout, offsetof(layout::TreeView, buttonDown));
+	c->AddEntry("buttonDownHover", Entry::AreaLayout, offsetof(layout::TreeView, buttonDownHover));
 	c->AddEntry("font", Entry::Font, offsetof(layout::TreeView, font));
-	c->AddEntry("level_offset", Entry::Int, offsetof(layout::TreeView, level_offset));
+	c->AddEntry("fontColor", Entry::Color, offsetof(layout::TreeView, fontColor));
+	c->AddEntry("levelOffset", Entry::Int, offsetof(layout::TreeView, levelOffset));
+	c->AddEntry("textBoxBackground", Entry::Image, offsetof(layout::TreeView, textBoxBackground));
+	c->AddEntry("dragAndDrop", Entry::Image, offsetof(layout::TreeView, dragAndDrop));
 
 	c = AddControl<layout::Window>("Window");
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::Window, background));
 	c->AddEntry("header", Entry::AreaLayout, offsetof(layout::Window, header));
 	c->AddEntry("font", Entry::Font, offsetof(layout::Window, font));
-	c->AddEntry("header_height", Entry::Int, offsetof(layout::Window, header_height));
+	c->AddEntry("fontColor", Entry::Color, offsetof(layout::Window, fontColor));
+	c->AddEntry("headerHeight", Entry::Int, offsetof(layout::Window, headerHeight));
 	c->AddEntry("padding", Entry::Int2, offsetof(layout::Window, padding));
 }
 

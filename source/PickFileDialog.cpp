@@ -44,13 +44,13 @@ PickFileDialog::PickFileDialog()
 	SetAreaSize(Int2(640, 480));
 
 	list_box = new ListBox(true);
-	list_box->event_handler2 = ListBox::Handler(this, &PickFileDialog::HandleListBoxEvent);
+	list_box->eventHandler2 = ListBox::Handler(this, &PickFileDialog::HandleListBoxEvent);
 	list_box->SetSize(Int2(640 - 4, 480 - 100));
 	list_box->SetPosition(Int2(2, 34));
 	Add(list_box);
 
 	list_extensions = new ListBox(true);
-	list_extensions->event_handler2 = ListBox::Handler(this, &PickFileDialog::HandleChangeExtension);
+	list_extensions->eventHandler2 = ListBox::Handler(this, &PickFileDialog::HandleChangeExtension);
 	list_extensions->SetSize(Int2(640 - 406, 30));
 	list_extensions->SetPosition(Int2(404, 480 - 64));
 	list_extensions->SetCollapsed(true);

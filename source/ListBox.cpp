@@ -6,7 +6,7 @@
 #include "MenuStrip.h"
 
 //=================================================================================================
-ListBox::ListBox(bool isNew) : Control(isNew), scrollbar(false, isNew), selected(-1), event_handler(nullptr), event_handler2(nullptr), menu(nullptr), menu_strip(nullptr),
+ListBox::ListBox(bool isNew) : Control(isNew), scrollbar(false, isNew), selected(-1), eventHandler(nullptr), eventHandler2(nullptr), menu(nullptr), menuStrip(nullptr),
 forceImgSize(0, 0), itemHeight(20), requireScrollbar(false), textFlags(DTF_SINGLELINE)
 {
 	SetOnCharHandler(true);
@@ -17,7 +17,7 @@ ListBox::~ListBox()
 {
 	DeleteElements(items);
 	delete menu;
-	delete menu_strip;
+	delete menuStrip;
 }
 
 //=================================================================================================
@@ -36,7 +36,7 @@ void ListBox::Draw()
 		}
 
 		// image
-		gui->DrawSprite(layout->down_arrow, Int2(globalPos.x + size.x - 10, globalPos.y + (size.y - 10) / 2));
+		gui->DrawSprite(layout->downArrow, Int2(globalPos.x + size.x - 10, globalPos.y + (size.y - 10) / 2));
 	}
 	else
 	{
@@ -105,12 +105,12 @@ void ListBox::Update(float dt)
 		{
 			if(mouseFocus && input->PressedRelease(Key::LeftButton))
 			{
-				if(menu_strip->IsOpen())
+				if(menuStrip->IsOpen())
 					TakeFocus(true);
 				else
 				{
-					menu_strip->ShowMenu(globalPos + Int2(0, size.y));
-					menu_strip->SetSelectedIndex(selected);
+					menuStrip->ShowMenu(globalPos + Int2(0, size.y));
+					menuStrip->SetSelectedIndex(selected);
 				}
 			}
 		}
@@ -164,12 +164,12 @@ void ListBox::Update(float dt)
 		{
 			int bt = 0;
 
-			if(event_handler2 && gui->DoubleClick(Key::LeftButton))
+			if(eventHandler2 && gui->DoubleClick(Key::LeftButton))
 			{
 				int new_index = PosToIndex(gui->cursorPos.y);
 				if(new_index != -1 && new_index == selected)
 				{
-					event_handler2(A_DOUBLE_CLICK, selected);
+					eventHandler2(A_DOUBLE_CLICK, selected);
 					bt = -1;
 				}
 			}
@@ -189,17 +189,17 @@ void ListBox::Update(float dt)
 				if(new_index != -1 && new_index != selected)
 					ok = ChangeIndexEvent(new_index, false, false);
 
-				if(bt == 2 && menu_strip && ok)
+				if(bt == 2 && menuStrip && ok)
 				{
-					if(event_handler2)
+					if(eventHandler2)
 					{
-						if(!event_handler2(A_BEFORE_MENU_SHOW, new_index))
+						if(!eventHandler2(A_BEFORE_MENU_SHOW, new_index))
 							ok = false;
 					}
 					if(ok)
 					{
-						menu_strip->SetHandler(delegate<void(int)>(this, &ListBox::OnSelect));
-						menu_strip->ShowMenu();
+						menuStrip->SetHandler(delegate<void(int)>(this, &ListBox::OnSelect));
+						menuStrip->ShowMenu();
 					}
 				}
 				else if(isNew)
@@ -239,8 +239,8 @@ void ListBox::Event(GuiEvent e)
 		{
 			if(isNew)
 			{
-				menu_strip = new MenuStrip(items, size.x);
-				menu_strip->SetHandler(DialogEvent(this, &ListBox::OnSelect));
+				menuStrip = new MenuStrip(items, size.x);
+				menuStrip->SetHandler(DialogEvent(this, &ListBox::OnSelect));
 			}
 			else
 			{
@@ -386,8 +386,8 @@ void ListBox::OnSelect(int index)
 		}
 		else
 		{
-			if(event_handler2)
-				event_handler2(A_MENU, index);
+			if(eventHandler2)
+				eventHandler2(A_MENU, index);
 		}
 	}
 	else
@@ -433,9 +433,9 @@ int ListBox::FindIndex(int value)
 }
 
 //=================================================================================================
-void ListBox::Select(int index, bool send_event)
+void ListBox::Select(int index, bool sendEvent)
 {
-	if(send_event)
+	if(sendEvent)
 	{
 		if(!ChangeIndexEvent(index, false, false))
 			return;
@@ -446,7 +446,7 @@ void ListBox::Select(int index, bool send_event)
 }
 
 //=================================================================================================
-void ListBox::Select(delegate<bool(GuiElement*)> pred, bool send_event)
+void ListBox::Select(delegate<bool(GuiElement*)> pred)
 {
 	int index = 0;
 	for(GuiElement* item : items)
@@ -456,10 +456,10 @@ void ListBox::Select(delegate<bool(GuiElement*)> pred, bool send_event)
 			if(selected != index)
 			{
 				selected = index;
-				if(event_handler)
-					event_handler(selected);
-				if(event_handler2)
-					event_handler2(A_INDEX_CHANGED, selected);
+				if(eventHandler)
+					eventHandler(selected);
+				if(eventHandler2)
+					eventHandler2(A_INDEX_CHANGED, selected);
 			}
 			break;
 		}
@@ -499,10 +499,10 @@ void ListBox::Remove(int index)
 	items.erase(items.begin() + index);
 	if(selected > index || (selected == index && selected == (int)items.size()))
 		--selected;
-	if(event_handler)
-		event_handler(selected);
-	if(event_handler2)
-		event_handler2(A_INDEX_CHANGED, selected);
+	if(eventHandler)
+		eventHandler(selected);
+	if(eventHandler2)
+		eventHandler2(A_INDEX_CHANGED, selected);
 	UpdateScrollbarVisibility();
 }
 
@@ -538,18 +538,18 @@ int ListBox::PosToIndex(int y)
 //=================================================================================================
 bool ListBox::ChangeIndexEvent(int index, bool force, bool scrollTo)
 {
-	if(!force && event_handler2)
+	if(!force && eventHandler2)
 	{
-		if(!event_handler2(A_BEFORE_CHANGE_INDEX, index))
+		if(!eventHandler2(A_BEFORE_CHANGE_INDEX, index))
 			return false;
 	}
 
 	selected = index;
 
-	if(event_handler)
-		event_handler(selected);
-	if(event_handler2)
-		event_handler2(A_INDEX_CHANGED, selected);
+	if(eventHandler)
+		eventHandler(selected);
+	if(eventHandler2)
+		eventHandler2(A_INDEX_CHANGED, selected);
 
 	if(scrollTo && !collapsed)
 		ScrollTo(index);
@@ -591,7 +591,7 @@ void ListBox::CalculateItemHeight(GuiElement* e)
 		e->tex->ResizeImage(required_size, img_size, scale);
 
 		int allowedWidth = size.x - 19 - required_size.x; // remove scrollbar, padding & image width
-		e->height = layout->font->CalculateSize(e->ToString(), allowedWidth).y + layout->auto_padding;
+		e->height = layout->font->CalculateSize(e->ToString(), allowedWidth).y + layout->autoPadding;
 	}
 	else
 		e->height = itemHeight;

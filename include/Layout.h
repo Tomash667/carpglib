@@ -23,27 +23,27 @@ struct AreaLayout
 	{
 		struct
 		{
-			Color border_color;
+			Color borderColor;
 			int width;
 		};
 		struct
 		{
 			Texture* tex;
 			Box2d region;
-			Color background_color;
+			Color backgroundColor;
 		};
 	};
 	Int2 size;
 
 	AreaLayout() : mode(Mode::None) {}
 	explicit AreaLayout(Color color) : mode(Mode::Color), color(color) {}
-	AreaLayout(Color color, Color border_color, int width = 1) : mode(Mode::BorderColor), color(color), border_color(border_color), width(width) {}
-	explicit AreaLayout(Texture* tex, Color color = Color::White) : mode(Mode::Image), tex(tex), color(color), background_color(Color::None), region(0, 0, 1, 1)
+	AreaLayout(Color color, Color borderColor, int width = 1) : mode(Mode::BorderColor), color(color), borderColor(borderColor), width(width) {}
+	explicit AreaLayout(Texture* tex, Color color = Color::White) : mode(Mode::Image), tex(tex), color(color), backgroundColor(Color::None), region(0, 0, 1, 1)
 	{
 		SetFromArea(nullptr);
 	}
-	AreaLayout(Texture* tex, const Box2d& region) : mode(Mode::Image), tex(tex), color(Color::White), background_color(Color::White), region(region) {}
-	AreaLayout(Texture* tex, const Rect& area) : mode(Mode::Image), tex(tex), color(Color::White), background_color(Color::None)
+	AreaLayout(Texture* tex, const Box2d& region) : mode(Mode::Image), tex(tex), color(Color::White), backgroundColor(Color::White), region(region) {}
+	AreaLayout(Texture* tex, const Rect& area) : mode(Mode::Image), tex(tex), color(Color::White), backgroundColor(Color::None)
 	{
 		SetFromArea(&area);
 	}

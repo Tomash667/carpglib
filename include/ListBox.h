@@ -12,9 +12,9 @@ namespace layout
 	{
 		AreaLayout box;
 		AreaLayout selection;
-		Texture* down_arrow;
+		Texture* downArrow;
 		Font* font;
-		int auto_padding;
+		int autoPadding;
 	};
 }
 
@@ -33,7 +33,7 @@ public:
 
 	typedef delegate<bool(int, int)> Handler;
 
-	ListBox(bool is_new = false);
+	ListBox(bool isNew = false);
 	~ListBox();
 
 	void Draw() override;
@@ -47,8 +47,8 @@ public:
 	void ScrollTo(int index, bool center = false);
 	GuiElement* Find(int value);
 	int FindIndex(int value);
-	void Select(int index, bool send_event = false);
-	void Select(delegate<bool(GuiElement*)> pred, bool send_event = false);
+	void Select(int index, bool sendEvent = false);
+	void Select(delegate<bool(GuiElement*)> pred);
 	void ForceSelect(int index);
 	void Insert(GuiElement* e, int index);
 	void Remove(int index);
@@ -88,9 +88,9 @@ public:
 	}
 
 	MenuList* menu;
-	MenuStrip* menu_strip;
-	DialogEvent event_handler;
-	Handler event_handler2;
+	MenuStrip* menuStrip;
+	DialogEvent eventHandler;
+	Handler eventHandler2;
 	int textFlags;
 
 private:
