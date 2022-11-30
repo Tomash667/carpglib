@@ -61,13 +61,13 @@ struct MeshInstance
 		};
 		bool frame_end;
 
-		int GetFrameIndex(bool& hit) const { return anim->GetFrameIndex(time, hit); }
+		int GetFrameIndex(bool& hit) const { assert(anim); return anim->GetFrameIndex(time, hit); }
 		float GetBlendT() const;
-		float GetProgress() const { return time / anim->length; }
+		float GetProgress() const { return anim ? (time / anim->length) : 0; }
 		bool IsActive() const { return IsSet(state, FLAG_GROUP_ACTIVE); }
 		bool IsBlending() const { return IsSet(state, FLAG_BLENDING); }
 		bool IsPlaying() const { return IsSet(state, FLAG_PLAYING); }
-		void SetProgress(float progress) { time = progress * anim->length; }
+		void SetProgress(float progress) { assert(anim); time = progress * anim->length; }
 	};
 	typedef vector<byte>::const_iterator BoneIter;
 

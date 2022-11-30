@@ -127,7 +127,6 @@
     <ClCompile Include="source\Button.cpp" />
     <ClCompile Include="source\CheckBox.cpp" />
     <ClCompile Include="source\CheckBoxGroup.cpp" />
-    <ClCompile Include="source\Color.cpp" />
     <ClCompile Include="source\ComboBox.cpp" />
     <ClCompile Include="source\Config.cpp" />
     <ClCompile Include="source\Container.cpp" />

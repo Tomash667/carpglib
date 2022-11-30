@@ -1,46 +1,5 @@
 #include "Pch.h"
 
-const Int2 Int2::Zero = { 0,0 };
-
-const Rect Rect::Zero = { 0,0,0,0 };
-
-const Vec2 Vec2::Zero = { 0.f, 0.f };
-const Vec2 Vec2::One = { 1.f, 1.f };
-const Vec2 Vec2::UnitX = { 1.f, 0.f };
-const Vec2 Vec2::UnitY = { 0.f, 1.f };
-
-const Vec3 Vec3::Zero = { 0.f, 0.f, 0.f };
-const Vec3 Vec3::One = { 1.f, 1.f, 1.f };
-const Vec3 Vec3::UnitX = { 1.f, 0.f, 0.f };
-const Vec3 Vec3::UnitY = { 0.f, 1.f, 0.f };
-const Vec3 Vec3::UnitZ = { 0.f, 0.f, 1.f };
-const Vec3 Vec3::Up = { 0.f, 1.f, 0.f };
-const Vec3 Vec3::Down = { 0.f, -1.f, 0.f };
-const Vec3 Vec3::Right = { 1.f, 0.f, 0.f };
-const Vec3 Vec3::Left = { -1.f, 0.f, 0.f };
-const Vec3 Vec3::Forward = { 0.f, 0.f, -1.f };
-const Vec3 Vec3::Backward = { 0.f, 0.f, 1.f };
-
-const Vec4 Vec4::Zero = { 0.f, 0.f, 0.f, 0.f };
-const Vec4 Vec4::One = { 1.f, 1.f, 1.f, 1.f };
-const Vec4 Vec4::UnitX = { 1.f, 0.f, 0.f, 0.f };
-const Vec4 Vec4::UnitY = { 0.f, 1.f, 0.f, 0.f };
-const Vec4 Vec4::UnitZ = { 0.f, 0.f, 1.f, 0.f };
-const Vec4 Vec4::UnitW = { 0.f, 0.f, 0.f, 1.f };
-
-const Box2d Box2d::Zero = { 0.f, 0.f, 0.f, 0.f };
-const Box2d Box2d::Unit = { 0.f, 0.f, 1.f, 1.f };
-
-const Matrix Matrix::IdentityMatrix = {
-	1.f, 0.f, 0.f, 0.f,
-	0.f, 1.f, 0.f, 0.f,
-	0.f, 0.f, 1.f, 0.f,
-	0.f, 0.f, 0.f, 1.f
-};
-
-const Quat Quat::Identity = { 0.f, 0.f, 0.f, 1.f };
-
-const Guid Guid::Empty = Guid(0, 0, 0, 0);
 const string Guid::EmptyString = "00000000-0000-0000-0000-000000000000";
 
 //=================================================================================================

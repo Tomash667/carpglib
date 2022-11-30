@@ -7,7 +7,7 @@
 const float DEFAULT_BLENDING = 0.33f;
 const int BLEND_TO_BIND_POSE = -1;
 void(*MeshInstance::Predraw)(void*, Matrix*, int) = nullptr;
-Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, Vec3::One);
+constexpr Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, Vec3::One);
 
 //=================================================================================================
 MeshInstance::MeshInstance(Mesh* mesh) : preload(false), mesh(mesh), need_update(true), ptr(nullptr), base_speed(1.f), mat_scale(nullptr)
@@ -17,6 +17,7 @@ MeshInstance::MeshInstance(Mesh* mesh) : preload(false), mesh(mesh), need_update
 	mat_bones.resize(mesh->head.n_bones);
 	blendb.resize(mesh->head.n_bones);
 	groups.resize(mesh->head.n_groups);
+	memcpy(&blendb[0], &blendb_zero, sizeof(blendb_zero));
 }
 
 //=================================================================================================

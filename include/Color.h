@@ -15,10 +15,10 @@ struct Color
 	};
 
 	Color() {}
-	Color(uint value) : value(value) {}
-	Color(int r, int g, int b, int a = 255) : r(r), g(g), b(b), a(a) {}
-	Color(float r, float g, float b, float a = 1.f) : r(byte(r * 255)), g(byte(g * 255)), b(byte(b * 255)), a(byte(a * 255)) {}
-	Color(const Color& c) : value(c.value) {}
+	constexpr Color(uint value) : value(value) {}
+	constexpr Color(int r, int g, int b, int a = 255) : r(r), g(g), b(b), a(a) {}
+	constexpr Color(float r, float g, float b, float a = 1.f) : r(byte(r * 255)), g(byte(g * 255)), b(byte(b * 255)), a(byte(a * 255)) {}
+	constexpr Color(const Color& c) : value(c.value) {}
 
 	bool operator == (Color c) const { return value == c.value; }
 	bool operator != (Color c) const { return value != c.value; }
@@ -65,3 +65,12 @@ struct Color
 	static const Color Blue;
 	static const Color Yellow;
 };
+
+inline constexpr const Color Color::None = Color(0, 0, 0, 0);
+inline constexpr const Color Color::Black = Color(0, 0, 0);
+inline constexpr const Color Color::Gray = Color(128, 128, 128);
+inline constexpr const Color Color::White = Color(255, 255, 255);
+inline constexpr const Color Color::Red = Color(255, 0, 0);
+inline constexpr const Color Color::Green = Color(0, 255, 0);
+inline constexpr const Color Color::Blue = Color(0, 0, 255);
+inline constexpr const Color Color::Yellow = Color(255, 255, 0);
