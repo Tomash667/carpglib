@@ -131,6 +131,7 @@ namespace TextHelper
 	bool ToUint(cstring s, uint& result);
 	bool ToFloat(cstring s, float& result);
 	bool ToBool(cstring s, bool& result);
+	bool IsNumber(cstring s);
 }
 
 // trim from start

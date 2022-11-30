@@ -231,6 +231,14 @@ bool TextHelper::ToBool(cstring s, bool& result)
 }
 
 //=================================================================================================
+bool TextHelper::IsNumber(cstring s)
+{
+	int64 i;
+	float f;
+	return ToNumber(s, i, f) != Broken;
+}
+
+//=================================================================================================
 vector<string> Split(cstring str, const char delimiter, const char quote)
 {
 	assert(str);

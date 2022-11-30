@@ -25,18 +25,21 @@ void ListBox::Draw()
 {
 	if(collapsed)
 	{
+		const int imageSize = 10;
+
 		// box
 		gui->DrawArea(Box2d::Create(globalPos, size), layout->box);
 
 		// element
 		if(selected != -1)
 		{
-			Rect rc = { globalPos.x + 2, globalPos.y + 2, globalPos.x + size.x - 12, globalPos.y + size.y - 2 };
+			Rect rc = { globalPos.x + layout->border + layout->padding, globalPos.y + layout->border,
+				globalPos.x + size.x - layout->border - layout->padding - imageSize, globalPos.y + size.y - layout->border };
 			gui->DrawText(layout->font, items[selected]->ToString(), DTF_SINGLELINE, Color::Black, rc, &rc);
 		}
 
 		// image
-		gui->DrawSprite(layout->downArrow, Int2(globalPos.x + size.x - 10, globalPos.y + (size.y - 10) / 2));
+		gui->DrawSprite(layout->downArrow, Int2(globalPos.x + size.x - imageSize, globalPos.y + (size.y - imageSize) / 2));
 	}
 	else
 	{
@@ -44,7 +47,8 @@ void ListBox::Draw()
 		gui->DrawArea(Box2d::Create(globalPos, realSize), layout->box);
 
 		// selection
-		Rect rc = { globalPos.x, globalPos.y, globalPos.x + realSize.x, globalPos.y + realSize.y };
+		Rect rc = { globalPos.x + layout->border, globalPos.y + layout->border,
+			globalPos.x + realSize.x - layout->border, globalPos.y + realSize.y - layout->border };
 		if(selected != -1)
 		{
 			int offsetY;
@@ -57,7 +61,8 @@ void ListBox::Draw()
 			else
 				offsetY = selected * itemHeight;
 
-			Rect rs = { globalPos.x + 2, globalPos.y - int(scrollbar.offset) + 2 + offsetY, globalPos.x + realSize.x - 2, 0 };
+			Rect rs = { globalPos.x + layout->border, globalPos.y - int(scrollbar.offset) + layout->border + offsetY,
+				globalPos.x + realSize.x - layout->border, 0 };
 			rs.Bottom() = rs.Top() + items[selected]->height;
 			Rect out;
 			if(Rect::Intersect(rs, rc, out))
@@ -66,22 +71,22 @@ void ListBox::Draw()
 
 		// elements
 		Rect r;
-		r.Right() = globalPos.x + realSize.x - 2;
-		r.Top() = globalPos.y - int(scrollbar.offset) + 2;
+		r.Right() = globalPos.x + realSize.x - layout->border - layout->padding;
+		r.Top() = globalPos.y - int(scrollbar.offset) + layout->border;
 		r.Bottom() = r.Top() + itemHeight;
-		int orig_x = globalPos.x + 2;
+		int orig_x = globalPos.x + layout->border + layout->padding;
 		for(GuiElement* e : items)
 		{
 			r.Bottom() = r.Top() + e->height;
 			if(e->tex)
 			{
-				Int2 required_size = forceImgSize, img_size;
+				Int2 requiredSize = forceImgSize, imgSize;
 				Vec2 scale;
-				e->tex->ResizeImage(required_size, img_size, scale);
-				const Vec2 pos((float)orig_x, float(r.Top() + (e->height - required_size.y) / 2));
+				e->tex->ResizeImage(requiredSize, imgSize, scale);
+				const Vec2 pos((float)orig_x, float(r.Top() + (e->height - requiredSize.y) / 2));
 				const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 				gui->DrawSprite2(e->tex, mat, nullptr, &rc, Color::White);
-				r.Left() = orig_x + required_size.x;
+				r.Left() = orig_x + requiredSize.x;
 			}
 			else
 				r.Left() = orig_x;
@@ -586,11 +591,11 @@ void ListBox::CalculateItemHeight(GuiElement* e)
 {
 	if(itemHeight == -1)
 	{
-		Int2 required_size = forceImgSize, img_size;
+		Int2 requiredSize = forceImgSize, imgSize;
 		Vec2 scale;
-		e->tex->ResizeImage(required_size, img_size, scale);
+		e->tex->ResizeImage(requiredSize, imgSize, scale);
 
-		int allowedWidth = size.x - 19 - required_size.x; // remove scrollbar, padding & image width
+		int allowedWidth = size.x - 19 - requiredSize.x; // remove scrollbar, padding & image width
 		e->height = layout->font->CalculateSize(e->ToString(), allowedWidth).y + layout->autoPadding;
 	}
 	else

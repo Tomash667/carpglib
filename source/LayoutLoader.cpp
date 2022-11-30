@@ -69,8 +69,10 @@ LayoutLoader::~LayoutLoader()
 }
 
 //=================================================================================================
-Layout* LayoutLoader::LoadFromFile(cstring path)
+Layout* LayoutLoader::LoadFromFile(cstring inputPath)
 {
+	path = inputPath;
+
 	if(!initialized)
 	{
 		t.SetFlags(Tokenizer::F_MULTI_KEYWORDS);
@@ -106,7 +108,7 @@ Layout* LayoutLoader::LoadFromFile(cstring path)
 	}
 	catch(Tokenizer::Exception& ex)
 	{
-		Error("Failed to load layout '%s': %s", path, ex.ToString());
+		Error("Failed to load layout '%s': %s", path.c_str(), ex.ToString());
 		delete layout;
 		layout = nullptr;
 	}
@@ -331,6 +333,10 @@ void LayoutLoader::ParseControl(const string& name)
 			entry->GetValue<int>(data) = t.MustGetInt();
 			t.Next();
 			break;
+		case Entry::Bool:
+			entry->GetValue<bool>(data) = t.MustGetBool();
+			t.Next();
+			break;
 		}
 	}
 }
@@ -381,7 +387,12 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("texDown", Entry::AreaLayout, offsetof(layout::Button, tex[Button::DOWN]));
 	c->AddEntry("texDisabled", Entry::AreaLayout, offsetof(layout::Button, tex[Button::DISABLED]));
 	c->AddEntry("font", Entry::Font, offsetof(layout::Button, font));
+	c->AddEntry("fontColor", Entry::Color, offsetof(layout::Button, fontColor[Button::NONE]));
+	c->AddEntry("fontColorHover", Entry::Color, offsetof(layout::Button, fontColor[Button::HOVER]));
+	c->AddEntry("fontColorDown", Entry::Color, offsetof(layout::Button, fontColor[Button::DOWN]));
+	c->AddEntry("fontColorDisabled", Entry::Color, offsetof(layout::Button, fontColor[Button::DISABLED]));
 	c->AddEntry("padding", Entry::Int, offsetof(layout::Button, padding));
+	c->AddEntry("outline", Entry::Bool, offsetof(layout::Button, outline));
 
 	c = AddControl<layout::CheckBox>("CheckBox");
 	c->AddEntry("tex", Entry::AreaLayout, offsetof(layout::CheckBox, tex[CheckBox::NONE]));
@@ -432,7 +443,9 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("selection", Entry::AreaLayout, offsetof(layout::ListBox, selection));
 	c->AddEntry("downArrow", Entry::Image, offsetof(layout::ListBox, downArrow));
 	c->AddEntry("font", Entry::Font, offsetof(layout::ListBox, font));
+	c->AddEntry("padding", Entry::Int, offsetof(layout::ListBox, padding));
 	c->AddEntry("autoPadding", Entry::Int, offsetof(layout::ListBox, autoPadding));
+	c->AddEntry("border", Entry::Int, offsetof(layout::ListBox, border));
 
 	c = AddControl<layout::MenuBar>("MenuBar");
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::MenuBar, background));
@@ -478,10 +491,10 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::PickFileDialog, box));
 
 	c = AddControl<layout::PickItemDialog>("PickItemDialog");
-	c->AddEntry("close_button", Entry::AreaLayout, offsetof(layout::PickItemDialog, close.tex[Button::NONE]));
-	c->AddEntry("close_button_hover", Entry::AreaLayout, offsetof(layout::PickItemDialog, close.tex[Button::HOVER]));
-	c->AddEntry("close_button_down", Entry::AreaLayout, offsetof(layout::PickItemDialog, close.tex[Button::DOWN]));
-	c->AddEntry("close_button_disabled", Entry::AreaLayout, offsetof(layout::PickItemDialog, close.tex[Button::DISABLED]));
+	c->AddEntry("closeButton", Entry::AreaLayout, offsetof(layout::PickItemDialog, close.tex[Button::NONE]));
+	c->AddEntry("closeButtonHover", Entry::AreaLayout, offsetof(layout::PickItemDialog, close.tex[Button::HOVER]));
+	c->AddEntry("closeButtonDown", Entry::AreaLayout, offsetof(layout::PickItemDialog, close.tex[Button::DOWN]));
+	c->AddEntry("closeButtonDisabled", Entry::AreaLayout, offsetof(layout::PickItemDialog, close.tex[Button::DISABLED]));
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::PickItemDialog, background));
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::PickItemDialog, box));
 	c->AddEntry("font", Entry::Font, offsetof(layout::PickItemDialog, font));

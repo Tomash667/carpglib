@@ -47,6 +47,7 @@ public:
 private:
 	Entry* GetEntry(cstring name);
 	string* GetEntryValue(cstring name);
+	bool NeedEscapeValue(const string& value);
 
 	vector<Entry> entries;
 	string fileName, tmpstr, error;

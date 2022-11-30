@@ -177,9 +177,10 @@ public:
 	{
 		DrawArea(color, rect.LeftTop(), rect.Size(), clipRect);
 	}
+	void DrawArea(const Box2d& rect, const AreaLayout& areaLayout, const Box2d* clipRect = nullptr, Color* tint = nullptr);
+	void DrawRect(Color color, const Rect& rect, int width = 1);
 	void SetLayout(Layout* layout);
 	Layout* GetLayout() const { return masterLayout; }
-	void DrawArea(const Box2d& rect, const AreaLayout& areaLayout, const Box2d* clipRect = nullptr, Color* tint = nullptr);
 	void SetOverlay(Overlay* overlay) { this->overlay = overlay; }
 	Overlay* GetOverlay() const { return overlay; }
 	bool MouseMoved() const { return cursorPos != prevCursorPos; }

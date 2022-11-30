@@ -22,8 +22,8 @@ void Button::Draw()
 		Rect r = {
 			globalPos.x + layout->padding,
 			globalPos.y + layout->padding,
-			globalPos.x + size.x - layout->padding * 2,
-			globalPos.y + size.y - layout->padding * 2
+			globalPos.x + size.x - layout->padding,
+			globalPos.y + size.y - layout->padding
 		};
 
 		if(state == DOWN)
@@ -62,7 +62,10 @@ void Button::Draw()
 			r.Left() += img_size.x;
 		}
 
-		gui->DrawText(layout->font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r, &r);
+		int flags = DTF_CENTER | DTF_VCENTER;
+		if(layout->outline)
+			flags |= DTF_OUTLINE;
+		gui->DrawText(layout->font, text, flags, layout->fontColor[state], r, &r);
 	}
 	else
 		gui->DrawArea(Box2d::Create(globalPos, size), custom->tex[real_state]);

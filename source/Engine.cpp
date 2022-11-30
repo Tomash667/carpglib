@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------
 Engine* app::engine;
 const Int2 Engine::MIN_WINDOW_SIZE = Int2(800, 600);
-const Int2 Engine::DEFAULT_WINDOW_SIZE = Int2(1024, 768);
+const Int2 Engine::DEFAULT_WINDOW_SIZE = Int2(1280, 720);
 constexpr int WINDOWED_FLAGS = WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME;
 constexpr int FULLSCREEN_FLAGS = WS_POPUP;
 

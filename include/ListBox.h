@@ -14,7 +14,7 @@ namespace layout
 		AreaLayout selection;
 		Texture* downArrow;
 		Font* font;
-		int autoPadding;
+		int padding, autoPadding, border;
 	};
 }
 

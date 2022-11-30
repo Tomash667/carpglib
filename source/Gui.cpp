@@ -801,7 +801,7 @@ void Gui::DrawItem(Texture* t, const Int2& itemPos, const Int2& itemSize, Color 
 	}
 
 	VGui* v = vBuf;
-	Vec4 col = Color(color);
+	const Vec4 col = color;
 
 	/*
 		0---1----------2---3
@@ -996,7 +996,7 @@ void Gui::DrawSprite(Texture* t, const Int2& pos, Color color, const Rect* clipp
 		return;
 
 	VGui* v = vBuf;
-	Vec4 col = Color(color);
+	const Vec4 col = color;
 
 	if(clip_result == 0)
 	{
@@ -1425,7 +1425,7 @@ void Gui::DrawSpriteFull(Texture* t, const Color color)
 	assert(t && t->IsLoaded());
 
 	VGui* v = vBuf;
-	Vec4 col = Color(color);
+	const Vec4 col = color;
 
 	v->pos = Vec2(0, 0);
 	v->color = col;
@@ -1504,7 +1504,7 @@ void Gui::DrawSpriteRect(Texture* t, const Rect& rect, Color color)
 	assert(t && t->IsLoaded());
 
 	VGui* v = vBuf;
-	Vec4 col = Color(color);
+	const Vec4 col = color;
 
 	v->pos = Vec2(float(rect.Left()), float(rect.Top()));
 	v->color = col;
@@ -1588,7 +1588,7 @@ void Gui::DrawSpriteRectPart(Texture* t, const Rect& rect, const Rect& part, Col
 
 	VGui* v = vBuf;
 	Int2 size = t->GetSize();
-	Vec4 col = Color(color);
+	const Vec4 col = color;
 	Box2d uv(float(part.Left()) / size.x, float(part.Top()) / size.y, float(part.Right()) / size.x, float(part.Bottom()) / size.y);
 
 	v->pos = Vec2(float(rect.Left()), float(rect.Top()));
@@ -1631,7 +1631,7 @@ void Gui::DrawSpriteTransform(Texture* t, const Matrix& mat, Color color)
 
 	Int2 size = t->GetSize();
 	VGui* v = vBuf;
-	Vec4 col = Color(color);
+	const Vec4 col = color;
 
 	Vec2 leftTop(0, 0),
 		rightTop(float(size.x), 0),
@@ -1846,7 +1846,7 @@ void Gui::DrawSpriteTransformPart(Texture* t, const Matrix& mat, const Rect& par
 	VGui* v = vBuf;
 	Int2 size = t->GetSize();
 	Box2d uv(float(part.Left()) / size.x, float(part.Top() / size.y), float(part.Right()) / size.x, float(part.Bottom()) / size.y);
-	Vec4 col = Color(color);
+	const Vec4 col = color;
 
 	Vec2 leftTop(part.LeftTop()),
 		rightTop(part.RightTop()),
@@ -1998,7 +1998,7 @@ void Gui::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* 
 	guiRect.Set(pos, size);
 	if(!clipRect || guiRect.Clip(*clipRect))
 	{
-		Vec4 col = Color(color);
+		const Vec4 col = color;
 		VGui* v = vBuf;
 		guiRect.Populate(v, col);
 		shader->Draw(nullptr, vBuf, 1);
@@ -2067,6 +2067,19 @@ void Gui::DrawArea(const Box2d& rect, const AreaLayout& areaLayout, const Box2d*
 		AddRect(v, rect.LeftBottom() + Vec2(0, -s), rect.RightBottom(), col);
 		shader->Draw(nullptr, vBuf, 4);
 	}
+}
+
+//=================================================================================================
+void Gui::DrawRect(Color color, const Rect& rect, int width)
+{
+	assert(width > 0);
+	const Vec4 col = color;
+	VGui* v = vBuf;
+	AddRect(v, Vec2(float(rect.p1.x), float(rect.p1.y)), Vec2(float(rect.p2.x), float(rect.p1.y + width)), col);
+	AddRect(v, Vec2(float(rect.p1.x), float(rect.p2.y - width)), Vec2(float(rect.p2.x), float(rect.p2.y)), col);
+	AddRect(v, Vec2(float(rect.p1.x), float(rect.p1.y + width)), Vec2(float(rect.p1.x + width), float(rect.p2.y - width)), col);
+	AddRect(v, Vec2(float(rect.p2.x - width), float(rect.p1.y + width)), Vec2(float(rect.p2.x), float(rect.p2.y - width)), col);
+	shader->Draw(nullptr, vBuf, 4);
 }
 
 //=================================================================================================

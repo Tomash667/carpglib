@@ -16,7 +16,9 @@ namespace layout
 	{
 		AreaLayout tex[4];
 		Font* font;
+		Color fontColor[4];
 		int padding;
+		bool outline;
 	};
 }
 
