@@ -74,7 +74,7 @@ void GrassShader::Prepare(Scene* scene, Camera* camera)
 	{
 		ResourceLock lock(vsGlobals);
 		VsGlobals& vsg = *lock.Get<VsGlobals>();
-		vsg.matViewProj = camera->mat_view_proj.Transpose();
+		vsg.matViewProj = camera->matViewProj.Transpose();
 	}
 
 	// set pixel shader globals
@@ -109,7 +109,7 @@ void GrassShader::ReserveVertexBuffer(uint vertexCount)
 //=================================================================================================
 void GrassShader::Draw(Mesh* mesh, const vector<const vector<Matrix>*>& patches, uint count)
 {
-	assert(mesh->vertex_decl == VDI_DEFAULT);
+	assert(mesh->vertexDecl == VDI_DEFAULT);
 
 	ReserveVertexBuffer(count);
 

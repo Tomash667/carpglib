@@ -49,42 +49,42 @@ Terrain::~Terrain()
 void Terrain::Init(const Options& o)
 {
 	assert(state == 0);
-	assert(o.tile_size > 0.f && o.n_parts > 0 && o.tiles_per_part > 0 && IsPow2(o.tex_size));
+	assert(o.tileSize > 0.f && o.nParts > 0 && o.tilesPerPart > 0 && IsPow2(o.texSize));
 
 	pos = Vec3(0, 0, 0);
-	tile_size = o.tile_size;
-	n_parts = o.n_parts;
-	n_parts2 = n_parts * n_parts;
-	tiles_per_part = o.tiles_per_part;
-	n_tiles = n_parts * tiles_per_part;
-	n_tiles2 = n_tiles * n_tiles;
-	tiles_size = tile_size * n_tiles;
-	width = n_tiles + 1;
+	tileSize = o.tileSize;
+	nParts = o.nParts;
+	nParts2 = nParts * nParts;
+	tilesPerPart = o.tilesPerPart;
+	nTiles = nParts * tilesPerPart;
+	nTiles2 = nTiles * nTiles;
+	tilesSize = tileSize * nTiles;
+	width = nTiles + 1;
 	width2 = width * width;
-	n_tris = n_tiles2 * 2;
-	n_verts = n_tiles2 * 6;
-	part_tris = tiles_per_part * tiles_per_part * 2;
-	part_verts = tiles_per_part * tiles_per_part * 6;
-	tex_size = o.tex_size;
+	nTris = nTiles2 * 2;
+	nVerts = nTiles2 * 6;
+	partTris = tilesPerPart * tilesPerPart * 2;
+	partVerts = tilesPerPart * tilesPerPart * 6;
+	texSize = o.texSize;
 	box.v1 = Vec3(0, 0, 0);
-	box.v2.x = box.v2.z = tile_size * n_tiles;
+	box.v2.x = box.v2.z = tileSize * nTiles;
 	box.v2.y = 0;
 
 	h = new float[width2];
-	parts = new Part[n_parts2];
+	parts = new Part[nParts2];
 	Vec3 dif = box.v2 - box.v1;
-	dif /= float(n_parts);
+	dif /= float(nParts);
 	dif.y = 0;
-	for(uint z = 0; z < n_parts; ++z)
+	for(uint z = 0; z < nParts; ++z)
 	{
-		for(uint x = 0; x < n_parts; ++x)
+		for(uint x = 0; x < nParts; ++x)
 		{
-			parts[x + z * n_parts].box.v1 = box.v1 + Vec3(dif.x * x, 0, dif.z * z);
-			parts[x + z * n_parts].box.v2 = parts[x + z * n_parts].box.v1 + dif;
+			parts[x + z * nParts].box.v1 = box.v1 + Vec3(dif.x * x, 0, dif.z * z);
+			parts[x + z * nParts].box.v2 = parts[x + z * nParts].box.v1 + dif;
 		}
 	}
 
-	texSplat = app::render->CreateDynamicTexture(Int2(tex_size));
+	texSplat = app::render->CreateDynamicTexture(Int2(texSize));
 
 	state = 1;
 }
@@ -99,7 +99,7 @@ void Terrain::Build(bool smooth)
 	// create vertex buffer
 	D3D11_BUFFER_DESC v_desc = {};
 	v_desc.Usage = D3D11_USAGE_DEFAULT;
-	v_desc.ByteWidth = sizeof(VTerrain) * n_verts;
+	v_desc.ByteWidth = sizeof(VTerrain) * nVerts;
 	v_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
 	V(device->CreateBuffer(&v_desc, nullptr, &vb));
@@ -119,13 +119,13 @@ void Terrain::Build(bool smooth)
 	V(deviceContext->Map(vbStaging, 0, D3D11_MAP_WRITE, 0, &res));
 	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
 
-#define TRI(xx,zz,uu,vv) v[n++] = VTerrain((x+xx)*tile_size, h[x+xx+(z+zz)*width], (z+zz)*tile_size, float(uu)/uv_mod, float(vv)/uv_mod,\
-	((float)(x+xx)) / n_tiles, ((float)(z+zz)) / n_tiles)
+#define TRI(xx,zz,uu,vv) v[n++] = VTerrain((x+xx)*tileSize, h[x+xx+(z+zz)*width], (z+zz)*tileSize, float(uu)/uv_mod, float(vv)/uv_mod,\
+	((float)(x+xx)) / nTiles, ((float)(z+zz)) / nTiles)
 
 	uint n = 0;
-	for(uint z = 0; z < n_tiles; ++z)
+	for(uint z = 0; z < nTiles; ++z)
 	{
-		for(uint x = 0; x < n_tiles; ++x)
+		for(uint x = 0; x < nTiles; ++x)
 		{
 			int u1 = (x % uv_mod);
 			int u2 = ((x + 1) % uv_mod);
@@ -151,16 +151,16 @@ void Terrain::Build(bool smooth)
 
 	// fill indices
 	Buf buf;
-	uint size = sizeof(int) * n_tris * 3;
+	uint size = sizeof(int) * nTris * 3;
 	uint* idx = buf.Get<uint>(size);
-	for(uint z = 0; z < n_parts; ++z)
+	for(uint z = 0; z < nParts; ++z)
 	{
-		for(uint x = 0; x < n_parts; ++x)
+		for(uint x = 0; x < nParts; ++x)
 		{
-			const uint z_start = z * tiles_per_part,
-				z_end = z_start + tiles_per_part,
-				x_start = x * tiles_per_part,
-				x_end = x_start + tiles_per_part;
+			const uint z_start = z * tilesPerPart,
+				z_end = z_start + tilesPerPart,
+				x_start = x * tilesPerPart,
+				x_end = x_start + tilesPerPart;
 
 			for(uint zz = z_start; zz < z_end; ++zz)
 			{
@@ -168,7 +168,7 @@ void Terrain::Build(bool smooth)
 				{
 					for(uint j = 0; j < 6; ++j)
 					{
-						*idx = (xx + zz * n_tiles) * 6 + j;
+						*idx = (xx + zz * nTiles) * 6 + j;
 						++idx;
 					}
 				}
@@ -178,7 +178,7 @@ void Terrain::Build(bool smooth)
 
 	// create index buffer
 	v_desc.Usage = D3D11_USAGE_IMMUTABLE;
-	v_desc.ByteWidth = sizeof(int) * n_tris * 3;
+	v_desc.ByteWidth = sizeof(int) * nTris * 3;
 	v_desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	v_desc.CPUAccessFlags = 0;
 	v_desc.MiscFlags = 0;
@@ -211,9 +211,9 @@ void Terrain::Rebuild(bool smooth)
 #define TRI(xx,zz) v[n++].pos.y = h[x+xx+(z+zz)*width]
 
 	uint n = 0;
-	for(uint z = 0; z < n_tiles; ++z)
+	for(uint z = 0; z < nTiles; ++z)
 	{
-		for(uint x = 0; x < n_tiles; ++x)
+		for(uint x = 0; x < nTiles; ++x)
 		{
 			TRI(0, 0);
 			TRI(0, 1);
@@ -248,9 +248,9 @@ void Terrain::RebuildUv()
 #define TRI(uu,vv) v[n++].tex = Vec2(float(uu)/uv_mod, float(vv)/uv_mod)
 
 	uint n = 0;
-	for(uint z = 0; z < n_tiles; ++z)
+	for(uint z = 0; z < nTiles; ++z)
 	{
-		for(uint x = 0; x < n_tiles; ++x)
+		for(uint x = 0; x < nTiles; ++x)
 		{
 			int u1 = (x % uv_mod);
 			int u2 = ((x + 1) % uv_mod);
@@ -297,7 +297,7 @@ void Terrain::SetHeight(float height)
 	box.v1.y = height - 0.1f;
 	box.v2.y = height + 0.1f;
 
-	for(uint i = 0; i < n_parts2; ++i)
+	for(uint i = 0; i < nParts2; ++i)
 	{
 		parts[i].box.v1.y = height - 0.1f;
 		parts[i].box.v2.y = height + 0.1f;
@@ -372,15 +372,15 @@ void Terrain::CalculateBox()
 
 	float smax = -Inf(),
 		smin = Inf();
-	for(uint i = 0; i < n_parts * n_parts; ++i)
+	for(uint i = 0; i < nParts * nParts; ++i)
 	{
 		float pmax = -Inf();
 		float pmin = Inf();
 
-		const uint z_start = (i / n_parts) * tiles_per_part,
-			z_end = z_start + tiles_per_part,
-			x_start = (i % n_parts) * tiles_per_part,
-			x_end = x_start + tiles_per_part;
+		const uint z_start = (i / nParts) * tilesPerPart,
+			z_end = z_start + tilesPerPart,
+			x_start = (i % nParts) * tilesPerPart,
+			x_end = x_start + tilesPerPart;
 
 		for(uint z = z_start; z <= z_end; ++z)
 		{
@@ -461,19 +461,19 @@ void Terrain::SmoothNormals(VTerrain* v)
 	//  0         2,5
 
 #undef W
-#define W(xx,zz,idx) v[(x+(xx)+(z+(zz))*n_tiles)*6+(idx)]
+#define W(xx,zz,idx) v[(x+(xx)+(z+(zz))*nTiles)*6+(idx)]
 #define CalcNormal(xx,zz,i0,i1,i2) CalculateNormal(normal2,W(xx,zz,i0).pos,W(xx,zz,i1).pos,W(xx,zz,i2).pos);\
 	normal += normal2
 
 	// wyg³adŸ normalne
-	for(uint z = 0; z < n_tiles; ++z)
+	for(uint z = 0; z < nTiles; ++z)
 	{
-		for(uint x = 0; x < n_tiles; ++x)
+		for(uint x = 0; x < nTiles; ++x)
 		{
 			bool has_left = (x > 0),
-				has_right = (x < n_tiles - 1),
+				has_right = (x < nTiles - 1),
 				has_bottom = (z > 0),
-				has_top = (z < n_tiles - 1);
+				has_top = (z < nTiles - 1);
 
 			//------------------------------------------
 			// PUNKT (0,0)
@@ -598,31 +598,31 @@ float Terrain::GetH(float x, float z) const
 
 	// oblicz które to kafle
 	uint tx, tz;
-	tx = (uint)floor(x / tile_size);
-	tz = (uint)floor(z / tile_size);
+	tx = (uint)floor(x / tileSize);
+	tz = (uint)floor(z / tileSize);
 
 	// sprawdŸ czy nie jest to poza terenem
-	//assert_return(tx < n_tiles && tz < n_tiles, 0.f);
+	//assert_return(tx < nTiles && tz < nTiles, 0.f);
 	// teren na samej krawêdzi wykrywa jako b³¹d
-	if(tx == n_tiles)
+	if(tx == nTiles)
 	{
-		if(Equal(x, tiles_size))
+		if(Equal(x, tilesSize))
 			--tx;
 		else
-			assert(tx < n_tiles);
+			assert(tx < nTiles);
 	}
-	if(tz == n_tiles)
+	if(tz == nTiles)
 	{
-		if(Equal(z, tiles_size))
+		if(Equal(z, tilesSize))
 			--tz;
 		else
-			assert(tz < n_tiles);
+			assert(tz < nTiles);
 	}
 
 	// oblicz offset od kafla do punktu
 	float offsetx, offsetz;
-	offsetx = (x - tile_size * tx) / tile_size;
-	offsetz = (z - tile_size * tz) / tile_size;
+	offsetx = (x - tileSize * tx) / tileSize;
+	offsetz = (z - tileSize * tz) / tileSize;
 
 	// pobierz wysokoœci na krawêdziach
 	float hTopLeft = h[tx + (tz + 1) * width];
@@ -655,29 +655,29 @@ void Terrain::GetAngle(float x, float z, Vec3& angle) const
 
 	// oblicz które to kafle
 	uint tx, tz;
-	tx = (uint)floor(x / tile_size);
-	tz = (uint)floor(z / tile_size);
+	tx = (uint)floor(x / tileSize);
+	tz = (uint)floor(z / tileSize);
 
 	// sprawdŸ czy nie jest to poza map¹
-	if(tx == n_tiles)
+	if(tx == nTiles)
 	{
-		if(Equal(x, tiles_size))
+		if(Equal(x, tilesSize))
 			--tx;
 		else
-			assert(tx < n_tiles);
+			assert(tx < nTiles);
 	}
-	if(tz == n_tiles)
+	if(tz == nTiles)
 	{
-		if(Equal(z, tiles_size))
+		if(Equal(z, tilesSize))
 			--tz;
 		else
-			assert(tz < n_tiles);
+			assert(tz < nTiles);
 	}
 
 	// oblicz offset od kafla do punktu
 	float offsetx, offsetz;
-	offsetx = (x - tile_size * tx) / tile_size;
-	offsetz = (z - tile_size * tz) / tile_size;
+	offsetx = (x - tileSize * tx) / tileSize;
+	offsetz = (z - tileSize * tz) / tileSize;
 
 	// pobierz wysokoœci na krawêdziach
 	float hTopLeft = h[tx + (tz + 1) * width];
@@ -690,16 +690,16 @@ void Terrain::GetAngle(float x, float z, Vec3& angle) const
 	if((offsetx * offsetx + offsetz * offsetz) < ((1 - offsetx) * (1 - offsetx) + (1 - offsetz) * (1 - offsetz)))
 	{
 		// lewy dolny trójk¹t
-		v1 = Vec3(tile_size * tx, hBottomLeft, tile_size * tz);
-		v2 = Vec3(tile_size * tx, hTopLeft, tile_size * (tz + 1));
-		v3 = Vec3(tile_size * (tx + 1), hBottomRight, tile_size * (tz + 1));
+		v1 = Vec3(tileSize * tx, hBottomLeft, tileSize * tz);
+		v2 = Vec3(tileSize * tx, hTopLeft, tileSize * (tz + 1));
+		v3 = Vec3(tileSize * (tx + 1), hBottomRight, tileSize * (tz + 1));
 	}
 	else
 	{
 		// prawy górny trójk¹t
-		v1 = Vec3(tile_size * tx, hTopLeft, tile_size * (tz + 1));
-		v2 = Vec3(tile_size * (tx + 1), hTopRight, tile_size * (tz + 1));
-		v3 = Vec3(tile_size * (tx + 1), hBottomRight, tile_size * tz);
+		v1 = Vec3(tileSize * tx, hTopLeft, tileSize * (tz + 1));
+		v2 = Vec3(tileSize * (tx + 1), hTopRight, tileSize * (tz + 1));
+		v3 = Vec3(tileSize * (tx + 1), hBottomRight, tileSize * tz);
 	}
 
 	// oblicz wektor normalny dla tych punktów
@@ -711,24 +711,24 @@ void Terrain::GetAngle(float x, float z, Vec3& angle) const
 //=================================================================================================
 void Terrain::FillGeometry(vector<Tri>& tris, vector<Vec3>& verts)
 {
-	uint vcount = (n_tiles + 1) * (n_tiles + 1);
+	uint vcount = (nTiles + 1) * (nTiles + 1);
 	verts.reserve(vcount);
 
-	for(uint z = 0; z <= (n_tiles + 1); ++z)
+	for(uint z = 0; z <= (nTiles + 1); ++z)
 	{
-		for(uint x = 0; x <= (n_tiles + 1); ++x)
+		for(uint x = 0; x <= (nTiles + 1); ++x)
 		{
-			verts.push_back(Vec3(x * tile_size, h[x + z * width], z * tile_size));
+			verts.push_back(Vec3(x * tileSize, h[x + z * width], z * tileSize));
 		}
 	}
 
-	tris.reserve(n_tiles * n_tiles * 3);
+	tris.reserve(nTiles * nTiles * 3);
 
-#define XZ(xx,zz) (x+(xx)+(z+(zz))*(n_tiles+1))
+#define XZ(xx,zz) (x+(xx)+(z+(zz))*(nTiles+1))
 
-	for(uint z = 0; z < n_tiles; ++z)
+	for(uint z = 0; z < nTiles; ++z)
 	{
-		for(uint x = 0; x < n_tiles; ++x)
+		for(uint x = 0; x < nTiles; ++x)
 		{
 			tris.push_back(Tri(XZ(0, 0), XZ(0, 1), XZ(1, 0)));
 			tris.push_back(Tri(XZ(1, 0), XZ(0, 1), XZ(1, 1)));
@@ -741,25 +741,25 @@ void Terrain::FillGeometry(vector<Tri>& tris, vector<Vec3>& verts)
 //=================================================================================================
 void Terrain::FillGeometryPart(vector<Tri>& tris, vector<Vec3>& verts, int px, int pz, const Vec3& offset) const
 {
-	assert(px >= 0 && pz >= 0 && uint(px) < n_parts && uint(pz) < n_parts);
+	assert(px >= 0 && pz >= 0 && uint(px) < nParts && uint(pz) < nParts);
 
-	verts.reserve((tiles_per_part + 1) * (tiles_per_part + 1));
+	verts.reserve((tilesPerPart + 1) * (tilesPerPart + 1));
 
-	for(uint z = pz * tiles_per_part; z <= (pz + 1) * tiles_per_part; ++z)
+	for(uint z = pz * tilesPerPart; z <= (pz + 1) * tilesPerPart; ++z)
 	{
-		for(uint x = px * tiles_per_part; x <= (px + 1) * tiles_per_part; ++x)
+		for(uint x = px * tilesPerPart; x <= (px + 1) * tilesPerPart; ++x)
 		{
-			verts.push_back(Vec3(x * tile_size + offset.x, h[x + z * width] + offset.y, z * tile_size + offset.z));
+			verts.push_back(Vec3(x * tileSize + offset.x, h[x + z * width] + offset.y, z * tileSize + offset.z));
 		}
 	}
 
-	tris.reserve(tiles_per_part * tiles_per_part * 3);
+	tris.reserve(tilesPerPart * tilesPerPart * 3);
 
-#define XZ(xx,zz) (x+(xx)+(z+(zz))*(tiles_per_part+1))
+#define XZ(xx,zz) (x+(xx)+(z+(zz))*(tilesPerPart+1))
 
-	for(uint z = 0; z < tiles_per_part; ++z)
+	for(uint z = 0; z < tilesPerPart; ++z)
 	{
-		for(uint x = 0; x < tiles_per_part; ++x)
+		for(uint x = 0; x < tilesPerPart; ++x)
 		{
 			tris.push_back(Tri(XZ(0, 0), XZ(0, 1), XZ(1, 0)));
 			tris.push_back(Tri(XZ(1, 0), XZ(0, 1), XZ(1, 1)));
@@ -799,7 +799,7 @@ void Terrain::SetHeightMap(float* _h)
 //=================================================================================================
 void Terrain::ListVisibleParts(vector<uint>& outParts, const FrustumPlanes& frustum) const
 {
-	for(uint i = 0; i < n_parts2; ++i)
+	for(uint i = 0; i < nParts2; ++i)
 	{
 		if(frustum.BoxToFrustum(parts[i].box))
 			outParts.push_back(i);

@@ -97,10 +97,10 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 
 	// create textures
 	font->outline = outline;
-	font->outline_shift = Vec2(float(outline) / texSize.x, float(outline) / texSize.y);
+	font->outlineShift = Vec2(float(outline) / texSize.x, float(outline) / texSize.y);
 	font->tex = CreateFontTexture(font, texSize, 0, padding, winapiFont);
 	if(outline > 0)
-		font->tex_outline = CreateFontTexture(font, texSize, outline, padding, winapiFont);
+		font->texOutline = CreateFontTexture(font, texSize, outline, padding, winapiFont);
 	DeleteObject(winapiFont);
 
 	// make tab size of 4 spaces

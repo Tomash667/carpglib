@@ -11,7 +11,7 @@ static cstring WHITESPACE_SYMBOLS_DOT = " \t\n\r,/;'\\[]`<>?:|{}=~!@#$%^&*()+-\"
 static cstring SYMBOLS = ",./;'\\[]`<>?:|{}=~!@#$%^&*()+-";
 
 //=================================================================================================
-Tokenizer::Tokenizer(int _flags) : need_sorting(false), formatter(this), seek(nullptr), own_string(false)
+Tokenizer::Tokenizer(int _flags) : needSorting(false), formatter(this), seek(nullptr), ownString(false)
 {
 	SetFlags(_flags);
 	Reset();
@@ -20,7 +20,7 @@ Tokenizer::Tokenizer(int _flags) : need_sorting(false), formatter(this), seek(nu
 //=================================================================================================
 Tokenizer::~Tokenizer()
 {
-	if(own_string)
+	if(ownString)
 		StringPool.SafeFree(const_cast<string*>(str));
 	delete seek;
 }
@@ -29,20 +29,20 @@ Tokenizer::~Tokenizer()
 void Tokenizer::FromString(cstring _str)
 {
 	assert(_str);
-	if(!own_string)
+	if(!ownString)
 		str = StringPool.Get();
 	*const_cast<string*>(str) = _str;
-	own_string = true;
+	ownString = true;
 	Reset();
 }
 
 //=================================================================================================
 void Tokenizer::FromString(const string& _str)
 {
-	if(own_string)
+	if(ownString)
 	{
 		StringPool.Free(const_cast<string*>(str));
-		own_string = false;
+		ownString = false;
 	}
 	str = &_str;
 	Reset();
@@ -52,10 +52,10 @@ void Tokenizer::FromString(const string& _str)
 bool Tokenizer::FromFile(cstring path)
 {
 	assert(path);
-	if(!own_string)
+	if(!ownString)
 	{
 		str = StringPool.Get();
-		own_string = true;
+		ownString = true;
 	}
 	if(!io::LoadFileToString(path, *const_cast<string*>(str)))
 		return false;
@@ -67,28 +67,28 @@ bool Tokenizer::FromFile(cstring path)
 //=================================================================================================
 void Tokenizer::FromTokenizer(const Tokenizer& t)
 {
-	if(own_string)
+	if(ownString)
 	{
 		StringPool.Free(const_cast<string*>(str));
-		own_string = false;
+		ownString = false;
 	}
 
 	str = t.str;
-	normal_seek.pos = t.normal_seek.pos;
-	normal_seek.line = t.normal_seek.line;
-	normal_seek.charpos = t.normal_seek.charpos;
-	normal_seek.item = t.normal_seek.item;
-	normal_seek.token = t.normal_seek.token;
-	normal_seek._int = t.normal_seek._int;
+	normalSeek.pos = t.normalSeek.pos;
+	normalSeek.line = t.normalSeek.line;
+	normalSeek.charpos = t.normalSeek.charpos;
+	normalSeek.item = t.normalSeek.item;
+	normalSeek.token = t.normalSeek.token;
+	normalSeek._int = t.normalSeek._int;
 	flags = t.flags;
-	normal_seek._float = t.normal_seek._float;
-	normal_seek._char = t.normal_seek._char;
-	normal_seek._uint = t.normal_seek._uint;
+	normalSeek._float = t.normalSeek._float;
+	normalSeek._char = t.normalSeek._char;
+	normalSeek._uint = t.normalSeek._uint;
 
-	if(normal_seek.token == T_KEYWORD)
+	if(normalSeek.token == T_KEYWORD)
 	{
 		// need to check keyword because keywords are not copied from other tokenizer, it may be item here
-		CheckItemOrKeyword(normal_seek, normal_seek.item);
+		CheckItemOrKeyword(normalSeek, normalSeek.item);
 	}
 }
 
@@ -523,45 +523,45 @@ bool Tokenizer::NextLine()
 	if(IsEof())
 		return false;
 
-	if(normal_seek.pos >= str->length())
+	if(normalSeek.pos >= str->length())
 	{
-		normal_seek.token = T_EOF;
+		normalSeek.token = T_EOF;
 		return false;
 	}
 
-	uint pos2 = FindFirstNotOf(normal_seek, " \t", normal_seek.pos);
+	uint pos2 = FindFirstNotOf(normalSeek, " \t", normalSeek.pos);
 	if(pos2 == string::npos)
 	{
-		normal_seek.pos = string::npos;
-		normal_seek.token = T_EOF;
+		normalSeek.pos = string::npos;
+		normalSeek.token = T_EOF;
 		return false;
 	}
 
-	uint pos3 = FindFirstOf(normal_seek, "\n\r", pos2 + 1);
+	uint pos3 = FindFirstOf(normalSeek, "\n\r", pos2 + 1);
 	if(pos3 == string::npos)
-		normal_seek.item = str->substr(pos2);
+		normalSeek.item = str->substr(pos2);
 	else
-		normal_seek.item = str->substr(pos2, pos3 - pos2);
+		normalSeek.item = str->substr(pos2, pos3 - pos2);
 
-	normal_seek.token = T_ITEM;
-	normal_seek.pos = pos3;
-	return !normal_seek.item.empty();
+	normalSeek.token = T_ITEM;
+	normalSeek.pos = pos3;
+	return !normalSeek.item.empty();
 }
 
 //=================================================================================================
 bool Tokenizer::PeekSymbol(char symbol)
 {
-	assert(normal_seek.token == T_SYMBOL || normal_seek.token == T_COMPOUND_SYMBOL);
-	if(str->size() == normal_seek.pos)
+	assert(normalSeek.token == T_SYMBOL || normalSeek.token == T_COMPOUND_SYMBOL);
+	if(str->size() == normalSeek.pos)
 		return false;
-	char c = str->at(normal_seek.pos);
+	char c = str->at(normalSeek.pos);
 	if(c == symbol)
 	{
-		normal_seek.item += c;
-		normal_seek._char = c;
-		++normal_seek.charpos;
-		++normal_seek.pos;
-		normal_seek.token = T_COMPOUND_SYMBOL;
+		normalSeek.item += c;
+		normalSeek._char = c;
+		++normalSeek.charpos;
+		++normalSeek.pos;
+		normalSeek.token = T_COMPOUND_SYMBOL;
 		return true;
 	}
 	else
@@ -725,7 +725,7 @@ void Tokenizer::AddKeywords(int group, std::initializer_list<KeywordToRegister> 
 		AddKeyword(k.name, k.id, group);
 
 	if(to_register.size() > 0)
-		need_sorting = true;
+		needSorting = true;
 
 	if(group_name)
 		AddKeywordGroup(group_name, group);
@@ -905,10 +905,10 @@ cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 //=================================================================================================
 void Tokenizer::CheckSorting()
 {
-	if(!need_sorting)
+	if(!needSorting)
 		return;
 
-	need_sorting = false;
+	needSorting = false;
 	std::sort(keywords.begin(), keywords.end());
 
 	if(!IsSet(flags, F_MULTI_KEYWORDS))
@@ -1195,7 +1195,7 @@ const string& Tokenizer::GetBlock(char open, char close, bool include_symbol)
 {
 	AssertSymbol(open);
 	int opened = 1;
-	uint block_start = normal_seek.pos - 1;
+	uint block_start = normalSeek.pos - 1;
 	while(Next())
 	{
 		if(IsSymbol(open))
@@ -1206,10 +1206,10 @@ const string& Tokenizer::GetBlock(char open, char close, bool include_symbol)
 			if(opened == 0)
 			{
 				if(include_symbol)
-					normal_seek.item = str->substr(block_start, normal_seek.pos - block_start);
+					normalSeek.item = str->substr(block_start, normalSeek.pos - block_start);
 				else
-					normal_seek.item = str->substr(block_start + 1, normal_seek.pos - block_start - 2);
-				return normal_seek.item;
+					normalSeek.item = str->substr(block_start + 1, normalSeek.pos - block_start - 2);
+				return normalSeek.item;
 			}
 		}
 	}
@@ -1252,10 +1252,10 @@ char Tokenizer::MustGetSymbol(cstring symbols) const
 bool Tokenizer::SeekStart(bool return_eol)
 {
 	assert(seek);
-	seek->token = normal_seek.token;
-	seek->pos = normal_seek.pos;
-	seek->line = normal_seek.line;
-	seek->charpos = normal_seek.charpos;
+	seek->token = normalSeek.token;
+	seek->pos = normalSeek.pos;
+	seek->line = normalSeek.line;
+	seek->charpos = normalSeek.charpos;
 	return SeekNext(return_eol);
 }
 
@@ -1384,7 +1384,7 @@ int Tokenizer::IsKeywordGroup(std::initializer_list<int> const& groups) const
 		return MISSING_GROUP;
 	for(int group : groups)
 	{
-		for(Keyword* k : normal_seek.keyword)
+		for(Keyword* k : normalSeek.keyword)
 		{
 			if(k->group == group)
 				return group;
@@ -1397,20 +1397,20 @@ int Tokenizer::IsKeywordGroup(std::initializer_list<int> const& groups) const
 Pos Tokenizer::GetPos()
 {
 	Pos p;
-	p.line = normal_seek.line + 1;
-	p.charpos = normal_seek.charpos + 1;
-	p.pos = normal_seek.start_pos;
+	p.line = normalSeek.line + 1;
+	p.charpos = normalSeek.charpos + 1;
+	p.pos = normalSeek.start_pos;
 	return p;
 }
 
 //=================================================================================================
 void Tokenizer::MoveTo(const Pos& p)
 {
-	normal_seek.pos = p.pos;
-	normal_seek.token = T_NONE;
-	DoNext(normal_seek, false);
-	normal_seek.line = p.line - 1;
-	normal_seek.charpos = p.charpos - 1;
+	normalSeek.pos = p.pos;
+	normalSeek.token = T_NONE;
+	DoNext(normalSeek, false);
+	normalSeek.line = p.line - 1;
+	normalSeek.charpos = p.charpos - 1;
 }
 
 //=================================================================================================
@@ -1476,19 +1476,19 @@ void Tokenizer::ForceMoveToClosingSymbol(char start, char end)
 //=================================================================================================
 cstring Tokenizer::GetTextRest()
 {
-	if(normal_seek.pos == string::npos)
+	if(normalSeek.pos == string::npos)
 		return "";
-	return str->c_str() + normal_seek.pos;
+	return str->c_str() + normalSeek.pos;
 }
 
 //=================================================================================================
 SeekData& Tokenizer::Query()
 {
 	static SeekData tmp;
-	tmp.token = normal_seek.token;
-	tmp.pos = normal_seek.pos;
-	tmp.line = normal_seek.line;
-	tmp.charpos = normal_seek.charpos;
+	tmp.token = normalSeek.token;
+	tmp.pos = normalSeek.pos;
+	tmp.line = normalSeek.line;
+	tmp.charpos = normalSeek.charpos;
 	DoNext(tmp, false);
 	return tmp;
 }

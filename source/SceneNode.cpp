@@ -8,28 +8,28 @@
 //=================================================================================================
 void SceneNode::OnGet()
 {
-	tex_override = nullptr;
+	texOverride = nullptr;
 	tint = Vec4::One;
 	persistent = false;
 }
 
 //=================================================================================================
-void SceneNode::SetMesh(Mesh* mesh, MeshInstance* mesh_inst)
+void SceneNode::SetMesh(Mesh* mesh, MeshInstance* meshInst)
 {
 	assert(mesh);
 	this->mesh = mesh;
-	this->mesh_inst = mesh_inst;
-	flags = mesh_inst ? F_ANIMATED : 0;
+	this->meshInst = meshInst;
+	flags = meshInst ? F_ANIMATED : 0;
 	mesh->EnsureIsLoaded();
 	radius = mesh->head.radius;
 }
 
 //=================================================================================================
-void SceneNode::SetMesh(MeshInstance* mesh_inst)
+void SceneNode::SetMesh(MeshInstance* meshInst)
 {
-	assert(mesh_inst);
-	this->mesh = mesh_inst->mesh;
-	this->mesh_inst = mesh_inst;
+	assert(meshInst);
+	this->mesh = meshInst->mesh;
+	this->meshInst = meshInst;
 	flags = F_ANIMATED;
 	mesh->EnsureIsLoaded();
 	radius = mesh->head.radius;
@@ -39,8 +39,8 @@ void SceneNode::SetMesh(MeshInstance* mesh_inst)
 void SceneBatch::Clear()
 {
 	nodes.clear();
-	alpha_nodes.clear();
-	node_groups.clear();
+	alphaNodes.clear();
+	nodeGroups.clear();
 }
 
 //=================================================================================================
@@ -56,17 +56,17 @@ void SceneBatch::Add(SceneNode* node, int sub)
 			node->flags |= SceneNode::F_HAVE_WEIGHTS;
 		if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
 			node->flags |= SceneNode::F_HAVE_TANGENTS;
-		if(app::sceneMgr->use_normalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
+		if(app::sceneMgr->useNormalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
 			node->flags |= SceneNode::F_NORMAL_MAP;
-		if(app::sceneMgr->use_specularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))
+		if(app::sceneMgr->useSpecularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))
 			node->flags |= SceneNode::F_SPECULAR_MAP;
 		node->subs = SceneNode::SPLIT_MASK;
 	}
 	else
 	{
-		if(app::sceneMgr->use_normalmap && mesh.subs[sub].tex_normal)
+		if(app::sceneMgr->useNormalmap && mesh.subs[sub].tex_normal)
 			node->flags |= SceneNode::F_NORMAL_MAP;
-		if(app::sceneMgr->use_specularmap && mesh.subs[sub].tex_specular)
+		if(app::sceneMgr->useSpecularmap && mesh.subs[sub].tex_specular)
 			node->flags |= SceneNode::F_SPECULAR_MAP;
 		node->subs = SceneNode::SPLIT_INDEX | sub;
 	}
@@ -74,7 +74,7 @@ void SceneBatch::Add(SceneNode* node, int sub)
 	if(IsSet(node->flags, SceneNode::F_ALPHA_BLEND))
 	{
 		node->dist = Vec3::DistanceSquared(node->center, camera->from);
-		alpha_nodes.push_back(node);
+		alphaNodes.push_back(node);
 	}
 	else
 		nodes.push_back(node);
@@ -83,7 +83,7 @@ void SceneBatch::Add(SceneNode* node, int sub)
 //=================================================================================================
 void SceneBatch::Process()
 {
-	node_groups.clear();
+	nodeGroups.clear();
 	if(!nodes.empty())
 	{
 		// sort nodes
@@ -101,18 +101,18 @@ void SceneBatch::Process()
 		{
 			if(node->flags != prev_flags)
 			{
-				if(!node_groups.empty())
-					node_groups.back().end = index - 1;
-				node_groups.push_back({ node->flags, index, 0 });
+				if(!nodeGroups.empty())
+					nodeGroups.back().end = index - 1;
+				nodeGroups.push_back({ node->flags, index, 0 });
 				prev_flags = node->flags;
 			}
 			++index;
 		}
-		node_groups.back().end = index - 1;
+		nodeGroups.back().end = index - 1;
 	}
 
 	// sort alpha nodes
-	std::sort(alpha_nodes.begin(), alpha_nodes.end(), [](const SceneNode* node1, const SceneNode* node2)
+	std::sort(alphaNodes.begin(), alphaNodes.end(), [](const SceneNode* node1, const SceneNode* node2)
 	{
 		return node1->dist > node2->dist;
 	});

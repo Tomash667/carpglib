@@ -294,10 +294,10 @@ void SuperShader::PrepareDecals()
 	app::render->SetDepthState(Render::DEPTH_READ);
 	app::render->SetRasterState(Render::RASTER_NORMAL);
 
-	const bool use_fog = app::sceneMgr->use_lighting && app::sceneMgr->use_fog;
+	const bool useFog = app::sceneMgr->useLighting && app::sceneMgr->useFog;
 
-	SetShader(GetShaderId(false, false, false, use_fog, false, false,
-		!scene->use_light_dir && app::sceneMgr->use_lighting, scene->use_light_dir && app::sceneMgr->use_lighting));
+	SetShader(GetShaderId(false, false, false, useFog, false, false,
+		!scene->useLightDir && app::sceneMgr->useLighting, scene->useLightDir && app::sceneMgr->useLighting));
 }
 
 //=================================================================================================
@@ -377,7 +377,7 @@ void SuperShader::Draw(SceneNode* node)
 	// set vertex/index buffer
 	if(&mesh != prevMesh)
 	{
-		uint stride = mesh.vertex_size, offset = 0;
+		uint stride = mesh.vertexSize, offset = 0;
 		deviceContext->IASetVertexBuffers(0, 1, &mesh.vb, &stride, &offset);
 		deviceContext->IASetIndexBuffer(mesh.ib, DXGI_FORMAT_R16_UINT, 0);
 		prevMesh = &mesh;
@@ -387,12 +387,12 @@ void SuperShader::Draw(SceneNode* node)
 	{
 		ResourceLock lock(vsLocals);
 		VsLocals& vsl = *lock.Get<VsLocals>();
-		vsl.matCombined = (node->mat * camera->mat_view_proj).Transpose();
+		vsl.matCombined = (node->mat * camera->matViewProj).Transpose();
 		vsl.matWorld = node->mat.Transpose();
 		if(applyBones)
 		{
-			for(uint i = 0; i < node->mesh_inst->mesh->head.n_bones; ++i)
-				vsl.matBones[i] = node->mesh_inst->mat_bones[i].Transpose();
+			for(uint i = 0; i < node->meshInst->mesh->head.n_bones; ++i)
+				vsl.matBones[i] = node->meshInst->matBones[i].Transpose();
 		}
 	}
 
@@ -445,7 +445,7 @@ void SuperShader::DrawSubmesh(SceneNode* node, uint index)
 	}
 
 	// set texture OwO
-	SetTexture(node->tex_override, node->mesh, index);
+	SetTexture(node->texOverride, node->mesh, index);
 
 	// actual drawing
 	deviceContext->DrawIndexed(sub.tris * 3, sub.first * 3, 0);
@@ -551,7 +551,7 @@ void SuperShader::DrawDecal(const Decal& decal)
 		VsLocals& vsl = *lock.Get<VsLocals>();
 		Matrix matWorld = Matrix::Translation(decal.pos);
 		vsl.matWorld = matWorld.Transpose();
-		vsl.matCombined = (matWorld * camera->mat_view_proj).Transpose();
+		vsl.matCombined = (matWorld * camera->matViewProj).Transpose();
 	}
 
 	// set pixel shader constants

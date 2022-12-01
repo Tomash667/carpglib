@@ -167,7 +167,7 @@ void BasicShader::Prepare(const Camera& camera)
 	{
 		ResourceLock lock(vsGlobals);
 		VsGlobals& vsg = *lock.Get<VsGlobals>();
-		vsg.matCombined = camera.mat_view_proj.Transpose();
+		vsg.matCombined = camera.matViewProj.Transpose();
 	}
 }
 

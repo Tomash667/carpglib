@@ -25,18 +25,18 @@ struct SceneNode : public ObjectPoolProxy<SceneNode>
 
 	Matrix mat;
 	Mesh* mesh;
-	MeshInstance* mesh_inst;
+	MeshInstance* meshInst;
 	int flags, subs;
 	float radius, dist;
-	const TexOverride* tex_override;
+	const TexOverride* texOverride;
 	Vec4 tint;
 	Vec3 center;
 	array<Light*, 3> lights;
 	bool persistent;
 
 	void OnGet();
-	void SetMesh(Mesh* mesh, MeshInstance* mesh_inst = nullptr);
-	void SetMesh(MeshInstance* mesh_inst);
+	void SetMesh(Mesh* mesh, MeshInstance* meshInst = nullptr);
+	void SetMesh(MeshInstance* meshInst);
 };
 
 //-----------------------------------------------------------------------------
@@ -49,11 +49,11 @@ struct SceneNodeGroup
 struct SceneBatch
 {
 	vector<SceneNode*> nodes;
-	vector<SceneNode*> alpha_nodes;
-	vector<SceneNodeGroup> node_groups;
+	vector<SceneNode*> alphaNodes;
+	vector<SceneNodeGroup> nodeGroups;
 	Scene* scene;
 	Camera* camera;
-	bool gather_lights;
+	bool gatherLights;
 
 	void Clear();
 	void Add(SceneNode* node, int sub = -1);

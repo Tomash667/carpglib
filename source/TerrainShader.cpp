@@ -81,7 +81,7 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 	{
 		ResourceLock lock(vsGlobals);
 		VsGlobals& vsg = *lock.Get<VsGlobals>();
-		vsg.matCombined = camera->mat_view_proj.Transpose();
+		vsg.matCombined = camera->matViewProj.Transpose();
 		vsg.matWorld = Matrix::IdentityMatrix.Transpose();
 	}
 
@@ -106,5 +106,5 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 
 	// draw
 	for(uint part : parts)
-		deviceContext->DrawIndexed(terrain->part_tris * 3, terrain->part_tris * part * 3, 0);
+		deviceContext->DrawIndexed(terrain->partTris * 3, terrain->partTris * part * 3, 0);
 }

@@ -24,7 +24,7 @@ const int DefaultSpecularHardness = 10;
 //=================================================================================================
 // Konstruktor Mesh
 //=================================================================================================
-Mesh::Mesh() : vb(nullptr), ib(nullptr), vertex_decl(VDI_DEFAULT)
+Mesh::Mesh() : vb(nullptr), ib(nullptr), vertexDecl(VDI_DEFAULT)
 {
 }
 
@@ -49,7 +49,7 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 
 	// ------ vertices
 	// ensure size
-	uint size = vertex_size * head.n_verts;
+	uint size = vertexSize * head.n_verts;
 	if(!stream.Ensure(size))
 		throw "Failed to read vertex buffer.";
 
@@ -315,8 +315,8 @@ void Mesh::SetVertexSizeDecl()
 {
 	if(IsSet(head.flags, F_PHYSICS))
 	{
-		vertex_decl = VDI_POS;
-		vertex_size = sizeof(VPos);
+		vertexDecl = VDI_POS;
+		vertexSize = sizeof(VPos);
 	}
 	else
 	{
@@ -324,26 +324,26 @@ void Mesh::SetVertexSizeDecl()
 		{
 			if(IsSet(head.flags, F_TANGENTS))
 			{
-				vertex_decl = VDI_ANIMATED_TANGENT;
-				vertex_size = sizeof(VAnimatedTangent);
+				vertexDecl = VDI_ANIMATED_TANGENT;
+				vertexSize = sizeof(VAnimatedTangent);
 			}
 			else
 			{
-				vertex_decl = VDI_ANIMATED;
-				vertex_size = sizeof(VAnimated);
+				vertexDecl = VDI_ANIMATED;
+				vertexSize = sizeof(VAnimated);
 			}
 		}
 		else
 		{
 			if(IsSet(head.flags, F_TANGENTS))
 			{
-				vertex_decl = VDI_TANGENT;
-				vertex_size = sizeof(VTangent);
+				vertexDecl = VDI_TANGENT;
+				vertexSize = sizeof(VTangent);
 			}
 			else
 			{
-				vertex_decl = VDI_DEFAULT;
-				vertex_size = sizeof(VDefault);
+				vertexDecl = VDI_DEFAULT;
+				vertexSize = sizeof(VDefault);
 			}
 		}
 	}
@@ -354,11 +354,11 @@ void Mesh::LoadPoints(StreamReader& stream)
 	uint size = Point::MIN_SIZE * head.n_points;
 	if(!stream.Ensure(size))
 		throw "Failed to read points.";
-	attach_points.clear();
-	attach_points.resize(head.n_points);
+	attachPoints.clear();
+	attachPoints.resize(head.n_points);
 	for(word i = 0; i < head.n_points; ++i)
 	{
-		Point& p = attach_points[i];
+		Point& p = attachPoints[i];
 
 		stream.Read(p.name);
 		stream.Read(p.mat);
@@ -434,16 +434,16 @@ void Mesh::LoadMatrix33(StreamReader& stream, Matrix& m)
 //=================================================================================================
 void Mesh::SetupBoneMatrices()
 {
-	model_to_bone.resize(head.n_bones);
-	model_to_bone[0] = Matrix::IdentityMatrix;
+	modelToBone.resize(head.n_bones);
+	modelToBone[0] = Matrix::IdentityMatrix;
 
 	for(word i = 1; i < head.n_bones; ++i)
 	{
 		const Mesh::Bone& bone = bones[i];
-		bone.mat.Inverse(model_to_bone[i]);
+		bone.mat.Inverse(modelToBone[i]);
 
 		if(bone.parent > 0)
-			model_to_bone[i] = model_to_bone[bone.parent] * model_to_bone[i];
+			modelToBone[i] = modelToBone[bone.parent] * modelToBone[i];
 	}
 }
 
@@ -550,7 +550,7 @@ Mesh::Point* Mesh::GetPoint(cstring name)
 {
 	assert(name);
 
-	for(vector<Point>::iterator it = attach_points.begin(), end = attach_points.end(); it != end; ++it)
+	for(vector<Point>::iterator it = attachPoints.begin(), end = attachPoints.end(); it != end; ++it)
 	{
 		if(it->name == name)
 			return &*it;
@@ -626,7 +626,7 @@ Mesh::Point* Mesh::FindPoint(cstring name)
 
 	int len = strlen(name);
 
-	for(vector<Point>::iterator it = attach_points.begin(), end = attach_points.end(); it != end; ++it)
+	for(vector<Point>::iterator it = attachPoints.begin(), end = attachPoints.end(); it != end; ++it)
 	{
 		if(strncmp(name, (*it).name.c_str(), len) == 0)
 			return &*it;
@@ -642,7 +642,7 @@ Mesh::Point* Mesh::FindNextPoint(cstring name, Point* point)
 
 	int len = strlen(name);
 
-	for(vector<Point>::iterator it = attach_points.begin(), end = attach_points.end(); it != end; ++it)
+	for(vector<Point>::iterator it = attachPoints.begin(), end = attachPoints.end(); it != end; ++it)
 	{
 		if(&*it == point)
 		{

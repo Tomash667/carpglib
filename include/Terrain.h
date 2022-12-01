@@ -11,10 +11,10 @@ public:
 	//---------------------------
 	struct Options
 	{
-		float tile_size;
-		uint n_parts;
-		uint tiles_per_part;
-		uint tex_size;
+		float tileSize;
+		uint nParts;
+		uint tilesPerPart;
+		uint texSize;
 	};
 
 	//---------------------------
@@ -67,7 +67,7 @@ public:
 	//---------------------------
 	Part* GetPart(uint idx)
 	{
-		assert(idx < n_parts2);
+		assert(idx < nParts2);
 		return &parts[idx];
 	}
 	float GetH(float x, float z) const;
@@ -75,36 +75,36 @@ public:
 	float GetH(const Vec2& v) const { return GetH(v.x, v.y); }
 	void SetY(Vec3& v) const { v.y = GetH(v.x, v.z); }
 	void GetAngle(float x, float z, Vec3& angle) const;
-	uint GetPartsCount() const { return n_parts2; }
+	uint GetPartsCount() const { return nParts2; }
 	DynamicTexture& GetSplatTexture() { return *texSplat; }
 	TexturePtr* GetTextures() { return tex; }
 	const Box& GetBox() const { return box; }
 	const Vec3& GetPos() const { return pos; }
 	float* GetHeightMap() { return h; }
 	uint GetTerrainWidth() const { return width; }
-	uint GetTilesCount() const { return n_tiles; }
-	uint GetSplatSize() const { return tex_size; }
-	float GetPartSize() const { return tiles_size / n_parts; }
-	float GetTileSize() const { return tile_size; }
+	uint GetTilesCount() const { return nTiles; }
+	uint GetSplatSize() const { return texSize; }
+	float GetPartSize() const { return tilesSize / nParts; }
+	float GetTileSize() const { return tileSize; }
 
 	//---------------------------
 	void SetTextures(TexturePtr* textures);
 	void RemoveHeightMap(bool _delete = false);
 	void SetHeightMap(float* h);
-	bool IsInside(float x, float z) const { return x >= 0.f && z >= 0.f && x < tiles_size && z < tiles_size; }
+	bool IsInside(float x, float z) const { return x >= 0.f && z >= 0.f && x < tilesSize && z < tilesSize; }
 	bool IsInside(const Vec3& v) const { return IsInside(v.x, v.z); }
 	void ListVisibleParts(vector<uint>& parts, const FrustumPlanes& frustum) const;
 
 private:
 	Part* parts;
 	float* h;
-	float tile_size; // rozmiar jednego ma³ego kwadraciku terenu
-	float tiles_size;
-	uint n_tiles, n_tiles2; // liczba kwadracików na boku, wszystkich
-	uint n_parts, n_parts2; // liczba sektorów na boku, wszystkich
-	uint tiles_per_part;
-	uint width, width2; // n_tiles+1
-	uint n_tris, n_verts, part_tris, part_verts, tex_size;
+	float tileSize; // rozmiar jednego ma³ego kwadraciku terenu
+	float tilesSize;
+	uint nTiles, nTiles2; // liczba kwadracików na boku, wszystkich
+	uint nParts, nParts2; // liczba sektorów na boku, wszystkich
+	uint tilesPerPart;
+	uint width, width2; // nTiles+1
+	uint nTris, nVerts, partTris, partVerts, texSize;
 	Box box;
 	ID3D11Buffer* vb;
 	ID3D11Buffer* vbStaging;

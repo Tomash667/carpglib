@@ -157,7 +157,7 @@ namespace tokenizer
 			explicit Formatter(Tokenizer* t) : t(t)
 			{
 				e.str = &s;
-				sd = &t->normal_seek;
+				sd = &t->normalSeek;
 			}
 
 			void SetFilename()
@@ -238,7 +238,7 @@ namespace tokenizer
 
 		typedef bool(*SkipToFunc)(Tokenizer& t);
 
-		bool Next(bool return_eol = false) { return DoNext(normal_seek, return_eol); }
+		bool Next(bool return_eol = false) { return DoNext(normalSeek, return_eol); }
 		bool NextLine();
 		bool SkipTo(delegate<bool(Tokenizer&)> f)
 		{
@@ -273,11 +273,11 @@ namespace tokenizer
 			if(IsEof())
 				return 0;
 			else
-				return str->at(normal_seek.pos);
+				return str->at(normalSeek.pos);
 		}
 		void NextChar()
 		{
-			++normal_seek.pos;
+			++normalSeek.pos;
 		}
 		cstring FormatToken(TOKEN token, int* what = nullptr, int* what2 = nullptr);
 
@@ -291,7 +291,7 @@ namespace tokenizer
 			k.id = id;
 			k.group = group;
 			k.enabled = true;
-			need_sorting = true;
+			needSorting = true;
 		}
 		void AddKeywordGroup(cstring name, int group)
 		{
@@ -329,7 +329,7 @@ namespace tokenizer
 		}
 		__declspec(noreturn) void Unexpected() const
 		{
-			Unexpected(normal_seek);
+			Unexpected(normalSeek);
 		}
 		__declspec(noreturn) void SeekUnexpected() const
 		{
@@ -339,7 +339,7 @@ namespace tokenizer
 		__declspec(noreturn) void Unexpected(cstring err) const
 		{
 			assert(err);
-			formatter.Throw(Format("Unexpected %s: %s", GetTokenValue(normal_seek), err));
+			formatter.Throw(Format("Unexpected %s: %s", GetTokenValue(normalSeek), err));
 		}
 		__declspec(noreturn) void Unexpected(TOKEN expected_token, int* what = nullptr, int* what2 = nullptr) const
 		{
@@ -371,7 +371,7 @@ namespace tokenizer
 		}
 		cstring Expecting(cstring what)
 		{
-			return Format("Expecting %s, found %s.", what, GetTokenValue(normal_seek));
+			return Format("Expecting %s, found %s.", what, GetTokenValue(normalSeek));
 		}
 		__declspec(noreturn) void ThrowExpecting(cstring what)
 		{
@@ -379,7 +379,7 @@ namespace tokenizer
 		}
 
 		//===========================================================================================================================
-		bool IsToken(TOKEN _tt) const { return normal_seek.token == _tt; }
+		bool IsToken(TOKEN _tt) const { return normalSeek.token == _tt; }
 		bool IsEof() const { return IsToken(T_EOF); }
 		bool IsEol() const { return IsToken(T_EOL); }
 		bool IsItem() const { return IsToken(T_ITEM); }
@@ -400,7 +400,7 @@ namespace tokenizer
 		{
 			if(IsKeyword())
 			{
-				for(Keyword* k : normal_seek.keyword)
+				for(Keyword* k : normalSeek.keyword)
 				{
 					if(k->id == id)
 						return true;
@@ -412,7 +412,7 @@ namespace tokenizer
 		{
 			if(IsKeyword())
 			{
-				for(Keyword* k : normal_seek.keyword)
+				for(Keyword* k : normalSeek.keyword)
 				{
 					if(k->id == id && k->group == group)
 						return true;
@@ -424,7 +424,7 @@ namespace tokenizer
 		{
 			if(IsKeyword())
 			{
-				for(Keyword* k : normal_seek.keyword)
+				for(Keyword* k : normalSeek.keyword)
 				{
 					if(k->group == group)
 						return true;
@@ -442,7 +442,7 @@ namespace tokenizer
 			return -1;
 		}
 		int IsKeywordGroup(std::initializer_list<int> const& groups) const;
-		bool IsBool() const { return IsInt() && (normal_seek._int == 0 || normal_seek._int == 1); }
+		bool IsBool() const { return IsInt() && (normalSeek._int == 0 || normalSeek._int == 1); }
 		bool IsItemOrString() const { return IsItem() || IsString(); }
 
 		//===========================================================================================================================
@@ -451,13 +451,13 @@ namespace tokenizer
 		cstring GetTokenValue(const SeekData& s) const;
 		cstring GetTokenValue() const
 		{
-			return GetTokenValue(normal_seek);
+			return GetTokenValue(normalSeek);
 		}
 
 		//===========================================================================================================================
 		void AssertToken(TOKEN _tt) const
 		{
-			if(normal_seek.token != _tt)
+			if(normalSeek.token != _tt)
 				Unexpected(_tt);
 		}
 		void AssertEof() const { AssertToken(T_EOF); }
@@ -528,7 +528,7 @@ namespace tokenizer
 		//===========================================================================================================================
 		TOKEN GetToken() const
 		{
-			return normal_seek.token;
+			return normalSeek.token;
 		}
 		cstring GetTokenName() const
 		{
@@ -536,55 +536,55 @@ namespace tokenizer
 		}
 		const string& GetTokenString() const
 		{
-			return normal_seek.item;
+			return normalSeek.item;
 		}
 		const string& GetItem() const
 		{
 			assert(IsItem());
-			return normal_seek.item;
+			return normalSeek.item;
 		}
 		const string& GetString() const
 		{
 			assert(IsString());
-			return normal_seek.item;
+			return normalSeek.item;
 		}
 		char GetChar() const
 		{
 			assert(IsChar());
-			return normal_seek._char;
+			return normalSeek._char;
 		}
 		char GetSymbol() const
 		{
 			assert(IsSymbol());
-			return normal_seek._char;
+			return normalSeek._char;
 		}
 		int GetInt() const
 		{
 			assert(IsFloat());
-			return normal_seek._int;
+			return normalSeek._int;
 		}
 		uint GetUint() const
 		{
 			assert(IsUint());
-			return normal_seek._uint;
+			return normalSeek._uint;
 		}
 		float GetFloat() const
 		{
 			assert(IsFloat());
-			return normal_seek._float;
+			return normalSeek._float;
 		}
-		uint GetLine() const { return normal_seek.line + 1; }
-		uint GetCharPos() const { return normal_seek.charpos + 1; }
+		uint GetLine() const { return normalSeek.line + 1; }
+		uint GetCharPos() const { return normalSeek.charpos + 1; }
 		const string& GetInnerString() const { return *str; }
 		const Keyword* GetKeyword() const
 		{
 			assert(IsKeyword());
-			return normal_seek.keyword[0];
+			return normalSeek.keyword[0];
 		}
 		const Keyword* GetKeyword(int id) const
 		{
 			assert(IsKeyword(id));
-			for(Keyword* k : normal_seek.keyword)
+			for(Keyword* k : normalSeek.keyword)
 			{
 				if(k->id == id)
 					return k;
@@ -594,7 +594,7 @@ namespace tokenizer
 		const Keyword* GetKeyword(int id, int group) const
 		{
 			assert(IsKeyword(id, group));
-			for(Keyword* k : normal_seek.keyword)
+			for(Keyword* k : normalSeek.keyword)
 			{
 				if(k->id == id && k->group == group)
 					return k;
@@ -604,7 +604,7 @@ namespace tokenizer
 		const Keyword* GetKeywordByGroup(int group) const
 		{
 			assert(IsKeywordGroup(group));
-			for(Keyword* k : normal_seek.keyword)
+			for(Keyword* k : normalSeek.keyword)
 			{
 				if(k->group == group)
 					return k;
@@ -614,12 +614,12 @@ namespace tokenizer
 		int GetKeywordId() const
 		{
 			assert(IsKeyword());
-			return normal_seek.keyword[0]->id;
+			return normalSeek.keyword[0]->id;
 		}
 		int GetKeywordId(int group) const
 		{
 			assert(IsKeywordGroup(group));
-			for(Keyword* k : normal_seek.keyword)
+			for(Keyword* k : normalSeek.keyword)
 			{
 				if(k->group == group)
 					return k->id;
@@ -629,12 +629,12 @@ namespace tokenizer
 		int GetKeywordGroup() const
 		{
 			assert(IsKeyword());
-			return normal_seek.keyword[0]->group;
+			return normalSeek.keyword[0]->group;
 		}
 		int GetKeywordGroup(int id) const
 		{
 			assert(IsKeyword(id));
-			for(Keyword* k : normal_seek.keyword)
+			for(Keyword* k : normalSeek.keyword)
 			{
 				if(k->id == id)
 					return k->group;
@@ -645,12 +645,12 @@ namespace tokenizer
 		const string& GetItemOrString() const
 		{
 			assert(IsItemOrString());
-			return normal_seek.item;
+			return normalSeek.item;
 		}
 		const string& GetText() const
 		{
 			assert(IsText());
-			return normal_seek.item;
+			return normalSeek.item;
 		}
 
 		//===========================================================================================================================
@@ -667,10 +667,10 @@ namespace tokenizer
 		const string& MustGetStringTrim()
 		{
 			AssertString();
-			Trim(normal_seek.item);
-			if(normal_seek.item.empty())
+			Trim(normalSeek.item);
+			if(normalSeek.item.empty())
 				Throw("Expected not empty string.");
-			return normal_seek.item;
+			return normalSeek.item;
 		}
 		char MustGetChar() const
 		{
@@ -760,13 +760,13 @@ namespace tokenizer
 		bool MustGetBool() const
 		{
 			AssertBool();
-			return (normal_seek._int == 1);
+			return (normalSeek._int == 1);
 		}
 		const string& MustGetItemKeyword() const
 		{
 			if(!IsItem() && !IsKeyword())
 				StartUnexpected().Add(T_ITEM).Add(T_KEYWORD).Throw();
-			return normal_seek.item;
+			return normalSeek.item;
 		}
 
 		//===========================================================================================================================
@@ -856,7 +856,7 @@ namespace tokenizer
 		void CheckItemOrKeyword(const string& item)
 		{
 			CheckSorting();
-			CheckItemOrKeyword(normal_seek, item);
+			CheckItemOrKeyword(normalSeek, item);
 		}
 		Pos GetPos();
 		void MoveTo(const Pos& pos);
@@ -865,10 +865,10 @@ namespace tokenizer
 		void ForceMoveToClosingSymbol(char start, char end = 0);
 		void Reset()
 		{
-			normal_seek.token = T_NONE;
-			normal_seek.pos = 0;
-			normal_seek.line = 0;
-			normal_seek.charpos = 0;
+			normalSeek.token = T_NONE;
+			normalSeek.pos = 0;
+			normalSeek.line = 0;
+			normalSeek.charpos = 0;
 		}
 		cstring GetTextRest();
 
@@ -888,9 +888,9 @@ namespace tokenizer
 		string filename;
 		vector<Keyword> keywords;
 		vector<KeywordGroup> groups;
-		SeekData normal_seek;
+		SeekData normalSeek;
 		SeekData* seek;
-		bool need_sorting, own_string;
+		bool needSorting, ownString;
 		mutable Formatter formatter;
 	};
 }

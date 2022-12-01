@@ -7,8 +7,8 @@
 #include "SceneNode.h"
 
 //=================================================================================================
-Scene::Scene() : clear_color(Color::Black), ambient_color(0.4f, 0.4f, 0.4f), light_color(Color::White), fog_color(Color::Gray), use_light_dir(false),
-fog_range(50, 100)
+Scene::Scene() : clearColor(Color::Black), ambientColor(0.4f, 0.4f, 0.4f), lightColor(Color::White), fogColor(Color::Gray), useLightDir(false),
+fogRange(50, 100)
 {
 }
 
@@ -21,12 +21,12 @@ Scene::~Scene()
 //=================================================================================================
 void Scene::ListNodes(SceneBatch& batch)
 {
-	FrustumPlanes frustum(batch.camera->mat_view_proj);
+	FrustumPlanes frustum(batch.camera->matViewProj);
 	for(SceneNode* node : nodes)
 	{
 		if(node->mesh && frustum.SphereToFrustum(node->center, node->radius))
 		{
-			if(batch.gather_lights)
+			if(batch.gatherLights)
 				GatherLights(batch, node);
 			batch.Add(node);
 		}
@@ -52,15 +52,15 @@ void Scene::GatherLights(SceneBatch& batch, SceneNode* node)
 //=================================================================================================
 Vec4 Scene::GetAmbientColor() const
 {
-	if(app::sceneMgr->use_lighting)
-		return ambient_color;
+	if(app::sceneMgr->useLighting)
+		return ambientColor;
 	return Vec4::One;
 }
 
 //=================================================================================================
 Vec4 Scene::GetFogParams() const
 {
-	if(app::sceneMgr->use_lighting && app::sceneMgr->use_fog)
-		return Vec4(fog_range.x, fog_range.y, fog_range.y - fog_range.x, 1);
+	if(app::sceneMgr->useLighting && app::sceneMgr->useFog)
+		return Vec4(fogRange.x, fogRange.y, fogRange.y - fogRange.x, 1);
 	return Vec4(999, 1000, 1, 0);
 }

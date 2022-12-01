@@ -13,7 +13,7 @@ struct Texture : public Resource
 	Texture() : tex(nullptr) {}
 	~Texture();
 	void Release();
-	void ResizeImage(Int2& new_size, Int2& img_size, Vec2& scale);
+	void ResizeImage(Int2& newSize, Int2& imgSize, Vec2& scale);
 	Int2 GetSize() const { return GetSize(tex); }
 	static Int2 GetSize(TEX tex);
 };

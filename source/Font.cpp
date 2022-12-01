@@ -4,7 +4,7 @@
 #include "DirectX.h"
 
 //=================================================================================================
-Font::Font() : tex(nullptr), tex_outline(nullptr)
+Font::Font() : tex(nullptr), texOutline(nullptr)
 {
 }
 
@@ -12,109 +12,109 @@ Font::Font() : tex(nullptr), tex_outline(nullptr)
 Font::~Font()
 {
 	SafeRelease(tex);
-	SafeRelease(tex_outline);
+	SafeRelease(texOutline);
 }
 
 //=================================================================================================
 /* Taken from TFQ, modified for carpg
 returns false when reached end of text
 parametry:
-out_begin - pierszy znak w tej linijce
-out_end - ostatni znak w tej linijce
-out_width - szerokoœæ tej linijki
-in_out_index - offset w text
+outBegin - pierszy znak w tej linijce
+outEnd - ostatni znak w tej linijce
+outWidth - szerokoœæ tej linijki
+inOutIndex - offset w text
 text - tekst
-text_end - d³ugoœæ tekstu
+textEnd - d³ugoœæ tekstu
 flags - flagi (uwzglêdnia tylko DTF_SINGLELINE, DTF_PARSE_SPECIAL)
 width - maksymalna szerokoœæ tej linijki
 */
-bool Font::SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_out_index, cstring text, uint text_end, uint flags, int width) const
+bool Font::SplitLine(uint& outBegin, uint& outEnd, int& outWidth, uint& inOutIndex, cstring text, uint textEnd, uint flags, int width) const
 {
 	// Heh, piszê ten algorytm chyba trzeci raz w ¿yciu.
 	// Za ka¿dym razem idzie mi szybciej i lepiej.
 	// Ale zawsze i tak jest dla mnie ogromnie trudny i skomplikowany.
-	if(in_out_index >= text_end)
+	if(inOutIndex >= textEnd)
 		return false;
 
-	bool parse_special = IsSet(flags, DTF_PARSE_SPECIAL);
-	out_begin = in_out_index;
-	out_width = 0;
+	bool parseSpecial = IsSet(flags, DTF_PARSE_SPECIAL);
+	outBegin = inOutIndex;
+	outWidth = 0;
 
 	// Pojedyncza linia - specjalny szybki tryb
 	if(IsSet(flags, DTF_SINGLELINE))
 	{
-		while(in_out_index < text_end)
+		while(inOutIndex < textEnd)
 		{
-			char c = text[in_out_index];
-			if(c == '$' && parse_special)
+			char c = text[inOutIndex];
+			if(c == '$' && parseSpecial)
 			{
-				if(SkipSpecial(in_out_index, text, text_end))
+				if(SkipSpecial(inOutIndex, text, textEnd))
 					continue;
 			}
 			else
-				++in_out_index;
-			out_width += GetCharWidth(c);
+				++inOutIndex;
+			outWidth += GetCharWidth(c);
 		}
-		out_end = in_out_index;
+		outEnd = inOutIndex;
 
 		return true;
 	}
 
 	// Zapamiêtany stan miejsca ostatniego wyst¹pienia spacji
 	// Przyda siê na wypadek zawijania wierszy na granicy s³owa.
-	uint last_space_index = string::npos;
-	int width_when_last_space;
+	uint lastSpaceIndex = string::npos;
+	int widthWhenLastSpace;
 
 	for(;;)
 	{
 		// Koniec tekstu
-		if(in_out_index >= text_end)
+		if(inOutIndex >= textEnd)
 		{
-			out_end = text_end;
+			outEnd = textEnd;
 			break;
 		}
 
 		// Pobierz znak
-		char c = text[in_out_index];
+		char c = text[inOutIndex];
 
 		// Koniec wiersza
 		if(c == '\n')
 		{
-			out_end = in_out_index;
-			in_out_index++;
+			outEnd = inOutIndex;
+			inOutIndex++;
 			break;
 		}
 		// Koniec wiersza \r
 		else if(c == '\r')
 		{
-			out_end = in_out_index;
-			in_out_index++;
+			outEnd = inOutIndex;
+			inOutIndex++;
 			// Sekwencja \r\n - pomiñ \n
-			if(in_out_index < text_end && text[in_out_index] == '\n')
-				in_out_index++;
+			if(inOutIndex < textEnd && text[inOutIndex] == '\n')
+				inOutIndex++;
 			break;
 		}
-		else if(c == '$' && parse_special && SkipSpecial(in_out_index, text, text_end))
+		else if(c == '$' && parseSpecial && SkipSpecial(inOutIndex, text, textEnd))
 			continue;
 		else
 		{
 			// Szerokoœæ znaku
-			int char_width = GetCharWidth(text[in_out_index]);
+			int charWidth = GetCharWidth(text[inOutIndex]);
 
 			// Jeœli nie ma automatycznego zawijania wierszy lub
 			// jeœli siê zmieœci lub
 			// to jest pierwszy znak (zabezpieczenie przed nieskoñczonym zapêtleniem dla width < szerokoœæ pierwszego znaku) -
 			// dolicz go i ju¿
-			if(out_width + char_width <= width || in_out_index == out_begin)
+			if(outWidth + charWidth <= width || inOutIndex == outBegin)
 			{
 				// Jeœli to spacja - zapamiêtaj dane
 				if(c == ' ')
 				{
-					last_space_index = in_out_index;
-					width_when_last_space = out_width;
+					lastSpaceIndex = inOutIndex;
+					widthWhenLastSpace = outWidth;
 				}
-				out_width += char_width;
-				in_out_index++;
+				outWidth += charWidth;
+				inOutIndex++;
 			}
 			// Jest automatyczne zawijanie wierszy i siê nie mieœci
 			else
@@ -122,33 +122,33 @@ bool Font::SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_ou
 				// Niemieszcz¹cy siê znak to spacja
 				if(c == ' ')
 				{
-					out_end = in_out_index;
+					outEnd = inOutIndex;
 					// Mo¿na go przeskoczyæ
-					in_out_index++;
+					inOutIndex++;
 					break;
 				}
 				// Poprzedni znak za tym to spacja
-				else if(in_out_index > out_begin && text[in_out_index - 1] == ' ')
+				else if(inOutIndex > outBegin && text[inOutIndex - 1] == ' ')
 				{
 					// Koniec bêdzie na tej spacji
-					out_end = last_space_index;
-					out_width = width_when_last_space;
+					outEnd = lastSpaceIndex;
+					outWidth = widthWhenLastSpace;
 					break;
 				}
 
 				// Zawijanie wierszy na granicy s³owa
 				// By³a jakaœ spacja
-				if(last_space_index != string::npos)
+				if(lastSpaceIndex != string::npos)
 				{
 					// Koniec bêdzie na tej spacji
-					out_end = last_space_index;
-					in_out_index = last_space_index + 1;
-					out_width = width_when_last_space;
+					outEnd = lastSpaceIndex;
+					inOutIndex = lastSpaceIndex + 1;
+					outWidth = widthWhenLastSpace;
 					break;
 				}
 				// Nie by³o spacji - trudno, zawinie siê jak na granicy znaku
 
-				out_end = in_out_index;
+				outEnd = inOutIndex;
 				break;
 			}
 		}
@@ -158,7 +158,7 @@ bool Font::SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_ou
 }
 
 //=================================================================================================
-int Font::LineWidth(cstring str, bool parse_special) const
+int Font::LineWidth(cstring str, bool parseSpecial) const
 {
 	int w = 0;
 
@@ -168,7 +168,7 @@ int Font::LineWidth(cstring str, bool parse_special) const
 		if(c == 0)
 			break;
 
-		if(c == '$' && parse_special)
+		if(c == '$' && parseSpecial)
 		{
 			++str;
 			c = *str;
@@ -196,7 +196,7 @@ int Font::LineWidth(cstring str, bool parse_special) const
 }
 
 //=================================================================================================
-Int2 Font::CalculateSize(Cstring str, int limit_width) const
+Int2 Font::CalculateSize(Cstring str, int limitWidth) const
 {
 	int len = strlen(str);
 	cstring text = str;
@@ -206,7 +206,7 @@ Int2 Font::CalculateSize(Cstring str, int limit_width) const
 	uint unused, index = 0;
 	int width;
 
-	while(SplitLine(unused, unused, width, index, text, len, 0, limit_width))
+	while(SplitLine(unused, unused, width, index, text, len, 0, limitWidth))
 	{
 		if(width > size.x)
 			size.x = width;
@@ -217,45 +217,45 @@ Int2 Font::CalculateSize(Cstring str, int limit_width) const
 }
 
 //=================================================================================================
-Int2 Font::CalculateSizeWrap(Cstring str, const Int2& max_size, int border) const
+Int2 Font::CalculateSizeWrap(Cstring str, const Int2& maxSize, int border) const
 {
-	int max_width = max_size.x - border;
-	Int2 size = CalculateSize(str, max_width);
+	int maxWidth = maxSize.x - border;
+	Int2 size = CalculateSize(str, maxWidth);
 	int lines = size.y / height;
-	int line_pts = size.x / height;
-	int total_pts = line_pts * lines;
+	int linePts = size.x / height;
+	int totalPts = linePts * lines;
 
-	while(line_pts > 9 + lines)
+	while(linePts > 9 + lines)
 	{
 		++lines;
-		line_pts = total_pts / lines;
+		linePts = totalPts / lines;
 	}
 
-	return CalculateSize(str, line_pts * height);
+	return CalculateSize(str, linePts * height);
 }
 
 //=================================================================================================
-bool Font::ParseGroupIndex(cstring text, uint line_end, uint& i, int& index, int& index2)
+bool Font::ParseGroupIndex(cstring text, uint lineEnd, uint& i, int& index, int& index2)
 {
 	index = -1;
 	index2 = -1;
-	LocalString tmp_s;
+	LocalString tmpStr;
 	bool first = true;
 	while(true)
 	{
-		assert(i < line_end);
+		assert(i < lineEnd);
 		char c = text[i];
 		if(c >= '0' && c <= '9')
-			tmp_s += c;
-		else if(c == ',' && first && !tmp_s.empty())
+			tmpStr += c;
+		else if(c == ',' && first && !tmpStr.empty())
 		{
 			first = false;
-			index = atoi(tmp_s.c_str());
-			tmp_s.clear();
+			index = atoi(tmpStr.c_str());
+			tmpStr.clear();
 		}
-		else if(c == ';' && !tmp_s.empty())
+		else if(c == ';' && !tmpStr.empty())
 		{
-			int new_index = atoi(tmp_s.c_str());
+			int new_index = atoi(tmpStr.c_str());
 			if(first)
 				index = new_index;
 			else
@@ -275,47 +275,47 @@ bool Font::ParseGroupIndex(cstring text, uint line_end, uint& i, int& index, int
 }
 
 //=================================================================================================
-bool Font::SkipSpecial(uint& in_out_index, cstring text, uint text_end) const
+bool Font::SkipSpecial(uint& inOutIndex, cstring text, uint textEnd) const
 {
 	// specjalna opcja
-	in_out_index++;
-	if(in_out_index < text_end)
+	inOutIndex++;
+	if(inOutIndex < textEnd)
 	{
-		switch(text[in_out_index])
+		switch(text[inOutIndex])
 		{
 		case '$':
 			return false;
 		case 'c':
 			// pomiñ kolor
-			++in_out_index;
-			++in_out_index;
+			++inOutIndex;
+			++inOutIndex;
 			break;
 		case 'h':
 			// pomiñ hitbox
-			++in_out_index;
-			++in_out_index;
+			++inOutIndex;
+			++inOutIndex;
 			break;
 		case 'g':
-			++in_out_index;
-			if(text[in_out_index] == '+')
+			++inOutIndex;
+			if(text[inOutIndex] == '+')
 			{
-				++in_out_index;
+				++inOutIndex;
 				int tmp;
-				ParseGroupIndex(text, text_end, in_out_index, tmp, tmp);
-				++in_out_index;
+				ParseGroupIndex(text, textEnd, inOutIndex, tmp, tmp);
+				++inOutIndex;
 			}
-			else if(text[in_out_index] == '-')
-				++in_out_index;
+			else if(text[inOutIndex] == '-')
+				++inOutIndex;
 			else
 			{
 				// unknown option
 				assert(0);
-				++in_out_index;
+				++inOutIndex;
 			}
 			break;
 		default:
 			// nieznana opcja
-			++in_out_index;
+			++inOutIndex;
 			assert(0);
 			break;
 		}
@@ -324,20 +324,20 @@ bool Font::SkipSpecial(uint& in_out_index, cstring text, uint text_end) const
 	else
 	{
 		// uszkodzony format tekstu, olej to
-		++in_out_index;
+		++inOutIndex;
 		assert(0);
 		return true;
 	}
 }
 
 //=================================================================================================
-bool Font::HitTest(Cstring str, int limit_width, int flags, const Int2& pos, uint& index, Int2& index2, Rect& rect, float& uv, const vector<Line>* font_lines) const
+bool Font::HitTest(Cstring str, int limitWidth, int flags, const Int2& pos, uint& index, Int2& index2, Rect& rect, float& uv, const vector<Line>* fontLines) const
 {
 	if(pos.x < 0 || pos.y < 0)
 		return false;
 
-	bool parse_special = IsSet(flags, DTF_PARSE_SPECIAL);
-	uint text_end = strlen(str);
+	bool parseSpecial = IsSet(flags, DTF_PARSE_SPECIAL);
+	uint textEnd = strlen(str);
 	cstring text = str;
 	int width = 0, prev_width = 0;
 	index = 0;
@@ -348,12 +348,12 @@ bool Font::HitTest(Cstring str, int limit_width, int flags, const Int2& pos, uin
 		if(pos.y > height)
 			return false;
 
-		while(index < text_end)
+		while(index < textEnd)
 		{
 			char c = text[index];
-			if(c == '$' && parse_special)
+			if(c == '$' && parseSpecial)
 			{
-				if(SkipSpecial(index, text, text_end))
+				if(SkipSpecial(index, text, textEnd))
 					continue;
 			}
 			else
@@ -373,20 +373,20 @@ bool Font::HitTest(Cstring str, int limit_width, int flags, const Int2& pos, uin
 
 	// get correct line
 	int line = pos.y / height;
-	uint line_begin, line_end;
-	if(font_lines)
+	uint lineBegin, lineEnd;
+	if(fontLines)
 	{
-		line = min(font_lines->size() - 1, (uint)line);
-		auto& font_line = font_lines->at(line);
-		line_begin = font_line.begin;
-		line_end = font_line.end;
+		line = min(fontLines->size() - 1, (uint)line);
+		auto& font_line = fontLines->at(line);
+		lineBegin = font_line.begin;
+		lineEnd = font_line.end;
 	}
 	else
 	{
 		int current_line = 0;
 		do
 		{
-			if(!SplitLine(line_begin, line_end, width, index, text, text_end, flags, limit_width))
+			if(!SplitLine(lineBegin, lineEnd, width, index, text, textEnd, flags, limitWidth))
 			{
 				line = current_line - 1;
 				break;
@@ -397,14 +397,14 @@ bool Font::HitTest(Cstring str, int limit_width, int flags, const Int2& pos, uin
 		} while(true);
 	}
 
-	index = line_begin;
+	index = lineBegin;
 	width = 0;
-	while(index < line_end)
+	while(index < lineEnd)
 	{
 		char c = text[index];
-		if(c == '$' && parse_special)
+		if(c == '$' && parseSpecial)
 		{
-			if(SkipSpecial(index, text, line_end))
+			if(SkipSpecial(index, text, lineEnd))
 				continue;
 		}
 		else
@@ -419,17 +419,17 @@ bool Font::HitTest(Cstring str, int limit_width, int flags, const Int2& pos, uin
 	rect.p1 = Int2(prev_width, line * height);
 	rect.p2 = Int2(width, (line + 1) * height);
 	uv = min(1.f, 1.f - float(width - pos.x) / (width - prev_width));
-	index2 = Int2(index - line_begin, line);
+	index2 = Int2(index - lineBegin, line);
 	return true;
 }
 
 //=================================================================================================
-Int2 Font::IndexToPos(uint expected_index, Cstring str, int limit_width, int flags) const
+Int2 Font::IndexToPos(uint expectedIndex, Cstring str, int limitWidth, int flags) const
 {
-	assert(expected_index <= strlen(str));
+	assert(expectedIndex <= strlen(str));
 
-	bool parse_special = IsSet(flags, DTF_PARSE_SPECIAL);
-	uint text_end = strlen(str);
+	bool parseSpecial = IsSet(flags, DTF_PARSE_SPECIAL);
+	uint textEnd = strlen(str);
 	cstring text = str;
 	uint index = 0;
 
@@ -437,48 +437,48 @@ Int2 Font::IndexToPos(uint expected_index, Cstring str, int limit_width, int fla
 	{
 		int width = 0;
 
-		while(index < text_end && index != expected_index)
+		while(index < textEnd && index != expectedIndex)
 		{
 			char c = text[index];
-			if(c == '$' && parse_special)
+			if(c == '$' && parseSpecial)
 			{
-				if(SkipSpecial(index, text, text_end))
+				if(SkipSpecial(index, text, textEnd))
 					continue;
 			}
 			else
 				++index;
 
-			int char_width = GetCharWidth(c);
-			width += char_width;
+			int charWidth = GetCharWidth(c);
+			width += charWidth;
 		}
 
 		return Int2(width, 0);
 	}
 
-	uint line_begin, line_end;
+	uint lineBegin, lineEnd;
 	uint line = 0;
 	while(true)
 	{
 		int line_width;
-		[[maybe_unused]] bool ok = SplitLine(line_begin, line_end, line_width, index, text, text_end, flags, limit_width);
+		[[maybe_unused]] bool ok = SplitLine(lineBegin, lineEnd, line_width, index, text, textEnd, flags, limitWidth);
 		assert(ok);
-		if(expected_index >= line_begin && expected_index <= line_end)
+		if(expectedIndex >= lineBegin && expectedIndex <= lineEnd)
 		{
 			int width = 0;
-			index = line_begin;
-			while(index < line_end && index != expected_index)
+			index = lineBegin;
+			while(index < lineEnd && index != expectedIndex)
 			{
 				char c = text[index];
-				if(c == '$' && parse_special)
+				if(c == '$' && parseSpecial)
 				{
-					if(SkipSpecial(index, text, text_end))
+					if(SkipSpecial(index, text, textEnd))
 						continue;
 				}
 				else
 					++index;
 
-				int char_width = GetCharWidth(c);
-				width += char_width;
+				int charWidth = GetCharWidth(c);
+				width += charWidth;
 			}
 
 			return Int2(width, line * height);
@@ -488,65 +488,65 @@ Int2 Font::IndexToPos(uint expected_index, Cstring str, int limit_width, int fla
 }
 
 //=================================================================================================
-Int2 Font::IndexToPos(const Int2& expected_index, Cstring str, int limit_width, int flags) const
+Int2 Font::IndexToPos(const Int2& expectedIndex, Cstring str, int limitWidth, int flags) const
 {
-	assert(expected_index.x >= 0 && expected_index.y >= 0);
+	assert(expectedIndex.x >= 0 && expectedIndex.y >= 0);
 
-	bool parse_special = IsSet(flags, DTF_PARSE_SPECIAL);
-	uint text_end = strlen(str);
+	bool parseSpecial = IsSet(flags, DTF_PARSE_SPECIAL);
+	uint textEnd = strlen(str);
 	cstring text = str;
 	uint index = 0;
 
 	if(IsSet(flags, DTF_SINGLELINE))
 	{
-		assert(expected_index.x <= (int)text_end);
-		assert(expected_index.y == 0);
+		assert(expectedIndex.x <= (int)textEnd);
+		assert(expectedIndex.y == 0);
 
 		int width = 0;
 
-		while(index < text_end && index != expected_index.x)
+		while(index < textEnd && index != expectedIndex.x)
 		{
 			char c = text[index];
-			if(c == '$' && parse_special)
+			if(c == '$' && parseSpecial)
 			{
-				if(SkipSpecial(index, text, text_end))
+				if(SkipSpecial(index, text, textEnd))
 					continue;
 			}
 			else
 				++index;
 
-			int char_width = GetCharWidth(c);
-			width += char_width;
+			int charWidth = GetCharWidth(c);
+			width += charWidth;
 		}
 
 		return Int2(width, 0);
 	}
 
-	uint line_begin, line_end;
+	uint lineBegin, lineEnd;
 	uint line = 0;
 	while(true)
 	{
 		int line_width;
-		[[maybe_unused]] bool ok = SplitLine(line_begin, line_end, line_width, index, text, text_end, flags, limit_width);
+		[[maybe_unused]] bool ok = SplitLine(lineBegin, lineEnd, line_width, index, text, textEnd, flags, limitWidth);
 		assert(ok);
-		if(line == expected_index.y)
+		if(line == expectedIndex.y)
 		{
-			assert((uint)expected_index.x < line_end - line_begin);
+			assert((uint)expectedIndex.x < lineEnd - lineBegin);
 			int width = 0;
-			index = line_begin;
-			while(index < line_end && index - line_begin != expected_index.x)
+			index = lineBegin;
+			while(index < lineEnd && index - lineBegin != expectedIndex.x)
 			{
 				char c = text[index];
-				if(c == '$' && parse_special)
+				if(c == '$' && parseSpecial)
 				{
-					if(SkipSpecial(index, text, text_end))
+					if(SkipSpecial(index, text, textEnd))
 						continue;
 				}
 				else
 					++index;
 
-				int char_width = GetCharWidth(c);
-				width += char_width;
+				int charWidth = GetCharWidth(c);
+				width += charWidth;
 			}
 
 			return Int2(width, line * height);
@@ -556,135 +556,135 @@ Int2 Font::IndexToPos(const Int2& expected_index, Cstring str, int limit_width, 
 }
 
 //=================================================================================================
-uint Font::PrecalculateFontLines(vector<Line>& font_lines, Cstring str, int limit_width, int flags) const
+uint Font::PrecalculateFontLines(vector<Line>& fontLines, Cstring str, int limitWidth, int flags) const
 {
-	font_lines.clear();
+	fontLines.clear();
 
-	bool parse_special = IsSet(flags, DTF_PARSE_SPECIAL);
-	uint text_end = strlen(str);
+	bool parseSpecial = IsSet(flags, DTF_PARSE_SPECIAL);
+	uint textEnd = strlen(str);
 	cstring text = str;
 	uint index = 0;
 
 	if(IsSet(flags, DTF_SINGLELINE))
 	{
-		uint width = GetLineWidth(text, 0, text_end, parse_special);
-		font_lines.push_back({ 0, text_end, text_end, width });
+		uint width = GetLineWidth(text, 0, textEnd, parseSpecial);
+		fontLines.push_back({ 0, textEnd, textEnd, width });
 		return width;
 	}
 	else
 	{
-		uint line_begin, line_end = 0, max_width = 0;
+		uint lineBegin, lineEnd = 0, maxWidth = 0;
 		int line_width;
-		while(SplitLine(line_begin, line_end, line_width, index, text, text_end, flags, limit_width))
+		while(SplitLine(lineBegin, lineEnd, line_width, index, text, textEnd, flags, limitWidth))
 		{
-			font_lines.push_back({ line_begin, line_end, line_end - line_begin, (uint)line_width });
-			if(line_width > (int)max_width)
-				max_width = line_width;
+			fontLines.push_back({ lineBegin, lineEnd, lineEnd - lineBegin, (uint)line_width });
+			if(line_width > (int)maxWidth)
+				maxWidth = line_width;
 		}
-		if(font_lines.empty())
-			font_lines.push_back({ 0, 0, 0, 0 });
-		else if(font_lines.back().end != text_end)
-			font_lines.push_back({ text_end, text_end, 0, 0 });
+		if(fontLines.empty())
+			fontLines.push_back({ 0, 0, 0, 0 });
+		else if(fontLines.back().end != textEnd)
+			fontLines.push_back({ textEnd, textEnd, 0, 0 });
 
-		return max_width;
+		return maxWidth;
 	}
 }
 
 //=================================================================================================
-uint Font::GetLineWidth(cstring text, uint line_begin, uint line_end, bool parse_special) const
+uint Font::GetLineWidth(cstring text, uint lineBegin, uint lineEnd, bool parseSpecial) const
 {
 	uint width = 0;
-	uint index = line_begin;
+	uint index = lineBegin;
 
-	while(index < line_end)
+	while(index < lineEnd)
 	{
 		char c = text[index];
-		if(c == '$' && parse_special)
+		if(c == '$' && parseSpecial)
 		{
-			if(SkipSpecial(index, text, line_end))
+			if(SkipSpecial(index, text, lineEnd))
 				continue;
 		}
 		else
 			++index;
 
-		int char_width = GetCharWidth(c);
-		width += char_width;
+		int charWidth = GetCharWidth(c);
+		width += charWidth;
 	}
 
 	return width;
 }
 
 //=================================================================================================
-Int2 Font::IndexToPos(vector<Line>& font_lines, const Int2& expected_index, Cstring str, int limit_width, int flags) const
+Int2 Font::IndexToPos(vector<Line>& fontLines, const Int2& expectedIndex, Cstring str, int limitWidth, int flags) const
 {
-	assert(expected_index.x >= 0 && expected_index.y >= 0);
+	assert(expectedIndex.x >= 0 && expectedIndex.y >= 0);
 
-	bool parse_special = IsSet(flags, DTF_PARSE_SPECIAL);
-	uint text_end = strlen(str);
+	bool parseSpecial = IsSet(flags, DTF_PARSE_SPECIAL);
+	uint textEnd = strlen(str);
 	cstring text = str;
 	uint index = 0;
 	int width = 0;
 
 	if(IsSet(flags, DTF_SINGLELINE))
 	{
-		assert(expected_index.x <= (int)text_end);
-		assert(expected_index.y == 0);
+		assert(expectedIndex.x <= (int)textEnd);
+		assert(expectedIndex.y == 0);
 
-		while(index < text_end && index != expected_index.x)
+		while(index < textEnd && index != expectedIndex.x)
 		{
 			char c = text[index];
-			if(c == '$' && parse_special)
+			if(c == '$' && parseSpecial)
 			{
-				if(SkipSpecial(index, text, text_end))
+				if(SkipSpecial(index, text, textEnd))
 					continue;
 			}
 			else
 				++index;
 
-			int char_width = GetCharWidth(c);
-			width += char_width;
+			int charWidth = GetCharWidth(c);
+			width += charWidth;
 		}
 
 		return Int2(width, 0);
 	}
 
-	assert((uint)expected_index.y < font_lines.size());
-	auto& line = font_lines[expected_index.y];
-	assert((uint)expected_index.x <= line.count);
+	assert((uint)expectedIndex.y < fontLines.size());
+	auto& line = fontLines[expectedIndex.y];
+	assert((uint)expectedIndex.x <= line.count);
 
 	index = line.begin;
-	while(index < line.end && index - line.begin != expected_index.x)
+	while(index < line.end && index - line.begin != expectedIndex.x)
 	{
 		char c = text[index];
-		if(c == '$' && parse_special)
+		if(c == '$' && parseSpecial)
 		{
-			if(SkipSpecial(index, text, text_end))
+			if(SkipSpecial(index, text, textEnd))
 				continue;
 		}
 		else
 			++index;
 
-		int char_width = GetCharWidth(c);
-		width += char_width;
+		int charWidth = GetCharWidth(c);
+		width += charWidth;
 	}
 
-	return Int2(width, expected_index.y * height);
+	return Int2(width, expectedIndex.y * height);
 }
 
 //=================================================================================================
-uint Font::ToRawIndex(vector<Line>& font_lines, const Int2& index) const
+uint Font::ToRawIndex(vector<Line>& fontLines, const Int2& index) const
 {
-	assert(index.x >= 0 && index.y >= 0 && index.y < (int)font_lines.size());
-	auto& line = font_lines[index.y];
+	assert(index.x >= 0 && index.y >= 0 && index.y < (int)fontLines.size());
+	auto& line = fontLines[index.y];
 	assert(index.x <= (int)line.count);
 	return line.begin + index.x;
 }
 
 //=================================================================================================
-Int2 Font::FromRawIndex(vector<Line>& font_lines, uint index) const
+Int2 Font::FromRawIndex(vector<Line>& fontLines, uint index) const
 {
 	uint line_index = 0;
-	for(auto& line : font_lines)
+	for(auto& line : fontLines)
 	{
 		if(index <= line.end)
 			return Int2(index - line.begin, line_index);

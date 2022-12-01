@@ -14,8 +14,8 @@ public:
 	void DrawSceneNodes(SceneBatch& batch);
 	void DrawAlphaSceneNodes(SceneBatch& batch);
 
-	SuperShader* super_shader;
-	bool use_lighting, use_fog, use_normalmap, use_specularmap;
+	SuperShader* superShader;
+	bool useLighting, useFog, useNormalmap, useSpecularmap;
 
 private:
 	void DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<SceneNodeGroup>& groups);

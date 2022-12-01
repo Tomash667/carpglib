@@ -45,7 +45,7 @@ void SkyboxShader::OnRelease()
 //=================================================================================================
 void SkyboxShader::Draw(Mesh& mesh, Camera& camera)
 {
-	assert(mesh.vertex_decl == VDI_DEFAULT);
+	assert(mesh.vertexDecl == VDI_DEFAULT);
 
 	app::render->SetBlendState(Render::BLEND_NO);
 	app::render->SetDepthState(Render::DEPTH_NO);
@@ -65,7 +65,7 @@ void SkyboxShader::Draw(Mesh& mesh, Camera& camera)
 	// vertex shader constants
 	{
 		ResourceLock lock(vsGlobals);
-		lock.Get<VsGlobals>()->matCombined = (Matrix::Translation(camera.from) * camera.mat_view_proj).Transpose();
+		lock.Get<VsGlobals>()->matCombined = (Matrix::Translation(camera.from) * camera.matViewProj).Transpose();
 	}
 
 	// draw

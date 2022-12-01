@@ -11,15 +11,15 @@
 SceneManager* app::sceneMgr;
 
 //=================================================================================================
-SceneManager::SceneManager() : use_lighting(true), use_fog(true), use_normalmap(true), use_specularmap(true)
+SceneManager::SceneManager() : useLighting(true), useFog(true), useNormalmap(true), useSpecularmap(true)
 {
 }
 
 //=================================================================================================
 void SceneManager::Init()
 {
-	super_shader = new SuperShader;
-	app::render->RegisterShader(super_shader);
+	superShader = new SuperShader;
+	app::render->RegisterShader(superShader);
 }
 
 //=================================================================================================
@@ -28,7 +28,7 @@ void SceneManager::SetScene(Scene* scene, Camera* camera)
 	assert(scene && camera);
 	this->scene = scene;
 	this->camera = camera;
-	super_shader->SetScene(scene, camera);
+	superShader->SetScene(scene, camera);
 }
 
 //=================================================================================================
@@ -36,22 +36,22 @@ void SceneManager::Draw(RenderTarget* target)
 {
 	batch.Clear();
 	batch.camera = camera;
-	batch.gather_lights = use_lighting && !scene->use_light_dir;
+	batch.gatherLights = useLighting && !scene->useLightDir;
 	scene->ListNodes(batch);
 	batch.Process();
 
 	if(target)
 		app::render->SetRenderTarget(target);
 
-	app::render->Clear(scene->clear_color);
+	app::render->Clear(scene->clearColor);
 
-	super_shader->Prepare();
+	superShader->Prepare();
 
-	if(!batch.node_groups.empty())
-		DrawSceneNodes(batch.nodes, batch.node_groups);
+	if(!batch.nodeGroups.empty())
+		DrawSceneNodes(batch.nodes, batch.nodeGroups);
 
-	if(!batch.alpha_nodes.empty())
-		DrawAlphaSceneNodes(batch.alpha_nodes);
+	if(!batch.alphaNodes.empty())
+		DrawAlphaSceneNodes(batch.alphaNodes);
 
 	if(target)
 		app::render->SetRenderTarget(nullptr);
@@ -60,17 +60,17 @@ void SceneManager::Draw(RenderTarget* target)
 //=================================================================================================
 void SceneManager::DrawSceneNodes(SceneBatch& batch)
 {
-	super_shader->Prepare();
+	superShader->Prepare();
 
-	DrawSceneNodes(batch.nodes, batch.node_groups);
+	DrawSceneNodes(batch.nodes, batch.nodeGroups);
 }
 
 //=================================================================================================
 void SceneManager::DrawAlphaSceneNodes(SceneBatch& batch)
 {
-	super_shader->Prepare();
+	superShader->Prepare();
 
-	DrawAlphaSceneNodes(batch.alpha_nodes);
+	DrawAlphaSceneNodes(batch.alphaNodes);
 }
 
 //=================================================================================================
@@ -78,29 +78,29 @@ void SceneManager::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<
 {
 	app::render->SetBlendState(Render::BLEND_NO);
 
-	const bool use_fog = this->use_fog && use_lighting;
+	const bool useFog = this->useFog && useLighting;
 
 	// for each group
 	for(const SceneNodeGroup& group : groups)
 	{
-		const bool use_lighting = this->use_lighting && !IsSet(group.flags, SceneNode::F_NO_LIGHTING);
+		const bool useLighting = this->useLighting && !IsSet(group.flags, SceneNode::F_NO_LIGHTING);
 
-		super_shader->SetShader(super_shader->GetShaderId(
+		superShader->SetShader(superShader->GetShaderId(
 			IsSet(group.flags, SceneNode::F_HAVE_WEIGHTS),
 			IsSet(group.flags, SceneNode::F_HAVE_TANGENTS),
 			IsSet(group.flags, SceneNode::F_ANIMATED),
-			use_fog,
+			useFog,
 			IsSet(group.flags, SceneNode::F_SPECULAR_MAP),
 			IsSet(group.flags, SceneNode::F_NORMAL_MAP),
-			use_lighting && !scene->use_light_dir,
-			use_lighting && scene->use_light_dir));
+			useLighting && !scene->useLightDir,
+			useLighting && scene->useLightDir));
 
 		app::render->SetDepthState(IsSet(group.flags, SceneNode::F_NO_ZWRITE) ? Render::DEPTH_READ : Render::DEPTH_YES);
 		app::render->SetRasterState(IsSet(group.flags, SceneNode::F_NO_CULLING) ? Render::RASTER_NO_CULLING : Render::RASTER_NORMAL);
 
 		// for each node in group
 		for(auto it = nodes.begin() + group.start, end = nodes.begin() + group.end + 1; it != end; ++it)
-			super_shader->Draw(*it);
+			superShader->Draw(*it);
 	}
 }
 
@@ -109,31 +109,31 @@ void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 {
 	app::render->SetBlendState(Render::BLEND_ADD_ONE);
 
-	const bool use_fog = this->use_fog && use_lighting;
+	const bool useFog = this->useFog && useLighting;
 
 	uint last_id = -1;
 	for(SceneNode* node : nodes)
 	{
-		const bool use_lighting = this->use_lighting && !IsSet(node->flags, SceneNode::F_NO_LIGHTING);
+		const bool useLighting = this->useLighting && !IsSet(node->flags, SceneNode::F_NO_LIGHTING);
 
-		uint id = super_shader->GetShaderId(
+		uint id = superShader->GetShaderId(
 			IsSet(node->flags, SceneNode::F_HAVE_WEIGHTS),
 			IsSet(node->flags, SceneNode::F_HAVE_TANGENTS),
 			IsSet(node->flags, SceneNode::F_ANIMATED),
-			use_fog,
+			useFog,
 			IsSet(node->flags, SceneNode::F_SPECULAR_MAP),
 			IsSet(node->flags, SceneNode::F_NORMAL_MAP),
-			use_lighting && !scene->use_light_dir,
-			use_lighting && scene->use_light_dir);
+			useLighting && !scene->useLightDir,
+			useLighting && scene->useLightDir);
 		if(id != last_id)
 		{
 			app::render->SetDepthState(IsSet(node->flags, SceneNode::F_NO_ZWRITE) ? Render::DEPTH_READ : Render::DEPTH_YES);
 			app::render->SetRasterState(IsSet(node->flags, SceneNode::F_NO_CULLING) ? Render::RASTER_NO_CULLING : Render::RASTER_NORMAL);
 
-			super_shader->SetShader(id);
+			superShader->SetShader(id);
 			last_id = id;
 		}
 
-		super_shader->Draw(node);
+		superShader->Draw(node);
 	}
 }

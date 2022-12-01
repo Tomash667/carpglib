@@ -113,7 +113,7 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 	ctx.font = font;
 	ctx.text = text;
 	ctx.v = vBuf;
-	ctx.v2 = (IsSet(flags, DTF_OUTLINE) && font->tex_outline) ? vBuf2 : nullptr;
+	ctx.v2 = (IsSet(flags, DTF_OUTLINE) && font->texOutline) ? vBuf2 : nullptr;
 	ctx.inBuffer = 0;
 	ctx.inBuffer2 = 0;
 	ctx.parseSpecial = IsSet(flags, DTF_PARSE_SPECIAL);
@@ -266,7 +266,7 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 	}
 
 	if(ctx.inBuffer2 > 0)
-		shader->Draw(font->tex_outline, vBuf2, ctx.inBuffer2);
+		shader->Draw(font->texOutline, vBuf2, ctx.inBuffer2);
 	if(ctx.inBuffer > 0)
 		shader->Draw(font->tex, vBuf, ctx.inBuffer);
 
@@ -577,7 +577,7 @@ void Gui::DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, 
 
 	const Vec4 col(0, 0, 0, ctx.defColor.w);
 	const float outline = (float)ctx.font->outline;
-	const Vec2& osh = ctx.font->outline_shift;
+	const Vec2& osh = ctx.font->outlineShift;
 
 	for(uint i = line_begin; i < line_end; ++i)
 	{
@@ -731,7 +731,7 @@ void Gui::DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, 
 
 		if(ctx.inBuffer2 == 256)
 		{
-			shader->Draw(ctx.font->tex_outline, vBuf2, 256);
+			shader->Draw(ctx.font->texOutline, vBuf2, 256);
 			ctx.v2 = vBuf2;
 			ctx.inBuffer2 = 0;
 		}
@@ -2172,7 +2172,7 @@ bool Gui::DrawText2(DrawTextOptions& options)
 	ctx.font = options.font;
 	ctx.text = options.str;
 	ctx.v = vBuf;
-	ctx.v2 = (IsSet(options.flags, DTF_OUTLINE) && options.font->tex_outline) ? vBuf2 : nullptr;
+	ctx.v2 = (IsSet(options.flags, DTF_OUTLINE) && options.font->texOutline) ? vBuf2 : nullptr;
 	ctx.inBuffer = 0;
 	ctx.inBuffer2 = 0;
 	ctx.parseSpecial = IsSet(options.flags, DTF_PARSE_SPECIAL);
@@ -2339,7 +2339,7 @@ bool Gui::DrawText2(DrawTextOptions& options)
 	}
 
 	if(ctx.inBuffer2 > 0)
-		shader->Draw(ctx.font->tex_outline, vBuf2, ctx.inBuffer2);
+		shader->Draw(ctx.font->texOutline, vBuf2, ctx.inBuffer2);
 	if(ctx.inBuffer > 0)
 		shader->Draw(ctx.font->tex, vBuf, ctx.inBuffer);
 

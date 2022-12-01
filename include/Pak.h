@@ -18,8 +18,8 @@ public:
 		char sign[3];
 		byte version;
 		uint flags;
-		uint files_count;
-		uint file_entry_table_size;
+		uint filesCount;
+		uint fileEntryTableSize;
 	};
 
 	struct File
@@ -27,16 +27,16 @@ public:
 		union
 		{
 			cstring filename;
-			uint filename_offset;
+			uint filenameOffset;
 		};
 		uint size;
-		uint compressed_size;
+		uint compressedSize;
 		uint offset;
 	};
 
 	string path, key;
 	FileReader file;
 	File* files;
-	Buffer* filename_buf;
+	Buffer* filenameBuf;
 	bool encrypted;
 };

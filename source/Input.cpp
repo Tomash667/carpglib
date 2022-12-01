@@ -4,7 +4,7 @@
 Input* app::input;
 
 //=================================================================================================
-Input::Input() : mouse_wheel(0), mouse_dif(0, 0), key_callback(nullptr)
+Input::Input() : mouseWheel(0), mouseDif(0, 0), keyCallback(nullptr)
 {
 }
 
@@ -26,21 +26,21 @@ void Input::Update()
 	}
 	if(printscreen == IS_PRESSED)
 		SetState(Key::PrintScreen, IS_RELEASED);
-	for(Key k : to_release)
+	for(Key k : toRelease)
 		SetState(k, IS_RELEASED);
-	to_release.clear();
+	toRelease.clear();
 }
 
 //=================================================================================================
 void Input::UpdateShortcuts()
 {
-	shortcut_state = 0;
+	shortcutState = 0;
 	if(Down(Key::Shift))
-		shortcut_state |= KEY_SHIFT;
+		shortcutState |= KEY_SHIFT;
 	if(Down(Key::Control))
-		shortcut_state |= KEY_CONTROL;
+		shortcutState |= KEY_CONTROL;
 	if(Down(Key::Alt))
-		shortcut_state |= KEY_ALT;
+		shortcutState |= KEY_ALT;
 }
 
 //=================================================================================================
@@ -52,17 +52,17 @@ void Input::ReleaseKeys()
 		if(keystate[i] & 0x2)
 			keystate[i] = IS_RELEASED;
 	}
-	to_release.clear();
+	toRelease.clear();
 }
 
 //=================================================================================================
 // handle key down/up
 void Input::Process(Key key, bool down)
 {
-	if(key_callback)
+	if(keyCallback)
 	{
 		if(down)
-			key_callback(key);
+			keyCallback(key);
 		return;
 	}
 
@@ -78,7 +78,7 @@ void Input::Process(Key key, bool down)
 		else
 		{
 			if(k == IS_PRESSED)
-				to_release.push_back(key);
+				toRelease.push_back(key);
 			else if(k == IS_DOWN)
 				k = IS_RELEASED;
 		}

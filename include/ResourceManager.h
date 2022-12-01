@@ -86,12 +86,12 @@ class ResourceManager
 	ResourceType FilenameToResourceType(cstring filename);
 	void AddTaskCategory(Cstring name);
 	void AddTask(void* ptr, TaskCallback callback);
-	void SetProgressCallback(ProgressCallback clbk) { progress_clbk = clbk; }
-	void PrepareLoadScreen(float progress_min = 0.f, float progress_max = 1.f);
+	void SetProgressCallback(ProgressCallback clbk) { progressClkb = clbk; }
+	void PrepareLoadScreen(float progressMin = 0.f, float progressMax = 1.f);
 	void StartLoadScreen(cstring category = nullptr);
 	void CancelLoadScreen(bool cleanup = false);
 	bool HaveTasks() const { return !tasks.empty(); }
-	int GetLoadTasksCount() const { return to_load; }
+	int GetLoadTasksCount() const { return toLoad; }
 	bool IsLoadScreen() const { return mode != Mode::Instant; }
 	uint VerifyResources();
 
@@ -179,15 +179,15 @@ private:
 
 	Mode mode;
 	ResourceContainer resources;
-	Resource res_search;
+	Resource resSearch;
 	std::map<cstring, ResourceType, CstringComparer> exts;
 	vector<Pak*> paks;
-	vector<Buffer*> sound_bufs;
+	vector<Buffer*> soundBufs;
 	vector<TaskDetail*> tasks;
-	int to_load, loaded;
+	int toLoad, loaded;
 	cstring category;
 	Timer timer;
-	float timer_dt, progress, progress_min, progress_max;
-	ProgressCallback progress_clbk;
-	ObjectPool<TaskDetail> task_pool;
+	float timerDt, progress, progressMin, progressMax;
+	ProgressCallback progressClkb;
+	ObjectPool<TaskDetail> taskPool;
 };

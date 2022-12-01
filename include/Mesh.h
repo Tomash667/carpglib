@@ -10,7 +10,7 @@ NASTÊPNA WERSJA:
 - kolor zamiast tekstury
 - FVF i vertex size w nag³ówku
 - wczytywanie ze strumienia
-- brak model_to_bone, odrazu policzone
+- brak modelToBone, odrazu policzone
 - lepsza organizacja pliku, wczytywanie wszystkiego za jednym zamachem i ustawianie wskaŸników
 - brak zerowej koœci bo i po co
 - materia³y
@@ -183,13 +183,13 @@ struct Mesh : public Resource
 	Header head;
 	ID3D11Buffer* vb;
 	ID3D11Buffer* ib;
-	VertexDeclarationId vertex_decl;
-	uint vertex_size;
+	VertexDeclarationId vertexDecl;
+	uint vertexSize;
 	vector<Submesh> subs;
 	vector<Bone> bones;
 	vector<Animation> anims;
-	vector<Matrix> model_to_bone;
-	vector<Point> attach_points;
+	vector<Matrix> modelToBone;
+	vector<Point> attachPoints;
 	vector<BoneGroup> groups;
 	vector<Split> splits;
 };

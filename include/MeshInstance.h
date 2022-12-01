@@ -48,18 +48,18 @@ struct MeshInstance
 
 	struct Group
 	{
-		Group() : anim(nullptr), state(0), speed(1.f), prio(0), blend_max(0.33f), frame_end(false)
+		Group() : anim(nullptr), state(0), speed(1.f), prio(0), blendMax(0.33f), frameEnd(false)
 		{
 		}
 
-		float time, speed, blend_time, blend_max;
-		int state, prio, used_group;
+		float time, speed, blendTime, blendMax;
+		int state, prio, usedGroup;
 		union
 		{
 			Mesh::Animation* anim;
 			string* animName; // on preload
 		};
-		bool frame_end;
+		bool frameEnd;
 
 		int GetFrameIndex(bool& hit) const { assert(anim); return anim->GetFrameIndex(time, hit); }
 		float GetBlendT() const;
@@ -71,7 +71,7 @@ struct MeshInstance
 	};
 	typedef vector<byte>::const_iterator BoneIter;
 
-	explicit MeshInstance(nullptr_t) : preload(true), mesh(nullptr), need_update(true), ptr(nullptr), base_speed(1.f), mat_scale(nullptr) {}
+	explicit MeshInstance(nullptr_t) : preload(true), mesh(nullptr), needUpdate(true), ptr(nullptr), baseSpeed(1.f), matScale(nullptr) {}
 	explicit MeshInstance(Mesh* mesh);
 	void Play(Mesh::Animation* anim, int flags, uint group = 0);
 	void Play(cstring name, int flags, uint group = 0)
@@ -83,7 +83,7 @@ struct MeshInstance
 	void Play(uint group = 0) { SetBit(GetGroup(group).state, FLAG_PLAYING); }
 	void Stop(uint group = 0) { ClearBit(GetGroup(group).state, FLAG_PLAYING); }
 	bool IsPlaying(uint group = 0) const { return GetGroup(group).IsPlaying(); }
-	void Deactivate(uint group = 0, bool in_update = false);
+	void Deactivate(uint group = 0, bool inUpdate = false);
 	void Update(float dt);
 	void SetupBones();
 	void DisableAnimations();
@@ -104,7 +104,7 @@ struct MeshInstance
 	bool Read(StreamReader& f);
 	bool ApplyPreload(Mesh* mesh);
 	void ClearEndResult();
-	void Changed() { need_update = true; }
+	void Changed() { needUpdate = true; }
 
 	Group& GetGroup(uint group)
 	{
@@ -122,7 +122,7 @@ struct MeshInstance
 
 	bool IsActive(uint group = 0) const { return GetGroup(group).IsActive(); }
 	bool IsBlending() const;
-	bool IsEnded(uint group = 0) const { return GetGroup(group).frame_end; }
+	bool IsEnded(uint group = 0) const { return GetGroup(group).frameEnd; }
 
 	void SetProgress(float progress, uint group = 0) { GetGroup(group).SetProgress(progress); }
 
@@ -130,16 +130,16 @@ struct MeshInstance
 	static void LoadOptional(StreamReader& f, MeshInstance*& meshInst);
 
 private:
-	void SetupBlending(uint group, bool first = true, bool in_update = false);
+	void SetupBlending(uint group, bool first = true, bool inUpdate = false);
 
 public:
 	Mesh* mesh;
-	float base_speed;
-	bool need_update, preload;
-	vector<Matrix> mat_bones;
+	vector<Matrix> matBones;
 	vector<Mesh::KeyframeBone> blendb;
 	vector<Group> groups;
-	Matrix* mat_scale;
+	Matrix* matScale;
 	void* ptr;
+	float baseSpeed;
+	bool needUpdate, preload;
 	static void(*Predraw)(void*, Matrix*, int);
 };

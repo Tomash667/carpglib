@@ -14,7 +14,7 @@ struct EntityType
 
 	struct Impl
 	{
-		int id_counter;
+		int idCounter;
 		std::unordered_map<int, T*> items;
 		vector<pair<T**, int>> requests;
 	};
@@ -29,7 +29,7 @@ struct EntityType
 	void Register()
 	{
 		if(id == -1)
-			id = impl.id_counter++;
+			id = impl.idCounter++;
 		impl.items[id] = static_cast<T*>(this);
 	}
 	static T* GetById(int id)
@@ -50,7 +50,7 @@ struct EntityType
 	}
 	static void ResetEntities()
 	{
-		impl.id_counter = 0;
+		impl.idCounter = 0;
 		impl.items.clear();
 		impl.requests.clear();
 	}
