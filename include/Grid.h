@@ -17,7 +17,7 @@ union Cell
 	cstring text;
 	vector<Texture*>* imgset;
 	Texture* img;
-	TextColor* text_color;
+	TextColor* textColor;
 };
 
 //-----------------------------------------------------------------------------
@@ -32,6 +32,7 @@ namespace layout
 		AreaLayout box;
 		AreaLayout selection;
 		Font* font;
+		int border;
 	};
 }
 
@@ -60,7 +61,7 @@ public:
 	void Update(float dt) override;
 
 	void Init();
-	void Move(Int2& globalPos);
+	void Move(const Int2& movePos);
 	void LostFocus() { scroll.LostFocus(); }
 	void AddColumn(Type type, int width, cstring title = nullptr);
 	void AddItem();

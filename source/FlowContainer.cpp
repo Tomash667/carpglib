@@ -63,18 +63,28 @@ void FlowContainer::Update(float dt)
 				scroll.ApplyMouseWheel();
 
 			Int2 off(0, (int)scroll.offset);
-			bool have_button = false;
+			bool haveButton = false;
+
+			if(allowSelect)
+			{
+				for(FlowItem* fi : items)
+				{
+					if(fi->state == Button::HOVER)
+						fi->state = Button::NONE;
+				}
+			}
 
 			for(FlowItem* fi : items)
 			{
 				Int2 p = fi->pos - off + globalPos;
 				if(fi->type == FlowItem::Item)
 				{
-					if(have_button)
+					if(haveButton)
 					{
 						p.y -= 2;
-						have_button = false;
+						haveButton = false;
 					}
+
 					if(fi->group != -1 && Rect::IsInside(gui->cursorPos, p, fi->size))
 					{
 						group = fi->group;
@@ -88,12 +98,14 @@ void FlowContainer::Update(float dt)
 								onSelect();
 								return;
 							}
+							else if(fi->state == Button::NONE)
+								fi->state = Button::HOVER;
 						}
 					}
 				}
 				else if(fi->type == FlowItem::Button && fi->state != Button::DISABLED)
 				{
-					have_button = true;
+					haveButton = true;
 					if(Rect::IsInside(gui->cursorPos, p, fi->size))
 					{
 						group = fi->group;
@@ -117,7 +129,7 @@ void FlowContainer::Update(float dt)
 						fi->state = Button::NONE;
 				}
 				else
-					have_button = false;
+					haveButton = false;
 			}
 		}
 
@@ -159,12 +171,12 @@ void FlowContainer::Draw()
 			if(rect.Bottom() < globalPos.y)
 				continue;
 
-			if(fi->state == Button::DOWN)
+			if(fi->state == Button::DOWN || fi->state == Button::HOVER)
 			{
 				Rect rs = { globalPos.x + 2, rect.Top(), globalPos.x + sizex, rect.Bottom() };
 				Rect out;
 				if(Rect::Intersect(rs, clip, out))
-					gui->DrawArea(Box2d(out), layout->selection);
+					gui->DrawArea(Box2d(out), fi->state == Button::DOWN ? layout->selection : layout->hover);
 			}
 
 			if(!gui->DrawText(fi->type == FlowItem::Section ? layout->fontSection : layout->font, fi->text, flags,
@@ -241,7 +253,7 @@ void FlowContainer::Reposition()
 {
 	int sizex = (wordWrap ? size.x - 20 : 10000);
 	int y = 2;
-	bool have_button = false;
+	bool haveButton = false;
 
 	for(FlowItem* fi : items)
 	{
@@ -249,30 +261,33 @@ void FlowContainer::Reposition()
 		{
 			if(fi->type != FlowItem::Section)
 			{
-				if(have_button)
+				if(haveButton)
 				{
 					fi->size = layout->font->CalculateSize(fi->text, sizex - 2 - buttonSize.x);
+					fi->size.x = sizex - 2 - buttonSize.x;
 					fi->pos = Int2(4 + buttonSize.x, y);
 				}
 				else
 				{
 					fi->size = layout->font->CalculateSize(fi->text, sizex);
+					fi->size.x = sizex;
 					fi->pos = Int2(2, y);
 				}
 			}
 			else
 			{
 				fi->size = layout->fontSection->CalculateSize(fi->text, sizex);
+				fi->size.x = sizex;
 				fi->pos = Int2(2, y);
 			}
-			have_button = false;
+			haveButton = false;
 			y += fi->size.y;
 		}
 		else
 		{
 			fi->size = buttonSize;
 			fi->pos = Int2(2, y);
-			have_button = true;
+			haveButton = true;
 		}
 	}
 
@@ -332,23 +347,23 @@ void FlowContainer::UpdateText()
 	batchChanges = false;
 
 	int y = 2;
-	bool have_button = false;
+	bool haveButton = false;
 
 	for(FlowItem* fi : items)
 	{
 		if(fi->type != FlowItem::Button)
 		{
-			if(fi->type != FlowItem::Section && have_button)
+			if(fi->type != FlowItem::Section && haveButton)
 				fi->pos = Int2(4 + buttonSize.x, y);
 			else
 				fi->pos = Int2(2, y);
-			have_button = false;
+			haveButton = false;
 			y += fi->size.y;
 		}
 		else
 		{
 			fi->pos = Int2(2, y);
-			have_button = true;
+			haveButton = true;
 		}
 	}
 

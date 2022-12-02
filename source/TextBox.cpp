@@ -42,7 +42,7 @@ void TextBox::Draw()
 
 		if(label)
 		{
-			r.Top() -= 20;
+			Rect r = { globalPos.x, globalPos.y - 20, globalPos.x + size.x, globalPos.y };
 			gui->DrawText(layout->font, label, 0, Color::Black, r);
 		}
 	}

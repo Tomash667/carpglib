@@ -416,6 +416,7 @@ void LayoutLoader::RegisterControls()
 
 	c = AddControl<layout::FlowContainer>("FlowContainer");
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::FlowContainer, box));
+	c->AddEntry("hover", Entry::AreaLayout, offsetof(layout::FlowContainer, hover));
 	c->AddEntry("selection", Entry::AreaLayout, offsetof(layout::FlowContainer, selection));
 	c->AddEntry("font", Entry::Font, offsetof(layout::FlowContainer, font));
 	c->AddEntry("fontSection", Entry::Font, offsetof(layout::FlowContainer, fontSection));
@@ -424,6 +425,7 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::Grid, box));
 	c->AddEntry("selection", Entry::AreaLayout, offsetof(layout::Grid, selection));
 	c->AddEntry("font", Entry::Font, offsetof(layout::Grid, font));
+	c->AddEntry("border", Entry::Int, offsetof(layout::Grid, border));
 
 	c = AddControl<layout::Gui>("Gui");
 	c->AddEntry("cursor", Entry::Image, offsetof(layout::Gui, cursor[CURSOR_NORMAL]));
