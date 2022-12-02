@@ -463,6 +463,9 @@ void LayoutLoader::RegisterControls()
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::MenuList, box));
 	c->AddEntry("selection", Entry::AreaLayout, offsetof(layout::MenuList, selection));
 	c->AddEntry("font", Entry::Font, offsetof(layout::MenuList, font));
+	c->AddEntry("border", Entry::Int, offsetof(layout::MenuList, border));
+	c->AddEntry("padding", Entry::Int, offsetof(layout::MenuList, padding));
+	c->AddEntry("itemHeight", Entry::Int, offsetof(layout::MenuList, itemHeight));
 
 	c = AddControl<layout::MenuStrip>("MenuStrip");
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::MenuStrip, background));

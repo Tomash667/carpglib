@@ -135,8 +135,7 @@ void ListBox::Update(float dt)
 					if(menu->globalPos.y < 0)
 						menu->globalPos.y = gui->wndSize.y - menu->size.y;
 				}
-				menu->visible = true;
-				menu->focus = true;
+				menu->Show();
 			}
 		}
 	}
@@ -250,11 +249,10 @@ void ListBox::Event(GuiEvent e)
 			else
 			{
 				menu = new MenuList;
-				menu->AddItems(items, false);
+				menu->eventHandler = DialogEvent(this, &ListBox::OnSelect);
+				menu->minWidth = size.x;
 				menu->visible = false;
-				menu->Init();
-				menu->size.x = size.x;
-				menu->event_handler = DialogEvent(this, &ListBox::OnSelect);
+				menu->AddItems(items, false);
 			}
 		}
 

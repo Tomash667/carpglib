@@ -4,7 +4,7 @@
 //=================================================================================================
 ComboBox::ComboBox() : menuChanged(false), selected(-1)
 {
-	menu.event_handler = delegate<void(int)>(this, &ComboBox::OnSelect);
+	menu.eventHandler = delegate<void(int)>(this, &ComboBox::OnSelect);
 }
 
 //=================================================================================================
@@ -51,8 +51,7 @@ void ComboBox::Update(float dt)
 			menu.visible = false;
 		else
 		{
-			menu.visible = true;
-			menu.Init();
+			menu.Show();
 			menu.globalPos = menu.pos = globalPos - Int2(0, menu.size.y);
 		}
 		menuChanged = false;

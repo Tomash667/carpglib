@@ -12,6 +12,7 @@ namespace layout
 		AreaLayout box;
 		AreaLayout selection;
 		Font* font;
+		int border, padding, itemHeight;
 	};
 }
 
@@ -19,28 +20,28 @@ namespace layout
 class MenuList : public Control, public LayoutControl<layout::MenuList>
 {
 public:
-	MenuList(bool is_new = false);
+	MenuList(bool isNew = false);
 	~MenuList();
 
-	void Draw() override;
-	void Update(float dt) override;
-	void Event(GuiEvent e) override;
-
-	void Init();
-	void Reset();
 	void AddItem(GuiElement* e);
 	void AddItem(cstring text) { AddItem(new DefaultGuiElement(text)); }
 	void AddItems(vector<GuiElement*>& items, bool itemsOwner = true);
+	void Draw() override;
+	void Event(GuiEvent e) override;
 	int GetIndex() { return selected; }
 	GuiElement* GetItem() { return selected == -1 ? nullptr : items[selected]; }
-	void PrepareItem(cstring text);
-	void Select(delegate<bool(GuiElement*)> pred);
+	void Reset();
 	void Select(int index) { selected = index; }
+	void Select(delegate<bool(GuiElement*)> pred);
+	void Update(float dt) override;
 
-	DialogEvent event_handler;
+	DialogEvent eventHandler;
 	vector<GuiElement*> items;
+	int minWidth;
 
 private:
-	int w, selected;
-	bool itemsOwner;
+	void PrepareItem(cstring text);
+
+	int width, selected;
+	bool itemsOwner, recalculate;
 };

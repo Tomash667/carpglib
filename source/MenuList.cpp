@@ -4,7 +4,7 @@
 #include "Input.h"
 
 //=================================================================================================
-MenuList::MenuList(bool is_new) : Control(is_new), event_handler(nullptr), w(0), selected(-1), itemsOwner(true)
+MenuList::MenuList(bool isNew) : Control(isNew), eventHandler(nullptr), width(0), minWidth(0), selected(-1), itemsOwner(true), recalculate(false)
 {
 }
 
@@ -22,16 +22,18 @@ void MenuList::Draw()
 
 	if(selected != -1)
 	{
-		Rect r2 = { globalPos.x + 4, globalPos.y + 4 + selected * 20, globalPos.x + size.x - 4, globalPos.y + 24 + selected * 20 };
+		Rect r2 = { globalPos.x + layout->border, globalPos.y + layout->border + selected * layout->itemHeight,
+			globalPos.x + size.x - layout->border, globalPos.y + layout->border + (selected + 1) * layout->itemHeight };
 		gui->DrawArea(Box2d(r2), layout->selection);
 	}
 
-	Rect rect = { globalPos.x + 5, globalPos.y + 5, globalPos.x + size.x - 5, globalPos.y + 25 };
+	Rect rect = { globalPos.x + layout->border + layout->padding, globalPos.y + layout->border,
+		globalPos.x + size.x - layout->border - layout->padding, globalPos.y + layout->border + layout->itemHeight };
 	for(GuiElement* e : items)
 	{
 		gui->DrawText(layout->font, e->ToString(), DTF_SINGLELINE, Color::Black, rect, &rect);
-		rect.Top() += 20;
-		rect.Bottom() += 20;
+		rect.Top() += layout->itemHeight;
+		rect.Bottom() += layout->itemHeight;
 	}
 }
 
@@ -41,16 +43,17 @@ void MenuList::Update(float dt)
 	selected = -1;
 	if(IsInside(gui->cursorPos))
 	{
-		selected = (gui->cursorPos.y - globalPos.y) / 20;
+		selected = (gui->cursorPos.y - globalPos.y - layout->border) / layout->itemHeight;
 		if(selected >= (int)items.size())
 			selected = -1;
 	}
+
 	if(input->Focus())
 	{
 		if(input->PressedRelease(Key::LeftButton))
 		{
-			if(selected != -1 && event_handler)
-				event_handler(selected);
+			if(selected != -1 && eventHandler)
+				eventHandler(selected);
 			LostFocus();
 		}
 		else if(input->PressedRelease(Key::RightButton) || input->PressedRelease(Key::Escape))
@@ -63,19 +66,24 @@ void MenuList::Event(GuiEvent e)
 {
 	if(e == GuiEvent_LostFocus)
 		visible = false;
-}
-
-//=================================================================================================
-void MenuList::Init()
-{
-	size = Int2(w + 10, 20 * items.size() + 10);
+	else if(e == GuiEvent_Show)
+	{
+		focus = true;
+		if(recalculate)
+		{
+			size = Int2(width + (layout->border + layout->padding) * 2, layout->border * 2 + layout->itemHeight * items.size());
+			if(size.x < minWidth)
+				size.x = minWidth;
+			recalculate = false;
+		}
+	}
 }
 
 //=================================================================================================
 void MenuList::Reset()
 {
 	items.clear();
-	size.y = 10;
+	size.y = layout->border * 2;
 }
 
 //=================================================================================================
@@ -84,7 +92,7 @@ void MenuList::AddItem(GuiElement* e)
 	assert(e);
 	items.push_back(e);
 	PrepareItem(e->ToString());
-	size.y += 20;
+	recalculate = true;
 }
 
 //=================================================================================================
@@ -97,15 +105,16 @@ void MenuList::AddItems(vector<GuiElement*>& newItems, bool itemsOwner)
 		items.push_back(e);
 		PrepareItem(e->ToString());
 	}
+	recalculate = true;
 }
 
 //=================================================================================================
 void MenuList::PrepareItem(cstring text)
 {
 	assert(text);
-	int w2 = layout->font->CalculateSize(text).x;
-	if(w2 > w)
-		w = w2;
+	const int itemWidth = layout->font->CalculateSize(text).x;
+	if(itemWidth > width)
+		width = itemWidth;
 }
 
 //=================================================================================================

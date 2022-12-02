@@ -49,21 +49,6 @@ void Engine::LoadConfiguration(Config& cfg)
 	ConsoleLogger* consoleLogger = nullptr;
 	int count = 0;
 
-	// compatibility
-	cfg.Rename("con_pos", "conPos");
-	cfg.Rename("con_size", "conSize");
-	cfg.Rename("feature_level", "featureLevel");
-	cfg.Rename("hidden_window", "hiddenWindow");
-	cfg.Rename("log_filename", "logFilename");
-	cfg.Rename("multisampling_quality", "multisamplingQuality");
-	cfg.Rename("music_volume", "musicVolume");
-	cfg.Rename("sound_device", "soundDevice");
-	cfg.Rename("sound_volume", "soundVolume");
-	cfg.Rename("use_normalmap", "useNormalmap");
-	cfg.Rename("use_specularmap", "useSpecularmap");
-	cfg.Rename("wnd_pos", "wndPos");
-	cfg.Rename("wnd_size", "wndSize");
-
 	if(cfg.GetBool("log", true))
 	{
 		textLogger = new TextLogger(cfg.GetString("logFilename", "log.txt").c_str());
