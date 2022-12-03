@@ -34,6 +34,7 @@ PickItemDialog::PickItemDialog(const DialogInfo&  info) : DialogBox(info)
 	DialogBox::layout = layout;
 
 	flow.allowSelect = true;
+	flow.fill = true;
 	flow.onSelect = VoidF(this, &PickItemDialog::OnSelect);
 
 	btClose.custom = &layout->close;
@@ -83,7 +84,7 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 	flow.pos = Int2(16, 64);
 	flow.size = Int2(size.x - 32, 10000);
 	flow.SetItems(params.items);
-	size.y = flow.GetHeight() + 64;
+	size.y = flow.GetHeight() + 80;
 	if(size.y < params.sizeMin.y)
 		size.y = params.sizeMin.y;
 	else if(size.y > params.sizeMax.y)

@@ -43,6 +43,8 @@ namespace layout
 		AreaLayout selection;
 		Font* font;
 		Font* fontSection;
+		int border;
+		int padding;
 	};
 }
 
@@ -74,12 +76,10 @@ public:
 	VoidF onSelect;
 	CustomButton* buttonTex;
 	Int2 buttonSize;
-	bool wordWrap, allowSelect;
+	bool wordWrap, allowSelect, fill;
 	FlowItem* selected;
 
 private:
-	void UpdateScrollbar(int size);
-
 	int group, id;
 	Scrollbar scroll;
 	bool batchChanges;
