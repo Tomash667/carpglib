@@ -1566,6 +1566,18 @@ bool Gui::HaveDialog(DialogBox* dialog)
 }
 
 //=================================================================================================
+bool Gui::HaveDialog(delegate<bool(DialogBox*)>& pred)
+{
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialogLayer->GetControls();
+	for(DialogBox* dialog : dialogs)
+	{
+		if(pred(dialog))
+			return true;
+	}
+	return false;
+}
+
+//=================================================================================================
 bool Gui::AnythingVisible() const
 {
 	return !dialogLayer->Empty() || layer->AnythingVisible();

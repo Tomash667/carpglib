@@ -27,7 +27,7 @@ void CalculateNormal(Vec3& out, const Vec3& v1, const Vec3& v2, const Vec3& v3)
 }
 
 //=================================================================================================
-Terrain::Terrain() : vb(nullptr), vbStaging(nullptr), ib(nullptr), parts(nullptr), h(nullptr), texSplat(nullptr), tex(), state(0), uv_mod(DEFAULT_UV_MOD)
+Terrain::Terrain() : vb(nullptr), vbStaging(nullptr), ib(nullptr), parts(nullptr), h(nullptr), texSplat(nullptr), tex(), state(0), uvMod(DEFAULT_UV_MOD)
 {
 }
 
@@ -119,7 +119,7 @@ void Terrain::Build(bool smooth)
 	V(deviceContext->Map(vbStaging, 0, D3D11_MAP_WRITE, 0, &res));
 	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
 
-#define TRI(xx,zz,uu,vv) v[n++] = VTerrain((x+xx)*tileSize, h[x+xx+(z+zz)*width], (z+zz)*tileSize, float(uu)/uv_mod, float(vv)/uv_mod,\
+#define TRI(xx,zz,uu,vv) v[n++] = VTerrain((x+xx)*tileSize, h[x+xx+(z+zz)*width], (z+zz)*tileSize, float(uu)/uvMod, float(vv)/uvMod,\
 	((float)(x+xx)) / nTiles, ((float)(z+zz)) / nTiles)
 
 	uint n = 0;
@@ -127,14 +127,14 @@ void Terrain::Build(bool smooth)
 	{
 		for(uint x = 0; x < nTiles; ++x)
 		{
-			int u1 = (x % uv_mod);
-			int u2 = ((x + 1) % uv_mod);
+			int u1 = (x % uvMod);
+			int u2 = ((x + 1) % uvMod);
 			if(u2 == 0)
-				u2 = uv_mod;
-			int v1 = (z % uv_mod);
-			int v2 = ((z + 1) % uv_mod);
+				u2 = uvMod;
+			int v1 = (z % uvMod);
+			int v2 = ((z + 1) % uvMod);
 			if(v2 == 0)
-				v2 = uv_mod;
+				v2 = uvMod;
 
 			TRI(0, 0, u1, v1);
 			TRI(0, 1, u1, v2);
@@ -245,21 +245,21 @@ void Terrain::RebuildUv()
 	V(deviceContext->Map(vbStaging, 0, D3D11_MAP_READ_WRITE, 0, &res));
 	VTerrain* v = reinterpret_cast<VTerrain*>(res.pData);
 
-#define TRI(uu,vv) v[n++].tex = Vec2(float(uu)/uv_mod, float(vv)/uv_mod)
+#define TRI(uu,vv) v[n++].tex = Vec2(float(uu)/uvMod, float(vv)/uvMod)
 
 	uint n = 0;
 	for(uint z = 0; z < nTiles; ++z)
 	{
 		for(uint x = 0; x < nTiles; ++x)
 		{
-			int u1 = (x % uv_mod);
-			int u2 = ((x + 1) % uv_mod);
+			int u1 = (x % uvMod);
+			int u2 = ((x + 1) % uvMod);
 			if(u2 == 0)
-				u2 = uv_mod;
-			int v1 = (z % uv_mod);
-			int v2 = ((z + 1) % uv_mod);
+				u2 = uvMod;
+			int v1 = (z % uvMod);
+			int v2 = ((z + 1) % uvMod);
 			if(v2 == 0)
-				v2 = uv_mod;
+				v2 = uvMod;
 
 			TRI(u1, v1);
 			TRI(u1, v2);

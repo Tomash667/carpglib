@@ -41,7 +41,7 @@ public:
 	};
 
 	static const int DEFAULT_UV_MOD = 2;
-	int uv_mod;
+	int uvMod;
 
 	//---------------------------
 	Terrain();
