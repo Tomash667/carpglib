@@ -1,15 +1,17 @@
 //-----------------------------------------------------------------------------------
 // DirectXSH.cpp -- C++ Spherical Harmonics Math Library
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/p/?LinkId=262885
 //-------------------------------------------------------------------------------------
 
+#ifdef _MSC_VER
 #pragma warning( disable : 4619 4456 )
 // C4619 #pragma warning warnings
 // C4456 declaration hides previous local declaration
+#endif
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wold-style-cast"
@@ -104,7 +106,7 @@ namespace
     const float SHEvalHemisphereLight_fSqrtPi = sqrtf(XM_PI);
     const float SHEvalHemisphereLight_fSqrtPi3 = sqrtf(XM_PI / 3.0f);
 
-    typedef float REAL;
+    using REAL = float;
 #define CONSTANT(x) (x ## f)
 
     // routine generated programmatically for evaluating SH basis for degree 1
