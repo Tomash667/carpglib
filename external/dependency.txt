@@ -1,6 +1,6 @@
 EXTERNAL VERSION LIST
 --------------------------------------------------------------------------------
-Bullet - 2.89 (<https://github.com/bulletphysics/bullet3/releases>)
+Bullet Physics - 3.2.4 (<https://github.com/bulletphysics/bullet3/releases>)
 CrashRpt - 1.5 fork (<https://github.com/Tomash667/crashrpt2>)
 DirectXMath - 3.17b (<https://github.com/Microsoft/DirectXMath/releases>)
 FMod - 2.02.11 (Core API <https://www.fmod.com/resources/documentation-api?page=content/generated/common/revision.html>)
