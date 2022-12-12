@@ -14,9 +14,9 @@ MeshInstance::MeshInstance(Mesh* mesh) : preload(false), mesh(mesh), needUpdate(
 {
 	assert(mesh && mesh->IsLoaded() && mesh->IsAnimated());
 
-	matBones.resize(mesh->head.n_bones);
-	blendb.resize(mesh->head.n_bones);
-	groups.resize(mesh->head.n_groups);
+	matBones.resize(mesh->head.nBones);
+	blendb.resize(mesh->head.nBones);
+	groups.resize(mesh->head.nGroups);
 	memcpy(&blendb[0], &blendb_zero, sizeof(blendb_zero));
 }
 
@@ -67,7 +67,7 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, uint group)
 	// anuluj blending w innych grupach
 	if(IsSet(flags, PLAY_NO_BLEND))
 	{
-		for(int g = 0; g < mesh->head.n_groups; ++g)
+		for(int g = 0; g < mesh->head.nGroups; ++g)
 		{
 			if(g != group && (!groups[g].IsActive() || groups[g].prio < gr.prio))
 				ClearBit(groups[g].state, FLAG_BLENDING);
@@ -91,7 +91,7 @@ void MeshInstance::Deactivate(uint group, bool inUpdate)
 //=================================================================================================
 void MeshInstance::Update(float dt)
 {
-	for(word i = 0; i < mesh->head.n_groups; ++i)
+	for(word i = 0; i < mesh->head.nGroups; ++i)
 	{
 		Group& gr = groups[i];
 
@@ -139,7 +139,7 @@ void MeshInstance::Update(float dt)
 					else
 					{
 						gr.time = fmod(gr.time, gr.anim->length) + gr.anim->length;
-						if(gr.anim->n_frames == 1)
+						if(gr.anim->nFrames == 1)
 						{
 							gr.time = 0;
 							Stop(i);
@@ -164,7 +164,7 @@ void MeshInstance::Update(float dt)
 					else
 					{
 						gr.time = fmod(gr.time, gr.anim->length);
-						if(gr.anim->n_frames == 1)
+						if(gr.anim->nFrames == 1)
 						{
 							gr.time = 0;
 							Stop(i);
@@ -183,34 +183,34 @@ void MeshInstance::SetupBones()
 		return;
 	needUpdate = false;
 
-	Matrix BoneToParentPoseMat[Mesh::MAX_BONES];
-	BoneToParentPoseMat[0] = Matrix::IdentityMatrix;
-	Mesh::KeyframeBone tmp_keyf;
+	Matrix boneToParentPoseMat[Mesh::MAX_BONES];
+	boneToParentPoseMat[0] = Matrix::IdentityMatrix;
+	Mesh::KeyframeBone tmpKeyf;
 
 	// oblicz przekszta³cenia dla ka¿dej grupy
-	const word n_groups = mesh->head.n_groups;
-	for(word bones_group = 0; bones_group < n_groups; ++bones_group)
+	const word nGroups = mesh->head.nGroups;
+	for(word boneGroup = 0; boneGroup < nGroups; ++boneGroup)
 	{
-		const Group& gr_bones = groups[bones_group];
-		const vector<byte>& bones = mesh->groups[bones_group].bones;
-		int anim_group;
+		const Group& grBones = groups[boneGroup];
+		const vector<byte>& bones = mesh->groups[boneGroup].bones;
+		int animGroup;
 
 		// ustal z któr¹ animacj¹ ustalaæ blending
-		anim_group = GetUsableGroup(bones_group);
+		animGroup = GetUsableGroup(boneGroup);
 
-		if(anim_group == BLEND_TO_BIND_POSE)
+		if(animGroup == BLEND_TO_BIND_POSE)
 		{
 			// nie ma ¿adnej animacji
-			if(gr_bones.IsBlending())
+			if(grBones.IsBlending())
 			{
 				// jest blending pomiêdzy B--->0
-				float bt = gr_bones.blendTime / gr_bones.blendMax;
+				float bt = grBones.blendTime / grBones.blendMax;
 
 				for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 				{
 					const word b = *it;
-					Mesh::KeyframeBone::Interpolate(tmp_keyf, blendb[b], blendb_zero, bt);
-					tmp_keyf.Mix(BoneToParentPoseMat[b], mesh->bones[b].mat);
+					Mesh::KeyframeBone::Interpolate(tmpKeyf, blendb[b], blendb_zero, bt);
+					tmpKeyf.Mix(boneToParentPoseMat[b], mesh->bones[b].mat);
 				}
 			}
 			else
@@ -219,21 +219,21 @@ void MeshInstance::SetupBones()
 				for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 				{
 					const word b = *it;
-					BoneToParentPoseMat[b] = mesh->bones[b].mat;
+					boneToParentPoseMat[b] = mesh->bones[b].mat;
 				}
 			}
 		}
 		else
 		{
-			const Group& gr_anim = groups[anim_group];
+			const Group& gr_anim = groups[animGroup];
 			bool hit;
 			const int index = gr_anim.GetFrameIndex(hit);
 			const vector<Mesh::Keyframe>& frames = gr_anim.anim->frames;
 
-			if(gr_anim.IsBlending() || gr_bones.IsBlending())
+			if(gr_anim.IsBlending() || grBones.IsBlending())
 			{
 				// jest blending
-				const float bt = (gr_bones.IsBlending() ? (gr_bones.blendTime / gr_bones.blendMax) :
+				const float bt = (grBones.IsBlending() ? (grBones.blendTime / grBones.blendMax) :
 					(gr_anim.blendTime / gr_anim.blendMax));
 
 				if(hit)
@@ -243,8 +243,8 @@ void MeshInstance::SetupBones()
 					for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 					{
 						const word b = *it;
-						Mesh::KeyframeBone::Interpolate(tmp_keyf, blendb[b], keyf[b - 1], bt);
-						tmp_keyf.Mix(BoneToParentPoseMat[b], mesh->bones[b].mat);
+						Mesh::KeyframeBone::Interpolate(tmpKeyf, blendb[b], keyf[b - 1], bt);
+						tmpKeyf.Mix(boneToParentPoseMat[b], mesh->bones[b].mat);
 					}
 				}
 				else
@@ -257,9 +257,9 @@ void MeshInstance::SetupBones()
 					for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 					{
 						const word b = *it;
-						Mesh::KeyframeBone::Interpolate(tmp_keyf, keyf[b - 1], keyf2[b - 1], t);
-						Mesh::KeyframeBone::Interpolate(tmp_keyf, blendb[b], tmp_keyf, bt);
-						tmp_keyf.Mix(BoneToParentPoseMat[b], mesh->bones[b].mat);
+						Mesh::KeyframeBone::Interpolate(tmpKeyf, keyf[b - 1], keyf2[b - 1], t);
+						Mesh::KeyframeBone::Interpolate(tmpKeyf, blendb[b], tmpKeyf, bt);
+						tmpKeyf.Mix(boneToParentPoseMat[b], mesh->bones[b].mat);
 					}
 				}
 			}
@@ -273,7 +273,7 @@ void MeshInstance::SetupBones()
 					for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 					{
 						const word b = *it;
-						keyf[b - 1].Mix(BoneToParentPoseMat[b], mesh->bones[b].mat);
+						keyf[b - 1].Mix(boneToParentPoseMat[b], mesh->bones[b].mat);
 					}
 				}
 				else
@@ -286,8 +286,8 @@ void MeshInstance::SetupBones()
 					for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 					{
 						const word b = *it;
-						Mesh::KeyframeBone::Interpolate(tmp_keyf, keyf[b - 1], keyf2[b - 1], t);
-						tmp_keyf.Mix(BoneToParentPoseMat[b], mesh->bones[b].mat);
+						Mesh::KeyframeBone::Interpolate(tmpKeyf, keyf[b - 1], keyf2[b - 1], t);
+						tmpKeyf.Mix(boneToParentPoseMat[b], mesh->bones[b].mat);
 					}
 				}
 			}
@@ -295,55 +295,55 @@ void MeshInstance::SetupBones()
 	}
 
 	if(ptr)
-		Predraw(ptr, BoneToParentPoseMat, 0);
+		Predraw(ptr, boneToParentPoseMat, 0);
 
 	// Macierze przekszta³caj¹ce ze wsp. danej koœci do wsp. modelu w ustalonej pozycji
 	// (To obliczenie nale¿a³oby po³¹czyæ z poprzednim)
 	Matrix BoneToModelPoseMat[Mesh::MAX_BONES];
 	BoneToModelPoseMat[0] = Matrix::IdentityMatrix;
-	for(word i = 1; i < mesh->head.n_bones; ++i)
+	for(word i = 1; i < mesh->head.nBones; ++i)
 	{
 		const Mesh::Bone& bone = mesh->bones[i];
 
 		// Jeœli to koœæ g³ówna, przekszta³cenie z danej koœci do nadrzêdnej = z danej koœci do modelu
 		// Jeœli to nie koœæ g³ówna, przekszta³cenie z danej koœci do modelu = z danej koœci do nadrzêdnej * z nadrzêdnej do modelu
 		if(bone.parent == 0)
-			BoneToModelPoseMat[i] = BoneToParentPoseMat[i];
+			BoneToModelPoseMat[i] = boneToParentPoseMat[i];
 		else
-			BoneToModelPoseMat[i] = BoneToParentPoseMat[i] * BoneToModelPoseMat[bone.parent];
+			BoneToModelPoseMat[i] = boneToParentPoseMat[i] * BoneToModelPoseMat[bone.parent];
 	}
 
 	// przeskaluj koœci
 	if(matScale)
 	{
-		for(int i = 0; i < mesh->head.n_bones; ++i)
+		for(int i = 0; i < mesh->head.nBones; ++i)
 			BoneToModelPoseMat[i] = BoneToModelPoseMat[i] * matScale[i];
 	}
 
 	// Macierze zebrane koœci - przekszta³caj¹ce z modelu do koœci w pozycji spoczynkowej * z koœci do modelu w pozycji bie¿¹cej
 	matBones[0] = Matrix::IdentityMatrix;
-	for(word i = 1; i < mesh->head.n_bones; ++i)
+	for(word i = 1; i < mesh->head.nBones; ++i)
 		matBones[i] = mesh->modelToBone[i] * BoneToModelPoseMat[i];
 }
 
 //=================================================================================================
-void MeshInstance::SetupBlending(uint bones_group, bool first, bool inUpdate)
+void MeshInstance::SetupBlending(uint boneGroup, bool first, bool inUpdate)
 {
-	int anim_group;
-	const Group& gr_bones = groups[bones_group];
-	const vector<byte>& bones = mesh->groups[bones_group].bones;
+	int animGroup;
+	const Group& grBones = groups[boneGroup];
+	const vector<byte>& bones = mesh->groups[boneGroup].bones;
 
 	// nowe ustalanie z której grupy braæ animacjê!
 	// teraz wybiera wed³ug priorytetu
-	anim_group = GetUsableGroup(bones_group);
+	animGroup = GetUsableGroup(boneGroup);
 
-	if(anim_group == BLEND_TO_BIND_POSE)
+	if(animGroup == BLEND_TO_BIND_POSE)
 	{
 		// nie ma ¿adnej animacji
-		if(gr_bones.IsBlending())
+		if(grBones.IsBlending())
 		{
 			// jest blending pomiêdzy B--->0
-			const float bt = gr_bones.blendTime / gr_bones.blendMax;
+			const float bt = grBones.blendTime / grBones.blendMax;
 
 			for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 			{
@@ -361,17 +361,17 @@ void MeshInstance::SetupBlending(uint bones_group, bool first, bool inUpdate)
 	else
 	{
 		// jest jakaœ animacja
-		const Group& gr_anim = groups[anim_group];
+		const Group& gr_anim = groups[animGroup];
 		bool hit;
 		const int index = gr_anim.GetFrameIndex(hit);
 		const vector<Mesh::Keyframe>& frames = gr_anim.anim->frames;
 
-		if(gr_anim.IsBlending() || gr_bones.IsBlending())
+		if(gr_anim.IsBlending() || grBones.IsBlending())
 		{
-			// je¿eli gr_anim == gr_bones to mo¿na to zoptymalizowaæ
+			// je¿eli gr_anim == grBones to mo¿na to zoptymalizowaæ
 
 			// jest blending
-			const float bt = (gr_bones.IsBlending() ? (gr_bones.blendTime / gr_bones.blendMax) :
+			const float bt = (grBones.IsBlending() ? (grBones.blendTime / grBones.blendMax) :
 				(gr_anim.blendTime / gr_anim.blendMax));
 
 			if(hit)
@@ -390,13 +390,13 @@ void MeshInstance::SetupBlending(uint bones_group, bool first, bool inUpdate)
 				const float t = (gr_anim.time - frames[index].time) / (frames[index + 1].time - frames[index].time);
 				const vector<Mesh::KeyframeBone>& keyf = frames[index].bones;
 				const vector<Mesh::KeyframeBone>& keyf2 = frames[index + 1].bones;
-				Mesh::KeyframeBone tmp_keyf;
+				Mesh::KeyframeBone tmpKeyf;
 
 				for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 				{
 					const word b = *it;
-					Mesh::KeyframeBone::Interpolate(tmp_keyf, keyf[b - 1], keyf2[b - 1], t);
-					Mesh::KeyframeBone::Interpolate(blendb[b], blendb[b], tmp_keyf, bt);
+					Mesh::KeyframeBone::Interpolate(tmpKeyf, keyf[b - 1], keyf2[b - 1], t);
+					Mesh::KeyframeBone::Interpolate(blendb[b], blendb[b], tmpKeyf, bt);
 				}
 			}
 		}
@@ -432,14 +432,14 @@ void MeshInstance::SetupBlending(uint bones_group, bool first, bool inUpdate)
 	// znajdz podrzêdne grupy które nie s¹ aktywne i ustaw im blending
 	if(first)
 	{
-		for(uint group = 0; group < mesh->head.n_groups; ++group)
+		for(uint group = 0; group < mesh->head.nGroups; ++group)
 		{
 			Group& gr = groups[group];
-			if(group != bones_group && (!gr.IsActive() || gr.prio < gr_bones.prio))
+			if(group != boneGroup && (!gr.IsActive() || gr.prio < grBones.prio))
 			{
 				SetupBlending(group, false);
 				SetBit(gr.state, FLAG_BLENDING);
-				if(inUpdate && group > bones_group)
+				if(inUpdate && group > boneGroup)
 					SetBit(gr.state, FLAG_UPDATED);
 				gr.blendTime = 0;
 			}
@@ -457,7 +457,7 @@ void MeshInstance::ClearEndResult()
 //=================================================================================================
 bool MeshInstance::IsBlending() const
 {
-	for(int i = 0; i < mesh->head.n_groups; ++i)
+	for(int i = 0; i < mesh->head.nGroups; ++i)
 	{
 		if(IsSet(groups[i].state, FLAG_BLENDING))
 			return true;
@@ -470,7 +470,7 @@ int MeshInstance::GetHighestPriority(uint& _group)
 {
 	int best = -1;
 
-	for(uint i = 0; i < uint(mesh->head.n_groups); ++i)
+	for(uint i = 0; i < uint(mesh->head.nGroups); ++i)
 	{
 		if(groups[i].IsActive() && groups[i].prio > best)
 		{
@@ -512,7 +512,7 @@ void MeshInstance::DisableAnimations()
 		group.anim = nullptr;
 		group.state = 0;
 	}
-	for(int i = 0; i < mesh->head.n_bones; ++i)
+	for(int i = 0; i < mesh->head.nBones; ++i)
 		matBones[i] = Matrix::IdentityMatrix;
 	needUpdate = false;
 }
@@ -529,9 +529,9 @@ void MeshInstance::SetToEnd(Mesh::Animation* anim)
 	groups[0].usedGroup = 0;
 	groups[0].prio = 3;
 
-	if(mesh->head.n_groups > 1)
+	if(mesh->head.nGroups > 1)
 	{
-		for(int i = 1; i < mesh->head.n_groups; ++i)
+		for(int i = 1; i < mesh->head.nGroups; ++i)
 		{
 			groups[i].anim = nullptr;
 			groups[i].state = 0;
@@ -836,12 +836,12 @@ bool MeshInstance::ApplyPreload(Mesh* mesh)
 		&& mesh->IsAnimated()
 		&& preload
 		&& !this->mesh
-		&& groups.size() == mesh->head.n_groups);
+		&& groups.size() == mesh->head.nGroups);
 
 	preload = false;
 	this->mesh = mesh;
-	matBones.resize(mesh->head.n_bones);
-	blendb.resize(mesh->head.n_bones);
+	matBones.resize(mesh->head.nBones);
+	blendb.resize(mesh->head.nBones);
 
 	for(Group& group : groups)
 	{

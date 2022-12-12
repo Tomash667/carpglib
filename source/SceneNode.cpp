@@ -51,7 +51,7 @@ void SceneBatch::Add(SceneNode* node, int sub)
 	const Mesh& mesh = *node->mesh;
 	if(sub == -1)
 	{
-		assert(mesh.head.n_subs < 31);
+		assert(mesh.head.nSubs < 31);
 		if(IsSet(mesh.head.flags, Mesh::F_ANIMATED))
 			node->flags |= SceneNode::F_HAVE_WEIGHTS;
 		if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
@@ -64,9 +64,9 @@ void SceneBatch::Add(SceneNode* node, int sub)
 	}
 	else
 	{
-		if(app::sceneMgr->useNormalmap && mesh.subs[sub].tex_normal)
+		if(app::sceneMgr->useNormalmap && mesh.subs[sub].texNormal)
 			node->flags |= SceneNode::F_NORMAL_MAP;
-		if(app::sceneMgr->useSpecularmap && mesh.subs[sub].tex_specular)
+		if(app::sceneMgr->useSpecularmap && mesh.subs[sub].texSpecular)
 			node->flags |= SceneNode::F_SPECULAR_MAP;
 		node->subs = SceneNode::SPLIT_INDEX | sub;
 	}

@@ -21,13 +21,14 @@ constexpr int FULLSCREEN_FLAGS = WS_POPUP;
 
 //=================================================================================================
 Engine::Engine() : initialized(false), shutdown(false), timer(false), hwnd(nullptr), cursorVisible(true), replaceCursor(false), lockedCursor(true),
-active(false), activationPoint(-1, -1), phyWorld(nullptr), title("Window"), forcePos(-1, -1), forceSize(-1, -1), hiddenWindow(false),
-wndSize(DEFAULT_WINDOW_SIZE), clientSize(wndSize)
+active(false), activationPoint(-1, -1), title("Window"), forcePos(-1, -1), forceSize(-1, -1), hiddenWindow(false), wndSize(DEFAULT_WINDOW_SIZE),
+clientSize(wndSize)
 {
 	if(!Logger::GetInstance())
 		Logger::SetInstance(new Logger);
 	app::gui = new Gui;
 	app::input = new Input;
+	app::physics = new Physics;
 	app::render = new Render;
 	app::resMgr = new ResourceManager;
 	app::sceneMgr = new SceneManager;
@@ -134,13 +135,12 @@ void Engine::Cleanup()
 	app::app->OnCleanup();
 
 	delete app::input;
+	delete app::physics;
 	delete app::resMgr;
 	delete app::render;
 	delete app::gui;
 	delete app::sceneMgr;
 	delete app::soundMgr;
-
-	CustomCollisionWorld::Cleanup(phyWorld);
 }
 
 //=================================================================================================
@@ -593,7 +593,7 @@ void Engine::Init()
 	InitWindow();
 	app::render->Init();
 	app::soundMgr->Init();
-	phyWorld = CustomCollisionWorld::Init();
+	app::physics->Init();
 	app::resMgr->Init();
 	app::gui->Init();
 	app::sceneMgr->Init();

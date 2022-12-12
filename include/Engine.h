@@ -36,7 +36,6 @@ public:
 	float GetWindowAspect() const { return float(clientSize.x) / clientSize.y; }
 	HWND GetWindowHandle() const { return hwnd; }
 	const Int2& GetWindowSize() const { return wndSize; }
-	CustomCollisionWorld* GetPhysicsWorld() { return phyWorld; }
 
 	void SetFullscreen(bool fullscreen);
 	void SetTitle(cstring title);
@@ -60,7 +59,6 @@ private:
 	bool IsWindowActive();
 	void SetWindowSizeInternal(const Int2& size);
 
-	CustomCollisionWorld* phyWorld;
 	HWND hwnd;
 	Timer timer;
 	string title;

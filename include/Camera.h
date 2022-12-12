@@ -3,10 +3,11 @@
 //-----------------------------------------------------------------------------
 struct Camera
 {
-	Camera() : znear(0.1f), zfar(50.f) {}
+	Camera() : up(Vec3::Up), aspect(0), fov(PI / 4), znear(0.1f), zfar(50.f) {}
+	void UpdateMatrix();
 
 	Matrix matViewProj;
 	Matrix matViewInv;
-	Vec3 from, to;
-	float znear, zfar;
+	Vec3 from, to, up;
+	float aspect, fov, znear, zfar;
 };

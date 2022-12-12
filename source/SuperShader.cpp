@@ -331,8 +331,8 @@ void SuperShader::SetTexture(const TexOverride* texOverride, Mesh* mesh, uint in
 	{
 		if(texOverride && texOverride[index].normal)
 			tex = texOverride[index].normal->tex;
-		else if(mesh && mesh->subs[index].tex_normal)
-			tex = mesh->subs[index].tex_normal->tex;
+		else if(mesh && mesh->subs[index].texNormal)
+			tex = mesh->subs[index].texNormal->tex;
 		else
 			tex = texEmptyNormalMap;
 		deviceContext->PSSetShaderResources(1, 1, &tex);
@@ -342,8 +342,8 @@ void SuperShader::SetTexture(const TexOverride* texOverride, Mesh* mesh, uint in
 	{
 		if(texOverride && texOverride[index].specular)
 			tex = texOverride[index].specular->tex;
-		else if(mesh && mesh->subs[index].tex_specular)
-			tex = mesh->subs[index].tex_specular->tex;
+		else if(mesh && mesh->subs[index].texSpecular)
+			tex = mesh->subs[index].texSpecular->tex;
 		else
 			tex = texEmptySpecularMap;
 		deviceContext->PSSetShaderResources(2, 1, &tex);
@@ -391,7 +391,7 @@ void SuperShader::Draw(SceneNode* node)
 		vsl.matWorld = node->mat.Transpose();
 		if(applyBones)
 		{
-			for(uint i = 0; i < node->meshInst->mesh->head.n_bones; ++i)
+			for(uint i = 0; i < node->meshInst->mesh->head.nBones; ++i)
 				vsl.matBones[i] = node->meshInst->matBones[i].Transpose();
 		}
 	}
@@ -417,7 +417,7 @@ void SuperShader::Draw(SceneNode* node)
 	// for each submesh
 	if(!IsSet(node->subs, SceneNode::SPLIT_INDEX))
 	{
-		for(int i = 0; i < mesh.head.n_subs; ++i)
+		for(int i = 0; i < mesh.head.nSubs; ++i)
 		{
 			if(IsSet(node->subs, 1 << i))
 				DrawSubmesh(node, i);
@@ -439,9 +439,9 @@ void SuperShader::DrawSubmesh(SceneNode* node, uint index)
 	{
 		ResourceLock lock(psMaterial);
 		PsMaterial& psm = *lock.Get<PsMaterial>();
-		psm.specularColor = sub.specular_color;
-		psm.specularHardness = (float)sub.specular_hardness;
-		psm.specularIntensity = sub.specular_intensity;
+		psm.specularColor = sub.specularColor;
+		psm.specularHardness = (float)sub.specularHardness;
+		psm.specularIntensity = sub.specularIntensity;
 	}
 
 	// set texture OwO

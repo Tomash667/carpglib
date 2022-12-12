@@ -8,19 +8,21 @@
 #pragma warning (pop)
 
 //-----------------------------------------------------------------------------
-class CustomCollisionWorld : public btCollisionWorld
+class Physics
 {
 public:
-	CustomCollisionWorld(btDispatcher* dispatcher, btBroadphaseInterface* broadphase, btCollisionConfiguration* config);
-	static CustomCollisionWorld* Init();
-	static void Cleanup(CustomCollisionWorld* world);
+	Physics();
+	~Physics();
+	void Init();
 	void Reset();
 	void UpdateAabb(btCollisionObject* cobj);
+	btCollisionWorld* GetWorld() { return world; }
 
 private:
 	btCollisionConfiguration* config;
 	btDispatcher* dispatcher;
 	btBroadphaseInterface* broadphase;
+	btCollisionWorld* world;
 };
 
 //-----------------------------------------------------------------------------

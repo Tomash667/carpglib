@@ -108,12 +108,12 @@ struct MeshInstance
 
 	Group& GetGroup(uint group)
 	{
-		assert(group < mesh->head.n_groups);
+		assert(group < mesh->head.nGroups);
 		return groups[group];
 	}
 	const Group& GetGroup(uint group) const
 	{
-		assert(group < mesh->head.n_groups);
+		assert(group < mesh->head.nGroups);
 		return groups[group];
 	}
 	int GetHighestPriority(uint& group);

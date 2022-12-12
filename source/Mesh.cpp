@@ -49,7 +49,7 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 
 	// ------ vertices
 	// ensure size
-	uint size = vertexSize * head.n_verts;
+	uint size = vertexSize * head.nVerts;
 	if(!stream.Ensure(size))
 		throw "Failed to read vertex buffer.";
 
@@ -80,7 +80,7 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 
 	// ----- triangles
 	// ensure size
-	size = sizeof(word) * head.n_tris * 3;
+	size = sizeof(word) * head.nTris * 3;
 	if(!stream.Ensure(size))
 		throw "Failed to read index buffer.";
 
@@ -105,58 +105,58 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 	SetDebugName(ib, Format("IB:%s", path.c_str()));
 
 	// ----- submeshes
-	size = Submesh::MIN_SIZE * head.n_subs;
+	size = Submesh::MIN_SIZE * head.nSubs;
 	if(!stream.Ensure(size))
 		throw "Failed to read submesh data.";
-	subs.resize(head.n_subs);
+	subs.resize(head.nSubs);
 
-	for(word i = 0; i < head.n_subs; ++i)
+	for(word i = 0; i < head.nSubs; ++i)
 	{
 		Submesh& sub = subs[i];
 
 		stream.Read(sub.first);
 		stream.Read(sub.tris);
-		stream.Read(sub.min_ind);
-		stream.Read(sub.n_ind);
+		stream.Read(sub.minInd);
+		stream.Read(sub.nInd);
 		stream.Read(sub.name);
-		const string& tex_name = stream.ReadString1();
-		if(!tex_name.empty())
-			sub.tex = app::resMgr->LoadInstant<Texture>(tex_name);
+		const string& texName = stream.ReadString1();
+		if(!texName.empty())
+			sub.tex = app::resMgr->LoadInstant<Texture>(texName);
 		else
 			sub.tex = nullptr;
 
 		// specular value
-		stream.Read(sub.specular_color);
-		stream.Read(sub.specular_intensity);
-		stream.Read(sub.specular_hardness);
+		stream.Read(sub.specularColor);
+		stream.Read(sub.specularIntensity);
+		stream.Read(sub.specularHardness);
 
 		// normalmap
 		if(IsSet(head.flags, F_TANGENTS))
 		{
-			const string& tex_name = stream.ReadString1();
-			if(!tex_name.empty())
+			const string& texName = stream.ReadString1();
+			if(!texName.empty())
 			{
 				head.flags |= F_NORMAL_MAP;
-				sub.tex_normal = app::resMgr->LoadInstant<Texture>(tex_name);
-				stream.Read(sub.normal_factor);
+				sub.texNormal = app::resMgr->LoadInstant<Texture>(texName);
+				stream.Read(sub.normalFactor);
 			}
 			else
-				sub.tex_normal = nullptr;
+				sub.texNormal = nullptr;
 		}
 		else
-			sub.tex_normal = nullptr;
+			sub.texNormal = nullptr;
 
 		// specular map
-		const string& tex_name_specular = stream.ReadString1();
-		if(!tex_name_specular.empty())
+		const string& texName_specular = stream.ReadString1();
+		if(!texName_specular.empty())
 		{
 			head.flags |= F_SPECULAR_MAP;
-			sub.tex_specular = app::resMgr->LoadInstant<Texture>(tex_name_specular);
-			stream.Read(sub.specular_factor);
-			stream.Read(sub.specular_color_factor);
+			sub.texSpecular = app::resMgr->LoadInstant<Texture>(texName_specular);
+			stream.Read(sub.specularFactor);
+			stream.Read(sub.specularColorFactor);
 		}
 		else
-			sub.tex_specular = nullptr;
+			sub.texSpecular = nullptr;
 
 		if(!stream)
 			throw Format("Failed to read submesh %u.", i);
@@ -166,10 +166,10 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 	if(IsSet(head.flags, F_ANIMATED) && !IsSet(head.flags, F_STATIC))
 	{
 		// bones
-		size = Bone::MIN_SIZE * head.n_bones;
+		size = Bone::MIN_SIZE * head.nBones;
 		if(!stream.Ensure(size))
 			throw "Failed to read bones.";
-		bones.resize(head.n_bones + 1);
+		bones.resize(head.nBones + 1);
 
 		// zero bone
 		Bone& zero_bone = bones[0];
@@ -178,7 +178,7 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 		zero_bone.id = 0;
 		zero_bone.mat = Matrix::IdentityMatrix;
 
-		for(byte i = 1; i <= head.n_bones; ++i)
+		for(byte i = 1; i <= head.nBones; ++i)
 		{
 			Bone& bone = bones[i];
 			bone.id = i;
@@ -206,40 +206,40 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 		// bone groups (version >= 21)
 		if(head.version >= 21)
 		{
-			++head.n_bones; // remove when removed zero bone
+			++head.nBones; // remove when removed zero bone
 			LoadBoneGroups(stream);
-			--head.n_bones;
+			--head.nBones;
 		}
 
 		// animations
-		size = Animation::MIN_SIZE * head.n_anims;
+		size = Animation::MIN_SIZE * head.nAnims;
 		if(!stream.Ensure(size))
 			throw "Failed to read animations.";
-		anims.resize(head.n_anims);
+		anims.resize(head.nAnims);
 
 		uint keyframeBoneSize = sizeof(KeyframeBone);
 		if(head.version < 22)
 			keyframeBoneSize -= sizeof(float) * 2;
 
-		for(byte i = 0; i < head.n_anims; ++i)
+		for(byte i = 0; i < head.nAnims; ++i)
 		{
 			Animation& anim = anims[i];
 
 			stream.Read(anim.name);
 			stream.Read(anim.length);
-			stream.Read(anim.n_frames);
+			stream.Read(anim.nFrames);
 
-			size = anim.n_frames * (4 + keyframeBoneSize * head.n_bones);
+			size = anim.nFrames * (4 + keyframeBoneSize * head.nBones);
 			if(!stream.Ensure(size))
 				throw Format("Failed to read animation %u data.", i);
 
-			anim.frames.resize(anim.n_frames);
+			anim.frames.resize(anim.nFrames);
 			for(Keyframe& frame : anim.frames)
 			{
 				stream >> frame.time;
-				frame.bones.resize(head.n_bones);
+				frame.bones.resize(head.nBones);
 				if(head.version >= 22)
-					stream.Read(frame.bones.data(), sizeof(KeyframeBone) * head.n_bones);
+					stream.Read(frame.bones.data(), sizeof(KeyframeBone) * head.nBones);
 				else
 				{
 					for(KeyframeBone& frameBone : frame.bones)
@@ -253,7 +253,7 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 		}
 
 		// add zero bone to count
-		++head.n_bones;
+		++head.nBones;
 	}
 
 	LoadPoints(stream);
@@ -265,10 +265,10 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 	// splits
 	if(IsSet(head.flags, F_SPLIT))
 	{
-		size = sizeof(Split) * head.n_subs;
+		size = sizeof(Split) * head.nSubs;
 		if(!stream.Ensure(size))
 			throw "Failed to read mesh splits.";
-		splits.resize(head.n_subs);
+		splits.resize(head.nSubs);
 		stream.Read(splits.data(), size);
 	}
 }
@@ -280,7 +280,7 @@ void Mesh::LoadMetadata(StreamReader& stream)
 	if(vb)
 		return;
 	LoadHeader(stream);
-	stream.SetPos(head.points_offset);
+	stream.SetPos(head.pointsOffset);
 	LoadPoints(stream);
 }
 
@@ -297,15 +297,15 @@ void Mesh::LoadHeader(StreamReader& stream)
 		throw Format("Invalid file version '%u'.", head.version);
 	if(head.version < 20)
 		throw Format("Unsupported file version '%u'.", head.version);
-	if(head.n_bones > MAX_BONES)
-		throw Format("Too many bones (%u).", head.n_bones);
-	if(head.n_subs == 0)
+	if(head.nBones > MAX_BONES)
+		throw Format("Too many bones (%u).", head.nBones);
+	if(head.nSubs == 0)
 		throw "Missing model mesh!";
 	if(IsSet(head.flags, F_ANIMATED) && !IsSet(head.flags, F_STATIC))
 	{
-		if(head.n_bones == 0)
+		if(head.nBones == 0)
 			throw "No bones.";
-		if(head.n_groups == 0)
+		if(head.nGroups == 0)
 			throw "No bone groups.";
 	}
 }
@@ -351,12 +351,12 @@ void Mesh::SetVertexSizeDecl()
 
 void Mesh::LoadPoints(StreamReader& stream)
 {
-	uint size = Point::MIN_SIZE * head.n_points;
+	uint size = Point::MIN_SIZE * head.nPoints;
 	if(!stream.Ensure(size))
 		throw "Failed to read points.";
 	attachPoints.clear();
-	attachPoints.resize(head.n_points);
-	for(word i = 0; i < head.n_points; ++i)
+	attachPoints.resize(head.nPoints);
+	for(word i = 0; i < head.nPoints; ++i)
 	{
 		Point& p = attachPoints[i];
 
@@ -382,10 +382,10 @@ void Mesh::LoadPoints(StreamReader& stream)
 
 void Mesh::LoadBoneGroups(StreamReader& stream)
 {
-	if(!stream.Ensure(BoneGroup::MIN_SIZE * head.n_groups))
+	if(!stream.Ensure(BoneGroup::MIN_SIZE * head.nGroups))
 		throw "Failed to read bone groups.";
-	groups.resize(head.n_groups);
-	for(word i = 0; i < head.n_groups; ++i)
+	groups.resize(head.nGroups);
+	for(word i = 0; i < head.nGroups; ++i)
 	{
 		BoneGroup& gr = groups[i];
 
@@ -393,7 +393,7 @@ void Mesh::LoadBoneGroups(StreamReader& stream)
 
 		// parent group
 		stream.Read(gr.parent);
-		assert(gr.parent < head.n_groups);
+		assert(gr.parent < head.nGroups);
 		assert(gr.parent != i || i == 0);
 
 		// bone indices
@@ -434,10 +434,10 @@ void Mesh::LoadMatrix33(StreamReader& stream, Matrix& m)
 //=================================================================================================
 void Mesh::SetupBoneMatrices()
 {
-	modelToBone.resize(head.n_bones);
+	modelToBone.resize(head.nBones);
 	modelToBone[0] = Matrix::IdentityMatrix;
 
-	for(word i = 1; i < head.n_bones; ++i)
+	for(word i = 1; i < head.nBones; ++i)
 	{
 		const Mesh::Bone& bone = bones[i];
 		bone.mat.Inverse(modelToBone[i]);
@@ -499,7 +499,7 @@ int Mesh::Animation::GetFrameIndex(float time, bool& hit)
 {
 	assert(time >= 0 && time <= length);
 
-	for(word i = 0; i < n_frames; ++i)
+	for(word i = 0; i < nFrames; ++i)
 	{
 		if(Equal(time, frames[i].time))
 		{
@@ -605,17 +605,17 @@ void Mesh::LoadVertexData(VertexData* vd, StreamReader& stream)
 	vd->radius = head.radius;
 
 	// read vertices
-	uint size = sizeof(Vec3) * head.n_verts;
+	uint size = sizeof(Vec3) * head.nVerts;
 	if(!stream.Ensure(size))
 		throw "Failed to read vertex data.";
-	vd->verts.resize(head.n_verts);
+	vd->verts.resize(head.nVerts);
 	stream.Read(vd->verts.data(), size);
 
 	// read faces
-	size = sizeof(Face) * head.n_tris;
+	size = sizeof(Face) * head.nTris;
 	if(!stream.Ensure(size))
 		throw "Failed to read triangle data.";
-	vd->faces.resize(head.n_tris);
+	vd->faces.resize(head.nTris);
 	stream.Read(vd->faces.data(), size);
 }
 
