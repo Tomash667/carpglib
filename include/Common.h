@@ -14,6 +14,7 @@ struct GlowNode;
 struct Light;
 struct Lights;
 struct MeshInstance;
+struct ParticleEffect;
 struct ParticleEmitter;
 struct PostEffect;
 struct Scene;

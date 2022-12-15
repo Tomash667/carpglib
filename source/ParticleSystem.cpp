@@ -23,16 +23,8 @@ float drop_range(float v, float t)
 		return v * t - G * (t * t) / 2;
 }
 
-//=================================================================================================
-void ParticleEmitter::Init()
+void ParticleEffect::CalculateRadius()
 {
-	particles.resize(maxParticles);
-	time = 0.f;
-	alive = 0;
-	destroy = false;
-	for(int i = 0; i < maxParticles; ++i)
-		particles[i].exists = false;
-
 	// oblicz promieñ
 	float t;
 	if(life > 0)
@@ -72,6 +64,23 @@ void ParticleEmitter::Init()
 		r = r2;
 
 	radius = sqrt(2 * r * r);
+}
+
+//=================================================================================================
+void ParticleEmitter::Init(const ParticleEffect* effect, const Vec3& pos)
+{
+	assert(effect);
+	this->effect = effect;
+	this->pos = pos;
+
+	particles.resize(effect->maxParticles);
+	life = effect->life;
+	time = 0.f;
+	emissions = effect->emissions;
+	alive = 0;
+	destroy = false;
+	for(int i = 0; i < effect->maxParticles; ++i)
+		particles[i].exists = false;
 
 	// nowe
 	manualDelete = 0;
@@ -113,13 +122,13 @@ bool ParticleEmitter::Update(float dt)
 	}
 
 	// emisja
-	if(!destroy && (emissions == -1 || emissions > 0) && ((time += dt) >= emissionInterval))
+	if(!destroy && (emissions == -1 || emissions > 0) && ((time += dt) >= effect->emissionInterval))
 	{
 		if(emissions > 0)
 			--emissions;
-		time -= emissionInterval;
+		time -= effect->emissionInterval;
 
-		int count = min(Random(spawnMin, spawnMax), maxParticles - alive);
+		int count = min(Random(effect->spawnMin, effect->spawnMax), effect->maxParticles - alive);
 		vector<Particle>::iterator it2 = particles.begin();
 
 		for(int i = 0; i < count; ++i)
@@ -130,9 +139,9 @@ bool ParticleEmitter::Update(float dt)
 			Particle& p = *it2;
 			p.exists = true;
 			p.gravity = G;
-			p.life = particleLife;
-			p.pos = pos + Vec3::Random(posMin, posMax);
-			p.speed = Vec3::Random(speedMin, speedMax);
+			p.life = effect->particleLife;
+			p.pos = pos + Vec3::Random(effect->posMin, effect->posMax);
+			p.speed = Vec3::Random(effect->speedMin, effect->speedMax);
 		}
 
 		alive += count;
@@ -145,27 +154,12 @@ bool ParticleEmitter::Update(float dt)
 void ParticleEmitter::Save(FileWriter& f)
 {
 	f << id;
-	f << tex->filename;
-	f << emissionInterval;
+	f << effect->hash;
 	f << life;
-	f << particleLife;
-	f << alpha;
-	f << size;
 	f << emissions;
-	f << spawnMin;
-	f << spawnMax;
-	f << maxParticles;
-	f << mode;
 	f << pos;
-	f << speedMin;
-	f << speedMax;
-	f << posMin;
-	f << posMax;
-	f << opSize;
-	f << opAlpha;
 	f << manualDelete;
 	f << time;
-	f << radius;
 	f << particles;
 	f << alive;
 	f << destroy;
@@ -174,34 +168,54 @@ void ParticleEmitter::Save(FileWriter& f)
 //=================================================================================================
 void ParticleEmitter::Load(FileReader& f, int version)
 {
-	if(version >= 1)
+	if(version >= 3)
+	{
 		f >> id;
-	Register();
+		Register();
+		int hash;
+		f >> hash;
+		f >> life;
+		f >> emissions;
+		f >> pos;
+		f >> manualDelete;
+		f >> time;
+		f >> particles;
+		f >> alive;
+		f >> destroy;
+	}
+	else
+	{
 
-	tex = app::resMgr->Load<Texture>(f.ReadString1());
-	f >> emissionInterval;
-	f >> life;
-	f >> particleLife;
-	f >> alpha;
-	f >> size;
-	f >> emissions;
-	f >> spawnMin;
-	f >> spawnMax;
-	f >> maxParticles;
-	f >> mode;
-	f >> pos;
-	f >> speedMin;
-	f >> speedMax;
-	f >> posMin;
-	f >> posMax;
-	f >> opSize;
-	f >> opAlpha;
-	f >> manualDelete;
-	f >> time;
-	f >> radius;
-	f >> particles;
-	f >> alive;
-	f >> destroy;
+		if(version >= 1)
+			f >> id;
+		Register();
+
+		/*effect = new ParticleEffect;
+		effect->tex = app::resMgr->Get<Texture>(f.ReadString1());
+		f >> effect->emissionInterval;
+		f >> life;
+		f >> particleLife;
+		f >> alpha;
+		f >> size;
+		f >> emissions;
+		f >> spawnMin;
+		f >> spawnMax;
+		f >> maxParticles;
+		f >> mode;
+		f >> pos;
+		f >> speedMin;
+		f >> speedMax;
+		f >> posMin;
+		f >> posMax;
+		f >> opSize;
+		f >> opAlpha;
+		f >> manualDelete;
+		f >> time;
+		f >> radius;
+		f >> particles;
+		f >> alive;
+		f >> destroy;*/
+	}
 }
 
 //=================================================================================================

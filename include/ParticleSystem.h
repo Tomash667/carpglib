@@ -11,8 +11,7 @@ struct Billboard
 	float size;
 };
 
-//-----------------------------------------------------------------------------
-struct ParticleEmitter : public EntityType<ParticleEmitter>
+struct ParticleEffect
 {
 	enum PARTICLE_OP
 	{
@@ -20,6 +19,31 @@ struct ParticleEmitter : public EntityType<ParticleEmitter>
 		POP_LINEAR_SHRINK
 	};
 
+	//string id;
+	TexturePtr tex;
+	Vec3 pos, speedMin, speedMax, posMin, posMax;
+	float emissionInterval, life, particleLife, alpha, size, radius;
+	int hash, emissions, spawnMin, spawnMax, maxParticles, mode;
+	PARTICLE_OP opSize, opAlpha;
+
+	void CalculateRadius();
+
+	//static vector<ParticleEffect*> effects;
+	//static std::map<int, ParticleEffect*> hashEffects;
+	static ParticleEffect* Get(int hash);
+	static ParticleEffect* Get(cstring name) { return Get(Hash(name)); }
+};
+
+struct ParticleSystem
+{
+
+};
+
+//-----------------------------------------------------------------------------
+struct ParticleEmitter : public EntityType<ParticleEmitter>
+{
+	Vec3 pos;
+private:
 	struct Particle
 	{
 		Vec3 pos, speed;
@@ -27,26 +51,32 @@ struct ParticleEmitter : public EntityType<ParticleEmitter>
 		bool exists;
 	};
 
-	TexturePtr tex;
+	const ParticleEffect* effect;
+	/*TexturePtr tex;
 	float emissionInterval, life, particleLife, alpha, size;
 	int emissions, spawnMin, spawnMax, maxParticles, mode;
-	Vec3 pos, speedMin, speedMax, posMin, posMax;
-	PARTICLE_OP opSize, opAlpha;
+	Vec3 pos, speedMin, speedMax, posMin, posMax;*/
+	//PARTICLE_OP opSize, opAlpha;
+
+	float life;
+	int emissions;
 
 	// nowe wartoœci, dla kompatybilnoœci zerowane w Init
 	int manualDelete;
 
 	// automatycznie ustawiane
-	float time, radius;
+	float time;
 	vector<Particle> particles;
 	int alive;
 	bool destroy;
 
-	void Init();
+public:
+	void Init(const ParticleEffect* effect, const Vec3& pos);
 	bool Update(float dt);
 	void Save(FileWriter& f);
-	void Load(FileReader& f, int version = 2);
-	float GetAlpha(const Particle &p) const
+	void Load(FileReader& f, int version = 3);
+	void Destroy() { destroy = true; }
+	/*float GetAlpha(const Particle &p) const
 	{
 		if(opAlpha == POP_CONST)
 			return alpha;
@@ -59,7 +89,7 @@ struct ParticleEmitter : public EntityType<ParticleEmitter>
 			return size;
 		else
 			return Lerp(0.f, size, p.life / particleLife);
-	}
+	}*/
 };
 
 //-----------------------------------------------------------------------------
