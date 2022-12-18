@@ -119,7 +119,7 @@ bool ParticleEmitter::Update(float dt)
 			--emissions;
 		time -= emissionInterval;
 
-		int count = min(Random(spawnMin, spawnMax), maxParticles - alive);
+		int count = min(spawn.Random(), maxParticles - alive);
 		vector<Particle>::iterator it2 = particles.begin();
 
 		for(int i = 0; i < count; ++i)
@@ -152,8 +152,7 @@ void ParticleEmitter::Save(FileWriter& f)
 	f << alpha;
 	f << size;
 	f << emissions;
-	f << spawnMin;
-	f << spawnMax;
+	f << spawn;
 	f << maxParticles;
 	f << mode;
 	f << pos;
@@ -161,8 +160,6 @@ void ParticleEmitter::Save(FileWriter& f)
 	f << speedMax;
 	f << posMin;
 	f << posMax;
-	f << opSize;
-	f << opAlpha;
 	f << manualDelete;
 	f << time;
 	f << radius;
@@ -178,30 +175,68 @@ void ParticleEmitter::Load(FileReader& f, int version)
 		f >> id;
 	Register();
 
-	tex = app::resMgr->Load<Texture>(f.ReadString1());
-	f >> emissionInterval;
-	f >> life;
-	f >> particleLife;
-	f >> alpha;
-	f >> size;
-	f >> emissions;
-	f >> spawnMin;
-	f >> spawnMax;
-	f >> maxParticles;
-	f >> mode;
-	f >> pos;
-	f >> speedMin;
-	f >> speedMax;
-	f >> posMin;
-	f >> posMax;
-	f >> opSize;
-	f >> opAlpha;
-	f >> manualDelete;
-	f >> time;
-	f >> radius;
-	f >> particles;
-	f >> alive;
-	f >> destroy;
+	if(version >= 3)
+	{
+		tex = app::resMgr->Load<Texture>(f.ReadString1());
+		f >> emissionInterval;
+		f >> life;
+		f >> particleLife;
+		f >> alpha;
+		f >> size;
+		f >> emissions;
+		f >> spawn;
+		f >> maxParticles;
+		f >> mode;
+		f >> pos;
+		f >> speedMin;
+		f >> speedMax;
+		f >> posMin;
+		f >> posMax;
+		f >> manualDelete;
+		f >> time;
+		f >> radius;
+		f >> particles;
+		f >> alive;
+		f >> destroy;
+	}
+	else
+	{
+		float oldAlpha, oldSize;
+		int opSize, opAlpha;
+		tex = app::resMgr->Load<Texture>(f.ReadString1());
+		f >> emissionInterval;
+		f >> life;
+		f >> particleLife;
+		f >> oldAlpha;
+		f >> oldSize;
+		f >> emissions;
+		f >> spawn;
+		f >> maxParticles;
+		f >> mode;
+		f >> pos;
+		f >> speedMin;
+		f >> speedMax;
+		f >> posMin;
+		f >> posMax;
+		f >> opSize;
+		f >> opAlpha;
+		f >> manualDelete;
+		f >> time;
+		f >> radius;
+		f >> particles;
+		f >> alive;
+		f >> destroy;
+
+		if(opSize == 0)
+			size = Vec2(oldSize);
+		else
+			size = Vec2(oldSize, 0.f);
+
+		if(opAlpha == 0)
+			alpha = Vec2(oldAlpha);
+		else
+			alpha = Vec2(oldAlpha, 0.f);
+	}
 }
 
 //=================================================================================================
