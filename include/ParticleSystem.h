@@ -13,20 +13,22 @@ struct Billboard
 
 struct ParticleEffect
 {
-	//string id;
+	string id;
 	TexturePtr tex;
 	Vec3 pos, speedMin, speedMax, posMin, posMax;
-	Vec2 alpha2, size2;
-	Int2 spawn2;
+	Vec2 alpha, size;
+	Int2 spawn;
 	float emissionInterval, life, particleLife, radius;
 	int hash, emissions, maxParticles, mode;
 
+	ParticleEffect();
+	ParticleEffect(const ParticleEffect& e);
 	void CalculateRadius();
 
-	//static vector<ParticleEffect*> effects;
-	//static std::map<int, ParticleEffect*> hashEffects;
+	static vector<ParticleEffect*> effects;
+	static std::map<int, ParticleEffect*> hashEffects;
 	static ParticleEffect* Get(int hash);
-	static ParticleEffect* Get(cstring name) { return Get(Hash(name)); }
+	static ParticleEffect* Get(Cstring name) { return Get(Hash(name)); }
 };
 
 struct ParticleSystem
@@ -65,17 +67,21 @@ private:
 
 public:
 	void Init(const ParticleEffect* effect, const Vec3& pos);
+	bool IsAlive() const { return alive; }
+	const ParticleEffect* GetEffect() const { return effect; }
+	void SetArea(const Box& box);
+	void Destroy() { destroy = true; }
 	bool Update(float dt);
 	void Save(FileWriter& f);
 	void Load(FileReader& f, int version = 3);
-	float GetAlpha(const Particle &p) const
+	/*float GetAlpha(const Particle &p) const
 	{
 		return Lerp(alpha.x, alpha.y, p.life / particleLife);
 	}
 	float GetScale(const Particle &p) const
 	{
 		return Lerp(size.x, size.y, p.life / particleLife);
-	}
+	}*/
 };
 
 //-----------------------------------------------------------------------------

@@ -251,7 +251,7 @@ public:
 	Ptr(nullptr_t) : ptr(nullptr), owned(false)
 	{
 	}
-	Ptr(T* ptr, bool owned = true) : ptr(ptr), owned(owned)
+	Ptr(T* ptr/*, bool owned = true*/) : ptr(ptr), owned(true)
 	{
 		if(!ptr)
 		{

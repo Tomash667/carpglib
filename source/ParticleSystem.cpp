@@ -128,7 +128,7 @@ bool ParticleEmitter::Update(float dt)
 			--emissions;
 		time -= effect->emissionInterval;
 
-		int count = min(effect->spawn.Random(), effect->maxParticles - alive);
+		int count = min(effect->spawn2.Random(), effect->maxParticles - alive);
 		vector<Particle>::iterator it2 = particles.begin();
 
 		for(int i = 0; i < count; ++i)
