@@ -33,48 +33,40 @@ void ParticleEmitter::Init()
 	for(int i = 0; i < maxParticles; ++i)
 		particles[i].exists = false;
 
-	// oblicz promieñ
-	float t;
-	if(life > 0)
-		t = min(particleLife, life);
+	// calculate radius
+	radius = 0.f;
+	// left
+	float r = abs(posMin.x + speedMin.x * particleLife);
+	if(r > radius)
+		radius = r;
+	// right
+	r = abs(posMax.x + speedMax.x * particleLife);
+	if(r > radius)
+		radius = r;
+	// back
+	r = abs(posMin.z + speedMin.z * particleLife);
+	if(r > radius)
+		radius = r;
+	// front
+	r = abs(posMax.z + speedMax.z * particleLife);
+	if(r > radius)
+		radius = r;
+	// up
+	if(gravity)
+		r = abs(posMax.y + drop_range(speedMax.y, particleLife));
 	else
-		t = particleLife;
-	float r = 0.f;
+		r = abs(posMax.y + speedMax.y * particleLife);
+	if(r > radius)
+		radius = r;
+	// down
+	if(gravity)
+		r = abs(posMin.y + drop_range(speedMin.y, particleLife));
+	else
+		r = abs(posMin.y + speedMin.y * particleLife);
+	if(r > radius)
+		radius = r;
+	radius = sqrt(2 * radius * radius);
 
-	// lewa
-	float r2 = abs(posMin.x + speedMin.x * t);
-	if(r2 > r)
-		r = r2;
-
-	// prawa
-	r2 = abs(posMax.x + speedMax.x * t);
-	if(r2 > r)
-		r = r2;
-
-	// ty³
-	r2 = abs(posMin.z + speedMin.z * t);
-	if(r2 > r)
-		r = r2;
-
-	// przód
-	r2 = abs(posMax.z + speedMax.z * t);
-	if(r2 > r)
-		r = r2;
-
-	// góra
-	r2 = abs(posMax.y + drop_range(speedMax.y, t));
-	if(r2 > r)
-		r = r2;
-
-	// dó³
-	r2 = abs(posMin.y + drop_range(speedMin.y, t));
-	if(r2 > r)
-		r = r2;
-
-	radius = sqrt(2 * r * r);
-
-	// nowe
-	manualDelete = 0;
 	Register();
 }
 
@@ -93,33 +85,51 @@ bool ParticleEmitter::Update(float dt)
 		return true;
 	}
 
-	// aktualizuj cz¹steczki
-	for(vector<Particle>::iterator it2 = particles.begin(), end2 = particles.end(); it2 != end2; ++it2)
+	// update particles
+	if(gravity)
 	{
-		Particle& p = *it2;
-		if(!p.exists)
-			continue;
+		for(Particle& p : particles)
+		{
+			if(!p.exists)
+				continue;
 
-		if((p.life -= dt) <= 0.f)
-		{
-			p.exists = false;
-			--alive;
+			if((p.life -= dt) <= 0.f)
+			{
+				p.exists = false;
+				--alive;
+			}
+			else
+			{
+				p.pos += p.speed * dt;
+				p.speed.y -= G * dt;
+			}
 		}
-		else
+	}
+	else
+	{
+		for(Particle& p : particles)
 		{
-			p.pos += p.speed * dt;
-			p.speed.y -= p.gravity * dt;
+			if(!p.exists)
+				continue;
+
+			if((p.life -= dt) <= 0.f)
+			{
+				p.exists = false;
+				--alive;
+			}
+			else
+				p.pos += p.speed * dt;
 		}
 	}
 
-	// emisja
+	// emission
 	if(!destroy && (emissions == -1 || emissions > 0) && ((time += dt) >= emissionInterval))
 	{
 		if(emissions > 0)
 			--emissions;
 		time -= emissionInterval;
 
-		int count = min(Random(spawnMin, spawnMax), maxParticles - alive);
+		int count = min(spawn.Random(), maxParticles - alive);
 		vector<Particle>::iterator it2 = particles.begin();
 
 		for(int i = 0; i < count; ++i)
@@ -129,7 +139,6 @@ bool ParticleEmitter::Update(float dt)
 
 			Particle& p = *it2;
 			p.exists = true;
-			p.gravity = G;
 			p.life = particleLife;
 			p.pos = pos + Vec3::Random(posMin, posMax);
 			p.speed = Vec3::Random(speedMin, speedMax);
@@ -152,8 +161,7 @@ void ParticleEmitter::Save(FileWriter& f)
 	f << alpha;
 	f << size;
 	f << emissions;
-	f << spawnMin;
-	f << spawnMax;
+	f << spawn;
 	f << maxParticles;
 	f << mode;
 	f << pos;
@@ -161,14 +169,13 @@ void ParticleEmitter::Save(FileWriter& f)
 	f << speedMax;
 	f << posMin;
 	f << posMax;
-	f << opSize;
-	f << opAlpha;
 	f << manualDelete;
 	f << time;
 	f << radius;
 	f << particles;
 	f << alive;
 	f << destroy;
+	f << gravity;
 }
 
 //=================================================================================================
@@ -178,30 +185,77 @@ void ParticleEmitter::Load(FileReader& f, int version)
 		f >> id;
 	Register();
 
-	tex = app::resMgr->Load<Texture>(f.ReadString1());
-	f >> emissionInterval;
-	f >> life;
-	f >> particleLife;
-	f >> alpha;
-	f >> size;
-	f >> emissions;
-	f >> spawnMin;
-	f >> spawnMax;
-	f >> maxParticles;
-	f >> mode;
-	f >> pos;
-	f >> speedMin;
-	f >> speedMax;
-	f >> posMin;
-	f >> posMax;
-	f >> opSize;
-	f >> opAlpha;
-	f >> manualDelete;
-	f >> time;
-	f >> radius;
-	f >> particles;
-	f >> alive;
-	f >> destroy;
+	if(version >= 3)
+	{
+		tex = app::resMgr->Load<Texture>(f.ReadString1());
+		f >> emissionInterval;
+		f >> life;
+		f >> particleLife;
+		f >> alpha;
+		f >> size;
+		f >> emissions;
+		f >> spawn;
+		f >> maxParticles;
+		f >> mode;
+		f >> pos;
+		f >> speedMin;
+		f >> speedMax;
+		f >> posMin;
+		f >> posMax;
+		f >> manualDelete;
+		f >> time;
+		f >> radius;
+		f >> particles;
+		f >> alive;
+		f >> destroy;
+		f >> gravity;
+	}
+	else
+	{
+		float oldAlpha, oldSize;
+		int opSize, opAlpha;
+		tex = app::resMgr->Load<Texture>(f.ReadString1());
+		f >> emissionInterval;
+		f >> life;
+		f >> particleLife;
+		f >> oldAlpha;
+		f >> oldSize;
+		f >> emissions;
+		f >> spawn;
+		f >> maxParticles;
+		f >> mode;
+		f >> pos;
+		f >> speedMin;
+		f >> speedMax;
+		f >> posMin;
+		f >> posMax;
+		f >> opSize;
+		f >> opAlpha;
+		f >> manualDelete;
+		f >> time;
+		f >> radius;
+		particles.resize(f.Read<uint>());
+		for(Particle& p : particles)
+		{
+			f >> p.pos;
+			f >> p.speed;
+			f >> p.life;
+			f.Skip<float>(); // gravity
+			f >> p.exists;
+		}
+		f >> alive;
+		f >> destroy;
+
+		if(opSize == 0)
+			size = Vec2(oldSize);
+		else
+			size = Vec2(oldSize, 0.f);
+
+		if(opAlpha == 0)
+			alpha = Vec2(oldAlpha);
+		else
+			alpha = Vec2(oldAlpha, 0.f);
+	}
 }
 
 //=================================================================================================

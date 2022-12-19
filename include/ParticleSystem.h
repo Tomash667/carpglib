@@ -14,27 +14,20 @@ struct Billboard
 //-----------------------------------------------------------------------------
 struct ParticleEmitter : public EntityType<ParticleEmitter>
 {
-	enum PARTICLE_OP
-	{
-		POP_CONST,
-		POP_LINEAR_SHRINK
-	};
-
 	struct Particle
 	{
 		Vec3 pos, speed;
-		float life, gravity;
+		float life;
 		bool exists;
 	};
 
 	TexturePtr tex;
-	float emissionInterval, life, particleLife, alpha, size;
-	int emissions, spawnMin, spawnMax, maxParticles, mode;
 	Vec3 pos, speedMin, speedMax, posMin, posMax;
-	PARTICLE_OP opSize, opAlpha;
-
-	// nowe wartoœci, dla kompatybilnoœci zerowane w Init
-	int manualDelete;
+	Vec2 alpha, size;
+	Int2 spawn;
+	float emissionInterval, life, particleLife;
+	int emissions, maxParticles, mode, manualDelete;
+	bool gravity;
 
 	// automatycznie ustawiane
 	float time, radius;
@@ -42,23 +35,18 @@ struct ParticleEmitter : public EntityType<ParticleEmitter>
 	int alive;
 	bool destroy;
 
+	ParticleEmitter() : manualDelete(0), gravity(true) {}
 	void Init();
 	bool Update(float dt);
 	void Save(FileWriter& f);
-	void Load(FileReader& f, int version = 2);
-	float GetAlpha(const Particle &p) const
+	void Load(FileReader& f, int version = 3);
+	float GetAlpha(const Particle& p) const
 	{
-		if(opAlpha == POP_CONST)
-			return alpha;
-		else
-			return Lerp(0.f, alpha, p.life / particleLife);
+		return Lerp(alpha.y, alpha.x, p.life / particleLife);
 	}
-	float GetScale(const Particle &p) const
+	float GetScale(const Particle& p) const
 	{
-		if(opSize == POP_CONST)
-			return size;
-		else
-			return Lerp(0.f, size, p.life / particleLife);
+		return Lerp(size.y, size.x, p.life / particleLife);
 	}
 };
 
@@ -85,5 +73,5 @@ struct TrailParticleEmitter : public EntityType<TrailParticleEmitter>
 	bool Update(float dt);
 	void AddPoint(const Vec3& pt);
 	void Save(FileWriter& f);
-	void Load(FileReader& f, int version = 2);
+	void Load(FileReader& f, int version = 3);
 };
