@@ -128,7 +128,7 @@ bool ParticleEmitter::Update(float dt)
 			--emissions;
 		time -= effect->emissionInterval;
 
-		int count = min(Random(effect->spawnMin, effect->spawnMax), effect->maxParticles - alive);
+		int count = min(effect->spawn.Random(), effect->maxParticles - alive);
 		vector<Particle>::iterator it2 = particles.begin();
 
 		for(int i = 0; i < count; ++i)
@@ -190,16 +190,42 @@ void ParticleEmitter::Load(FileReader& f, int version)
 			f >> id;
 		Register();
 
-		/*effect = new ParticleEffect;
-		effect->tex = app::resMgr->Get<Texture>(f.ReadString1());
-		f >> effect->emissionInterval;
+	if(version >= 3)
+	{
+		tex = app::resMgr->Load<Texture>(f.ReadString1());
+		f >> emissionInterval;
 		f >> life;
 		f >> particleLife;
 		f >> alpha;
 		f >> size;
 		f >> emissions;
-		f >> spawnMin;
-		f >> spawnMax;
+		f >> spawn;
+		f >> maxParticles;
+		f >> mode;
+		f >> pos;
+		f >> speedMin;
+		f >> speedMax;
+		f >> posMin;
+		f >> posMax;
+		f >> manualDelete;
+		f >> time;
+		f >> radius;
+		f >> particles;
+		f >> alive;
+		f >> destroy;
+	}
+	else
+	{
+		float oldAlpha, oldSize;
+		int opSize, opAlpha;
+		tex = app::resMgr->Load<Texture>(f.ReadString1());
+		f >> emissionInterval;
+		f >> life;
+		f >> particleLife;
+		f >> oldAlpha;
+		f >> oldSize;
+		f >> emissions;
+		f >> spawn;
 		f >> maxParticles;
 		f >> mode;
 		f >> pos;
@@ -215,6 +241,16 @@ void ParticleEmitter::Load(FileReader& f, int version)
 		f >> particles;
 		f >> alive;
 		f >> destroy;*/
+
+		if(opSize == 0)
+			size = Vec2(oldSize);
+		else
+			size = Vec2(oldSize, 0.f);
+
+		if(opAlpha == 0)
+			alpha = Vec2(oldAlpha);
+		else
+			alpha = Vec2(oldAlpha, 0.f);
 	}
 }
 

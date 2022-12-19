@@ -13,18 +13,13 @@ struct Billboard
 
 struct ParticleEffect
 {
-	enum PARTICLE_OP
-	{
-		POP_CONST,
-		POP_LINEAR_SHRINK
-	};
-
 	//string id;
 	TexturePtr tex;
 	Vec3 pos, speedMin, speedMax, posMin, posMax;
-	float emissionInterval, life, particleLife, alpha, size, radius;
-	int hash, emissions, spawnMin, spawnMax, maxParticles, mode;
-	PARTICLE_OP opSize, opAlpha;
+	Vec2 alpha2, size2;
+	Int2 spawn2;
+	float emissionInterval, life, particleLife, radius;
+	int hash, emissions, maxParticles, mode;
 
 	void CalculateRadius();
 
@@ -53,8 +48,6 @@ private:
 
 	const ParticleEffect* effect;
 	/*TexturePtr tex;
-	float emissionInterval, life, particleLife, alpha, size;
-	int emissions, spawnMin, spawnMax, maxParticles, mode;
 	Vec3 pos, speedMin, speedMax, posMin, posMax;*/
 	//PARTICLE_OP opSize, opAlpha;
 
@@ -75,21 +68,14 @@ public:
 	bool Update(float dt);
 	void Save(FileWriter& f);
 	void Load(FileReader& f, int version = 3);
-	void Destroy() { destroy = true; }
-	/*float GetAlpha(const Particle &p) const
+	float GetAlpha(const Particle &p) const
 	{
-		if(opAlpha == POP_CONST)
-			return alpha;
-		else
-			return Lerp(0.f, alpha, p.life / particleLife);
+		return Lerp(alpha.x, alpha.y, p.life / particleLife);
 	}
 	float GetScale(const Particle &p) const
 	{
-		if(opSize == POP_CONST)
-			return size;
-		else
-			return Lerp(0.f, size, p.life / particleLife);
-	}*/
+		return Lerp(size.x, size.y, p.life / particleLife);
+	}
 };
 
 //-----------------------------------------------------------------------------
