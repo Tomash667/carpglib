@@ -13,34 +13,34 @@ void Scrollbar::Draw()
 {
 	gui->DrawArea(Box2d::Create(globalPos, size), layout->tex);
 
-	int s_pos, s_size;
+	int sPos, sSize;
 	if(hscrollbar)
 	{
 		if(part >= total)
 		{
-			s_pos = 0;
-			s_size = size.x;
+			sPos = 0;
+			sSize = size.x;
 		}
 		else
 		{
-			s_pos = int(float(offset) / total * size.x);
-			s_size = int(float(part) / total * size.x);
+			sPos = int(float(offset) / total * size.x);
+			sSize = int(float(part) / total * size.x);
 		}
-		gui->DrawArea(Box2d::Create(Int2(globalPos.x + s_pos, globalPos.y), Int2(s_size, size.y)), layout->tex2);
+		gui->DrawArea(Box2d::Create(Int2(globalPos.x + sPos, globalPos.y), Int2(sSize, size.y)), layout->tex2);
 	}
 	else
 	{
 		if(part >= total)
 		{
-			s_pos = 0;
-			s_size = size.y;
+			sPos = 0;
+			sSize = size.y;
 		}
 		else
 		{
-			s_pos = int(float(offset) / total * size.y);
-			s_size = int(float(part) / total * size.y);
+			sPos = int(float(offset) / total * size.y);
+			sSize = int(float(part) / total * size.y);
 		}
-		gui->DrawArea(Box2d::Create(Int2(globalPos.x, globalPos.y + s_pos), Int2(size.x, s_size)), layout->tex2);
+		gui->DrawArea(Box2d::Create(Int2(globalPos.x, globalPos.y + sPos), Int2(size.x, sSize)), layout->tex2);
 	}
 }
 
@@ -100,8 +100,8 @@ void Scrollbar::Update(float dt)
 	{
 		if(cpos.x >= 0 && cpos.y >= 0 && cpos.x < size.x && cpos.y < size.y)
 		{
-			int pos_o = hscrollbar ? int(float(cpos.x) * total / size.x) : int(float(cpos.y) * total / size.y);
-			if(hscrollbar ? (pos_o >= offset && pos_o < offset + part) : (pos_o + 2 >= offset && pos_o + 2 < offset + part))
+			int posO = hscrollbar ? int(float(cpos.x) * total / size.x) : int(float(cpos.y) * total / size.y);
+			if(hscrollbar ? (posO >= offset && posO < offset + part) : (posO + 2 >= offset && posO + 2 < offset + part))
 			{
 				input->SetState(Key::LeftButton, Input::IS_DOWN);
 				clicked = true;
@@ -110,7 +110,7 @@ void Scrollbar::Update(float dt)
 			else
 			{
 				input->SetState(Key::LeftButton, Input::IS_UP);
-				if(pos_o < offset)
+				if(posO < offset)
 				{
 					if(!manualChange)
 					{
@@ -154,13 +154,13 @@ bool Scrollbar::ApplyMouseWheel()
 	{
 		LostFocus();
 		float mod = (!isNew ? (input->Down(Key::Shift) ? 1.f : 0.2f) : 0.2f);
-		float prev_offset = offset;
+		float prevOffset = offset;
 		offset -= part * wheel * mod;
 		if(offset < 0.f)
 			offset = 0.f;
 		else if(offset + part > total)
 			offset = max(0.f, float(total - part));
-		return !Equal(offset, prev_offset);
+		return !Equal(offset, prevOffset);
 	}
 	else
 		return false;

@@ -49,7 +49,7 @@ void InputTextBox::Update(float dt)
 		if(input->Focus() && IsInside(gui->cursorPos))
 			scrollbar.ApplyMouseWheel();
 
-		bool release_key = false;
+		bool releaseKey = false;
 		if(Rect::IsInside(gui->cursorPos, inputboxPos, inputboxSize))
 		{
 			gui->SetCursorMode(CURSOR_TEXT);
@@ -59,12 +59,12 @@ void InputTextBox::Update(float dt)
 		else if(focus && input->Focus() && input->Pressed(Key::LeftButton))
 		{
 			focus = false;
-			release_key = true;
+			releaseKey = true;
 		}
 
 		scrollbar.mouseFocus = mouseFocus;
 		scrollbar.Update(dt);
-		if(release_key)
+		if(releaseKey)
 			input->Released(Key::LeftButton);
 	}
 	if(focus)
@@ -202,22 +202,20 @@ void InputTextBox::Event(GuiEvent e)
 		scrollbar.size = Int2(16, textboxSize.y);
 		scrollbar.part = textboxSize.y - 8;
 
-		size_t OutBegin, OutEnd, InOutIndex = 0;
-		int OutWidth, Width = textboxSize.x - 8;
-		cstring Text = text.c_str();
-		size_t TextEnd = text.length();
-
-		bool skip_to_end = (int(scrollbar.offset) >= (scrollbar.total - scrollbar.part));
+		size_t outBegin, outEnd, inOutIndex = 0;
+		int outWidth, Width = textboxSize.x - 8;
+		size_t textEnd = text.length();
+		bool skipToEnd = (int(scrollbar.offset) >= (scrollbar.total - scrollbar.part));
 
 		// podziel tekst na linijki
 		lines.clear();
-		while(layout->font->SplitLine(OutBegin, OutEnd, OutWidth, InOutIndex, Text, TextEnd, 0, Width))
-			lines.push_back(TextLine(OutBegin, OutEnd, OutWidth));
+		while(layout->font->SplitLine(outBegin, outEnd, outWidth, inOutIndex, text.c_str(), textEnd, 0, Width))
+			lines.push_back(TextLine(outBegin, outEnd, outWidth));
 
 		CheckLines();
 
 		scrollbar.total = lines.size() * layout->font->height;
-		if(skip_to_end)
+		if(skipToEnd)
 		{
 			scrollbar.offset = float(scrollbar.total - scrollbar.part);
 			if(scrollbar.offset + scrollbar.part > scrollbar.total)
@@ -271,7 +269,7 @@ void InputTextBox::Init()
 }
 
 //=================================================================================================
-void InputTextBox::Reset(bool reset_cache)
+void InputTextBox::Reset(bool resetCache)
 {
 	inputStr.clear();
 	text.clear();
@@ -280,7 +278,7 @@ void InputTextBox::Reset(bool reset_cache)
 	caretBlink = 0.f;
 	scrollbar.offset = 0.f;
 	scrollbar.total = 0;
-	if(reset_cache)
+	if(resetCache)
 		lastInputCounter = 0;
 }
 
@@ -289,25 +287,23 @@ void InputTextBox::Add(Cstring str)
 {
 	if(!text.empty())
 		text += '\n';
-	size_t InOutIndex = text.length();
+	size_t inOutIndex = text.length();
 	text += str.s;
 
-	size_t OutBegin, OutEnd;
-	int OutWidth, Width = textboxSize.x - 8;
-	cstring Text = text.c_str();
-	size_t TextEnd = text.length();
-
-	bool skip_to_end = (int(scrollbar.offset) >= (scrollbar.total - scrollbar.part));
+	size_t outBegin, outEnd;
+	int outWidth, Width = textboxSize.x - 8;
+	size_t textEnd = text.length();
+	bool skipToEnd = (int(scrollbar.offset) >= (scrollbar.total - scrollbar.part));
 
 	// podziel tekst na linijki
-	while(layout->font->SplitLine(OutBegin, OutEnd, OutWidth, InOutIndex, Text, TextEnd, 0, Width))
-		lines.push_back(TextLine(OutBegin, OutEnd, OutWidth));
+	while(layout->font->SplitLine(outBegin, outEnd, outWidth, inOutIndex, text.c_str(), textEnd, 0, Width))
+		lines.push_back(TextLine(outBegin, outEnd, outWidth));
 
 	// usuñ nadmiarowe linijki z pocz¹tku
 	CheckLines();
 
 	scrollbar.total = lines.size() * layout->font->height;
-	if(skip_to_end)
+	if(skipToEnd)
 	{
 		scrollbar.offset = float(scrollbar.total - scrollbar.part);
 		if(scrollbar.offset + scrollbar.part > scrollbar.total)

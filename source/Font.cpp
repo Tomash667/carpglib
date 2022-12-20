@@ -255,11 +255,11 @@ bool Font::ParseGroupIndex(cstring text, uint lineEnd, uint& i, int& index, int&
 		}
 		else if(c == ';' && !tmpStr.empty())
 		{
-			int new_index = atoi(tmpStr.c_str());
+			int newIndex = atoi(tmpStr.c_str());
 			if(first)
-				index = new_index;
+				index = newIndex;
 			else
-				index2 = new_index;
+				index2 = newIndex;
 			break;
 		}
 		else
@@ -339,7 +339,7 @@ bool Font::HitTest(Cstring str, int limitWidth, int flags, const Int2& pos, uint
 	bool parseSpecial = IsSet(flags, DTF_PARSE_SPECIAL);
 	uint textEnd = strlen(str);
 	cstring text = str;
-	int width = 0, prev_width = 0;
+	int width = 0, prevWidth = 0;
 	index = 0;
 
 	// simple single line mode
@@ -358,15 +358,15 @@ bool Font::HitTest(Cstring str, int limitWidth, int flags, const Int2& pos, uint
 			}
 			else
 				++index;
-			prev_width = width;
+			prevWidth = width;
 			width += GetCharWidth(c);
 			if(width >= pos.x)
 				break;
 		}
 		--index;
-		rect.p1 = Int2(prev_width, 0);
+		rect.p1 = Int2(prevWidth, 0);
 		rect.p2 = Int2(width, height);
-		uv = min(1.f, 1.f - float(width - pos.x) / (width - prev_width));
+		uv = min(1.f, 1.f - float(width - pos.x) / (width - prevWidth));
 		index2 = Int2(index, 0);
 		return true;
 	}
@@ -377,23 +377,23 @@ bool Font::HitTest(Cstring str, int limitWidth, int flags, const Int2& pos, uint
 	if(fontLines)
 	{
 		line = min(fontLines->size() - 1, (uint)line);
-		auto& font_line = fontLines->at(line);
-		lineBegin = font_line.begin;
-		lineEnd = font_line.end;
+		auto& fontLine = fontLines->at(line);
+		lineBegin = fontLine.begin;
+		lineEnd = fontLine.end;
 	}
 	else
 	{
-		int current_line = 0;
+		int currentLine = 0;
 		do
 		{
 			if(!SplitLine(lineBegin, lineEnd, width, index, text, textEnd, flags, limitWidth))
 			{
-				line = current_line - 1;
+				line = currentLine - 1;
 				break;
 			}
-			if(current_line == line)
+			if(currentLine == line)
 				break;
-			++current_line;
+			++currentLine;
 		} while(true);
 	}
 
@@ -409,16 +409,16 @@ bool Font::HitTest(Cstring str, int limitWidth, int flags, const Int2& pos, uint
 		}
 		else
 			++index;
-		prev_width = width;
+		prevWidth = width;
 		width += GetCharWidth(c);
 		if(width >= pos.x)
 			break;
 	}
 	if(index > 0)
 		--index;
-	rect.p1 = Int2(prev_width, line * height);
+	rect.p1 = Int2(prevWidth, line * height);
 	rect.p2 = Int2(width, (line + 1) * height);
-	uv = min(1.f, 1.f - float(width - pos.x) / (width - prev_width));
+	uv = min(1.f, 1.f - float(width - pos.x) / (width - prevWidth));
 	index2 = Int2(index - lineBegin, line);
 	return true;
 }
@@ -459,8 +459,8 @@ Int2 Font::IndexToPos(uint expectedIndex, Cstring str, int limitWidth, int flags
 	uint line = 0;
 	while(true)
 	{
-		int line_width;
-		[[maybe_unused]] bool ok = SplitLine(lineBegin, lineEnd, line_width, index, text, textEnd, flags, limitWidth);
+		int lineWidth;
+		[[maybe_unused]] bool ok = SplitLine(lineBegin, lineEnd, lineWidth, index, text, textEnd, flags, limitWidth);
 		assert(ok);
 		if(expectedIndex >= lineBegin && expectedIndex <= lineEnd)
 		{
@@ -526,8 +526,8 @@ Int2 Font::IndexToPos(const Int2& expectedIndex, Cstring str, int limitWidth, in
 	uint line = 0;
 	while(true)
 	{
-		int line_width;
-		[[maybe_unused]] bool ok = SplitLine(lineBegin, lineEnd, line_width, index, text, textEnd, flags, limitWidth);
+		int lineWidth;
+		[[maybe_unused]] bool ok = SplitLine(lineBegin, lineEnd, lineWidth, index, text, textEnd, flags, limitWidth);
 		assert(ok);
 		if(line == expectedIndex.y)
 		{
@@ -574,12 +574,12 @@ uint Font::PrecalculateFontLines(vector<Line>& fontLines, Cstring str, int limit
 	else
 	{
 		uint lineBegin, lineEnd = 0, maxWidth = 0;
-		int line_width;
-		while(SplitLine(lineBegin, lineEnd, line_width, index, text, textEnd, flags, limitWidth))
+		int lineWidth;
+		while(SplitLine(lineBegin, lineEnd, lineWidth, index, text, textEnd, flags, limitWidth))
 		{
-			fontLines.push_back({ lineBegin, lineEnd, lineEnd - lineBegin, (uint)line_width });
-			if(line_width > (int)maxWidth)
-				maxWidth = line_width;
+			fontLines.push_back({ lineBegin, lineEnd, lineEnd - lineBegin, (uint)lineWidth });
+			if(lineWidth > (int)maxWidth)
+				maxWidth = lineWidth;
 		}
 		if(fontLines.empty())
 			fontLines.push_back({ 0, 0, 0, 0 });
@@ -683,12 +683,12 @@ uint Font::ToRawIndex(vector<Line>& fontLines, const Int2& index) const
 //=================================================================================================
 Int2 Font::FromRawIndex(vector<Line>& fontLines, uint index) const
 {
-	uint line_index = 0;
+	uint lineIndex = 0;
 	for(auto& line : fontLines)
 	{
 		if(index <= line.end)
-			return Int2(index - line.begin, line_index);
-		++line_index;
+			return Int2(index - line.begin, lineIndex);
+		++lineIndex;
 	}
 
 	assert(0);

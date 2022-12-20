@@ -93,7 +93,7 @@ void Tokenizer::FromTokenizer(const Tokenizer& t)
 }
 
 //=================================================================================================
-bool Tokenizer::DoNext(SeekData& s, bool return_eol)
+bool Tokenizer::DoNext(SeekData& s, bool returnEol)
 {
 	CheckSorting();
 
@@ -107,10 +107,10 @@ redo:
 		return false;
 	}
 
-	s.start_pos = s.pos;
+	s.startPos = s.pos;
 
 	// szukaj czegoœ
-	uint pos2 = FindFirstNotOf(s, return_eol ? " \t" : " \t\n\r", s.pos);
+	uint pos2 = FindFirstNotOf(s, returnEol ? " \t" : " \t\n\r", s.pos);
 	if(pos2 == string::npos)
 	{
 		// same spacje, entery, taby
@@ -151,11 +151,11 @@ redo:
 		}
 		else if(c2 == '*')
 		{
-			int prev_line = s.line;
-			int prev_charpos = s.charpos;
+			int prevLine = s.line;
+			int prevCharpos = s.charpos;
 			s.pos = FindFirstOfStr(s, "*/", pos2 + 1);
 			if(s.pos == string::npos)
-				formatter.Throw(Format("Not closed comment started at line %d, character %d.", prev_line + 1, prev_charpos + 1));
+				formatter.Throw(Format("Not closed comment started at line %d, character %d.", prevLine + 1, prevCharpos + 1));
 			goto redo;
 		}
 		else
@@ -186,7 +186,7 @@ redo:
 		int len = strlen(ALTER_START);
 		s.pos = pos2 + len;
 		s.charpos += len;
-		uint block_start = s.pos;
+		uint blockStart = s.pos;
 		bool ok = false;
 		len = strlen(ALTER_END);
 
@@ -194,7 +194,7 @@ redo:
 		{
 			if(StringInString(str->c_str() + s.pos, ALTER_END))
 			{
-				s.item = str->substr(block_start, s.pos - block_start);
+				s.item = str->substr(blockStart, s.pos - blockStart);
 				s.token = T_STRING;
 				s.pos += len;
 				s.charpos += len;
@@ -226,11 +226,11 @@ redo:
 		{
 			++s.charpos;
 			s.pos = pos2 + 1;
-			int old_pos = s.pos;
-			int old_charpos = s.charpos;
-			int old_line = s.line;
+			int oldPos = s.pos;
+			int oldCharpos = s.charpos;
+			int oldLine = s.line;
 			// znajdŸ nastêpny znak
-			pos2 = FindFirstNotOf(s, return_eol ? " \t" : " \t\n\r", s.pos);
+			pos2 = FindFirstNotOf(s, returnEol ? " \t" : " \t\n\r", s.pos);
 			if(pos2 == string::npos)
 			{
 				// same spacje, entery, taby
@@ -248,9 +248,9 @@ redo:
 					s.token = T_SYMBOL;
 					s._char = '-';
 					s.item = '-';
-					s.pos = old_pos;
-					s.charpos = old_charpos;
-					s.line = old_line;
+					s.pos = oldPos;
+					s.charpos = oldCharpos;
+					s.line = oldLine;
 				}
 			}
 		}
@@ -339,10 +339,10 @@ redo:
 	else
 	{
 		// find end of this item
-		bool ignore_dot = false;
+		bool ignoreDot = false;
 		if(IsSet(flags, F_JOIN_DOT))
-			ignore_dot = true;
-		s.pos = FindFirstOf(s, ignore_dot ? WHITESPACE_SYMBOLS : WHITESPACE_SYMBOLS_DOT, pos2);
+			ignoreDot = true;
+		s.pos = FindFirstOf(s, ignoreDot ? WHITESPACE_SYMBOLS : WHITESPACE_SYMBOLS_DOT, pos2);
 		if(pos2 == string::npos)
 		{
 			s.pos = str->length();
@@ -363,7 +363,7 @@ bool Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 	s.item.clear();
 	if(negative)
 		s.item = "-";
-	int have_dot = 0;
+	int haveDot = 0;
 	/*
 	0 - number
 	1 - number.
@@ -385,14 +385,14 @@ bool Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 		if(c >= '0' && c <= '9')
 		{
 			s.item += c;
-			if(have_dot == 1)
-				have_dot = 2;
+			if(haveDot == 1)
+				haveDot = 2;
 		}
 		else if(c == '.')
 		{
-			if(have_dot == 0)
+			if(haveDot == 0)
 			{
-				have_dot = 1;
+				haveDot = 1;
 				s.item += c;
 			}
 			else
@@ -410,7 +410,7 @@ bool Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 		}
 		else
 		{
-			if(have_dot == 0 || have_dot == 2)
+			if(haveDot == 0 || haveDot == 2)
 			{
 				// int item -> broken number
 				// int . int item -> broken number
@@ -423,7 +423,7 @@ bool Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 				s.token = T_ITEM;
 				return false;
 			}
-			else if(have_dot == 1 || have_dot == 3)
+			else if(haveDot == 1 || haveDot == 3)
 			{
 				// int dot item
 				s.pos = pos2 - 1;
@@ -719,16 +719,16 @@ const KeywordGroup* Tokenizer::FindKeywordGroup(int group) const
 }
 
 //=================================================================================================
-void Tokenizer::AddKeywords(int group, std::initializer_list<KeywordToRegister> const& to_register, cstring group_name)
+void Tokenizer::AddKeywords(int group, std::initializer_list<KeywordToRegister> const& toRegister, cstring groupName)
 {
-	for(const KeywordToRegister& k : to_register)
+	for(const KeywordToRegister& k : toRegister)
 		AddKeyword(k.name, k.id, group);
 
-	if(to_register.size() > 0)
+	if(toRegister.size() > 0)
 		needSorting = true;
 
-	if(group_name)
-		AddKeywordGroup(group_name, group);
+	if(groupName)
+		AddKeywordGroup(groupName, group);
 }
 
 //=================================================================================================
@@ -786,8 +786,8 @@ bool Tokenizer::RemoveKeyword(int id, int group)
 bool Tokenizer::RemoveKeywordGroup(int group)
 {
 	auto end = groups.end();
-	KeywordGroup to_find = { nullptr, group };
-	auto it = std::find(groups.begin(), end, to_find);
+	KeywordGroup toFind = { nullptr, group };
+	auto it = std::find(groups.begin(), end, toFind);
 	if(it == end)
 		return false;
 	groups.erase(it);
@@ -1191,11 +1191,11 @@ void Tokenizer::Parse(Color& c)
 }
 
 //=================================================================================================
-const string& Tokenizer::GetBlock(char open, char close, bool include_symbol)
+const string& Tokenizer::GetBlock(char open, char close, bool includeSymbol)
 {
 	AssertSymbol(open);
 	int opened = 1;
-	uint block_start = normalSeek.pos - 1;
+	uint blockStart = normalSeek.pos - 1;
 	while(Next())
 	{
 		if(IsSymbol(open))
@@ -1205,10 +1205,10 @@ const string& Tokenizer::GetBlock(char open, char close, bool include_symbol)
 			--opened;
 			if(opened == 0)
 			{
-				if(include_symbol)
-					normalSeek.item = str->substr(block_start, normalSeek.pos - block_start);
+				if(includeSymbol)
+					normalSeek.item = str->substr(blockStart, normalSeek.pos - blockStart);
 				else
-					normalSeek.item = str->substr(block_start + 1, normalSeek.pos - block_start - 2);
+					normalSeek.item = str->substr(blockStart + 1, normalSeek.pos - blockStart - 2);
 				return normalSeek.item;
 			}
 		}
@@ -1249,14 +1249,14 @@ char Tokenizer::MustGetSymbol(cstring symbols) const
 }
 
 //=================================================================================================
-bool Tokenizer::SeekStart(bool return_eol)
+bool Tokenizer::SeekStart(bool returnEol)
 {
 	assert(seek);
 	seek->token = normalSeek.token;
 	seek->pos = normalSeek.pos;
 	seek->line = normalSeek.line;
 	seek->charpos = normalSeek.charpos;
-	return SeekNext(return_eol);
+	return SeekNext(returnEol);
 }
 
 //=================================================================================================
@@ -1399,7 +1399,7 @@ Pos Tokenizer::GetPos()
 	Pos p;
 	p.line = normalSeek.line + 1;
 	p.charpos = normalSeek.charpos + 1;
-	p.pos = normalSeek.start_pos;
+	p.pos = normalSeek.startPos;
 	return p;
 }
 

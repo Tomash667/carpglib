@@ -119,12 +119,12 @@ inline T Chance(int c, T a, T b)
 	return (Rand() % c == 0 ? a : b);
 }
 template<typename T>
-inline T Chance(int chance_a, int chance_b, int chance_c, T a, T b, T c)
+inline T Chance(int chanceA, int chanceB, int chanceC, T a, T b, T c)
 {
-	int ch = Rand() % (chance_a + chance_b + chance_c);
-	if(ch < chance_a)
+	int ch = Rand() % (chanceA + chanceB + chanceC);
+	if(ch < chanceA)
 		return a;
-	else if(ch < chance_a + chance_b)
+	else if(ch < chanceA + chanceB)
 		return b;
 	else
 		return c;
@@ -355,7 +355,7 @@ float ShortestArc(float a, float b);
 // Linear interpolation between two angles
 void LerpAngle(float& angle, float from, float to, float t);
 
-void AdjustAngle(float& angle, float expected, float max_dif);
+void AdjustAngle(float& angle, float expected, float maxDif);
 
 // Return true if value is in range
 template<typename T>
@@ -1277,7 +1277,7 @@ struct Matrix : XMFLOAT4X4
 	static Matrix Transform(const Matrix& M, const Quat& rotation);
 	static Matrix Transform(const Vec3& pos, const Vec3& rot, const Vec3& scale);
 	static Matrix Transform(const Vec3& pos, const Vec3& rot, float scale);
-	static Matrix Transform2D(const Vec2* scaling_center, float scaling_rotation, const Vec2* scaling, const Vec2* rotation_center, float rotation, const Vec2* translation);
+	static Matrix Transform2D(const Vec2* scalingCenter, float scalingRotation, const Vec2* scaling, const Vec2* rotationCenter, float rotation, const Vec2* translation);
 	static Matrix Translation(const Vec3& position);
 	static Matrix Translation(float x, float y, float z);
 
@@ -1444,9 +1444,9 @@ struct FrustumPlanes
 	bool BoxInFrustum(const Box& box) const;
 	// Checks if sphere collide with frustum
 	// In rare cases can return true even if it's outside!
-	bool SphereToFrustum(const Vec3& sphere_center, float sphere_radius) const;
+	bool SphereToFrustum(const Vec3& sphereCenter, float sphereRadius) const;
 	// Checks if sphere is fully inside frustum
-	bool SphereInFrustum(const Vec3& sphere_center, float sphere_radius) const;
+	bool SphereInFrustum(const Vec3& sphereCenter, float sphereRadius) const;
 };
 
 //-----------------------------------------------------------------------------
@@ -1499,21 +1499,21 @@ namespace POD
 //-----------------------------------------------------------------------------
 // Collisions and functions
 //-----------------------------------------------------------------------------
-bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box& box, float* out_t);
-bool RayToPlane(const Vec3& ray_pos, const Vec3& ray_dir, const Plane& plane, float* out_t);
-bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, float radius, float& dist);
-bool RayToTriangle(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& v1, const Vec3& v2, const Vec3& v3, float& dist);
+bool RayToBox(const Vec3& rayPos, const Vec3& rayDir, const Box& box, float* outT);
+bool RayToPlane(const Vec3& rayPos, const Vec3& rayDir, const Plane& plane, float* outT);
+bool RayToSphere(const Vec3& rayPos, const Vec3& rayDir, const Vec3& center, float radius, float& dist);
+bool RayToTriangle(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v1, const Vec3& v2, const Vec3& v3, float& dist);
 bool RectangleToRectangle(float x1, float y1, float x2, float y2, float a1, float b1, float a2, float b2);
 bool CircleToRectangle(float circlex, float circley, float radius, float rectx, float recty, float w, float h);
 bool LineToLine(const Vec2& start1, const Vec2& end1, const Vec2& start2, const Vec2& end2, float* t = nullptr);
-bool LineToRectangle(const Vec2& start, const Vec2& end, const Vec2& rect_pos, const Vec2& rect_pos2, float* t = nullptr);
-inline bool LineToRectangle(const Vec3& start, const Vec3& end, const Vec2& rect_pos, const Vec2& rect_pos2, float* t = nullptr)
+bool LineToRectangle(const Vec2& start, const Vec2& end, const Vec2& rectPos, const Vec2& rectPos2, float* t = nullptr);
+inline bool LineToRectangle(const Vec3& start, const Vec3& end, const Vec2& rectPos, const Vec2& rectPos2, float* t = nullptr)
 {
-	return LineToRectangle(Vec2(start.x, start.z), Vec2(end.x, end.z), rect_pos, rect_pos2, t);
+	return LineToRectangle(Vec2(start.x, start.z), Vec2(end.x, end.z), rectPos, rectPos2, t);
 }
-inline bool LineToRectangleSize(const Vec2& start, const Vec2& end, const Vec2& rect_pos, const Vec2& rect_size, float* t = nullptr)
+inline bool LineToRectangleSize(const Vec2& start, const Vec2& end, const Vec2& rectPos, const Vec2& rectSize, float* t = nullptr)
 {
-	return LineToRectangle(start, end, rect_pos - rect_size, rect_pos + rect_size, t);
+	return LineToRectangle(start, end, rectPos - rectSize, rectPos + rectSize, t);
 }
 bool BoxToBox(const Box& box1, const Box& box2);
 bool OrientedBoxToOrientedBox(const Obbox& obox1, const Obbox& obox2, Vec3* contact);
@@ -1535,9 +1535,9 @@ bool OOBToOOB(const Oob& a, const Oob& b);
 float DistanceRectangleToPoint(const Vec2& pos, const Vec2& size, const Vec2& pt);
 float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float y2);
 float GetClosestPointOnLineSegment(const Vec2& A, const Vec2& B, const Vec2& P, Vec2& result);
-inline float ClosestPointOnLine(const Vec3& p, const Vec3& ray_pos, const Vec3& ray_dir)
+inline float ClosestPointOnLine(const Vec3& p, const Vec3& rayPos, const Vec3& rayDir)
 {
-	return ray_dir.Dot(p - ray_pos);
+	return rayDir.Dot(p - rayPos);
 }
 
 //-----------------------------------------------------------------------------

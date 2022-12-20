@@ -96,15 +96,15 @@ void SceneBatch::Process()
 		});
 
 		// group nodes
-		int prev_flags = -1, index = 0;
+		int prevFlags = -1, index = 0;
 		for(SceneNode* node : nodes)
 		{
-			if(node->flags != prev_flags)
+			if(node->flags != prevFlags)
 			{
 				if(!nodeGroups.empty())
 					nodeGroups.back().end = index - 1;
 				nodeGroups.push_back({ node->flags, index, 0 });
-				prev_flags = node->flags;
+				prevFlags = node->flags;
 			}
 			++index;
 		}

@@ -60,7 +60,7 @@ public:
 
 protected:
 	static Logger* global;
-	static const cstring level_names[4];
+	static const cstring levelNames[4];
 };
 
 //-----------------------------------------------------------------------------

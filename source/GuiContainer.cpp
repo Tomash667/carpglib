@@ -64,7 +64,7 @@ void GuiContainer::Update(float dt)
 		}
 		if(start == end)
 			return;
-		Iter new_item = end;
+		Iter newItem = end;
 		if(input->Down(Key::Shift))
 		{
 			// znajdŸ poprzedni
@@ -75,19 +75,19 @@ void GuiContainer::Update(float dt)
 				{
 					if(IsSet(it->second, F_FOCUS))
 					{
-						new_item = it;
+						newItem = it;
 						break;
 					}
 				}
 			}
 			// od end do start
-			if(new_item == end)
+			if(newItem == end)
 			{
 				for(Iter it = end - 1; it != start; --it)
 				{
 					if(IsSet(it->second, F_FOCUS))
 					{
-						new_item = it;
+						newItem = it;
 						break;
 					}
 				}
@@ -101,18 +101,18 @@ void GuiContainer::Update(float dt)
 			{
 				if(IsSet(it->second, F_FOCUS))
 				{
-					new_item = it;
+					newItem = it;
 					break;
 				}
 			}
 			// od begin do start
-			if(new_item == end)
+			if(newItem == end)
 			{
 				for(Iter it = begin; it != start; ++it)
 				{
 					if(IsSet(it->second, F_FOCUS))
 					{
-						new_item = it;
+						newItem = it;
 						break;
 					}
 				}
@@ -120,11 +120,11 @@ void GuiContainer::Update(float dt)
 		}
 
 		// zmiana focus
-		if(new_item != end)
+		if(newItem != end)
 		{
 			if(focusCtrl)
 				focusCtrl->LostFocus();
-			focusCtrl = new_item->first;
+			focusCtrl = newItem->first;
 			focusCtrl->GainFocus();
 		}
 	}

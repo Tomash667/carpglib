@@ -170,7 +170,7 @@ inline void RemoveElementIndexOrder(vector<T>& v, int index)
 }
 
 template<typename T>
-inline bool is_null(const T ptr)
+inline bool IsNull(const T ptr)
 {
 	return !ptr;
 }
@@ -178,7 +178,7 @@ inline bool is_null(const T ptr)
 template<typename T>
 inline void RemoveNullElements(vector<T>& v)
 {
-	auto it = std::remove_if(v.begin(), v.end(), is_null<T>);
+	auto it = std::remove_if(v.begin(), v.end(), IsNull<T>);
 	auto end = v.end();
 	if(it != end)
 		v.erase(it, end);
@@ -296,8 +296,8 @@ struct ObjectPoolLeakManager
 	void Unregister(void* ptr);
 	static ObjectPoolLeakManager instance;
 private:
-	vector<CallStackEntry*> call_stack_pool;
-	std::unordered_map<void*, CallStackEntry*> call_stacks;
+	vector<CallStackEntry*> callStackPool;
+	std::unordered_map<void*, CallStackEntry*> callStacks;
 };
 #endif
 
@@ -574,10 +574,10 @@ struct LocalString
 		*s = str;
 	}
 
-	LocalString(cstring str, cstring str_to)
+	LocalString(cstring str, cstring strTo)
 	{
 		s = StringPool.Get();
-		uint len = str_to - str;
+		uint len = strTo - str;
 		s->resize(len);
 		memcpy((char*)s->data(), str, len);
 	}
@@ -849,11 +849,11 @@ struct WeightPair
 };
 
 template<typename T>
-inline T& RandomItemWeight(vector<WeightPair<T>>& items, int max_weight)
+inline T& RandomItemWeight(vector<WeightPair<T>>& items, int maxWeight)
 {
-	if(items.size() == (uint)max_weight)
+	if(items.size() == (uint)maxWeight)
 		return RandomItem(items).item;
-	int a = Rand() % max_weight, b = 0;
+	int a = Rand() % maxWeight, b = 0;
 	for(auto& item : items)
 	{
 		b += item.weight;
@@ -865,17 +865,17 @@ inline T& RandomItemWeight(vector<WeightPair<T>>& items, int max_weight)
 }
 
 template<typename T, typename GetWeight, typename GetItem>
-inline auto RandomItemWeight(const vector<T>& items, int max_weight, GetWeight get_weight, GetItem get_item)
+inline auto RandomItemWeight(const vector<T>& items, int maxWeight, GetWeight getWeight, GetItem getItem)
 {
-	int a = Rand() % max_weight, b = 0;
+	int a = Rand() % maxWeight, b = 0;
 	for(auto& item : items)
 	{
-		b += get_weight(item);
+		b += getWeight(item);
 		if(a < b)
-			return get_item(item);
+			return getItem(item);
 	}
 	// if it gets here max_count is wrong, return random item
-	return get_item(items[Rand() % items.size()]);
+	return getItem(items[Rand() % items.size()]);
 }
 
 template<typename T>

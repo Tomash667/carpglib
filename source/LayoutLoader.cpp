@@ -140,7 +140,7 @@ void LayoutLoader::ParseFont(const string& name)
 	if(FindFont(name))
 		t.Throw("Font '%s' already exists.", name.c_str());
 
-	string n = name, font_name;
+	string n = name, fontName;
 	int size = -1, weight = 5, outline = 0;
 
 	t.Next();
@@ -153,7 +153,7 @@ void LayoutLoader::ParseFont(const string& name)
 		switch(keyword)
 		{
 		case FK_NAME:
-			font_name = t.MustGetString();
+			fontName = t.MustGetString();
 			break;
 		case FK_SIZE:
 			size = t.MustGetInt();
@@ -172,10 +172,10 @@ void LayoutLoader::ParseFont(const string& name)
 		t.Next();
 	}
 
-	if(font_name.empty() || size < 1)
+	if(fontName.empty() || size < 1)
 		t.Throw("Font name or size not set.");
 
-	Font* font = gui->GetFont(font_name.c_str(), size, weight, outline);
+	Font* font = gui->GetFont(fontName.c_str(), size, weight, outline);
 	fonts[n] = font;
 }
 
@@ -197,10 +197,10 @@ void LayoutLoader::ParseControl(const string& name)
 	t.Next();
 	while(!t.IsSymbol('}'))
 	{
-		const string& entry_name = t.MustGetItemKeyword();
-		Entry* entry = c->FindEntry(entry_name);
+		const string& entryName = t.MustGetItemKeyword();
+		Entry* entry = c->FindEntry(entryName);
 		if(!entry)
-			t.Throw("Missing control '%s' entry '%s'.", c->name.c_str(), entry_name.c_str());
+			t.Throw("Missing control '%s' entry '%s'.", c->name.c_str(), entryName.c_str());
 		t.Next();
 
 		switch(entry->type)
@@ -250,8 +250,8 @@ void LayoutLoader::ParseControl(const string& name)
 						{
 							if(area.mode != AreaLayout::Mode::Image && area.mode != AreaLayout::Mode::Item)
 								t.Throw("This area layout don't support 'image' entry.");
-							const string& img_name = t.MustGetString();
-							area.tex = app::resMgr->Load<Texture>(img_name);
+							const string& imgName = t.MustGetString();
+							area.tex = app::resMgr->Load<Texture>(imgName);
 							t.Next();
 						}
 						break;
@@ -308,18 +308,18 @@ void LayoutLoader::ParseControl(const string& name)
 			break;
 		case Entry::Font:
 			{
-				const string& font_name = t.MustGetString();
-				Font* font = FindFont(font_name);
+				const string& fontName = t.MustGetString();
+				Font* font = FindFont(fontName);
 				if(!font)
-					t.Throw("Missing font '%s'.", font_name.c_str());
+					t.Throw("Missing font '%s'.", fontName.c_str());
 				entry->GetValue<Font*>(data) = font;
 				t.Next();
 			}
 			break;
 		case Entry::Image:
 			{
-				const string& img_name = t.MustGetString();
-				entry->GetValue<Texture*>(data) = app::resMgr->Load<Texture>(img_name);
+				const string& imgName = t.MustGetString();
+				entry->GetValue<Texture*>(data) = app::resMgr->Load<Texture>(imgName);
 				t.Next();
 			}
 			break;
@@ -345,7 +345,7 @@ void LayoutLoader::ParseControl(const string& name)
 void LayoutLoader::RegisterKeywords()
 {
 	t.AddKeywords(G_TOP, {
-		{"register_font",TK_REGISTER_FONT},
+		{"registerFont",TK_REGISTER_FONT},
 		{"font", TK_FONT},
 		{"control", TK_CONTROL}
 		});

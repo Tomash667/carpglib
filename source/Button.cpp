@@ -11,13 +11,13 @@ Button::Button() : state(NONE), img(nullptr), hold(false), forceImgSize(0, 0), c
 //=================================================================================================
 void Button::Draw()
 {
-	State real_state = state;
+	State realState = state;
 	if(disabled)
-		real_state = DISABLED;
+		realState = DISABLED;
 
 	if(!custom)
 	{
-		gui->DrawArea(Box2d::Create(globalPos, size), layout->tex[real_state]);
+		gui->DrawArea(Box2d::Create(globalPos, size), layout->tex[realState]);
 
 		Rect r = {
 			globalPos.x + layout->padding,
@@ -39,27 +39,27 @@ void Button::Draw()
 			}
 
 			Matrix mat;
-			Int2 required_size = forceImgSize, img_size;
+			Int2 requiredSize = forceImgSize, imgSize;
 			Vec2 scale;
-			img->ResizeImage(required_size, img_size, scale);
+			img->ResizeImage(requiredSize, imgSize, scale);
 
 			// position image
-			Vec2 img_pos;
+			Vec2 imgPos;
 			if(text.empty())
 			{
 				// when no text put at center
-				img_pos = Vec2((float)(size.x - required_size.x) / 2 + r.Left(),
-					(float)(size.y - required_size.y) / 2 + r.Top());
+				imgPos = Vec2((float)(size.x - requiredSize.x) / 2 + r.Left(),
+					(float)(size.y - requiredSize.y) / 2 + r.Top());
 			}
 			else
 			{
 				// put at left
-				img_pos = Vec2((float)r.Left(), float(r.Top() + (size.y - required_size.y) / 2));
+				imgPos = Vec2((float)r.Left(), float(r.Top() + (size.y - requiredSize.y) / 2));
 			}
 
-			mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &img_pos);
+			mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &imgPos);
 			gui->DrawSprite2(img, mat, nullptr, &r, Color::White);
-			r.Left() += img_size.x;
+			r.Left() += imgSize.x;
 		}
 
 		int flags = DTF_CENTER | DTF_VCENTER;
@@ -68,7 +68,7 @@ void Button::Draw()
 		gui->DrawText(layout->font, text, flags, layout->fontColor[state], r, &r);
 	}
 	else
-		gui->DrawArea(Box2d::Create(globalPos, size), custom->tex[real_state]);
+		gui->DrawArea(Box2d::Create(globalPos, size), custom->tex[realState]);
 }
 
 //=================================================================================================

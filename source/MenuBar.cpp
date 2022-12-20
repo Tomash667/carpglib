@@ -115,12 +115,12 @@ void MenuBar::AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const 
 {
 	assert(text);
 
-	float item_height = (float)layout->font->height + layout->itemPadding.y * 2;
-	float item_width = (float)layout->font->CalculateSize(text).x + layout->itemPadding.x * 2;
+	float itemHeight = (float)layout->font->height + layout->itemPadding.y * 2;
+	float itemWidth = (float)layout->font->CalculateSize(text).x + layout->itemPadding.x * 2;
 
 	Item* item = new Item;
 	item->text = text;
-	item->rect = Box2d(0, 0, item_width, item_height);
+	item->rect = Box2d(0, 0, itemWidth, itemHeight);
 	item->rect += Vec2(layout->padding) / 2;
 	if(!items.empty())
 		item->rect += Vec2(items.back()->rect.v2.x, 0);
@@ -132,7 +132,7 @@ void MenuBar::AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const 
 void MenuBar::Update(bool move, bool resize)
 {
 	assert(parent);
-	Int2 prev_pos = globalPos;
+	Int2 prevPos = globalPos;
 	if(move)
 		globalPos = parent->globalPos;
 	if(resize)
@@ -140,7 +140,7 @@ void MenuBar::Update(bool move, bool resize)
 	rect = Box2d::Create(globalPos, size);
 	if(move)
 	{
-		Vec2 offset = Vec2(globalPos - prev_pos);
+		Vec2 offset = Vec2(globalPos - prevPos);
 		for(Item* item : items)
 			item->rect += offset;
 	}

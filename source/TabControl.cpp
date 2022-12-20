@@ -4,7 +4,7 @@
 #include "Input.h"
 #include "Panel.h"
 
-static ObjectPool<TabControl::Tab> tab_pool;
+static ObjectPool<TabControl::Tab> tabPool;
 
 TabControl::TabControl(bool ownPanels) : selected(nullptr), hover(nullptr), ownPanels(ownPanels), tabOffset(0), tabOffsetMax(0), arrowHover(0)
 {
@@ -18,17 +18,17 @@ TabControl::~TabControl()
 void TabControl::Dock(Control* c)
 {
 	assert(c);
-	Int2 area_pos = GetAreaPos() + globalPos;
-	Int2 area_size = GetAreaSize();
-	if(c->globalPos != area_pos)
+	Int2 areaPos = GetAreaPos() + globalPos;
+	Int2 areaSize = GetAreaSize();
+	if(c->globalPos != areaPos)
 	{
-		c->globalPos = area_pos;
+		c->globalPos = areaPos;
 		if(c->IsInitialized())
 			c->Event(GuiEvent_Moved);
 	}
-	if(c->size != area_size)
+	if(c->size != areaSize)
 	{
-		c->size = area_size;
+		c->size = areaSize;
 		if(c->IsInitialized())
 			c->Event(GuiEvent_Resize);
 	}
@@ -36,8 +36,8 @@ void TabControl::Dock(Control* c)
 
 void TabControl::Draw()
 {
-	Box2d body_rect = Box2d::Create(globalPos, size);
-	gui->DrawArea(body_rect, layout->background);
+	Box2d bodyRect = Box2d::Create(globalPos, size);
+	gui->DrawArea(bodyRect, layout->background);
 
 	gui->DrawArea(line, layout->line);
 
@@ -240,7 +240,7 @@ void TabControl::Clear()
 		for(Tab* tab : tabs)
 			delete tab->panel;
 	}
-	tab_pool.Free(tabs);
+	tabPool.Free(tabs);
 	selected = nullptr;
 	hover = nullptr;
 	totalWidth = 0;
@@ -280,21 +280,21 @@ void TabControl::Close(Tab* tab)
 	if(tab == selected)
 	{
 		// select next tab or previous if not exists
-		Tab* new_selected;
+		Tab* newSelected;
 		if(index == tabs.size() - 1)
 		{
 			if(index == 0)
-				new_selected = nullptr;
+				newSelected = nullptr;
 			else
-				new_selected = tabs[index - 1];
+				newSelected = tabs[index - 1];
 		}
 		else
-			new_selected = tabs[index + 1];
-		SelectInternal(new_selected);
-		if(new_selected == hover)
+			newSelected = tabs[index + 1];
+		SelectInternal(newSelected);
+		if(newSelected == hover)
 			hover = nullptr;
 	}
-	tab_pool.Free(tab);
+	tabPool.Free(tab);
 	tabs.erase(tabs.begin() + index);
 	if(tabOffset > (int)tabs.size())
 		--tabOffset;

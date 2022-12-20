@@ -6,8 +6,6 @@
 #include "ResourceManager.h"
 
 //---------------------------
-Matrix mat_zero;
-
 struct AVertex
 {
 	Vec3 pos;
@@ -147,11 +145,11 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 			sub.texNormal = nullptr;
 
 		// specular map
-		const string& texName_specular = stream.ReadString1();
-		if(!texName_specular.empty())
+		const string& texNameSpecular = stream.ReadString1();
+		if(!texNameSpecular.empty())
 		{
 			head.flags |= F_SPECULAR_MAP;
-			sub.texSpecular = app::resMgr->LoadInstant<Texture>(texName_specular);
+			sub.texSpecular = app::resMgr->LoadInstant<Texture>(texNameSpecular);
 			stream.Read(sub.specularFactor);
 			stream.Read(sub.specularColorFactor);
 		}
@@ -172,11 +170,11 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 		bones.resize(head.nBones + 1);
 
 		// zero bone
-		Bone& zero_bone = bones[0];
-		zero_bone.parent = 0;
-		zero_bone.name = "zero";
-		zero_bone.id = 0;
-		zero_bone.mat = Matrix::IdentityMatrix;
+		Bone& zeroBone = bones[0];
+		zeroBone.parent = 0;
+		zeroBone.name = "zero";
+		zeroBone.id = 0;
+		zeroBone.mat = Matrix::IdentityMatrix;
 
 		for(byte i = 1; i <= head.nBones; ++i)
 		{

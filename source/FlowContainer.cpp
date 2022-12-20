@@ -24,12 +24,12 @@ void FlowItem::Set(cstring _text, int _group, int _id)
 	state = Button::NONE;
 }
 
-void FlowItem::Set(int _group, int _id, int _tex_id, bool disabled)
+void FlowItem::Set(int _group, int _id, int _texId, bool disabled)
 {
 	type = Button;
 	group = _group;
 	id = _id;
-	tex_id = _tex_id;
+	texId = _texId;
 	state = (disabled ? Button::DISABLED : Button::NONE);
 }
 
@@ -190,7 +190,7 @@ void FlowContainer::Draw()
 				|| globalPos.y + fi->pos.y - offset > globalPos.y + size.y)
 				continue;
 
-			const AreaLayout& area = buttonTex[fi->tex_id].tex[fi->state];
+			const AreaLayout& area = buttonTex[fi->texId].tex[fi->state];
 			const Box2d clipRect(clip);
 			gui->DrawArea(Box2d::Create(globalPos + fi->pos - Int2(0, offset), area.size), area, &clipRect);
 		}

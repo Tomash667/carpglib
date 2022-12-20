@@ -42,17 +42,17 @@ MenuStrip::MenuStrip(vector<GuiElement*>& _items, int minWIdth) : selected(nullp
 
 void MenuStrip::CalculateWidth(int minWIdth)
 {
-	int max_width = 0;
+	int maxWidth = 0;
 	Font* font = layout->font;
 
 	for(auto& item : items)
 	{
 		int width = font->CalculateSize(item.text).x;
-		if(width > max_width)
-			max_width = width;
+		if(width > maxWidth)
+			maxWidth = width;
 	}
 
-	size = Int2(max_width + (layout->padding.x + layout->itemPadding.x) * 2,
+	size = Int2(maxWidth + (layout->padding.x + layout->itemPadding.x) * 2,
 		(font->height + (layout->itemPadding.y) * 2) * items.size() + layout->padding.y * 2);
 
 	if(size.x < minWIdth)
@@ -70,11 +70,11 @@ void MenuStrip::Draw()
 	Box2d area = Box2d::Create(globalPos, size);
 	gui->DrawArea(area, layout->background);
 
-	Vec2 item_size((float)size.x - (layout->padding.x) * 2,
+	Vec2 itemsSize((float)size.x - (layout->padding.x) * 2,
 		(float)layout->font->height + layout->itemPadding.y * 2);
 	area.v1 = Vec2(globalPos + layout->padding);
-	area.v2 = area.v1 + item_size;
-	float offset = item_size.y;
+	area.v2 = area.v1 + itemsSize;
+	float offset = itemsSize.y;
 	Rect r;
 
 	for(Item& item : items)
@@ -102,20 +102,20 @@ void MenuStrip::OnChar(char c)
 		c = tolower(c);
 
 	bool first = true;
-	int start_index;
+	int startIndex;
 	if(selected)
-		start_index = selected->index;
+		startIndex = selected->index;
 	else
-		start_index = 0;
-	int index = start_index;
+		startIndex = 0;
+	int index = startIndex;
 
 	while(true)
 	{
 		auto& item = items[index];
-		char starts_with = tolower(item.text[0]);
-		if(starts_with == c)
+		char startsWith = tolower(item.text[0]);
+		if(startsWith == c)
 		{
-			if(index == start_index && selected && first)
+			if(index == startIndex && selected && first)
 				first = false;
 			else
 			{
@@ -126,7 +126,7 @@ void MenuStrip::OnChar(char c)
 				return;
 			}
 		}
-		else if(index == start_index)
+		else if(index == startIndex)
 		{
 			if(first)
 				first = false;
@@ -170,11 +170,11 @@ void MenuStrip::UpdateMouse()
 		return;
 	}
 
-	Vec2 item_size((float)size.x - (layout->padding.x) * 2,
+	Vec2 itemsSize((float)size.x - (layout->padding.x) * 2,
 		(float)layout->font->height + layout->itemPadding.y * 2);
 	area.v1 = Vec2(globalPos + layout->padding);
-	area.v2 = area.v1 + item_size;
-	float offset = item_size.y;
+	area.v2 = area.v1 + itemsSize;
+	float offset = itemsSize.y;
 
 	for(Item& item : items)
 	{

@@ -63,7 +63,7 @@ namespace tokenizer
 
 	struct SeekData
 	{
-		uint pos, start_pos, line, charpos;
+		uint pos, startPos, line, charpos;
 		string item;
 		TOKEN token;
 		int _int;
@@ -238,7 +238,7 @@ namespace tokenizer
 
 		typedef bool(*SkipToFunc)(Tokenizer& t);
 
-		bool Next(bool return_eol = false) { return DoNext(normalSeek, return_eol); }
+		bool Next(bool returnEol = false) { return DoNext(normalSeek, returnEol); }
 		bool NextLine();
 		bool SkipTo(delegate<bool(Tokenizer&)> f)
 		{
@@ -297,16 +297,16 @@ namespace tokenizer
 		{
 			assert(name);
 			assert(group != EMPTY_GROUP);
-			KeywordGroup new_group = { name, group };
-			assert(std::find(groups.begin(), groups.end(), new_group) == groups.end());
-			groups.push_back(new_group);
+			KeywordGroup newGroup = { name, group };
+			assert(std::find(groups.begin(), groups.end(), newGroup) == groups.end());
+			groups.push_back(newGroup);
 		}
 		// Add keyword for group in format {name, id}
-		void AddKeywords(int group, std::initializer_list<KeywordToRegister> const& to_register, cstring group_name = nullptr);
+		void AddKeywords(int group, std::initializer_list<KeywordToRegister> const& toRegister, cstring groupName = nullptr);
 		template<typename T>
-		void AddKeywords(int group, std::initializer_list<KeywordToRegisterEnum<T>> const& to_register, cstring group_name = nullptr)
+		void AddKeywords(int group, std::initializer_list<KeywordToRegisterEnum<T>> const& toRegister, cstring groupName = nullptr)
 		{
-			AddKeywords(group, (std::initializer_list<KeywordToRegister> const&)to_register, group_name);
+			AddKeywords(group, (std::initializer_list<KeywordToRegister> const&)toRegister, groupName);
 		}
 		// Remove keyword (function with name is faster)
 		bool RemoveKeyword(cstring name, int id, int group = EMPTY_GROUP);
@@ -322,10 +322,10 @@ namespace tokenizer
 			formatter.Start();
 			return formatter;
 		}
-		__declspec(noreturn) void Unexpected(const SeekData& seek_data) const
+		__declspec(noreturn) void Unexpected(const SeekData& seekData) const
 		{
-			formatter.sd = &seek_data;
-			formatter.Throw(Format("Unexpected %s.", GetTokenValue(seek_data)));
+			formatter.sd = &seekData;
+			formatter.Throw(Format("Unexpected %s.", GetTokenValue(seekData)));
 		}
 		__declspec(noreturn) void Unexpected() const
 		{
@@ -341,13 +341,13 @@ namespace tokenizer
 			assert(err);
 			formatter.Throw(Format("Unexpected %s: %s", GetTokenValue(normalSeek), err));
 		}
-		__declspec(noreturn) void Unexpected(TOKEN expected_token, int* what = nullptr, int* what2 = nullptr) const
+		__declspec(noreturn) void Unexpected(TOKEN expectedToken, int* what = nullptr, int* what2 = nullptr) const
 		{
-			StartUnexpected().Add(expected_token, what, what2).Throw();
+			StartUnexpected().Add(expectedToken, what, what2).Throw();
 		}
-		cstring FormatUnexpected(TOKEN expected_token, int* what = nullptr, int* what2 = nullptr) const
+		cstring FormatUnexpected(TOKEN expectedToken, int* what = nullptr, int* what2 = nullptr) const
 		{
-			return StartUnexpected().Add(expected_token, what, what2).Get();
+			return StartUnexpected().Add(expectedToken, what, what2).Get();
 		}
 		__declspec(noreturn) void Throw(cstring msg)
 		{
@@ -432,12 +432,12 @@ namespace tokenizer
 			}
 			return false;
 		}
-		int IsAnyKeyword(int group, std::initializer_list<int> const& keyword_ids)
+		int IsAnyKeyword(int group, std::initializer_list<int> const& keywordIds)
 		{
-			for(auto keyword_id : keyword_ids)
+			for(auto keywordId : keywordIds)
 			{
-				if(IsKeyword(keyword_id, group))
-					return keyword_id;
+				if(IsKeyword(keywordId, group))
+					return keywordId;
 			}
 			return -1;
 		}
@@ -641,7 +641,7 @@ namespace tokenizer
 			}
 			return EMPTY_GROUP;
 		}
-		const string& GetBlock(char open = '{', char close = '}', bool include_symbol = true);
+		const string& GetBlock(char open = '{', char close = '}', bool includeSymbol = true);
 		const string& GetItemOrString() const
 		{
 			assert(IsItemOrString());
@@ -770,11 +770,11 @@ namespace tokenizer
 		}
 
 		//===========================================================================================================================
-		bool SeekStart(bool return_eol = false);
-		bool SeekNext(bool return_eol = false)
+		bool SeekStart(bool returnEol = false);
+		bool SeekNext(bool returnEol = false)
 		{
 			assert(seek);
-			return DoNext(*seek, return_eol);
+			return DoNext(*seek, returnEol);
 		}
 		bool SeekToken(TOKEN _token) const
 		{
@@ -873,7 +873,7 @@ namespace tokenizer
 		cstring GetTextRest();
 
 	private:
-		bool DoNext(SeekData& s, bool return_eol);
+		bool DoNext(SeekData& s, bool returnEol);
 		void CheckItemOrKeyword(SeekData& s, const string& item);
 		bool ParseNumber(SeekData& s, uint pos2, bool negative);
 		uint FindFirstNotOf(SeekData& s, cstring _str, uint _start);

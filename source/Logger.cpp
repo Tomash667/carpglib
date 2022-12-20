@@ -4,8 +4,8 @@
 
 //-----------------------------------------------------------------------------
 Logger* Logger::global;
-static std::set<int> once_id;
-const cstring Logger::level_names[4] = {
+static std::set<int> onceId;
+const cstring Logger::levelNames[4] = {
 	"INFO ",
 	"WARN ",
 	"ERROR",
@@ -66,7 +66,7 @@ void ConsoleLogger::Move(const Int2& consolePos, const Int2& consoleSize)
 
 void ConsoleLogger::Log(Level level, cstring text, const tm& time)
 {
-	printf("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, level_names[level], text);
+	printf("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, levelNames[level], text);
 	fflush(stdout);
 }
 
@@ -85,7 +85,7 @@ TextLogger::~TextLogger()
 
 void TextLogger::Log(Level level, cstring text, const tm& time)
 {
-	*writer << Format("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, level_names[level], text);
+	*writer << Format("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, levelNames[level], text);
 }
 
 void TextLogger::Flush()
@@ -172,9 +172,9 @@ void PreLogger::Flush()
 //-----------------------------------------------------------------------------
 void WarnOnce(int id, cstring msg)
 {
-	if(once_id.find(id) == once_id.end())
+	if(onceId.find(id) == onceId.end())
 	{
-		once_id.insert(id);
+		onceId.insert(id);
 		Warn(msg);
 	}
 }

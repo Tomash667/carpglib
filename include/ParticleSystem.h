@@ -40,11 +40,11 @@ struct ParticleEmitter : public EntityType<ParticleEmitter>
 	bool Update(float dt);
 	void Save(FileWriter& f);
 	void Load(FileReader& f, int version = 3);
-	float GetAlpha(const Particle& p) const
+	float GetAlpha(const Particle &p) const
 	{
 		return Lerp(alpha.y, alpha.x, p.life / particleLife);
 	}
-	float GetScale(const Particle& p) const
+	float GetScale(const Particle &p) const
 	{
 		return Lerp(size.y, size.x, p.life / particleLife);
 	}

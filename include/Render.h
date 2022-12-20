@@ -118,7 +118,7 @@ public:
 	ID3D11RenderTargetView* GetRenderTargetView() const { return renderTargetView; }
 	const vector<Resolution>& GetResolutions() const { return resolutions; }
 	ID3D11SamplerState* GetSampler() const { return defaultSampler; }
-	const string& GetShadersDir() const { return shaders_dir; }
+	const string& GetShadersDir() const { return shadersDir; }
 
 	void SetAdapter(int adapter) { assert(!initialized); usedAdapter = adapter; }
 	void SetBlendState(BlendState blendState);
@@ -126,7 +126,7 @@ public:
 	bool SetFeatureLevel(const string& level);
 	void SetRasterState(RasterState rasterState);
 	int SetMultisampling(int type, int quality);
-	void SetShadersDir(cstring dir) { shaders_dir = dir; }
+	void SetShadersDir(cstring dir) { shadersDir = dir; }
 	void SetRenderTarget(RenderTarget* target);
 	void SetViewport(const Int2& size);
 	void SetVsync(bool vsync) { this->vsync = vsync; }
@@ -164,7 +164,7 @@ private:
 	vector<Resolution> resolutions;
 	vector<Int2> multisampleLevels;
 	RenderTarget* currentTarget;
-	string shaders_dir;
+	string shadersDir;
 	int usedAdapter, multisampling, multisamplingQuality, forceFeatureLevel;
 	BlendState blendState;
 	DepthState depthState;

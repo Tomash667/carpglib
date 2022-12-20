@@ -14,9 +14,9 @@ void DrawBox::Draw()
 
 	if(tex)
 	{
-		const Vec2 scaled_tex_size = Vec2(texSize) * scale;
-		const Vec2 max_pos = scaled_tex_size - Vec2(size);
-		const Vec2 p = Vec2(max_pos.x * -move.x / 100, max_pos.y * -move.y / 100) + Vec2(globalPos);
+		const Vec2 scaledTexSize = Vec2(texSize) * scale;
+		const Vec2 maxPos = scaledTexSize - Vec2(size);
+		const Vec2 p = Vec2(maxPos.x * -move.x / 100, maxPos.y * -move.y / 100) + Vec2(globalPos);
 		const Vec2 scaleV = Vec2(scale, scale);
 		const Matrix m = Matrix::Transform2D(nullptr, 0.f, &scaleV, nullptr, 0.f, &p);
 		gui->DrawSprite2(tex, m, nullptr, &r);
@@ -32,9 +32,9 @@ void DrawBox::Update(float dt)
 		{
 			while(change > 0)
 			{
-				float prev_scale = scale;
+				float prevScale = scale;
 				scale *= 1.1f;
-				if(prev_scale < defaultScale && scale > defaultScale)
+				if(prevScale < defaultScale && scale > defaultScale)
 					scale = defaultScale;
 				change -= 1.f;
 			}
@@ -44,9 +44,9 @@ void DrawBox::Update(float dt)
 			change = -change;
 			while(change > 0)
 			{
-				float prev_scale = scale;
+				float prevScale = scale;
 				scale *= 0.9f;
-				if(prev_scale > defaultScale && scale < defaultScale)
+				if(prevScale > defaultScale && scale < defaultScale)
 					scale = defaultScale;
 				change -= 1.f;
 			}

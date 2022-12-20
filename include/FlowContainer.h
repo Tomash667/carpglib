@@ -18,7 +18,7 @@ struct FlowItem
 	static ObjectPool<FlowItem> Pool;
 	Type type;
 	string text;
-	int group, id, tex_id;
+	int group, id, texId;
 	Int2 pos, size;
 	Button::State state;
 
@@ -27,7 +27,7 @@ struct FlowItem
 	// set for item
 	void Set(cstring text, int group, int id);
 	// set for button
-	void Set(int group, int id, int tex_id, bool disabled = false);
+	void Set(int group, int id, int texId, bool disabled = false);
 };
 
 //-----------------------------------------------------------------------------

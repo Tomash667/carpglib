@@ -42,5 +42,4 @@ private:
 	MenuStrip* toAdd;
 	vector<MenuStrip*> menus, menusToClose;
 	vector<GuiDialog*> dialogs, dialogsToClose;
-	bool mouse_click;
 };

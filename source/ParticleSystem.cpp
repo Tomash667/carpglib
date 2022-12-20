@@ -9,12 +9,12 @@ EntityType<ParticleEmitter>::Impl EntityType<ParticleEmitter>::impl;
 EntityType<TrailParticleEmitter>::Impl EntityType<TrailParticleEmitter>::impl;
 
 //=================================================================================================
-float drop_range(float v, float t)
+float DropRange(float v, float t)
 {
 	if(v > 0)
 	{
-		float t_wznoszenia = v / G;
-		if(t_wznoszenia >= t)
+		float tUp = v / G;
+		if(tUp >= t)
 			return (v * v) / (2 * G);
 		else
 			return v * t - (G * (t * t)) / 2;
@@ -53,14 +53,14 @@ void ParticleEmitter::Init()
 		radius = r;
 	// up
 	if(gravity)
-		r = abs(posMax.y + drop_range(speedMax.y, particleLife));
+		r = abs(posMax.y + DropRange(speedMax.y, particleLife));
 	else
 		r = abs(posMax.y + speedMax.y * particleLife);
 	if(r > radius)
 		radius = r;
 	// down
 	if(gravity)
-		r = abs(posMin.y + drop_range(speedMin.y, particleLife));
+		r = abs(posMin.y + DropRange(speedMin.y, particleLife));
 	else
 		r = abs(posMin.y + speedMin.y * particleLife);
 	if(r > radius)
@@ -90,20 +90,20 @@ bool ParticleEmitter::Update(float dt)
 	{
 		for(Particle& p : particles)
 		{
-			if(!p.exists)
-				continue;
+		if(!p.exists)
+			continue;
 
-			if((p.life -= dt) <= 0.f)
-			{
-				p.exists = false;
-				--alive;
-			}
-			else
-			{
-				p.pos += p.speed * dt;
-				p.speed.y -= G * dt;
-			}
+		if((p.life -= dt) <= 0.f)
+		{
+			p.exists = false;
+			--alive;
 		}
+		else
+		{
+			p.pos += p.speed * dt;
+				p.speed.y -= G * dt;
+		}
+	}
 	}
 	else
 	{
@@ -418,9 +418,9 @@ void TrailParticleEmitter::Load(FileReader& f, int version)
 	if(version >= 2)
 	{
 		f >> width;
-		const string& tex_id = f.ReadString1();
-		if(!tex_id.empty())
-			tex = app::resMgr->Load<Texture>(tex_id);
+		const string& texId = f.ReadString1();
+		if(!texId.empty())
+			tex = app::resMgr->Load<Texture>(texId);
 		else
 			tex = nullptr;
 		f >> manual;

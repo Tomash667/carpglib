@@ -26,15 +26,15 @@ void TooltipController::Clear()
 }
 
 //=================================================================================================
-void TooltipController::UpdateTooltip(float dt, int new_group, int new_id)
+void TooltipController::UpdateTooltip(float dt, int newGroup, int newId)
 {
-	if(new_group != INVALID_INDEX)
+	if(newGroup != INVALID_INDEX)
 	{
-		if(new_group != group || new_id != id)
+		if(newGroup != group || newId != id)
 		{
 			state = State::COUNTING;
-			group = new_group;
-			id = new_id;
+			group = newGroup;
+			id = newId;
 			timer = TIMER;
 		}
 		else
@@ -140,23 +140,23 @@ void TooltipController::FormatBox(bool refresh)
 
 	int w = 0, h = 0;
 
-	Int2 img_size;
+	Int2 imgSize;
 	if(img)
 	{
 		if(imgSize == Int2::Zero)
-			img_size = img->GetSize();
+			imgSize = img->GetSize();
 		else
-			img_size = imgSize;
+			imgSize = imgSize;
 	}
 	else
-		img_size = Int2::Zero;
+		imgSize = Int2::Zero;
 
 	// big text
 	if(!bigText.empty())
 	{
-		Int2 text_size = layout->fontBig->CalculateSize(bigText, 400);
-		w = text_size.x;
-		h = text_size.y + 12;
+		Int2 textSize = layout->fontBig->CalculateSize(bigText, 400);
+		w = textSize.x;
+		h = textSize.y + 12;
 		rBigText.Left() = 0;
 		rBigText.Right() = w;
 		rBigText.Top() = 12;
@@ -164,20 +164,20 @@ void TooltipController::FormatBox(bool refresh)
 	}
 
 	// text
-	Int2 text_size(0, 0);
+	Int2 textSize(0, 0);
 	if(!text.empty())
 	{
 		if(h)
 			h += 5;
 		else
 			h = 12;
-		text_size = layout->font->CalculateSize(text, 400);
-		if(text_size.x > w)
-			w = text_size.x;
+		textSize = layout->font->CalculateSize(text, 400);
+		if(textSize.x > w)
+			w = textSize.x;
 		rText.Left() = 0;
 		rText.Right() = w;
 		rText.Top() = h;
-		h += text_size.y;
+		h += textSize.y;
 		rText.Bottom() = h;
 	}
 
@@ -186,8 +186,8 @@ void TooltipController::FormatBox(bool refresh)
 	// image
 	if(img)
 	{
-		shift += img_size.x + 4;
-		w += img_size.x + 4;
+		shift += imgSize.x + 4;
+		w += imgSize.x + 4;
 	}
 
 	// small text
@@ -195,27 +195,27 @@ void TooltipController::FormatBox(bool refresh)
 	{
 		if(h)
 			h += 5;
-		Int2 text_size = layout->fontSmall->CalculateSize(smallText, 400);
-		text_size.x += 12;
-		if(text_size.x > w)
-			w = text_size.x;
+		Int2 textSize = layout->fontSmall->CalculateSize(smallText, 400);
+		textSize.x += 12;
+		if(textSize.x > w)
+			w = textSize.x;
 		rSmallText.Left() = 12;
 		rSmallText.Right() = w;
 		rSmallText.Top() = h;
-		h += text_size.y;
+		h += textSize.y;
 		rSmallText.Bottom() = h;
 
-		int img_bot = img_size.y + 24;
-		if(rSmallText.Top() < img_bot)
+		int imgBottom = imgSize.y + 24;
+		if(rSmallText.Top() < imgBottom)
 		{
 			int dif = rSmallText.SizeY();
-			rSmallText.Top() = img_bot;
-			rSmallText.Bottom() = img_bot + dif;
+			rSmallText.Top() = imgBottom;
+			rSmallText.Bottom() = imgBottom + dif;
 			h = rSmallText.Bottom();
 		}
 	}
-	else if(img && h < img_size.y + 12)
-		h = img_size.y + 12;
+	else if(img && h < imgSize.y + 12)
+		h = imgSize.y + 12;
 
 	w += 24;
 	h += 12;

@@ -74,7 +74,7 @@ void ListBox::Draw()
 		r.Right() = globalPos.x + realSize.x - layout->border - layout->padding;
 		r.Top() = globalPos.y - int(scrollbar.offset) + layout->border;
 		r.Bottom() = r.Top() + itemHeight;
-		int orig_x = globalPos.x + layout->border + layout->padding;
+		int origX = globalPos.x + layout->border + layout->padding;
 		for(GuiElement* e : items)
 		{
 			r.Bottom() = r.Top() + e->height;
@@ -83,13 +83,13 @@ void ListBox::Draw()
 				Int2 requiredSize = forceImgSize, imgSize;
 				Vec2 scale;
 				e->tex->ResizeImage(requiredSize, imgSize, scale);
-				const Vec2 pos((float)orig_x, float(r.Top() + (e->height - requiredSize.y) / 2));
+				const Vec2 pos((float)origX, float(r.Top() + (e->height - requiredSize.y) / 2));
 				const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 				gui->DrawSprite2(e->tex, mat, nullptr, &rc, Color::White);
-				r.Left() = orig_x + requiredSize.x;
+				r.Left() = origX + requiredSize.x;
 			}
 			else
-				r.Left() = orig_x;
+				r.Left() = origX;
 			if(!gui->DrawText(layout->font, e->ToString(), textFlags, Color::Black, r, &rc))
 				break;
 			r.Top() += e->height;
@@ -170,8 +170,8 @@ void ListBox::Update(float dt)
 
 			if(eventHandler2 && gui->DoubleClick(Key::LeftButton))
 			{
-				int new_index = PosToIndex(gui->cursorPos.y);
-				if(new_index != -1 && new_index == selected)
+				int newIndex = PosToIndex(gui->cursorPos.y);
+				if(newIndex != -1 && newIndex == selected)
 				{
 					eventHandler2(A_DOUBLE_CLICK, selected);
 					bt = -1;
@@ -188,16 +188,16 @@ void ListBox::Update(float dt)
 
 			if(bt > 0)
 			{
-				int new_index = PosToIndex(gui->cursorPos.y);
+				int newIndex = PosToIndex(gui->cursorPos.y);
 				bool ok = true;
-				if(new_index != -1 && new_index != selected)
-					ok = ChangeIndexEvent(new_index, false, false);
+				if(newIndex != -1 && newIndex != selected)
+					ok = ChangeIndexEvent(newIndex, false, false);
 
 				if(bt == 2 && menuStrip && ok)
 				{
 					if(eventHandler2)
 					{
-						if(!eventHandler2(A_BEFORE_MENU_SHOW, new_index))
+						if(!eventHandler2(A_BEFORE_MENU_SHOW, newIndex))
 							ok = false;
 					}
 					if(ok)
@@ -278,16 +278,16 @@ void ListBox::OnChar(char c)
 		c = tolower(c);
 
 	bool first = true;
-	int start_index = selected;
-	if(start_index == -1)
-		start_index = 0;
-	int index = start_index;
+	int startIndex = selected;
+	if(startIndex == -1)
+		startIndex = 0;
+	int index = startIndex;
 
 	while(true)
 	{
 		auto item = items[index];
-		char starts_with = tolower(item->ToString()[0]);
-		if(starts_with == c)
+		char startsWith = tolower(item->ToString()[0]);
+		if(startsWith == c)
 		{
 			if(index == selected && first)
 				first = false;
@@ -297,7 +297,7 @@ void ListBox::OnChar(char c)
 				return;
 			}
 		}
-		else if(index == start_index)
+		else if(index == startIndex)
 		{
 			if(first)
 				first = false;

@@ -11,14 +11,14 @@
 
 ResourceManager* app::resMgr;
 
-extern byte box_qmsh[];
-extern byte sphere_qmsh[];
-extern byte capsule_qmsh[];
-extern byte cylinder_qmsh[];
-extern uint box_qmsh_len;
-extern uint sphere_qmsh_len;
-extern uint capsule_qmsh_len;
-extern uint cylinder_qmsh_len;
+extern byte boxQmsh[];
+extern byte sphereQmsh[];
+extern byte capsuleQmsh[];
+extern byte cylinderQmsh[];
+extern uint boxQmshLen;
+extern uint sphereQmshLen;
+extern uint capsuleQmshLen;
+extern uint cylinderQmshLen;
 
 //=================================================================================================
 ResourceManager::ResourceManager() : mode(Mode::Instant)
@@ -47,10 +47,10 @@ void ResourceManager::Init()
 {
 	RegisterExtensions();
 
-	LoadBuiltinMesh("box.qmsh", box_qmsh, box_qmsh_len);
-	LoadBuiltinMesh("sphere.qmsh", sphere_qmsh, sphere_qmsh_len);
-	LoadBuiltinMesh("capsule.qmsh", capsule_qmsh, capsule_qmsh_len);
-	LoadBuiltinMesh("cylinder.qmsh", cylinder_qmsh, cylinder_qmsh_len);
+	LoadBuiltinMesh("box.qmsh", boxQmsh, boxQmshLen);
+	LoadBuiltinMesh("sphere.qmsh", sphereQmsh, sphereQmshLen);
+	LoadBuiltinMesh("capsule.qmsh", capsuleQmsh, capsuleQmshLen);
+	LoadBuiltinMesh("cylinder.qmsh", cylinderQmsh, cylinderQmshLen);
 }
 
 //=================================================================================================
@@ -98,17 +98,17 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 
 	int dirlen = strlen(dir) + 1;
 
-	bool ok = io::FindFiles(Format("%s/*.*", dir), [=](const io::FileInfo& file_info)
+	bool ok = io::FindFiles(Format("%s/*.*", dir), [=](const io::FileInfo& fileInfo)
 	{
-		if(file_info.is_dir && subdir)
+		if(fileInfo.isDir && subdir)
 		{
-			LocalString path = Format("%s/%s", dir, file_info.filename);
+			LocalString path = Format("%s/%s", dir, fileInfo.filename);
 			AddDir(path);
 		}
 		else
 		{
-			cstring path = Format("%s/%s", dir, file_info.filename);
-			Resource* res = AddResource(file_info.filename, path);
+			cstring path = Format("%s/%s", dir, fileInfo.filename);
+			Resource* res = AddResource(fileInfo.filename, path);
 			if(res)
 			{
 				res->pak = nullptr;
@@ -160,8 +160,8 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		return false;
 	}
 
-	uint pak_size = f.GetSize();
-	int total_size = pak_size - sizeof(Pak::Header);
+	uint pakSize = f.GetSize();
+	int totalSize = pakSize - sizeof(Pak::Header);
 
 	// read table
 	if(!f.Ensure(header.fileEntryTableSize) || !f.Ensure(header.filesCount * sizeof(Pak::File)))
@@ -172,7 +172,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 	Buffer* buf = Buffer::Get();
 	buf->Resize(header.fileEntryTableSize);
 	f.Read(buf->Data(), header.fileEntryTableSize);
-	total_size -= header.fileEntryTableSize;
+	totalSize -= header.fileEntryTableSize;
 
 	// decrypt table
 	if(IsSet(header.flags, Pak::Encrypted))
@@ -203,9 +203,9 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 	{
 		Pak::File& file = pak->files[i];
 		file.filename = (cstring)buf->Data() + file.filenameOffset;
-		total_size -= file.compressedSize;
+		totalSize -= file.compressedSize;
 
-		if(total_size < 0)
+		if(totalSize < 0)
 		{
 			buf->Free();
 			Error("ResourceManager: Failed to read pak '%s', broken file size %u at index %u.", path, file.compressedSize, i);
@@ -213,11 +213,11 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 			return false;
 		}
 
-		if(file.offset + file.compressedSize > pak_size)
+		if(file.offset + file.compressedSize > pakSize)
 		{
 			buf->Free();
 			Error("ResourceManager: Failed to read pak '%s', file at index %u has invalid offset %u (pak size %u).",
-				path, i, file.offset, pak_size);
+				path, i, file.offset, pakSize);
 			delete pak;
 			return false;
 		}
@@ -320,30 +320,30 @@ Resource* ResourceManager::GetResource(Cstring filename, ResourceType type)
 	Resource* res = TryGetResource(filename, type);
 	if(!res)
 	{
-		cstring type_name;
+		cstring typeName;
 		switch(type)
 		{
 		case ResourceType::Mesh:
-			type_name = "mesh";
+			typeName = "mesh";
 			break;
 		case ResourceType::Texture:
-			type_name = "texture";
+			typeName = "texture";
 			break;
 		case ResourceType::VertexData:
-			type_name = "vertex data";
+			typeName = "vertex data";
 			break;
 		case ResourceType::Sound:
-			type_name = "sound";
+			typeName = "sound";
 			break;
 		case ResourceType::Music:
-			type_name = "music";
+			typeName = "music";
 			break;
 		default:
 			assert(0);
-			type_name = "unknown";
+			typeName = "unknown";
 			break;
 		}
-		throw Format("ResourceManager: Missing %s '%s'.", type_name, filename);
+		throw Format("ResourceManager: Missing %s '%s'.", typeName, filename);
 	}
 	return res;
 }
