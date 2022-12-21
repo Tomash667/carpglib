@@ -221,16 +221,16 @@ struct Optional
 	{
 		if(ptr)
 		{
-			has_value = true;
+			hasValue = true;
 			value = *ptr;
 		}
 		else
-			has_value = false;
+			hasValue = false;
 	}
 
 	operator const T* () const
 	{
-		if(has_value)
+		if(hasValue)
 			return &value;
 		else
 			return nullptr;
@@ -238,7 +238,7 @@ struct Optional
 
 private:
 	T value;
-	bool has_value;
+	bool hasValue;
 };
 
 //-----------------------------------------------------------------------------
@@ -269,11 +269,11 @@ public:
 		if(ptr && owned)
 			allocator.Destroy(ptr);
 	}
-	void operator = (T* new_ptr)
+	void operator = (T* newPtr)
 	{
 		if(ptr)
 			allocator.Destroy(ptr);
-		ptr = new_ptr;
+		ptr = newPtr;
 	}
 	operator T* ()
 	{

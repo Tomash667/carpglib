@@ -9,12 +9,12 @@ EntityType<ParticleEmitter>::Impl EntityType<ParticleEmitter>::impl;
 EntityType<TrailParticleEmitter>::Impl EntityType<TrailParticleEmitter>::impl;
 
 //=================================================================================================
-float drop_range(float v, float t)
+float DropRange(float v, float t)
 {
 	if(v > 0)
 	{
-		float t_wznoszenia = v / G;
-		if(t_wznoszenia >= t)
+		float tUp = v / G;
+		if(tUp >= t)
 			return (v * v) / (2 * G);
 		else
 			return v * t - (G * (t * t)) / 2;
@@ -25,13 +25,39 @@ float drop_range(float v, float t)
 
 void ParticleEffect::CalculateRadius()
 {
-	// oblicz promieñ
-	float t;
-	if(life > 0)
-		t = min(particleLife, life);
+	// calculate radius
+	radius = 0.f;
+	// left
+	float r = abs(posMin.x + speedMin.x * particleLife);
+	if(r > radius)
+		radius = r;
+	// right
+	r = abs(posMax.x + speedMax.x * particleLife);
+	if(r > radius)
+		radius = r;
+	// back
+	r = abs(posMin.z + speedMin.z * particleLife);
+	if(r > radius)
+		radius = r;
+	// front
+	r = abs(posMax.z + speedMax.z * particleLife);
+	if(r > radius)
+		radius = r;
+	// up
+	if(gravity)
+		r = abs(posMax.y + DropRange(speedMax.y, particleLife));
 	else
-		t = particleLife;
-	float r = 0.f;
+		r = abs(posMax.y + speedMax.y * particleLife);
+	if(r > radius)
+		radius = r;
+	// down
+	if(gravity)
+		r = abs(posMin.y + DropRange(speedMin.y, particleLife));
+	else
+		r = abs(posMin.y + speedMin.y * particleLife);
+	if(r > radius)
+		radius = r;
+	radius = sqrt(2 * radius * radius);
 
 	// lewa
 	float r2 = abs(posMin.x + speedMin.x * t);
@@ -102,10 +128,11 @@ bool ParticleEmitter::Update(float dt)
 		return true;
 	}
 
-	// aktualizuj cz¹steczki
-	for(vector<Particle>::iterator it2 = particles.begin(), end2 = particles.end(); it2 != end2; ++it2)
+	// update particles
+	if(gravity)
 	{
-		Particle& p = *it2;
+		for(Particle& p : particles)
+		{
 		if(!p.exists)
 			continue;
 
@@ -117,11 +144,28 @@ bool ParticleEmitter::Update(float dt)
 		else
 		{
 			p.pos += p.speed * dt;
-			p.speed.y -= p.gravity * dt;
+				p.speed.y -= G * dt;
+		}
+	}
+	}
+	else
+	{
+		for(Particle& p : particles)
+		{
+			if(!p.exists)
+				continue;
+
+			if((p.life -= dt) <= 0.f)
+			{
+				p.exists = false;
+				--alive;
+			}
+			else
+				p.pos += p.speed * dt;
 		}
 	}
 
-	// emisja
+	// emission
 	if(!destroy && (emissions == -1 || emissions > 0) && ((time += dt) >= effect->emissionInterval))
 	{
 		if(emissions > 0)
@@ -138,7 +182,6 @@ bool ParticleEmitter::Update(float dt)
 
 			Particle& p = *it2;
 			p.exists = true;
-			p.gravity = G;
 			p.life = effect->particleLife;
 			p.pos = pos + Vec3::Random(effect->posMin, effect->posMax);
 			p.speed = Vec3::Random(effect->speedMin, effect->speedMax);
@@ -163,6 +206,7 @@ void ParticleEmitter::Save(FileWriter& f)
 	f << particles;
 	f << alive;
 	f << destroy;
+	f << gravity;
 }
 
 //=================================================================================================
@@ -238,9 +282,27 @@ void ParticleEmitter::Load(FileReader& f, int version)
 		f >> manualDelete;
 		f >> time;
 		f >> radius;
-		f >> particles;
+		particles.resize(f.Read<uint>());
+		for(Particle& p : particles)
+		{
+			f >> p.pos;
+			f >> p.speed;
+			f >> p.life;
+			f.Skip<float>(); // gravity
+			f >> p.exists;
+		}
 		f >> alive;
 		f >> destroy;*/
+
+		if(opSize == 0)
+			size = Vec2(oldSize);
+		else
+			size = Vec2(oldSize, 0.f);
+
+		if(opAlpha == 0)
+			alpha = Vec2(oldAlpha);
+		else
+			alpha = Vec2(oldAlpha, 0.f);
 
 		if(opSize == 0)
 			size = Vec2(oldSize);
@@ -414,9 +476,9 @@ void TrailParticleEmitter::Load(FileReader& f, int version)
 	if(version >= 2)
 	{
 		f >> width;
-		const string& tex_id = f.ReadString1();
-		if(!tex_id.empty())
-			tex = app::resMgr->Load<Texture>(tex_id);
+		const string& texId = f.ReadString1();
+		if(!texId.empty())
+			tex = app::resMgr->Load<Texture>(texId);
 		else
 			tex = nullptr;
 		f >> manual;

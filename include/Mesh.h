@@ -50,7 +50,7 @@ struct Mesh : public Resource
 		word tris; // ile trójk¹tów narysowaæ
 		word minInd; // odpowiednik parametru DrawIndexedPrimitive - MinIndex (tylko wyra¿ony w trójk¹tach)
 		word nInd; // odpowiednik parametru DrawIndexedPrimitive - NumVertices (tylko wyra¿ony w trójk¹tach)
-		string name;//, normal_name, specular_name;
+		string name;
 		TexturePtr tex, texNormal, texSpecular;
 		Vec3 specularColor;
 		float specularIntensity;

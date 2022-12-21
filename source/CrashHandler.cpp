@@ -69,12 +69,12 @@ cstring CodeToString(DWORD err)
 }
 
 //=================================================================================================
-int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crash_info)
+int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crashInfo)
 {
-	cstring type = ExceptionTypeToString(crash_info->pExceptionInfo->exctype);
-	if(crash_info->pExceptionInfo->pexcptrs && crash_info->pExceptionInfo->pexcptrs->ExceptionRecord)
+	cstring type = ExceptionTypeToString(crashInfo->pExceptionInfo->exctype);
+	if(crashInfo->pExceptionInfo->pexcptrs && crashInfo->pExceptionInfo->pexcptrs->ExceptionRecord)
 	{
-		PEXCEPTION_RECORD ptr = crash_info->pExceptionInfo->pexcptrs->ExceptionRecord;
+		PEXCEPTION_RECORD ptr = crashInfo->pExceptionInfo->pexcptrs->ExceptionRecord;
 		Error("Engine: Unhandled exception caught!\nType: %s\nCode: 0x%x (%s)\nFlags: %d\nAddress: 0x%p\n\nPlease report this error.",
 			type, ptr->ExceptionCode, CodeToString(ptr->ExceptionCode), ptr->ExceptionFlags, ptr->ExceptionAddress);
 	}

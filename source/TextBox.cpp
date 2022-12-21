@@ -521,8 +521,8 @@ void TextBox::Update(float dt)
 						text.insert(index, str);
 					else
 					{
-						int max_chars = limit - text.length();
-						text.insert(index, str, max_chars);
+						int maxChars = limit - text.length();
+						text.insert(index, str, maxChars);
 					}
 					UpdateFontLines();
 					index += str.length();
@@ -942,10 +942,10 @@ Int2 TextBox::IndexToPos(const Int2& index)
 }
 
 //=================================================================================================
-void TextBox::SetText(cstring new_text)
+void TextBox::SetText(cstring newText)
 {
-	if(new_text)
-		text = new_text;
+	if(newText)
+		text = newText;
 	else
 		text.clear();
 	selectStartIndex = NOT_SELECTED;

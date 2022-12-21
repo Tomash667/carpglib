@@ -62,7 +62,7 @@ private:
 
 			TreeNode* node;
 			TreeNode::Pred pred;
-			std::queue<TreeNode*> to_check;
+			std::queue<TreeNode*> toCheck;
 		};
 
 		Enumerator(TreeNode* node, TreeNode::Pred pred) : node(node), pred(pred) {}

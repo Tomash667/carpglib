@@ -31,7 +31,7 @@ public:
 	void OnChar(char c) override;
 
 	void Init();
-	void Reset(bool cache = false);
+	void Reset(bool resetCache = false);
 	void Add(Cstring str);
 	void CheckLines();
 

@@ -30,10 +30,10 @@ Font* FontLoader::Load(cstring name, int size, int weight, int outline)
 Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 {
 	HDC hdc = GetDC(nullptr);
-	int logic_size = -MulDiv(size, 96, 72);
+	int logicSize = -MulDiv(size, 96, 72);
 
 	// create winapi font
-	HFONT winapiFont = CreateFontA(logic_size, 0, 0, 0, weight * 100, false, false, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+	HFONT winapiFont = CreateFontA(logicSize, 0, 0, 0, weight * 100, false, false, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
 		CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, name);
 	if(!winapiFont)
 	{
@@ -43,9 +43,9 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 	}
 
 	// get glyphs weights, font height
-	int glyph_w[256];
+	int glyphW[256];
 	SelectObject(hdc, (HGDIOBJ)winapiFont);
-	if(GetCharWidth32(hdc, 0, 255, glyph_w) == 0)
+	if(GetCharWidth32(hdc, 0, 255, glyphW) == 0)
 	{
 		ABC abc[256];
 		if(GetCharABCWidths(hdc, 0, 255, abc) == 0)
@@ -58,7 +58,7 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 		for(int i = 0; i <= 255; ++i)
 		{
 			ABC& a = abc[i];
-			glyph_w[i] = a.abcA + a.abcB + a.abcC;
+			glyphW[i] = a.abcA + a.abcB + a.abcC;
 		}
 	}
 	TEXTMETRIC tm;
@@ -72,7 +72,7 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 	Int2 texSize(padding * 2, padding * 2 + font->height);
 	for(int i = 32; i <= 255; ++i)
 	{
-		int width = glyph_w[i];
+		int width = glyphW[i];
 		if(width)
 			texSize.x += width + padding;
 	}
@@ -86,7 +86,7 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 	for(int i = 32; i <= 255; ++i)
 	{
 		Font::Glyph& glyph = font->glyph[i];
-		glyph.width = glyph_w[i];
+		glyph.width = glyphW[i];
 		if(glyph.width)
 		{
 			glyph.uv.v1 = Vec2(float(offset.x) / texSize.x, float(offset.y) / texSize.y);
@@ -112,7 +112,7 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 	// save textures to file
 	/*app::render->SaveToFile(font->tex, Format("%s-%d.png", name, size), ImageFormat::PNG);
 	if(outline > 0)
-		app::render->SaveToFile(font->tex_outline, Format("%s-%d-outline.png", name, size), ImageFormat::PNG);*/
+		app::render->SaveToFile(font->texOutline, Format("%s-%d-outline.png", name, size), ImageFormat::PNG);*/
 
 	return font.Pin();
 }

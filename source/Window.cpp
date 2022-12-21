@@ -110,10 +110,10 @@ void Window::Event(GuiEvent e)
 	}
 }
 
-void Window::SetAreaSize(const Int2& area_size)
+void Window::SetAreaSize(const Int2& areaSize)
 {
-	Int2 new_size = area_size + Int2(0, layout->headerHeight);
-	SetSize(new_size);
+	Int2 newSize = areaSize + Int2(0, layout->headerHeight);
+	SetSize(newSize);
 }
 
 void Window::SetMenu(MenuBar* _menu)

@@ -1,8 +1,5 @@
 #pragma once
 
-// gdy trzeba coœ na chwilê wczytaæ to mo¿na u¿ywaæ tego stringa
-extern string g_tmp_string;
-
 //-----------------------------------------------------------------------------
 struct Cstring
 {
@@ -82,10 +79,10 @@ void FormatStr(string& str, cstring fmt, ...);
 cstring Upper(cstring str);
 vector<string> Split(cstring str, char delimiter = ' ', char quote = '"');
 void SplitText(char* buf, vector<cstring>& lines);
-bool Unescape(const string& str_in, uint pos, uint length, string& str_out);
-inline bool Unescape(const string& str_in, string& str_out)
+bool Unescape(const string& strIn, uint pos, uint length, string& strOut);
+inline bool Unescape(const string& strIn, string& strOut)
 {
-	return Unescape(str_in, 0u, str_in.length(), str_out);
+	return Unescape(strIn, 0u, strIn.length(), strOut);
 }
 bool StringInString(cstring s1, cstring s2);
 cstring Escape(Cstring str, char quote = '"');
@@ -94,7 +91,7 @@ cstring EscapeChar(char c);
 cstring EscapeChar(char c, string& out);
 cstring ToString(const wchar_t* str);
 const wchar_t* ToWString(cstring str);
-void Replace(string& s, cstring in_chars, cstring out_chars);
+void Replace(string& str, cstring inChars, cstring outChars);
 inline bool EndsWith(std::string const& value, std::string const& ending)
 {
 	if(ending.size() > value.size())

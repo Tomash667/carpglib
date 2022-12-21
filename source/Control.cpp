@@ -90,10 +90,10 @@ void Control::SetDocked(bool newDocked)
 	}
 	else
 	{
-		Int2 new_global_pos = parent->globalPos + pos;
-		if(new_global_pos != globalPos)
+		Int2 newGlobalPos = parent->globalPos + pos;
+		if(newGlobalPos != globalPos)
 		{
-			globalPos = new_global_pos;
+			globalPos = newGlobalPos;
 			Event(GuiEvent_Moved);
 		}
 	}

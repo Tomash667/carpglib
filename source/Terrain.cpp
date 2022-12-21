@@ -97,20 +97,20 @@ void Terrain::Build(bool smooth)
 	ID3D11Device* device = app::render->GetDevice();
 
 	// create vertex buffer
-	D3D11_BUFFER_DESC v_desc = {};
-	v_desc.Usage = D3D11_USAGE_DEFAULT;
-	v_desc.ByteWidth = sizeof(VTerrain) * nVerts;
-	v_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	D3D11_BUFFER_DESC bufferDesc = {};
+	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	bufferDesc.ByteWidth = sizeof(VTerrain) * nVerts;
+	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
-	V(device->CreateBuffer(&v_desc, nullptr, &vb));
+	V(device->CreateBuffer(&bufferDesc, nullptr, &vb));
 	SetDebugName(vb, "TerrainVb");
 
 	// create staging vertex buffer
-	v_desc.Usage = D3D11_USAGE_STAGING;
-	v_desc.BindFlags = 0;
-	v_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+	bufferDesc.Usage = D3D11_USAGE_STAGING;
+	bufferDesc.BindFlags = 0;
+	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
 
-	V(device->CreateBuffer(&v_desc, nullptr, &vbStaging));
+	V(device->CreateBuffer(&bufferDesc, nullptr, &vbStaging));
 	SetDebugName(vbStaging, "TerrainVbStaging");
 
 	// build mesh
@@ -157,14 +157,14 @@ void Terrain::Build(bool smooth)
 	{
 		for(uint x = 0; x < nParts; ++x)
 		{
-			const uint z_start = z * tilesPerPart,
-				z_end = z_start + tilesPerPart,
-				x_start = x * tilesPerPart,
-				x_end = x_start + tilesPerPart;
+			const uint zStart = z * tilesPerPart,
+				zEnd = zStart + tilesPerPart,
+				xStart = x * tilesPerPart,
+				xEnd = xStart + tilesPerPart;
 
-			for(uint zz = z_start; zz < z_end; ++zz)
+			for(uint zz = zStart; zz < zEnd; ++zz)
 			{
-				for(uint xx = x_start; xx < x_end; ++xx)
+				for(uint xx = xStart; xx < xEnd; ++xx)
 				{
 					for(uint j = 0; j < 6; ++j)
 					{
@@ -177,17 +177,17 @@ void Terrain::Build(bool smooth)
 	}
 
 	// create index buffer
-	v_desc.Usage = D3D11_USAGE_IMMUTABLE;
-	v_desc.ByteWidth = sizeof(int) * nTris * 3;
-	v_desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	v_desc.CPUAccessFlags = 0;
-	v_desc.MiscFlags = 0;
-	v_desc.StructureByteStride = 0;
+	bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	bufferDesc.ByteWidth = sizeof(int) * nTris * 3;
+	bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	bufferDesc.CPUAccessFlags = 0;
+	bufferDesc.MiscFlags = 0;
+	bufferDesc.StructureByteStride = 0;
 
-	D3D11_SUBRESOURCE_DATA v_data = {};
-	v_data.pSysMem = buf.Get();
+	D3D11_SUBRESOURCE_DATA subData = {};
+	subData.pSysMem = buf.Get();
 
-	V(device->CreateBuffer(&v_desc, &v_data, &ib));
+	V(device->CreateBuffer(&bufferDesc, &subData, &ib));
 	SetDebugName(ib, "TerrainIb");
 
 	// smooth mesh
@@ -377,14 +377,14 @@ void Terrain::CalculateBox()
 		float pmax = -Inf();
 		float pmin = Inf();
 
-		const uint z_start = (i / nParts) * tilesPerPart,
-			z_end = z_start + tilesPerPart,
-			x_start = (i % nParts) * tilesPerPart,
-			x_end = x_start + tilesPerPart;
+		const uint zStart = (i / nParts) * tilesPerPart,
+			zEnd = zStart + tilesPerPart,
+			xStart = (i % nParts) * tilesPerPart,
+			xEnd = xStart + tilesPerPart;
 
-		for(uint z = z_start; z <= z_end; ++z)
+		for(uint z = zStart; z <= zEnd; ++z)
 		{
-			for(uint x = x_start; x <= x_end; ++x)
+			for(uint x = xStart; x <= xEnd; ++x)
 			{
 				float hc = h[x + z * width];
 				if(hc > pmax)
@@ -470,29 +470,29 @@ void Terrain::SmoothNormals(VTerrain* v)
 	{
 		for(uint x = 0; x < nTiles; ++x)
 		{
-			bool has_left = (x > 0),
-				has_right = (x < nTiles - 1),
-				has_bottom = (z > 0),
-				has_top = (z < nTiles - 1);
+			bool hasLeft = (x > 0),
+				hasRight = (x < nTiles - 1),
+				hasBottom = (z > 0),
+				hasTop = (z < nTiles - 1);
 
 			//------------------------------------------
 			// PUNKT (0,0)
 			sum = 1;
 			normal = W(0, 0, 0).normal;
 
-			if(has_left)
+			if(hasLeft)
 			{
 				CalcNormal(-1, 0, 0, 1, 2);
 				CalcNormal(-1, 0, 3, 4, 5);
 				sum += 2;
 
-				if(has_bottom)
+				if(hasBottom)
 				{
 					CalcNormal(-1, -1, 3, 4, 5);
 					++sum;
 				}
 			}
-			if(has_bottom)
+			if(hasBottom)
 			{
 				CalcNormal(0, -1, 0, 1, 2);
 				CalcNormal(0, -1, 3, 4, 5);
@@ -508,19 +508,19 @@ void Terrain::SmoothNormals(VTerrain* v)
 			normal += W(0, 0, 3).normal;
 			sum = 2;
 
-			if(has_left)
+			if(hasLeft)
 			{
 				CalcNormal(-1, 0, 3, 4, 5);
 				++sum;
 
-				if(has_top)
+				if(hasTop)
 				{
 					CalcNormal(-1, 1, 0, 1, 2);
 					CalcNormal(-1, 1, 3, 4, 5);
 					sum += 2;
 				}
 			}
-			if(has_top)
+			if(hasTop)
 			{
 				CalcNormal(0, 1, 0, 1, 2);
 				++sum;
@@ -536,19 +536,19 @@ void Terrain::SmoothNormals(VTerrain* v)
 			normal += W(0, 0, 5).normal;
 			sum = 2;
 
-			if(has_right)
+			if(hasRight)
 			{
 				CalcNormal(1, 0, 0, 1, 2);
 				++sum;
 
-				if(has_bottom)
+				if(hasBottom)
 				{
 					CalcNormal(1, -1, 0, 1, 2);
 					CalcNormal(1, -1, 3, 4, 5);
 					sum += 2;
 				}
 			}
-			if(has_bottom)
+			if(hasBottom)
 			{
 				CalcNormal(0, -1, 3, 4, 5);
 				++sum;
@@ -563,19 +563,19 @@ void Terrain::SmoothNormals(VTerrain* v)
 			normal = W(0, 0, 4).normal;
 			sum = 1;
 
-			if(has_right)
+			if(hasRight)
 			{
 				CalcNormal(1, 0, 0, 1, 2);
 				CalcNormal(1, 0, 3, 4, 5);
 				sum += 2;
 
-				if(has_top)
+				if(hasTop)
 				{
 					CalcNormal(1, 1, 0, 1, 2);
 					++sum;
 				}
 			}
-			if(has_top)
+			if(hasTop)
 			{
 				CalcNormal(0, 1, 0, 1, 2);
 				CalcNormal(0, 1, 3, 4, 5);

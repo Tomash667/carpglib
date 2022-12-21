@@ -15,7 +15,7 @@ Render* app::render;
 static const DXGI_FORMAT DISPLAY_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 //=================================================================================================
-Render::Render() : initialized(false), vsync(true), shaders_dir("shaders"), usedAdapter(0), multisampling(0), multisamplingQuality(0),
+Render::Render() : initialized(false), vsync(true), shadersDir("shaders"), usedAdapter(0), multisampling(0), multisamplingQuality(0),
 factory(nullptr), adapter(nullptr), swapChain(nullptr), device(nullptr), deviceContext(nullptr), renderTargetView(nullptr), depthStencilView(nullptr),
 blendStates(), depthStates(), rasterStates(), blendState(BLEND_NO), depthState(DEPTH_YES), rasterState(RASTER_NORMAL), currentTarget(nullptr),
 forceFeatureLevel(0), defaultSampler(nullptr)
@@ -115,16 +115,16 @@ void Render::CreateAdapter()
 	V(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&factory));
 
 	// enumerate adapters
-	IDXGIAdapter* tmp_adapter;
-	for(int i = 0; factory->EnumAdapters(i, &tmp_adapter) != DXGI_ERROR_NOT_FOUND; ++i)
+	IDXGIAdapter* tmpAdapter;
+	for(int i = 0; factory->EnumAdapters(i, &tmpAdapter) != DXGI_ERROR_NOT_FOUND; ++i)
 	{
 		DXGI_ADAPTER_DESC desc;
-		V(tmp_adapter->GetDesc(&desc));
+		V(tmpAdapter->GetDesc(&desc));
 		Info("Render: Adapter %d: %s", i, ToString(desc.Description));
 		if(usedAdapter == i)
-			adapter = tmp_adapter;
+			adapter = tmpAdapter;
 		else
-			tmp_adapter->Release();
+			tmpAdapter->Release();
 	}
 
 	// fallback to first adapter
@@ -972,7 +972,7 @@ ID3DBlob* Render::CompileShader(ShaderParams& params, bool isVertex)
 	}
 
 	const uint flags = D3DCOMPILE_ENABLE_STRICTNESS | (IsDebug() ? D3DCOMPILE_DEBUG : 0);
-	cstring path = Format("%s/%s.hlsl", shaders_dir.c_str(), params.name);
+	cstring path = Format("%s/%s.hlsl", shadersDir.c_str(), params.name);
 	FileTime fileTime = io::GetFileTime(path);
 
 	// try to load from cache

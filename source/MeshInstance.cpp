@@ -7,7 +7,7 @@
 const float DEFAULT_BLENDING = 0.33f;
 const int BLEND_TO_BIND_POSE = -1;
 void(*MeshInstance::Predraw)(void*, Matrix*, int) = nullptr;
-constexpr Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, Vec3::One);
+constexpr Mesh::KeyframeBone blendbZero(Vec3::Zero, Quat::Identity, Vec3::One);
 
 //=================================================================================================
 MeshInstance::MeshInstance(Mesh* mesh) : preload(false), mesh(mesh), needUpdate(true), ptr(nullptr), baseSpeed(1.f), matScale(nullptr)
@@ -17,7 +17,7 @@ MeshInstance::MeshInstance(Mesh* mesh) : preload(false), mesh(mesh), needUpdate(
 	matBones.resize(mesh->head.nBones);
 	blendb.resize(mesh->head.nBones);
 	groups.resize(mesh->head.nGroups);
-	memcpy(&blendb[0], &blendb_zero, sizeof(blendb_zero));
+	memcpy(&blendb[0], &blendbZero, sizeof(blendbZero));
 }
 
 //=================================================================================================
@@ -35,22 +35,22 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, uint group)
 	gr.speed = baseSpeed;
 	gr.blendMax = DEFAULT_BLENDING;
 
-	int new_state = 0;
+	int newState = 0;
 
 	// blending
 	if(!IsSet(flags, PLAY_NO_BLEND))
 	{
 		SetupBlending(group);
-		SetBit(new_state, FLAG_BLENDING);
+		SetBit(newState, FLAG_BLENDING);
 		if(IsSet(flags, PLAY_BLEND_WAIT))
-			SetBit(new_state, FLAG_BLEND_WAIT);
+			SetBit(newState, FLAG_BLEND_WAIT);
 		gr.blendTime = 0.f;
 	}
 
 	// ustaw animacjê
 	gr.anim = anim;
 	gr.prio = ((flags & 0x60) >> 5);
-	gr.state = new_state | FLAG_PLAYING | FLAG_GROUP_ACTIVE;
+	gr.state = newState | FLAG_PLAYING | FLAG_GROUP_ACTIVE;
 	if(IsSet(flags, PLAY_ONCE))
 		SetBit(gr.state, FLAG_ONCE);
 	if(IsSet(flags, PLAY_BACK))
@@ -209,7 +209,7 @@ void MeshInstance::SetupBones()
 				for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 				{
 					const word b = *it;
-					Mesh::KeyframeBone::Interpolate(tmpKeyf, blendb[b], blendb_zero, bt);
+					Mesh::KeyframeBone::Interpolate(tmpKeyf, blendb[b], blendbZero, bt);
 					tmpKeyf.Mix(boneToParentPoseMat[b], mesh->bones[b].mat);
 				}
 			}
@@ -225,16 +225,16 @@ void MeshInstance::SetupBones()
 		}
 		else
 		{
-			const Group& gr_anim = groups[animGroup];
+			const Group& grAnim = groups[animGroup];
 			bool hit;
-			const int index = gr_anim.GetFrameIndex(hit);
-			const vector<Mesh::Keyframe>& frames = gr_anim.anim->frames;
+			const int index = grAnim.GetFrameIndex(hit);
+			const vector<Mesh::Keyframe>& frames = grAnim.anim->frames;
 
-			if(gr_anim.IsBlending() || grBones.IsBlending())
+			if(grAnim.IsBlending() || grBones.IsBlending())
 			{
 				// jest blending
 				const float bt = (grBones.IsBlending() ? (grBones.blendTime / grBones.blendMax) :
-					(gr_anim.blendTime / gr_anim.blendMax));
+					(grAnim.blendTime / grAnim.blendMax));
 
 				if(hit)
 				{
@@ -250,7 +250,7 @@ void MeshInstance::SetupBones()
 				else
 				{
 					// trzeba interpolowaæ
-					const float t = (gr_anim.time - frames[index].time) / (frames[index + 1].time - frames[index].time);
+					const float t = (grAnim.time - frames[index].time) / (frames[index + 1].time - frames[index].time);
 					const vector<Mesh::KeyframeBone>& keyf = frames[index].bones;
 					const vector<Mesh::KeyframeBone>& keyf2 = frames[index + 1].bones;
 
@@ -279,7 +279,7 @@ void MeshInstance::SetupBones()
 				else
 				{
 					// trzeba interpolowaæ
-					const float t = (gr_anim.time - frames[index].time) / (frames[index + 1].time - frames[index].time);
+					const float t = (grAnim.time - frames[index].time) / (frames[index + 1].time - frames[index].time);
 					const vector<Mesh::KeyframeBone>& keyf = frames[index].bones;
 					const vector<Mesh::KeyframeBone>& keyf2 = frames[index + 1].bones;
 
@@ -348,31 +348,31 @@ void MeshInstance::SetupBlending(uint boneGroup, bool first, bool inUpdate)
 			for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 			{
 				const word b = *it;
-				Mesh::KeyframeBone::Interpolate(blendb[b], blendb[b], blendb_zero, bt);
+				Mesh::KeyframeBone::Interpolate(blendb[b], blendb[b], blendbZero, bt);
 			}
 		}
 		else
 		{
 			// brak blendingu, wszystko na zero
 			for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
-				memcpy(&blendb[*it], &blendb_zero, sizeof(blendb_zero));
+				memcpy(&blendb[*it], &blendbZero, sizeof(blendbZero));
 		}
 	}
 	else
 	{
 		// jest jakaœ animacja
-		const Group& gr_anim = groups[animGroup];
+		const Group& grAnim = groups[animGroup];
 		bool hit;
-		const int index = gr_anim.GetFrameIndex(hit);
-		const vector<Mesh::Keyframe>& frames = gr_anim.anim->frames;
+		const int index = grAnim.GetFrameIndex(hit);
+		const vector<Mesh::Keyframe>& frames = grAnim.anim->frames;
 
-		if(gr_anim.IsBlending() || grBones.IsBlending())
+		if(grAnim.IsBlending() || grBones.IsBlending())
 		{
-			// je¿eli gr_anim == grBones to mo¿na to zoptymalizowaæ
+			// je¿eli grAnim == grBones to mo¿na to zoptymalizowaæ
 
 			// jest blending
 			const float bt = (grBones.IsBlending() ? (grBones.blendTime / grBones.blendMax) :
-				(gr_anim.blendTime / gr_anim.blendMax));
+				(grAnim.blendTime / grAnim.blendMax));
 
 			if(hit)
 			{
@@ -387,7 +387,7 @@ void MeshInstance::SetupBlending(uint boneGroup, bool first, bool inUpdate)
 			else
 			{
 				// trzeba interpolowaæ
-				const float t = (gr_anim.time - frames[index].time) / (frames[index + 1].time - frames[index].time);
+				const float t = (grAnim.time - frames[index].time) / (frames[index + 1].time - frames[index].time);
 				const vector<Mesh::KeyframeBone>& keyf = frames[index].bones;
 				const vector<Mesh::KeyframeBone>& keyf2 = frames[index + 1].bones;
 				Mesh::KeyframeBone tmpKeyf;
@@ -416,7 +416,7 @@ void MeshInstance::SetupBlending(uint boneGroup, bool first, bool inUpdate)
 			else
 			{
 				// trzeba interpolowaæ
-				const float t = (gr_anim.time - frames[index].time) / (frames[index + 1].time - frames[index].time);
+				const float t = (grAnim.time - frames[index].time) / (frames[index + 1].time - frames[index].time);
 				const vector<Mesh::KeyframeBone>& keyf = frames[index].bones;
 				const vector<Mesh::KeyframeBone>& keyf2 = frames[index + 1].bones;
 
@@ -485,22 +485,22 @@ int MeshInstance::GetHighestPriority(uint& _group)
 //=================================================================================================
 int MeshInstance::GetUsableGroup(uint group)
 {
-	uint top_group;
-	int highest_prio = GetHighestPriority(top_group);
-	if(highest_prio == -1)
+	uint topGroup;
+	int highestPrio = GetHighestPriority(topGroup);
+	if(highestPrio == -1)
 	{
 		// brak jakiejkolwiek animacji
 		return BLEND_TO_BIND_POSE;
 	}
-	else if(groups[group].IsActive() && groups[group].prio == highest_prio)
+	else if(groups[group].IsActive() && groups[group].prio == highestPrio)
 	{
-		// u¿yj animacji z aktualnej grupy, to mo¿e byæ równoczeœnie 'top_group'
+		// u¿yj animacji z aktualnej grupy, to mo¿e byæ równoczeœnie 'topGroup'
 		return group;
 	}
 	else
 	{
 		// u¿yj animacji z grupy z najwy¿szym priorytetem
-		return top_group;
+		return topGroup;
 	}
 }
 
@@ -651,11 +651,11 @@ void MeshInstance::SaveOptional(StreamWriter& f, MeshInstance* meshInst)
 //=================================================================================================
 void MeshInstance::Load(FileReader& f, int version)
 {
-	bool frame_end_info, frame_end_info2;
+	bool frameEndInfo, frameEndInfo2;
 	if(version == 0)
 	{
-		f >> frame_end_info;
-		f >> frame_end_info2;
+		f >> frameEndInfo;
+		f >> frameEndInfo2;
 	}
 
 	int index = 0;
@@ -667,19 +667,19 @@ void MeshInstance::Load(FileReader& f, int version)
 		f >> group.state;
 		f >> group.prio;
 		f >> group.usedGroup;
-		const string& anim_name = f.ReadString1();
-		if(anim_name.empty())
+		const string& animName = f.ReadString1();
+		if(animName.empty())
 			group.anim = nullptr;
 		else
-			group.anim = mesh->GetAnimation(anim_name.c_str());
+			group.anim = mesh->GetAnimation(animName.c_str());
 		if(version >= 1)
 			f >> group.frameEnd;
 		else
 		{
 			if(index == 0)
-				group.frameEnd = frame_end_info;
+				group.frameEnd = frameEndInfo;
 			else if(index == 1)
-				group.frameEnd = frame_end_info2;
+				group.frameEnd = frameEndInfo2;
 			else
 				group.frameEnd = false;
 		}
@@ -781,14 +781,14 @@ void MeshInstance::Write(StreamWriter& f) const
 //=================================================================================================
 bool MeshInstance::Read(StreamReader& f)
 {
-	byte groups_count;
+	byte groupsCount;
 
-	f >> groups_count;
+	f >> groupsCount;
 	if(!f)
 		return false;
 
 	if(preload)
-		groups.resize(groups_count);
+		groups.resize(groupsCount);
 
 	for(Group& group : groups)
 	{
@@ -797,25 +797,25 @@ bool MeshInstance::Read(StreamReader& f)
 		f >> group.state;
 		f.ReadCasted<byte>(group.prio);
 		f.ReadCasted<byte>(group.usedGroup);
-		const string& anim_id = f.ReadString1();
+		const string& animId = f.ReadString1();
 		f >> group.frameEnd;
 		if(!f)
 			return false;
 
-		if(!anim_id.empty())
+		if(!animId.empty())
 		{
 			if(preload)
 			{
 				string* str = StringPool.Get();
-				*str = anim_id;
+				*str = animId;
 				group.anim = (Mesh::Animation*)str;
 			}
 			else
 			{
-				group.anim = mesh->GetAnimation(anim_id.c_str());
+				group.anim = mesh->GetAnimation(animId.c_str());
 				if(!group.anim)
 				{
-					Error("Missing animation '%s'.", anim_id.c_str());
+					Error("Missing animation '%s'.", animId.c_str());
 					return false;
 				}
 			}

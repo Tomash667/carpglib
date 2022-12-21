@@ -180,12 +180,12 @@ struct TreeItem
 template<typename T, uint COUNT, typename ValueT = int, typename Pred = std::greater<>>
 struct TopN
 {
-	TopN(T default_best, ValueT default_value)
+	TopN(T defaultBest, ValueT defaultValue)
 	{
 		for(uint i = 0; i < COUNT; ++i)
 		{
-			best[i] = default_best;
-			best_values[i] = default_value;
+			best[i] = defaultBest;
+			bestValues[i] = defaultValue;
 		}
 	}
 
@@ -195,15 +195,15 @@ struct TopN
 			return;
 		for(uint i = 0; i < COUNT; ++i)
 		{
-			if(pred(value, best_values[i]))
+			if(pred(value, bestValues[i]))
 			{
 				for(uint j = COUNT - 1; j > i; --j)
 				{
-					best_values[j] = best_values[j - 1];
+					bestValues[j] = bestValues[j - 1];
 					best[j] = best[j - 1];
 				}
 				best[i] = entry;
-				best_values[i] = value;
+				bestValues[i] = value;
 				break;
 			}
 		}
@@ -221,7 +221,7 @@ struct TopN
 
 	bool CanAdd(ValueT value) const
 	{
-		return pred(value, best_values[COUNT - 1]);
+		return pred(value, bestValues[COUNT - 1]);
 	}
 
 	T operator [](int index)
@@ -230,6 +230,6 @@ struct TopN
 	}
 
 	array<T, COUNT> best;
-	array<ValueT, COUNT> best_values;
+	array<ValueT, COUNT> bestValues;
 	Pred pred;
 };

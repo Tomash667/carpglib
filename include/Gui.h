@@ -242,11 +242,11 @@ private:
 		bool parseSpecial;
 	};
 
-	void DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int x, int y, const Rect* clipping);
-	void DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, int x, int y, const Rect* clipping);
+	void DrawTextLine(DrawLineContext& ctx, uint lineBegin, uint lineEnd, int x, int y, const Rect* clipping);
+	void DrawTextOutline(DrawLineContext& ctx, uint lineBegin, uint lineEnd, int x, int y, const Rect* clipping);
 	int Clip(int x, int y, int w, int h, const Rect* clipping);
-	void SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc);
-	void AddRect(VGui*& v, const Vec2& left_top, const Vec2& right_bottom, const Vec4& color);
+	void SkipLine(cstring text, uint lineBegin, uint lineEnd, HitboxContext* hc);
+	void AddRect(VGui*& v, const Vec2& leftTop, const Vec2& rightBottom, const Vec4& color);
 
 	FontLoader* fontLoader;
 	GuiShader* shader;

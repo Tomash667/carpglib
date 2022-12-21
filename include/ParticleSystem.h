@@ -44,7 +44,7 @@ private:
 	struct Particle
 	{
 		Vec3 pos, speed;
-		float life, gravity;
+		float life;
 		bool exists;
 	};
 
@@ -107,5 +107,5 @@ struct TrailParticleEmitter : public EntityType<TrailParticleEmitter>
 	bool Update(float dt);
 	void AddPoint(const Vec3& pt);
 	void Save(FileWriter& f);
-	void Load(FileReader& f, int version = 2);
+	void Load(FileReader& f, int version = 3);
 };

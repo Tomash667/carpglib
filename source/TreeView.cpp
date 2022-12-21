@@ -33,7 +33,7 @@ TreeNode::Enumerator::Iterator::Iterator(TreeNode* node, TreeNode::Pred pred) : 
 {
 	if(node)
 	{
-		to_check.push(node);
+		toCheck.push(node);
 		Next();
 	}
 }
@@ -42,14 +42,14 @@ void TreeNode::Enumerator::Iterator::Next()
 {
 	while(true)
 	{
-		if(to_check.empty())
+		if(toCheck.empty())
 		{
 			node = nullptr;
 			return;
 		}
 
-		TreeNode* n = to_check.front();
-		to_check.pop();
+		TreeNode* n = toCheck.front();
+		toCheck.pop();
 
 		PredResult result;
 		if(pred)
@@ -60,7 +60,7 @@ void TreeNode::Enumerator::Iterator::Next()
 		if(result == SKIP_AND_CHECK_CHILDS || result == GET_AND_CHECK_CHILDS)
 		{
 			for(auto child : n->childs)
-				to_check.push(child);
+				toCheck.push(child);
 		}
 
 		if(result == GET_AND_SKIP_CHILDS || result == GET_AND_CHECK_CHILDS)
@@ -231,26 +231,26 @@ void TreeNode::CalculateWidth()
 
 void TreeNode::CalculatePath(bool sendEvent)
 {
-	cstring parent_path = (parent->IsRoot() ? nullptr : parent->path.c_str());
-	cstring new_path;
+	cstring parentPath = (parent->IsRoot() ? nullptr : parent->path.c_str());
+	cstring newPath;
 	if(IsDir())
 	{
-		if(parent_path)
-			new_path = Format("%s/%s", parent_path, text.c_str());
+		if(parentPath)
+			newPath = Format("%s/%s", parentPath, text.c_str());
 		else
-			new_path = text.c_str();
+			newPath = text.c_str();
 	}
 	else
 	{
-		if(parent_path)
-			new_path = parent_path;
+		if(parentPath)
+			newPath = parentPath;
 		else
-			new_path = "";
+			newPath = "";
 	}
 
-	if(path != new_path)
+	if(path != newPath)
 	{
-		path = new_path;
+		path = newPath;
 		if(sendEvent)
 			tree->handler(TreeView::A_PATH_CHANGED, (int)this);
 		if(IsDir())
@@ -288,28 +288,28 @@ void TreeView::CalculatePos()
 	totalSize = Int2(maxWidth, offset.y);
 	areaSize = size - Int2(2, 2);
 
-	bool use_hscrollbar = false, use_vscrollbar = false;
+	bool useHscrollbar = false, useVscrollbar = false;
 	if(totalSize.y > areaSize.y)
 	{
-		use_vscrollbar = true;
+		useVscrollbar = true;
 		areaSize.x -= 15;
 	}
 	if(totalSize.x > areaSize.x)
 	{
-		use_hscrollbar = true;
+		useHscrollbar = true;
 		areaSize.y -= 15;
-		if(!use_vscrollbar && totalSize.y > areaSize.y)
+		if(!useVscrollbar && totalSize.y > areaSize.y)
 		{
-			use_vscrollbar = true;
+			useVscrollbar = true;
 			areaSize.x -= 15;
 		}
 	}
 
-	int size_sub = (use_hscrollbar && use_vscrollbar) ? 15 : 0;
-	if(use_hscrollbar)
+	int sizeSub = (useHscrollbar && useVscrollbar) ? 15 : 0;
+	if(useHscrollbar)
 	{
-		hscrollbar.SetSize(Int2(size.x - size_sub, 16));
-		hscrollbar.part = size.x - size_sub;
+		hscrollbar.SetSize(Int2(size.x - sizeSub, 16));
+		hscrollbar.part = size.x - sizeSub;
 		hscrollbar.visible = true;
 		hscrollbar.UpdateTotal(totalSize.x);
 	}
@@ -318,10 +318,10 @@ void TreeView::CalculatePos()
 		hscrollbar.visible = false;
 		hscrollbar.offset = 0.f;
 	}
-	if(use_vscrollbar)
+	if(useVscrollbar)
 	{
-		vscrollbar.SetSize(Int2(16, size.y - size_sub));
-		vscrollbar.part = size.y - size_sub;
+		vscrollbar.SetSize(Int2(16, size.y - sizeSub));
+		vscrollbar.part = size.y - sizeSub;
 		vscrollbar.visible = true;
 		vscrollbar.UpdateTotal(totalSize.y);
 	}
@@ -466,36 +466,36 @@ void TreeView::OnChar(char c)
 	if(c >= 'A' && c <= 'Z')
 		c = tolower(c);
 
-	int start_y;
+	int startY;
 	if(current)
-		start_y = current->pos.y + 1;
+		startY = current->pos.y + 1;
 	else
-		start_y = -1;
+		startY = -1;
 
-	TreeNode* first_above = nullptr;
-	TreeNode* first_below = nullptr;
+	TreeNode* firstAbove = nullptr;
+	TreeNode* firstBelow = nullptr;
 	for(auto node : ForEachVisible())
 	{
-		if(node->pos.y < start_y)
+		if(node->pos.y < startY)
 		{
-			if(!first_above)
+			if(!firstAbove)
 			{
-				char starts_with = tolower(node->text[0]);
-				if(c == starts_with)
-					first_above = node;
+				char startsWith = tolower(node->text[0]);
+				if(c == startsWith)
+					firstAbove = node;
 			}
 			continue;
 		}
 
-		char starts_with = tolower(node->text[0]);
-		if(c == starts_with)
+		char startsWith = tolower(node->text[0]);
+		if(c == startsWith)
 		{
-			first_below = node;
+			firstBelow = node;
 			break;
 		}
 	}
 
-	TreeNode* node = (first_below ? first_below : first_above);
+	TreeNode* node = (firstBelow ? firstBelow : firstAbove);
 	if(node && node != current)
 	{
 		if(SelectNode(node, false, false, false))
@@ -524,17 +524,17 @@ void TreeView::Update(float dt)
 	}
 
 	// scrollbars
-	bool old_mouse_focus = mouseFocus;
+	bool oldMouseFocus = mouseFocus;
 	if(hscrollbar.visible)
 	{
 		UpdateControl(&hscrollbar, dt);
-		if(old_mouse_focus && input->Down(Key::Shift))
+		if(oldMouseFocus && input->Down(Key::Shift))
 			hscrollbar.ApplyMouseWheel();
 	}
 	if(vscrollbar.visible)
 	{
 		UpdateControl(&vscrollbar, dt);
-		if(old_mouse_focus && !input->Down(Key::Shift))
+		if(oldMouseFocus && !input->Down(Key::Shift))
 			vscrollbar.ApplyMouseWheel();
 	}
 
@@ -572,7 +572,7 @@ void TreeView::Update(float dt)
 				SelectNode(dragNode, input->Down(Key::Shift), false, input->Down(Key::Control));
 			else if(CanDragAndDrop())
 			{
-				auto old_selected = selectedNodes;
+				auto oldSelected = selectedNodes;
 				SelectTopSelectedNodes();
 				above->collapsed = false;
 				for(auto node : selectedNodes)
@@ -580,7 +580,7 @@ void TreeView::Update(float dt)
 					MoveNode(node, above);
 					node->selected = false;
 				}
-				selectedNodes = old_selected;
+				selectedNodes = oldSelected;
 				for(auto node : selectedNodes)
 					node->selected = true;
 				CalculatePos();
@@ -979,7 +979,7 @@ void TreeView::RemoveSelected()
 	{
 		// get item below
 		int index = GetIndex(node->parent->childs, node);
-		int start_index = index;
+		int startIndex = index;
 		while(true)
 		{
 			++index;
@@ -996,7 +996,7 @@ void TreeView::RemoveSelected()
 		// get item above
 		if(!ok)
 		{
-			index = start_index;
+			index = startIndex;
 			while(true)
 			{
 				--index;
@@ -1085,12 +1085,12 @@ bool TreeView::MoveNode(TreeNode* node, TreeNode* newParent)
 	return true;
 }
 
-void TreeView::SetAllCollapsed(bool new_collapsed)
+void TreeView::SetAllCollapsed(bool collapsed)
 {
 	for(auto node : ForEach())
 	{
 		if(node->IsDir())
-			node->collapsed = new_collapsed;
+			node->collapsed = collapsed;
 	}
 	CalculatePos();
 }
@@ -1111,10 +1111,10 @@ void TreeView::SetTextboxLocation()
 	int width = layout->font->CalculateSize(textBox->GetText()).x + 10;
 	if(startpos + width > areaSize.x)
 		width = areaSize.x - startpos;
-	Int2 new_size = Int2(width, itemHeight + 4);
-	if(new_size != textBox->GetSize())
+	Int2 newSize = Int2(width, itemHeight + 4);
+	if(newSize != textBox->GetSize())
 	{
-		textBox->SetSize(new_size);
+		textBox->SetSize(newSize);
 		textBox->CalculateOffset(false);
 	}
 }
