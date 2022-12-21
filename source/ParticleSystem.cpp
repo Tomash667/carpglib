@@ -90,20 +90,20 @@ bool ParticleEmitter::Update(float dt)
 	{
 		for(Particle& p : particles)
 		{
-		if(!p.exists)
-			continue;
+			if(!p.exists)
+				continue;
 
-		if((p.life -= dt) <= 0.f)
-		{
-			p.exists = false;
-			--alive;
-		}
-		else
-		{
-			p.pos += p.speed * dt;
+			if((p.life -= dt) <= 0.f)
+			{
+				p.exists = false;
+				--alive;
+			}
+			else
+			{
+				p.pos += p.speed * dt;
 				p.speed.y -= G * dt;
+			}
 		}
-	}
 	}
 	else
 	{
@@ -242,6 +242,7 @@ void ParticleEmitter::Load(FileReader& f, int version)
 			f >> p.life;
 			f.Skip<float>(); // gravity
 			f >> p.exists;
+			f.Skip(3); // padding
 		}
 		f >> alive;
 		f >> destroy;
