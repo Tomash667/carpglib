@@ -20,6 +20,7 @@ struct ParticleEffect
 	Int2 spawn;
 	float emissionInterval, life, particleLife, radius;
 	int hash, emissions, maxParticles, mode;
+	bool gravity;
 
 	ParticleEffect();
 	ParticleEffect(const ParticleEffect& e);
@@ -39,6 +40,8 @@ struct ParticleSystem
 //-----------------------------------------------------------------------------
 struct ParticleEmitter : public EntityType<ParticleEmitter>
 {
+	friend class ParticleShader;
+
 	Vec3 pos;
 private:
 	struct Particle
@@ -49,20 +52,9 @@ private:
 	};
 
 	const ParticleEffect* effect;
-	/*TexturePtr tex;
-	Vec3 pos, speedMin, speedMax, posMin, posMax;*/
-	//PARTICLE_OP opSize, opAlpha;
-
-	float life;
-	int emissions;
-
-	// nowe wartoœci, dla kompatybilnoœci zerowane w Init
-	int manualDelete;
-
-	// automatycznie ustawiane
-	float time;
 	vector<Particle> particles;
-	int alive;
+	float life, time;
+	int emissions, alive, manualDelete;
 	bool destroy;
 
 public:
@@ -74,14 +66,14 @@ public:
 	bool Update(float dt);
 	void Save(FileWriter& f);
 	void Load(FileReader& f, int version = 3);
-	/*float GetAlpha(const Particle &p) const
+	float GetAlpha(const Particle &p) const
 	{
-		return Lerp(alpha.x, alpha.y, p.life / particleLife);
+		return Lerp(effect->alpha.y, effect->alpha.x, p.life / effect->particleLife);
 	}
 	float GetScale(const Particle &p) const
 	{
-		return Lerp(size.x, size.y, p.life / particleLife);
-	}*/
+		return Lerp(effect->size.y, effect->size.x, p.life / effect->particleLife);
+	}
 };
 
 //-----------------------------------------------------------------------------

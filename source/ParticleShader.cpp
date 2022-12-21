@@ -176,13 +176,13 @@ void ParticleShader::DrawParticles(const vector<ParticleEmitter*>& pes)
 		}
 
 		// set blending
-		app::render->SetBlendState((Render::BlendState)(pe.mode + 1));
+		app::render->SetBlendState((Render::BlendState)(pe.effect->mode + 1));
 
 		// set texture
-		if(lastTex != pe.tex)
+		if(lastTex != pe.effect->tex)
 		{
-			lastTex = pe.tex;
-			deviceContext->PSSetShaderResources(0, 1, &pe.tex->tex);
+			lastTex = pe.effect->tex;
+			deviceContext->PSSetShaderResources(0, 1, &pe.effect->tex->tex);
 		}
 
 		// draw

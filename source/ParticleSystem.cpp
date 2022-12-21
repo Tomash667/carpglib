@@ -58,38 +58,6 @@ void ParticleEffect::CalculateRadius()
 	if(r > radius)
 		radius = r;
 	radius = sqrt(2 * radius * radius);
-
-	// lewa
-	float r2 = abs(posMin.x + speedMin.x * t);
-	if(r2 > r)
-		r = r2;
-
-	// prawa
-	r2 = abs(posMax.x + speedMax.x * t);
-	if(r2 > r)
-		r = r2;
-
-	// ty³
-	r2 = abs(posMin.z + speedMin.z * t);
-	if(r2 > r)
-		r = r2;
-
-	// przód
-	r2 = abs(posMax.z + speedMax.z * t);
-	if(r2 > r)
-		r = r2;
-
-	// góra
-	r2 = abs(posMax.y + drop_range(speedMax.y, t));
-	if(r2 > r)
-		r = r2;
-
-	// dó³
-	r2 = abs(posMin.y + drop_range(speedMin.y, t));
-	if(r2 > r)
-		r = r2;
-
-	radius = sqrt(2 * r * r);
 }
 
 //=================================================================================================
@@ -129,7 +97,7 @@ bool ParticleEmitter::Update(float dt)
 	}
 
 	// update particles
-	if(gravity)
+	if(effect->gravity)
 	{
 		for(Particle& p : particles)
 		{
@@ -172,7 +140,7 @@ bool ParticleEmitter::Update(float dt)
 			--emissions;
 		time -= effect->emissionInterval;
 
-		int count = min(effect->spawn2.Random(), effect->maxParticles - alive);
+		int count = min(effect->spawn.Random(), effect->maxParticles - alive);
 		vector<Particle>::iterator it2 = particles.begin();
 
 		for(int i = 0; i < count; ++i)
@@ -206,7 +174,6 @@ void ParticleEmitter::Save(FileWriter& f)
 	f << particles;
 	f << alive;
 	f << destroy;
-	f << gravity;
 }
 
 //=================================================================================================
@@ -216,8 +183,7 @@ void ParticleEmitter::Load(FileReader& f, int version)
 	{
 		f >> id;
 		Register();
-		int hash;
-		f >> hash;
+		effect = ParticleEffect::Get(f.Read<int>());
 		f >> life;
 		f >> emissions;
 		f >> pos;
@@ -229,48 +195,22 @@ void ParticleEmitter::Load(FileReader& f, int version)
 	}
 	else
 	{
-
 		if(version >= 1)
 			f >> id;
 		Register();
 
-	if(version >= 3)
-	{
-		tex = app::resMgr->Load<Texture>(f.ReadString1());
-		f >> emissionInterval;
-		f >> life;
-		f >> particleLife;
-		f >> alpha;
-		f >> size;
-		f >> emissions;
-		f >> spawn;
-		f >> maxParticles;
-		f >> mode;
-		f >> pos;
-		f >> speedMin;
-		f >> speedMax;
-		f >> posMin;
-		f >> posMax;
-		f >> manualDelete;
-		f >> time;
-		f >> radius;
-		f >> particles;
-		f >> alive;
-		f >> destroy;
-	}
-	else
-	{
+		effect = new ParticleEffect;
 		float oldAlpha, oldSize;
 		int opSize, opAlpha;
-		tex = app::resMgr->Load<Texture>(f.ReadString1());
-		f >> emissionInterval;
+		effect->tex = app::resMgr->Get<Texture>(f.ReadString1());
+		f >> effect->emissionInterval;
 		f >> life;
-		f >> particleLife;
+		f >> effect->particleLife;
 		f >> oldAlpha;
 		f >> oldSize;
 		f >> emissions;
-		f >> spawn;
-		f >> maxParticles;
+		f >> effect->spawn;
+		f >> effect->maxParticles;
 		f >> mode;
 		f >> pos;
 		f >> speedMin;
@@ -292,17 +232,7 @@ void ParticleEmitter::Load(FileReader& f, int version)
 			f >> p.exists;
 		}
 		f >> alive;
-		f >> destroy;*/
-
-		if(opSize == 0)
-			size = Vec2(oldSize);
-		else
-			size = Vec2(oldSize, 0.f);
-
-		if(opAlpha == 0)
-			alpha = Vec2(oldAlpha);
-		else
-			alpha = Vec2(oldAlpha, 0.f);
+		f >> destroy;
 
 		if(opSize == 0)
 			size = Vec2(oldSize);
