@@ -43,6 +43,8 @@ struct ParticleEmitter : public EntityType<ParticleEmitter>
 	friend class ParticleShader;
 
 	Vec3 pos;
+	int manualDelete;
+
 private:
 	struct Particle
 	{
@@ -54,7 +56,7 @@ private:
 	const ParticleEffect* effect;
 	vector<Particle> particles;
 	float life, time;
-	int emissions, alive, manualDelete;
+	int emissions, alive;
 	bool destroy;
 
 public:
@@ -62,6 +64,7 @@ public:
 	bool IsAlive() const { return alive; }
 	const ParticleEffect* GetEffect() const { return effect; }
 	void SetArea(const Box& box);
+	void SetTexture(Texture* tex);
 	void Destroy() { destroy = true; }
 	bool Update(float dt);
 	void Save(FileWriter& f);
