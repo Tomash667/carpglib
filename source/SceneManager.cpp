@@ -107,8 +107,6 @@ void SceneManager::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<
 //=================================================================================================
 void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 {
-	app::render->SetBlendState(Render::BLEND_ADD_ONE);
-
 	const bool useFog = this->useFog && useLighting;
 
 	uint lastId = -1;
@@ -133,6 +131,8 @@ void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 			superShader->SetShader(id);
 			lastId = id;
 		}
+
+		app::render->SetBlendState(node->addBlend ? Render::BLEND_ADD : Render::BLEND_ADD_ONE);
 
 		superShader->Draw(node);
 	}
