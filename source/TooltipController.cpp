@@ -140,16 +140,16 @@ void TooltipController::FormatBox(bool refresh)
 
 	int w = 0, h = 0;
 
-	Int2 imgSize;
+	Int2 tmpImgSize;
 	if(img)
 	{
 		if(imgSize == Int2::Zero)
-			imgSize = img->GetSize();
+			tmpImgSize = img->GetSize();
 		else
-			imgSize = imgSize;
+			tmpImgSize = imgSize;
 	}
 	else
-		imgSize = Int2::Zero;
+		tmpImgSize = Int2::Zero;
 
 	// big text
 	if(!bigText.empty())
@@ -186,8 +186,8 @@ void TooltipController::FormatBox(bool refresh)
 	// image
 	if(img)
 	{
-		shift += imgSize.x + 4;
-		w += imgSize.x + 4;
+		shift += tmpImgSize.x + 4;
+		w += tmpImgSize.x + 4;
 	}
 
 	// small text
@@ -205,7 +205,7 @@ void TooltipController::FormatBox(bool refresh)
 		h += textSize.y;
 		rSmallText.Bottom() = h;
 
-		int imgBottom = imgSize.y + 24;
+		int imgBottom = tmpImgSize.y + 24;
 		if(rSmallText.Top() < imgBottom)
 		{
 			int dif = rSmallText.SizeY();
@@ -214,8 +214,8 @@ void TooltipController::FormatBox(bool refresh)
 			h = rSmallText.Bottom();
 		}
 	}
-	else if(img && h < imgSize.y + 12)
-		h = imgSize.y + 12;
+	else if(img && h < tmpImgSize.y + 12)
+		h = tmpImgSize.y + 12;
 
 	w += 24;
 	h += 12;
