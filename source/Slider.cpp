@@ -2,7 +2,7 @@
 #include "Slider.h"
 
 //=================================================================================================
-Slider::Slider() : hold(false), minstep(false)
+Slider::Slider() : width(150), holdVal(0), minstep(false)
 {
 	bt[0].text = '<';
 	bt[0].id = GuiEvent_Custom;
@@ -18,15 +18,13 @@ Slider::Slider() : hold(false), minstep(false)
 //=================================================================================================
 void Slider::Draw()
 {
-	const int D = 150;
-
 	bt[0].globalPos = bt[0].pos = globalPos;
-	bt[1].globalPos = bt[1].pos = bt[0].pos + Int2(D, 0);
+	bt[1].globalPos = bt[1].pos = bt[0].pos + Int2(width, 0);
 
 	for(int i = 0; i < 2; ++i)
 		bt[i].Draw();
 
-	Rect r0 = { globalPos.x + 32, globalPos.y - 16, globalPos.x + D, globalPos.y + 48 };
+	Rect r0 = { globalPos.x + 32, globalPos.y - 16, globalPos.x + width, globalPos.y + 48 };
 	gui->DrawText(layout->font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r0);
 }
 
@@ -39,7 +37,7 @@ void Slider::Update(float dt)
 		bt[i].Update(dt);
 	}
 
-	if(hold)
+	if(holdVal > 0)
 	{
 		if(holdState == -1)
 		{
@@ -93,7 +91,7 @@ void Slider::Event(GuiEvent e)
 	{
 		if(val != minv)
 		{
-			if(hold)
+			if(holdVal > 0)
 			{
 				if(bt[0].state == Button::DOWN)
 					holdState = -1;
@@ -119,7 +117,7 @@ void Slider::Event(GuiEvent e)
 	{
 		if(val != maxv)
 		{
-			if(hold)
+			if(holdVal > 0)
 			{
 				if(bt[1].state == Button::DOWN)
 					holdState = +1;
@@ -144,11 +142,11 @@ void Slider::Event(GuiEvent e)
 }
 
 //=================================================================================================
-void Slider::SetHold(bool _hold)
+void Slider::SetHold(float holdVal)
 {
-	hold = _hold;
+	this->holdVal = holdVal;
 	for(int i = 0; i < 2; ++i)
-		bt[i].hold = hold;
+		bt[i].hold = holdVal > 0;
 	holdTmp = 0.f;
 	holdState = 0;
 }

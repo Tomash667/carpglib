@@ -22,16 +22,14 @@ public:
 	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
+	void SetHold(float holdVal);
 
-	void SetHold(bool hold);
-
-	int minv, maxv, val, id;
+	int width, minv, maxv, val, id;
 	string text;
-	Button bt[2];
-	float holdVal;
 
 private:
-	float holdTmp;
+	Button bt[2];
+	float holdVal, holdTmp;
 	int holdState;
-	bool hold, minstep;
+	bool minstep;
 };
