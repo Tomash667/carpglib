@@ -7,9 +7,6 @@
     <ClCompile Include="source\Bresenham.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="source\Color.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="source\Config.cpp">
       <Filter>core</Filter>
     </ClCompile>

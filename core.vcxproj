@@ -38,7 +38,6 @@
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp" />
     <ClCompile Include="source\Bresenham.cpp" />
-    <ClCompile Include="source\Color.cpp" />
     <ClCompile Include="source\Config.cpp" />
     <ClCompile Include="source\Containers.cpp" />
     <ClCompile Include="source\CoreMath.cpp" />

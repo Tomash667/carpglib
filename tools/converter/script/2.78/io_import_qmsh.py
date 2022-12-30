@@ -962,7 +962,7 @@ class QmshImporterOperator(bpy.types.Operator, ImportHelper):
 				print('WARN: ' + msg)
 				self.ShowMessageBox(msg, 'Warning')
 		except ImporterException as error:
-			msg = 'Exporter error: ' +str(error)
+			msg = 'Importer error: ' +str(error)
 			print("ERROR: " + msg)
 			self.ShowMessageBox(msg, 'Error', 'ERROR')
 		return {"FINISHED"}
