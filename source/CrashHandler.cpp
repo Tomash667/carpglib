@@ -3,6 +3,8 @@
 
 #include <CrashRpt.h>
 
+static delegate<void()> callback;
+
 //=================================================================================================
 cstring ExceptionTypeToString(int exctype)
 {
@@ -85,11 +87,14 @@ int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crashInfo)
 	if(textLogger)
 		textLogger->Flush();
 
+	if(callback)
+		callback();
+
 	return CR_CB_DODEFAULT;
 }
 
 //=================================================================================================
-void CrashHandler::Register(cstring title, cstring version, cstring url, int minidumpLevel)
+void CrashHandler::Register(cstring title, cstring version, cstring url, int minidumpLevel, delegate<void()> callback)
 {
 	if(IsDebuggerPresent())
 		return;
@@ -123,6 +128,7 @@ void CrashHandler::Register(cstring title, cstring version, cstring url, int min
 	int r = crInstall(&info);
 	assert(r == 0);
 
+	::callback = callback;
 	r = crSetCrashCallback(OnCrash, nullptr);
 	assert(r == 0);
 
@@ -134,6 +140,13 @@ void CrashHandler::Register(cstring title, cstring version, cstring url, int min
 	}
 
 	r = crAddScreenshot2(CR_AS_MAIN_WINDOW | CR_AS_PROCESS_WINDOWS | CR_AS_USE_JPEG_FORMAT | CR_AS_ALLOW_DELETE, 50);
+	assert(r == 0);
+}
+
+//=================================================================================================
+void CrashHandler::AddFile(cstring path, cstring name)
+{
+	int r = crAddFile2(path, nullptr, name, CR_AF_MAKE_FILE_COPY | CR_AF_MISSING_FILE_OK | CR_AF_ALLOW_DELETE);
 	assert(r == 0);
 }
 
