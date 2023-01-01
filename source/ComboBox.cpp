@@ -47,9 +47,8 @@ void ComboBox::Update(float dt)
 	TextBox::Update(dt);
 	if(menuChanged)
 	{
-		if(menu.items.empty())
-			menu.visible = false;
-		else
+		menu.Hide();
+		if(!menu.items.empty())
 		{
 			menu.Show();
 			menu.globalPos = menu.pos = globalPos - Int2(0, menu.size.y);
