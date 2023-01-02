@@ -72,6 +72,9 @@ void GetNumberDialog::Update(float dt)
 			if(num != newNum)
 			{
 				textBox.SetText(Format("%d", newNum));
+				*value = newNum;
+				if(getText)
+					text = getText();
 				scrollbar.offset = float(newNum - minValue) / (maxValue - minValue) * (scrollbar.total - scrollbar.part);
 				changed = true;
 			}
@@ -79,8 +82,14 @@ void GetNumberDialog::Update(float dt)
 		else if(!Equal(scrollbar.offset, prevOffset))
 		{
 			const float progress = scrollbar.offset / (scrollbar.total - scrollbar.part);
-			const int value = (int)round((maxValue - minValue) * progress) + minValue;
-			textBox.SetText(Format("%d", value));
+			const int newValue = (int)round((maxValue - minValue) * progress) + minValue;
+			if(newValue != *value)
+			{
+				*value = newValue;
+				textBox.SetText(Format("%d", newValue));
+				if(getText)
+					text = getText();
+			}
 			changed = true;
 		}
 
@@ -104,6 +113,12 @@ void GetNumberDialog::Update(float dt)
 		if(!changed && !textBox.GetText().empty())
 		{
 			int num = atoi(textBox.GetText().c_str());
+			if(num != *value)
+			{
+				*value = num;
+				if(getText)
+					text = getText();
+			}
 			if(!scrollbar.clicked && minValue != maxValue)
 				scrollbar.offset = float(num - minValue) / (maxValue - minValue) * (scrollbar.total - scrollbar.part);
 		}
@@ -122,8 +137,6 @@ void GetNumberDialog::Update(float dt)
 
 		if(result != -1)
 		{
-			if(result == BUTTON_OK)
-				*value = atoi(textBox.GetText().c_str());
 			gui->CloseDialog(this);
 			if(event)
 				event(result);
@@ -163,8 +176,10 @@ void GetNumberDialog::Event(GuiEvent e)
 }
 
 //=================================================================================================
-GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstring text, int minValue, int maxValue, int* value)
+GetNumberDialog* GetNumberDialog::Show(const GetNumberDialogParams& params)
 {
+	assert(params.text || params.getText);
+
 	if(!self)
 	{
 		DialogInfo info;
@@ -209,23 +224,27 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 	}
 
 	self->result = -1;
-	self->parent = parent;
-	self->order = GetOrder(parent);
-	self->event = event;
-	self->text = text;
-	self->minValue = minValue;
-	self->maxValue = maxValue;
-	self->value = value;
+	self->parent = params.parent;
+	self->order = GetOrder(params.parent);
+	self->event = params.event;
+	self->getText = params.getText;
+	if(self->getText)
+		self->text = self->getText();
+	else
+		self->text = params.text;
+	self->minValue = params.minValue;
+	self->maxValue = params.maxValue;
+	self->value = params.value;
 	self->pos = self->globalPos = (gui->wndSize - self->size) / 2;
 	self->bts[0].globalPos = self->bts[0].pos + self->globalPos;
 	self->bts[1].globalPos = self->bts[1].pos + self->globalPos;
 	self->textBox.globalPos = self->textBox.pos + self->globalPos;
-	self->textBox.numMin = minValue;
-	self->textBox.numMax = maxValue;
+	self->textBox.numMin = params.minValue;
+	self->textBox.numMax = params.maxValue;
 	self->scrollbar.globalPos = self->scrollbar.pos + self->globalPos;
 	self->scrollbar.offset = 0;
 	self->scrollbar.manualChange = true;
-	self->textBox.SetText(Format("%d", *value));
+	self->textBox.SetText(Format("%d", *params.value));
 
 	gui->ShowDialog(self);
 
