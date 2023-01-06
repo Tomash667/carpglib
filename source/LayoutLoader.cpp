@@ -445,6 +445,7 @@ void LayoutLoader::RegisterControls()
 	c = AddControl<layout::ListBox>("ListBox");
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::ListBox, box));
 	c->AddEntry("selection", Entry::AreaLayout, offsetof(layout::ListBox, selection));
+	c->AddEntry("hover", Entry::AreaLayout, offsetof(layout::ListBox, hover));
 	c->AddEntry("downArrow", Entry::Image, offsetof(layout::ListBox, downArrow));
 	c->AddEntry("font", Entry::Font, offsetof(layout::ListBox, font));
 	c->AddEntry("padding", Entry::Int, offsetof(layout::ListBox, padding));

@@ -6,8 +6,8 @@
 #include "MenuStrip.h"
 
 //=================================================================================================
-ListBox::ListBox(bool isNew) : Control(isNew), scrollbar(false, isNew), selected(-1), eventHandler(nullptr), eventHandler2(nullptr), menu(nullptr), menuStrip(nullptr),
-forceImgSize(0, 0), itemHeight(20), requireScrollbar(false), textFlags(DTF_SINGLELINE)
+ListBox::ListBox(bool isNew) : Control(isNew), scrollbar(false, isNew), selected(-1), hover(-1), eventHandler(nullptr), eventHandler2(nullptr), menu(nullptr),
+menuStrip(nullptr), forceImgSize(0, 0), itemHeight(20), requireScrollbar(false), textFlags(DTF_SINGLELINE)
 {
 	SetOnCharHandler(true);
 }
@@ -67,6 +67,27 @@ void ListBox::Draw()
 			Rect out;
 			if(Rect::Intersect(rs, rc, out))
 				gui->DrawArea(Box2d(out), layout->selection);
+		}
+
+		// hover
+		if(hover != -1 && hover != selected)
+		{
+			int offsetY;
+			if(itemHeight == -1)
+			{
+				offsetY = 0;
+				for(int i = 0; i < hover; ++i)
+					offsetY += items[i]->height;
+			}
+			else
+				offsetY = hover * itemHeight;
+
+			Rect rs = { globalPos.x + layout->border, globalPos.y - int(scrollbar.offset) + layout->border + offsetY,
+				globalPos.x + realSize.x - layout->border, 0 };
+			rs.Bottom() = rs.Top() + items[hover]->height;
+			Rect out;
+			if(Rect::Intersect(rs, rc, out))
+				gui->DrawArea(Box2d(out), layout->hover);
 		}
 
 		// elements
@@ -141,6 +162,8 @@ void ListBox::Update(float dt)
 	}
 	else
 	{
+		hover = -1;
+
 		if(focus && selected != -1)
 		{
 			int newSelected = -1;
@@ -167,11 +190,11 @@ void ListBox::Update(float dt)
 		if(mouseFocus && input->Focus() && Rect::IsInside(gui->cursorPos, globalPos, realSize))
 		{
 			int bt = 0;
+			hover = PosToIndex(gui->cursorPos.y);
 
 			if(eventHandler2 && gui->DoubleClick(Key::LeftButton))
 			{
-				int newIndex = PosToIndex(gui->cursorPos.y);
-				if(newIndex != -1 && newIndex == selected)
+				if(hover != -1 && hover == selected)
 				{
 					eventHandler2(A_DOUBLE_CLICK, selected);
 					bt = -1;
@@ -188,16 +211,15 @@ void ListBox::Update(float dt)
 
 			if(bt > 0)
 			{
-				int newIndex = PosToIndex(gui->cursorPos.y);
 				bool ok = true;
-				if(newIndex != -1 && newIndex != selected)
-					ok = ChangeIndexEvent(newIndex, false, false);
+				if(hover != -1 && hover != selected)
+					ok = ChangeIndexEvent(hover, false, false);
 
 				if(bt == 2 && menuStrip && ok)
 				{
 					if(eventHandler2)
 					{
-						if(!eventHandler2(A_BEFORE_MENU_SHOW, newIndex))
+						if(!eventHandler2(A_BEFORE_MENU_SHOW, hover))
 							ok = false;
 					}
 					if(ok)
