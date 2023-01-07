@@ -90,10 +90,10 @@ struct MeshInstance
 	void SetToEnd(cstring anim)
 	{
 		Mesh::Animation* a = mesh->GetAnimation(anim);
-		SetToEnd(a);
+		SetAnimation(a, 1.f);
 	}
-	void SetToEnd(Mesh::Animation* anim);
-	void SetToEnd();
+	void SetToEnd(Mesh::Animation* anim) { SetAnimation(anim, 1.f); }
+	void SetToEnd() { SetAnimation(GetGroup(0).anim, 1.f); }
 	void ResetAnimation();
 	void Save(FileWriter& f) const;
 	void SaveV2(StreamWriter& f) const;
@@ -124,6 +124,8 @@ struct MeshInstance
 	bool IsBlending() const;
 	bool IsEnded(uint group = 0) const { return GetGroup(group).frameEnd; }
 
+	void SetAnimation(Mesh::Animation* anim, float p);
+	void SetMesh(Mesh* mesh);
 	void SetProgress(float progress, uint group = 0) { GetGroup(group).SetProgress(progress); }
 
 	static void SaveOptional(StreamWriter& f, MeshInstance* meshInst);

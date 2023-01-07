@@ -518,56 +518,6 @@ void MeshInstance::DisableAnimations()
 }
 
 //=================================================================================================
-void MeshInstance::SetToEnd(Mesh::Animation* anim)
-{
-	assert(anim);
-
-	groups[0].anim = anim;
-	groups[0].blendTime = 0.f;
-	groups[0].state = FLAG_GROUP_ACTIVE;
-	groups[0].time = anim->length;
-	groups[0].usedGroup = 0;
-	groups[0].prio = 3;
-
-	if(mesh->head.nGroups > 1)
-	{
-		for(int i = 1; i < mesh->head.nGroups; ++i)
-		{
-			groups[i].anim = nullptr;
-			groups[i].state = 0;
-			groups[i].usedGroup = 0;
-			groups[i].time = groups[0].time;
-			groups[i].blendTime = groups[0].blendTime;
-		}
-	}
-
-	needUpdate = true;
-
-	SetupBones();
-}
-
-//=================================================================================================
-void MeshInstance::SetToEnd()
-{
-	groups[0].blendTime = 0.f;
-	groups[0].state = FLAG_GROUP_ACTIVE;
-	groups[0].time = groups[0].anim->length;
-	groups[0].usedGroup = 0;
-	groups[0].prio = 1;
-
-	for(uint i = 1; i < groups.size(); ++i)
-	{
-		groups[i].state = 0;
-		groups[i].usedGroup = 0;
-		groups[i].blendTime = 0;
-	}
-
-	needUpdate = true;
-
-	SetupBones();
-}
-
-//=================================================================================================
 void MeshInstance::ResetAnimation()
 {
 	SetupBlending(0);
@@ -865,4 +815,47 @@ bool MeshInstance::ApplyPreload(Mesh* mesh)
 	}
 
 	return true;
+}
+
+//=================================================================================================
+void MeshInstance::SetMesh(Mesh* mesh)
+{
+	assert(preload && mesh);
+
+	if(this->mesh == mesh)
+		return;
+
+	this->mesh = mesh;
+	matBones.resize(mesh->head.nBones);
+	blendb.resize(mesh->head.nBones);
+	groups.resize(mesh->head.nGroups);
+}
+
+//=================================================================================================
+void MeshInstance::SetAnimation(Mesh::Animation* anim, float p)
+{
+	assert(anim && InRange(p, 0.f, 1.f));
+
+	groups[0].anim = anim;
+	groups[0].blendTime = 0.f;
+	groups[0].state = FLAG_GROUP_ACTIVE;
+	groups[0].time = anim->length * p;
+	groups[0].usedGroup = 0;
+	groups[0].prio = 3;
+
+	if(mesh->head.nGroups > 1)
+	{
+		for(int i = 1; i < mesh->head.nGroups; ++i)
+		{
+			groups[i].anim = nullptr;
+			groups[i].state = 0;
+			groups[i].usedGroup = 0;
+			groups[i].time = groups[0].time;
+			groups[i].blendTime = groups[0].blendTime;
+		}
+	}
+
+	needUpdate = true;
+
+	SetupBones();
 }
