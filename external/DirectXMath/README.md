@@ -6,11 +6,11 @@ https://github.com/Microsoft/DirectXMath
 
 Copyright (c) Microsoft Corporation.
 
-**May 2022**
+**December 2022**
 
 This package contains the DirectXMath library, an all inline SIMD C++ linear algebra library for use in games and graphics apps.
 
-This code is designed to build with Visual Studio 2017, Visual Studio 2019, Visual Studio 2022, or clang/LLVM for Windows. It is recommended that you make use of the latest updates (VS 2017 15.9; VS 2019 16.9 or later).
+This code is designed to build with Visual Studio 2019 (16.11), Visual Studio 2022, or clang/LLVM for Windows. It is recommended that you make use of the latest updates.
 
 These components are designed to work without requiring any content from the legacy DirectX SDK. For details, see [Where is the DirectX SDK?](https://aka.ms/dxsdk).
 
@@ -49,13 +49,17 @@ These components are designed to work without requiring any content from the leg
 
   + XDSP.h - Digital Signal Processing helper functions
 
+* ``build\``
+
+  + Contains YAML files for the build pipelines along with some miscellaneous build files and scripts.
+
 ## Documentation
 
 Documentation is available on the [Microsoft Docs](https://docs.microsoft.com/en-us/windows/desktop/dxmath/directxmath-portal). Additional information can be found on the [project wiki](https://github.com/microsoft/DirectXMath/wiki).
 
 ## Compiler support
 
-Officially the library is supported with Microsoft Visual C++ 2017 or later, clang/LLVM v9 or later, and GCC 9 or later. It should also compile with the Intel C++ and MinGW compilers.
+Officially the library is supported with Microsoft Visual C++ 2019 or later, clang/LLVM v12 or later, and GCC 9 or later. It should also compile with the Intel C++ and MinGW compilers.
 
 When building with clang/LLVM or other GNU C compilers, the ``_XM_NO_XMVECTOR_OVERLOADS_`` control define is set because these compilers do not support creating operator overloads for the ``XMVECTOR`` type. You can choose to enable this preprocessor define explicitly to do the same thing with Visual C++ for improved portability.
 
