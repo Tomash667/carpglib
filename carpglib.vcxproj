@@ -243,11 +243,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <TargetName>$(ProjectName)_debug</TargetName>
-    <IntDir>$(SolutionDir)output\$(ProjectName)\$(Configuration)\</IntDir>
+    <IntDir>$(ProjectDir)output\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(ProjectDir)lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IntDir>$(SolutionDir)output\$(ProjectName)\$(Configuration)\</IntDir>
+    <IntDir>$(ProjectDir)output\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(ProjectDir)lib\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

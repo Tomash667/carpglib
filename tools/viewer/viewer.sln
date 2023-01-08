@@ -8,7 +8,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "viewer", "viewer.vcxproj", 
 		{56C508B6-848B-436A-BB6A-1CA2F91FA054} = {56C508B6-848B-436A-BB6A-1CA2F91FA054}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{D7511F58-BF6C-403E-AB38-C1D38293C923}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{D7511F58-BF6C-403E-AB38-C1D38293C923}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "carpglib", "..\..\carpglib.vcxproj", "{56C508B6-848B-436A-BB6A-1CA2F91FA054}"
 	ProjectSection(ProjectDependencies) = postProject

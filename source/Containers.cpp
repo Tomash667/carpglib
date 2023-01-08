@@ -97,14 +97,46 @@ void ObjectPoolLeakManager::Unregister(void* ptr)
 #endif
 
 //=================================================================================================
-#ifndef CORE_ONLY
+Buffer* Buffer::Compress()
+{
+	uint safeSize = compressBound(Size());
+	Buffer* buf = Buffer::Get();
+	buf->Resize(safeSize);
+	uint realSize = safeSize;
+	compress(static_cast<Bytef*>(buf->Data()), (uLongf*)&realSize, static_cast<const Bytef*>(Data()), Size());
+	buf->Resize(realSize);
+	Free();
+	return buf;
+}
+
+//=================================================================================================
+Buffer* Buffer::TryCompress()
+{
+	uint safeSize = compressBound(Size());
+	Buffer* buf = Buffer::Get();
+	buf->Resize(safeSize);
+	uint realSize = safeSize;
+	compress(static_cast<Bytef*>(buf->Data()), (uLongf*)&realSize, static_cast<const Bytef*>(Data()), Size());
+	if(realSize < Size())
+	{
+		Free();
+		buf->Resize(realSize);
+		return buf;
+	}
+	else
+	{
+		buf->Free();
+		return this;
+	}
+}
+
+//=================================================================================================
 Buffer* Buffer::Decompress(uint realSize)
 {
 	Buffer* buf = Buffer::Get();
 	buf->Resize(realSize);
 	uLong size = realSize;
-	uncompress((Bytef*)buf->Data(), &size, (const Bytef*)Data(), Size());
+	uncompress(static_cast<Bytef*>(buf->Data()), &size, static_cast<const Bytef*>(Data()), Size());
 	Free();
 	return buf;
 }
-#endif

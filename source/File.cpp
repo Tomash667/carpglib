@@ -260,8 +260,6 @@ void FileWriter::SetTime(FileTime fileTime)
 
 bool FileWriter::SetPos(uint pos)
 {
-	if(pos > GetFileSize(file, nullptr))
-		return false;
 	SetFilePointer(file, pos, nullptr, FILE_BEGIN);
 	return true;
 }
@@ -389,6 +387,7 @@ bool io::FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func)
 		FileInfo info =
 		{
 			findData.cFileName,
+			findData.nFileSizeLow,
 			IsSet(findData.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY)
 		};
 		if(!func(info))
@@ -524,6 +523,22 @@ string io::PathToDirectory(Cstring path)
 }
 
 //=================================================================================================
+string io::CombinePath(cstring path, cstring filename)
+{
+	string s;
+	int pos = FindCharInString(path, "/\\");
+	if(pos != -1)
+	{
+		s.assign(path, pos);
+		s += '/';
+		s += filename;
+	}
+	else
+		s = filename;
+	return s;
+}
+
+//=================================================================================================
 void io::OpenUrl(Cstring url)
 {
 	ShellExecute(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
@@ -538,15 +553,23 @@ cstring io::GetCurrentDirectory()
 }
 
 //=================================================================================================
-#ifndef CORE_ONLY
 Buffer* io::Compress(byte* data, uint size)
 {
-	uint safeSize = size + size / 1000 + 13;
+	uint safeSize = compressBound(size);
 	Buffer* buf = Buffer::Get();
 	buf->Resize(safeSize);
-	uint realSize;
-	compress((Bytef*)buf->Data(), (uLongf*)&realSize, data, size);
+	uint realSize = safeSize;
+	compress(static_cast<Bytef*>(buf->Data()), (uLongf*)&realSize, data, size);
 	buf->Resize(realSize);
 	return buf;
 }
-#endif
+
+//=================================================================================================
+Buffer* io::TryCompress(byte* data, uint size)
+{
+	Buffer* buf = Compress(data, size);
+	if(buf->Size() < size)
+		return buf;
+	buf->Free();
+	return nullptr;
+}

@@ -284,7 +284,7 @@ inline bool IsInside(const vector<T>* v, const T& elem)
 //-----------------------------------------------------------------------------
 // Object pool pattern
 //-----------------------------------------------------------------------------
-#if defined(_DEBUG) && !defined(CORE_ONLY)
+#if defined(_DEBUG) && !defined(CARPGLIB_CORE_ONLY)
 #	define CHECK_POOL_LEAKS
 #endif
 #ifdef CHECK_POOL_LEAKS
@@ -1400,10 +1400,12 @@ public:
 	void* At(uint offset) { return data.data() + offset; }
 	void Clear() { data.clear(); }
 	void* Data() { return data.data(); }
-	// decompress buffer to new buffer and return it, old one is freed
-#ifndef CORE_ONLY
+	// Compress to new buffer and return it, old one is freed
+	Buffer* Compress();
+	// Compress to new buffer and return it if worth it, otherwise return old buffer
+	Buffer* TryCompress();
+	// Decompress buffer to new buffer and return it, old one is freed
 	Buffer* Decompress(uint realSize);
-#endif
 	void Resize(uint size) { data.resize(size); }
 	uint Size() const { return data.size(); }
 

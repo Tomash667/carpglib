@@ -850,3 +850,26 @@ bool IsIdentifier(Cstring str)
 	}
 	return ok;
 }
+
+//=================================================================================================
+int FindCharInString(cstring str, cstring chars)
+{
+	int last = -1, index = 0;
+	char c;
+	while((c = *str++) != 0)
+	{
+		cstring cs = chars;
+		char c2;
+		while((c2 = *cs++) != 0)
+		{
+			if(c == c2)
+			{
+				last = index;
+				break;
+			}
+		}
+		++index;
+	}
+
+	return last;
+}

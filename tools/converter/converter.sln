@@ -9,6 +9,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "converter", "converter.vcxp
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "..\..\core.vcxproj", "{F4474539-550F-4B4C-B497-DDA017E53854}"
+	ProjectSection(ProjectDependencies) = postProject
+		{76424983-1BE0-4E8D-9023-8AA316172A00} = {76424983-1BE0-4E8D-9023-8AA316172A00}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{2B300A8B-8441-4F3C-BD44-AE479D514898}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "..\..\external\zlib\contrib\vstudio\zlibstat.vcxproj", "{76424983-1BE0-4E8D-9023-8AA316172A00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,9 +31,17 @@ Global
 		{F4474539-550F-4B4C-B497-DDA017E53854}.Debug|x86.Build.0 = Debug|Win32
 		{F4474539-550F-4B4C-B497-DDA017E53854}.Release|x86.ActiveCfg = Release|Win32
 		{F4474539-550F-4B4C-B497-DDA017E53854}.Release|x86.Build.0 = Release|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Debug|x86.ActiveCfg = Debug|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Debug|x86.Build.0 = Debug|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Release|x86.ActiveCfg = Release|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F4474539-550F-4B4C-B497-DDA017E53854} = {2B300A8B-8441-4F3C-BD44-AE479D514898}
+		{76424983-1BE0-4E8D-9023-8AA316172A00} = {2B300A8B-8441-4F3C-BD44-AE479D514898}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BC812A09-47F4-4D46-B56D-1829158FE7ED}

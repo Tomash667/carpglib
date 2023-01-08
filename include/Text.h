@@ -108,11 +108,13 @@ char CharInStr(char c, cstring chrs);
 void RemoveEndOfLine(string& str, bool remove);
 uint FindClosingPos(const string& str, uint pos, char start = '(', char end = ')');
 string UrlEncode(const string& s);
+bool StartsWith(cstring str, cstring start);
 // replace all occurrences of 'from' with 'to'
 cstring ReplaceAll(cstring str, cstring from, cstring to);
 cstring FindLastOf(cstring str, cstring chars);
 void Utf8ToAscii(string& str);
 bool IsIdentifier(Cstring str);
+int FindCharInString(cstring str, cstring chars);
 
 namespace TextHelper
 {

@@ -10,6 +10,7 @@ namespace io
 	struct FileInfo
 	{
 		cstring filename;
+		uint size;
 		bool isDir;
 	};
 
@@ -31,6 +32,7 @@ namespace io
 	cstring FilenameFromPath(const string& path);
 	cstring FilenameFromPath(cstring path);
 	string PathToDirectory(Cstring path);
+	string CombinePath(cstring path, cstring filename);
 	// load text file to string (whole or up to max size)
 	bool LoadFileToString(cstring path, string& str, uint maxSize = (uint)-1);
 	// simple encryption (pass encrypted to decrypt data)
@@ -39,11 +41,10 @@ namespace io
 	void OpenUrl(Cstring url);
 	// get current directory
 	cstring GetCurrentDirectory();
-
-#ifndef CORE_ONLY
 	// Compress data to buffer
 	Buffer* Compress(byte* data, uint size);
-#endif
+	// Compress or return nullptr if result is bigger
+	Buffer* TryCompress(byte* data, uint size);
 }
 
 //-----------------------------------------------------------------------------
@@ -436,6 +437,10 @@ public:
 	{
 		WriteString<uint>(s);
 	}
+	void WriteString0(const string& s)
+	{
+		Write(s.c_str(), s.length() + 1);
+	}
 
 	template<typename SizeType>
 	void WriteString(cstring str)
@@ -460,8 +465,11 @@ public:
 	}
 	void WriteStringF(cstring str)
 	{
-		uint length = strlen(str);
-		Write(str, length);
+		Write(str, strlen(str));
+	}
+	void WriteString0(cstring str)
+	{
+		Write(str, strlen(str) + 1);
 	}
 
 	template<typename CountType, typename LengthType>
