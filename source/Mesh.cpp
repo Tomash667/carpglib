@@ -20,14 +20,10 @@ const float DefaultSpecularIntensity = 0.2f;
 const int DefaultSpecularHardness = 10;
 
 //=================================================================================================
-// Konstruktor Mesh
-//=================================================================================================
 Mesh::Mesh() : vb(nullptr), ib(nullptr), vertexDecl(VDI_DEFAULT)
 {
 }
 
-//=================================================================================================
-// Destruktor Mesh
 //=================================================================================================
 Mesh::~Mesh()
 {
@@ -596,7 +592,7 @@ void Mesh::LoadVertexData(VertexData* vd, StreamReader& stream)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Format("Invalid file signature '%.4s'.", head.format);
-	if(head.version != 20)
+	if(head.version < 20)
 		throw Format("Invalid file version '%d'.", head.version);
 	if(head.flags != F_PHYSICS)
 		throw Format("Invalid mesh flags '%d'.", head.flags);
@@ -656,53 +652,4 @@ Mesh::Point* Mesh::FindNextPoint(cstring name, Point* point)
 
 	assert(0);
 	return nullptr;
-}
-
-
-SimpleMesh::~SimpleMesh()
-{
-	SafeRelease(vb);
-	SafeRelease(ib);
-}
-
-void SimpleMesh::Build()
-{
-	if(vb)
-		return;
-
-	// create vertex buffer
-	D3D11_BUFFER_DESC desc;
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.ByteWidth = sizeof(Vec3) * vertices.size();
-	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	desc.CPUAccessFlags = 0;
-	desc.MiscFlags = 0;
-	desc.StructureByteStride = 0;
-
-	D3D11_SUBRESOURCE_DATA data = {};
-	data.pSysMem = vertices.data();
-
-	V(app::render->GetDevice()->CreateBuffer(&desc, &data, &vb));
-	SetDebugName(vb, "SimpleMeshVb");
-
-	// create index buffer
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.ByteWidth = sizeof(word) * indices.size();
-	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	desc.CPUAccessFlags = 0;
-	desc.MiscFlags = 0;
-	desc.StructureByteStride = 0;
-
-	data.pSysMem = indices.data();
-
-	V(app::render->GetDevice()->CreateBuffer(&desc, &data, &ib));
-	SetDebugName(ib, "SimpleMeshIb");
-}
-
-void SimpleMesh::Clear()
-{
-	SafeRelease(vb);
-	SafeRelease(ib);
-	vertices.clear();
-	indices.clear();
 }

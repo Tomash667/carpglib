@@ -307,6 +307,9 @@
     <ClInclude Include="include\CrashHandler.h">
       <Filter>components</Filter>
     </ClInclude>
+    <ClInclude Include="include\SimpleMesh.h">
+      <Filter>entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">
@@ -560,6 +563,9 @@
       <Filter>const</Filter>
     </ClCompile>
     <ClCompile Include="source\Camera.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SimpleMesh.cpp">
       <Filter>entity</Filter>
     </ClCompile>
   </ItemGroup>

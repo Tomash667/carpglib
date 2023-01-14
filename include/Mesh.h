@@ -193,17 +193,3 @@ struct Mesh : public Resource
 	vector<BoneGroup> groups;
 	vector<Split> splits;
 };
-
-//-----------------------------------------------------------------------------
-struct SimpleMesh
-{
-	SimpleMesh() : vb(nullptr), ib(nullptr) {}
-	~SimpleMesh();
-	void Build();
-	void Clear();
-
-	ID3D11Buffer* vb;
-	ID3D11Buffer* ib;
-	vector<Vec3> vertices;
-	vector<word> indices;
-};
