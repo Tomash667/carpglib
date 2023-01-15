@@ -1066,6 +1066,20 @@ void Tokenizer::ParseFlags(std::initializer_list<FlagGroup> const& flags)
 }
 
 //=================================================================================================
+void Tokenizer::Parse(float* f, uint count)
+{
+	AssertSymbol('{');
+	Next();
+	for(uint i = 0; i < count; ++i)
+	{
+		f[i] = MustGetFloat();
+		Next();
+	}
+	AssertSymbol('}');
+	Next();
+}
+
+//=================================================================================================
 void Tokenizer::Parse(Int2& i)
 {
 	if(IsSymbol('{'))
@@ -1086,17 +1100,17 @@ void Tokenizer::Parse(Int2& i)
 }
 
 //=================================================================================================
-void Tokenizer::Parse(Rect& b)
+void Tokenizer::Parse(Rect& rect)
 {
 	AssertSymbol('{');
 	Next();
-	b.p1.x = MustGetInt();
+	rect.p1.x = MustGetInt();
 	Next();
-	b.p1.y = MustGetInt();
+	rect.p1.y = MustGetInt();
 	Next();
-	b.p2.x = MustGetInt();
+	rect.p2.x = MustGetInt();
 	Next();
-	b.p2.y = MustGetInt();
+	rect.p2.y = MustGetInt();
 	Next();
 	AssertSymbol('}');
 	Next();
@@ -1155,6 +1169,28 @@ void Tokenizer::Parse(Vec4& v)
 	}
 	v.w = MustGetFloat();
 	Next();
+	AssertSymbol('}');
+	Next();
+}
+
+//=================================================================================================
+void Tokenizer::Parse(Box2d& box)
+{
+	AssertSymbol('{');
+	Next();
+	Parse(box.v1);
+	Parse(box.v2);
+	AssertSymbol('}');
+	Next();
+}
+
+//=================================================================================================
+void Tokenizer::Parse(Box& box)
+{
+	AssertSymbol('{');
+	Next();
+	Parse(box.v1);
+	Parse(box.v2);
 	AssertSymbol('}');
 	Next();
 }

@@ -799,11 +799,19 @@ namespace tokenizer
 		bool QuerySymbol(char c) { SeekData& sd = Query(); return sd.token == T_SYMBOL && sd._char == c; }
 
 		//===========================================================================================================================
+		void Parse(float* f, uint count);
+		template<uint N>
+		void Parse(array<float, N>& arr)
+		{
+			Parse(arr.data(), N);
+		}
 		void Parse(Int2& i);
-		void Parse(Rect& b);
+		void Parse(Rect& rect);
 		void Parse(Vec2& v);
 		void Parse(Vec3& v);
 		void Parse(Vec4& v);
+		void Parse(Box2d& box);
+		void Parse(Box& box);
 		void Parse(Color& c);
 		void ParseFlags(int group, int& flags);
 		void ParseFlags(std::initializer_list<FlagGroup> const& flags);

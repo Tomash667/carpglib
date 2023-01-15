@@ -17,12 +17,14 @@ public:
 	void Reset();
 	void UpdateAabb(btCollisionObject* cobj);
 	btCollisionWorld* GetWorld() { return world; }
+	btBvhTriangleMeshShape* CreateTrimeshShape(VertexData* vd);
 
 private:
 	btCollisionConfiguration* config;
 	btDispatcher* dispatcher;
 	btBroadphaseInterface* broadphase;
 	btCollisionWorld* world;
+	vector<btBvhTriangleMeshShape*> trimeshes;
 };
 
 //-----------------------------------------------------------------------------

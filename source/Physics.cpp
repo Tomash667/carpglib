@@ -1,6 +1,9 @@
 #include "Pch.h"
 #include "Physics.h"
 
+#include "SimpleMesh.h"
+#include "VertexData.h"
+
 Physics* app::physics;
 
 //=================================================================================================
@@ -17,6 +20,13 @@ Physics::~Physics()
 	delete broadphase;
 	delete dispatcher;
 	delete config;
+
+	for(btBvhTriangleMeshShape* trimesh : trimeshes)
+	{
+		delete reinterpret_cast<SimpleMesh*>(trimesh->getUserPointer());
+		delete trimesh->getMeshInterface();
+		delete trimesh;
+	}
 }
 
 //=================================================================================================
@@ -57,4 +67,26 @@ void Physics::UpdateAabb(btCollisionObject* cobj)
 	btVector3 aabbMin, aabbMax;
 	cobj->getCollisionShape()->getAabb(cobj->getWorldTransform(), aabbMin, aabbMax);
 	broadphase->setAabb(cobj->getBroadphaseHandle(), aabbMin, aabbMax, dispatcher);
+}
+
+//=================================================================================================
+btBvhTriangleMeshShape* Physics::CreateTrimeshShape(VertexData* vd)
+{
+	SimpleMesh* simpleMesh = new SimpleMesh;
+	simpleMesh->vd = vd;
+
+	btIndexedMesh mesh;
+	mesh.m_numTriangles = vd->faces.size();
+	mesh.m_triangleIndexBase = reinterpret_cast<byte*>(vd->faces.data());
+	mesh.m_triangleIndexStride = sizeof(Face);
+	mesh.m_numVertices = vd->verts.size();
+	mesh.m_vertexBase = reinterpret_cast<byte*>(vd->verts.data());
+	mesh.m_vertexStride = sizeof(Vec3);
+
+	btTriangleIndexVertexArray* shapeData = new btTriangleIndexVertexArray();
+	shapeData->addIndexedMesh(mesh, PHY_SHORT);
+	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(shapeData, true);
+	shape->setUserPointer(simpleMesh);
+	trimeshes.push_back(shape);
+	return shape;
 }
