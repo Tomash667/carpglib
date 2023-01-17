@@ -2,6 +2,7 @@
 #include "CrashHandler.h"
 
 #include <CrashRpt.h>
+#include <stdlib.h>
 
 static delegate<void()> callback;
 
@@ -73,6 +74,8 @@ cstring CodeToString(DWORD err)
 //=================================================================================================
 int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crashInfo)
 {
+	Info("111");
+
 	cstring type = ExceptionTypeToString(crashInfo->pExceptionInfo->exctype);
 	if(crashInfo->pExceptionInfo->pexcptrs && crashInfo->pExceptionInfo->pexcptrs->ExceptionRecord)
 	{
@@ -93,11 +96,39 @@ int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crashInfo)
 	return CR_CB_DODEFAULT;
 }
 
+void __cdecl purity()
+{
+	exit(99);
+}
+
+class CDerived;
+class CBase
+{
+public:
+	CBase(CDerived *derived) : m_pDerived(derived) {};
+	~CBase();
+	virtual void function(void) = 0;
+
+	CDerived * m_pDerived;
+};
+
+class CDerived : public CBase
+{
+public:
+	CDerived() : CBase(this) {};   // C4355
+	virtual void function(void) {};
+};
+
+CBase::~CBase()
+{
+	m_pDerived->function();
+}
+
 //=================================================================================================
 void CrashHandler::Register(cstring title, cstring version, cstring url, int minidumpLevel, delegate<void()> callback)
 {
-	if(IsDebuggerPresent())
-		return;
+	//if(IsDebuggerPresent())
+	//	return;
 
 	CR_INSTALL_INFO info = { 0 };
 	info.cb = sizeof(CR_INSTALL_INFO);
@@ -125,8 +156,21 @@ void CrashHandler::Register(cstring title, cstring version, cstring url, int min
 		break;
 	}
 
+	auto xx = _get_purecall_handler();
+	Info("P1: %p", xx);
 	int r = crInstall(&info);
 	assert(r == 0);
+
+
+
+	xx = _get_purecall_handler();
+	Info("P2: %p", xx);
+
+	CDerived myDerived;
+
+	//_set_purecall_handler(purity);
+	//xx = _get_purecall_handler();
+	//Info("P3: %p", xx);
 
 	::callback = callback;
 	r = crSetCrashCallback(OnCrash, nullptr);

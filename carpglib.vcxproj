@@ -275,7 +275,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external\Bullet\src;$(ProjectDir)external\CrashRpt\include;$(ProjectDir)external\DirectXMath\Inc;$(ProjectDir)external\FMod\inc;$(ProjectDir)external\Visual Leak Detector\include;$(ProjectDir)external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
