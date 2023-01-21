@@ -1,7 +1,7 @@
 bl_info = {
 	"name": "Qmsh importer",
 	"author": "Tomashu",
-	"version": (0, 22, 2),
+	"version": (0, 22, 3),
 	"blender": (2, 78, 0),
 	"location": "File > Import > Qmsh",
 	"description": "Import from Qmsh",
@@ -219,8 +219,6 @@ class Qmsh:
 					raise ImporterException("No bones.")
 				if self.n_groups == 0:
 					raise ImporterException("No bone groups.")
-			if self.IsSplit():
-				raise ImporterException("Split mesh not implemented.")
 		def SetVertexSize(self):
 			self.vertex_size = 3 * 4
 			self.vertex_type = 'POS'
@@ -343,6 +341,12 @@ class Qmsh:
 			self.size = ConvertVec3(f.ReadVec3())
 			self.rot = ConvertVec3(f.ReadVec3())
 	##-------------------------------------------------------------------------
+	class Split:
+		def Read(self, f):
+			self.pos = f.ReadVec3()
+			self.radius = f.ReadFloat()
+			self.box = f.ReadBox()
+	##-------------------------------------------------------------------------
 	def Read(self, f):
 		self.ReadHeader(f)
 		self.ReadVertices(f)
@@ -360,6 +364,8 @@ class Qmsh:
 		self.ReadPoints(f)
 		if self.head.version < 21 and self.head.IsAnimated() and not self.head.IsStatic():
 			self.ReadBoneGroups(f)
+		if self.head.IsSplit():
+			self.ReadSplits(f)
 		f.ReadEOF()
 	def ReadHeader(self, f):
 		self.head = Qmsh.Header()
@@ -431,6 +437,12 @@ class Qmsh:
 			group = Qmsh.BoneGroup()
 			group.Read(f)
 			self.groups.append(group)
+	def ReadSplits(self, f):
+		self.splits = []
+		for i in range(self.head.n_subs):
+			split = Qmsh.Split()
+			split.Read(f)
+			self.splits.append(split)
 	def IsFaceUsed(self, face):
 		face = sorted(face)
 		for tri in self.tris:
@@ -962,7 +974,7 @@ class QmshImporterOperator(bpy.types.Operator, ImportHelper):
 				print('WARN: ' + msg)
 				self.ShowMessageBox(msg, 'Warning')
 		except ImporterException as error:
-			msg = 'Importer error: ' +str(error)
+			msg = 'Exporter error: ' +str(error)
 			print("ERROR: " + msg)
 			self.ShowMessageBox(msg, 'Error', 'ERROR')
 		return {"FINISHED"}

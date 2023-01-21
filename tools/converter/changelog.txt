@@ -1,6 +1,10 @@
 CHANGELOG
 Minor updates have changes only in exporter/converer, don't affect qmsh file.
 ---------------------------
+v22.3:
+IMPORTER:
++ skip mesh splits
+
 v22.2:
 IMPORTER:
 + normal & specular map handling
