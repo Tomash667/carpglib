@@ -20,9 +20,6 @@ struct QMSH_SUBMESH
 	string specularmap_texture;
 	uint FirstTriangle;
 	uint NumTriangles;
-	// Wyznaczaj¹ zakres. Ten zakres, wy³¹cznie ten i w ca³oœci ten powinien byæ przeznaczony na ten obiekt (Submesh).
-	uint MinVertexIndexUsed;   // odpowiednik parametru DrawIndexedPrimitive - MinIndex (tylko wyra¿ony w trójk¹tach)
-	uint NumVertexIndicesUsed; // odpowiednik parametru DrawIndexedPrimitive - NumVertices (tylko wyra¿ony w trójk¹tach)
 	Vec3 specular_color, center;
 	int specular_hardness;
 	float specular_intensity, specular_factor, specular_color_factor, normal_factor, range;
@@ -112,5 +109,5 @@ struct QMSH
 	Box BoundingBox;
 	Vec3 camera_pos, camera_target, camera_up;
 
-	static const uint VERSION = 22u;
+	static const uint VERSION = 23u;
 };

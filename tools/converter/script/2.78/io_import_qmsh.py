@@ -1,7 +1,7 @@
 bl_info = {
 	"name": "Qmsh importer",
 	"author": "Tomashu",
-	"version": (0, 22, 3),
+	"version": (0, 23, 0),
 	"blender": (2, 78, 0),
 	"location": "File > Import > Qmsh",
 	"description": "Import from Qmsh",
@@ -208,7 +208,7 @@ class Qmsh:
 			self.cam_up = ConvertVec3(f.ReadVec3())
 			if self.sign != b"QMSH":
 				raise ImporterException("Invalid file signature " + str(self.sign))
-			if self.version < 20 or self.version > 22:
+			if self.version < 20 or self.version > 23:
 				raise ImporterException("Invalid file version " + str(self.version))
 			if self.n_bones > 64:
 				raise ImporterException("Too many bones (" + str(self.n_bones) + ")")
@@ -242,8 +242,9 @@ class Qmsh:
 		def Read(self, f, head):
 			self.first = f.ReadWord()
 			self.tris = f.ReadWord()
-			self.min_ind = f.ReadWord()
-			self.n_ind = f.ReadWord()
+			if head.version < 23
+				self.min_ind = f.ReadWord()
+				self.n_ind = f.ReadWord()
 			self.name = f.ReadString()
 			self.tex = f.ReadString()
 			self.specular_color = f.ReadVec3()

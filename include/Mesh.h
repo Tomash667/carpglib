@@ -48,8 +48,6 @@ struct Mesh : public Resource
 	{
 		word first; // pierwszy trójk¹t do narysowania
 		word tris; // ile trójk¹tów narysowaæ
-		word minInd; // odpowiednik parametru DrawIndexedPrimitive - MinIndex (tylko wyra¿ony w trójk¹tach)
-		word nInd; // odpowiednik parametru DrawIndexedPrimitive - NumVertices (tylko wyra¿ony w trójk¹tach)
 		string name;
 		TexturePtr tex, texNormal, texSpecular;
 		Vec3 specularColor;
@@ -57,7 +55,7 @@ struct Mesh : public Resource
 		int specularHardness;
 		float normalFactor, specularFactor, specularColorFactor;
 
-		static const uint MIN_SIZE = 10;
+		static const uint MIN_SIZE = 27;
 	};
 
 	struct BoneGroup

@@ -110,8 +110,8 @@ void Mesh::Load(StreamReader& stream, ID3D11Device* device)
 
 		stream.Read(sub.first);
 		stream.Read(sub.tris);
-		stream.Read(sub.minInd);
-		stream.Read(sub.nInd);
+		if (head.version <= 22)
+			stream.Skip(sizeof(word) * 2); // old minInd, nInd
 		stream.Read(sub.name);
 		const string& texName = stream.ReadString1();
 		if(!texName.empty())

@@ -286,8 +286,6 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 				}
 
 				// Indeksy
-				submesh->MinVertexIndexUsed = MinVertexIndexUsed;
-				submesh->NumVertexIndicesUsed = NumVertexIndicesUsed;
 				submesh->FirstTriangle = Out->Indices.size() / 3;
 
 				// Dodaj indeksy

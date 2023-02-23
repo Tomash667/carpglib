@@ -93,9 +93,7 @@ struct Mesh
 	{
 		word first; // pierwszy strójk¹t do narysowania
 		word tris; // ile trójk¹tów narysowaæ
-		word min_ind; // odpowiednik parametru DrawIndexedPrimitive - MinIndex (tylko wyra¿ony w trójk¹tach)
-		word n_ind; // odpowiednik parametru DrawIndexedPrimitive - NumVertices (tylko wyra¿ony w trójk¹tach)
-		string name;//, normal_name, specular_name;
+		string name;
 		string tex, tex_normal, tex_specular;
 		Vec3 specular_color;
 		float specular_intensity;
@@ -106,8 +104,6 @@ struct Mesh
 		{
 			return first == sub.first
 				&& tris == sub.tris
-				&& min_ind == sub.min_ind
-				&& n_ind == sub.n_ind
 				&& name == sub.name
 				&& tex == sub.tex
 				&& tex_normal == sub.tex_normal

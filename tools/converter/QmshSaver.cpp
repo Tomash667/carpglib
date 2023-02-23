@@ -75,8 +75,6 @@ void QmshSaver::SaveQmsh(const QMSH &Qmsh, const string &FileName)
 
 		f.Write((word)s.FirstTriangle);
 		f.Write((word)s.NumTriangles);
-		f.Write((word)s.MinVertexIndexUsed);
-		f.Write((word)s.NumVertexIndicesUsed);
 		f.WriteString1(s.Name);
 		f.WriteString1(s.texture);
 		f.Write(s.specular_color);

@@ -6,7 +6,7 @@
 #include <Windows.h>
 #include <locale>
 
-const char* CONVERTER_VERSION = "22.1";
+const char* CONVERTER_VERSION = "23";
 
 string group_file, output_file;
 GROUP_OPTION gopt;

@@ -73,7 +73,7 @@ void Mesh::Load(cstring path)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Format("Invalid file signature '%.4s'.", head.format);
-	if(head.version < 12 || head.version > 22)
+	if(head.version < 12 || head.version > 23)
 		throw Format("Invalid file version '%d'.", head.version);
 	if(head.n_bones >= 32)
 		throw Format("Too many bones (%d).", head.n_bones);
@@ -169,8 +169,8 @@ void Mesh::Load(cstring path)
 
 		f.Read(sub.first);
 		f.Read(sub.tris);
-		f.Read(sub.min_ind);
-		f.Read(sub.n_ind);
+		if (head.version < 23)
+			f.Skip(sizeof(word) * 2);
 		f.ReadString1(sub.name);
 		f.ReadString1(sub.tex);
 
@@ -356,7 +356,7 @@ void Mesh::Load(cstring path)
 	}
 
 	old_ver = head.version;
-	head.version = 22;
+	head.version = 23;
 }
 
 void Mesh::LoadBoneGroups(FileReader& f)
@@ -431,8 +431,6 @@ void Mesh::Save(cstring path)
 
 		f.Write(sub.first);
 		f.Write(sub.tris);
-		f.Write(sub.min_ind);
-		f.Write(sub.n_ind);
 		f.WriteString1(sub.name);
 		f.WriteString1(sub.tex);
 

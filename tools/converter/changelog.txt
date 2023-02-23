@@ -1,6 +1,12 @@
 CHANGELOG
 Minor updates have changes only in exporter/converer, don't affect qmsh file.
 ---------------------------
+v23:
+MESH (v23):
++ removed unused submesh data minInd, nInd
+IMPORTER:
++ mesh v23 support
+
 v22.3:
 IMPORTER:
 + skip mesh splits
