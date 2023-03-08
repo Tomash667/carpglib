@@ -1201,19 +1201,44 @@ void Tokenizer::Parse(Color& c)
 	if(IsSymbol('{'))
 	{
 		Next();
-		c.r = MustGetInt();
-		Next();
-		c.g = MustGetInt();
-		Next();
-		c.b = MustGetInt();
-		Next();
-		if(!IsSymbol('}'))
+		if(IsToken(T_FLOAT))
 		{
-			c.a = MustGetInt();
+			float r, g, b, a;
+			r = MustGetFloat();
 			Next();
+			g = MustGetFloat();
+			Next();
+			b = MustGetFloat();
+			Next();
+			if(!IsSymbol('}'))
+			{
+				a = MustGetFloat();
+				Next();
+			}
+			else
+				a = 1.f;
+
+			if(InRange(r, 0.f, 1.f) && InRange(g, 0.f, 1.f) && InRange(b, 0.f, 1.f) && InRange(a, 0.f, 1.f))
+				c = Color(r, g, b, a);
+			else
+				Throw("Invalid color value.");
 		}
 		else
-			c.a = 255;
+		{
+			c.r = MustGetInt();
+			Next();
+			c.g = MustGetInt();
+			Next();
+			c.b = MustGetInt();
+			Next();
+			if(!IsSymbol('}'))
+			{
+				c.a = MustGetInt();
+				Next();
+			}
+			else
+				c.a = 255;
+		}
 		AssertSymbol('}');
 		Next();
 	}
