@@ -63,7 +63,7 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 	}
 	TEXTMETRIC tm;
 	GetTextMetricsA(hdc, &tm);
-	Ptr<Font> font;
+	Scoped<Font> font;
 	font->height = tm.tmHeight;
 	ReleaseDC(nullptr, hdc);
 

@@ -516,42 +516,6 @@ private:
 	T* ptr;
 };
 
-namespace internal
-{
-	template<typename T>
-	struct ObjectPoolAllocator : IAllocator<T>
-	{
-		static_assert(std::is_base_of<ObjectPoolProxy<T>, T>::value, "T must inherit from ObjectPoolProxy<T>");
-
-		T* Create()
-		{
-			return T::Get();
-		}
-
-		void Destroy(T* item)
-		{
-			T::Free(item);
-		}
-	};
-
-	template<typename T>
-	struct ObjectPoolVectorAllocator : IVectorAllocator<T>
-	{
-		static_assert(std::is_base_of<ObjectPoolProxy<T>, T>::value, "T must inherit from ObjectPoolProxy<T>");
-
-		void Destroy(vector<T*>& items)
-		{
-			T::Free(items);
-		}
-	};
-}
-
-template<typename T>
-using ObjectPoolRef = Ptr<T, internal::ObjectPoolAllocator<T>>;
-
-template<typename T>
-using ObjectPoolVectorRef = VectorPtr<T, internal::ObjectPoolVectorAllocator<T>>;
-
 // global pools
 extern ObjectPool<string> StringPool;
 extern ObjectPool<vector<void*>> VectorPool;

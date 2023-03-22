@@ -129,6 +129,10 @@ namespace internal
 
 //-----------------------------------------------------------------------------
 template<typename T>
+using Ptr = T*;
+
+//-----------------------------------------------------------------------------
+template<typename T>
 class SmartPtr
 {
 public:
@@ -244,14 +248,14 @@ private:
 //-----------------------------------------------------------------------------
 // RAII for simple pointer
 template<typename T, typename Allocator = internal::StandardAllocator<T>>
-class Ptr
+class Scoped
 {
 	static_assert(std::is_base_of<IAllocator<T>, Allocator>::value, "Allocator must inherit from IAllocator.");
 public:
-	Ptr(nullptr_t) : ptr(nullptr), owned(false)
+	Scoped(nullptr_t) : ptr(nullptr), owned(false)
 	{
 	}
-	Ptr(T* ptr, bool owned = true) : ptr(ptr), owned(owned)
+	Scoped(T* ptr, bool owned = true) : ptr(ptr), owned(owned)
 	{
 		if(!ptr)
 		{
@@ -260,11 +264,11 @@ public:
 		}
 	}
 	template<typename U = T>
-	Ptr(typename std::enable_if<!std::is_abstract<U>::value && std::is_default_constructible<U>::value>::type* = nullptr) : owned(true)
+	Scoped(typename std::enable_if<!std::is_abstract<U>::value && std::is_default_constructible<U>::value>::type* = nullptr) : owned(true)
 	{
 		ptr = allocator.Create();
 	}
-	~Ptr()
+	~Scoped()
 	{
 		if(ptr && owned)
 			allocator.Destroy(ptr);
