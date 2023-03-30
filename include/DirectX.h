@@ -54,7 +54,7 @@ namespace internal
 }
 
 template<typename T>
-using CPtr = Ptr<T, internal::ComAllocator<T>>;
+using ScopedCom = Scoped<T, internal::ComAllocator<T>>;
 
 //-----------------------------------------------------------------------------
 struct ResourceLock

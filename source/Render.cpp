@@ -922,7 +922,7 @@ void Render::CreateShader(ShaderParams& params)
 	{
 		if(params.vertexShader)
 		{
-			CPtr<ID3DBlob> vsBlob = CompileShader(params, true);
+			ScopedCom<ID3DBlob> vsBlob = CompileShader(params, true);
 			HRESULT result = device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, params.vertexShader);
 			if(FAILED(result))
 				throw Format("Failed to create vertex shader (%u).", result);
@@ -943,7 +943,7 @@ void Render::CreateShader(ShaderParams& params)
 
 		if(params.pixelShader)
 		{
-			CPtr<ID3DBlob> psBlob = CompileShader(params, false);
+			ScopedCom<ID3DBlob> psBlob = CompileShader(params, false);
 			HRESULT result = device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, params.pixelShader);
 			if(FAILED(result))
 				throw Format("Failed to create pixel shader (%u).", result);

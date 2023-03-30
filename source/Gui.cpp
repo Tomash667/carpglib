@@ -16,8 +16,8 @@
 Gui* app::gui;
 
 //=================================================================================================
-Gui::Gui() : cursorMode(CURSOR_NORMAL), focusedCtrl(nullptr), masterLayout(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), shader(nullptr),
-fontLoader(nullptr), lastClick(Key::LeftButton), lastClickTimer(1.f), clipRect(nullptr)
+Gui::Gui() : cursorMode(CURSOR_NORMAL), focusedCtrl(nullptr), masterLayout(nullptr), layout(nullptr), overlay(nullptr), drawLayers(true), drawDialogs(true),
+grayscale(false), shader(nullptr), fontLoader(nullptr), lastClick(Key::LeftButton), lastClickTimer(1.f), clipRect(nullptr)
 {
 }
 
@@ -57,6 +57,13 @@ void Gui::SetText(cstring ok, cstring yes, cstring no, cstring cancel)
 	txYes = yes;
 	txNo = no;
 	txCancel = cancel;
+}
+
+//=================================================================================================
+void Gui::SetDrawOptions(bool drawLayers, bool drawDialogs)
+{
+	this->drawLayers = drawLayers;
+	this->drawDialogs = drawDialogs;
 }
 
 //=================================================================================================
@@ -739,7 +746,7 @@ void Gui::DrawTextOutline(DrawLineContext& ctx, uint lineBegin, uint lineEnd, in
 }
 
 //=================================================================================================
-void Gui::Draw(bool drawLayers, bool drawDialogs)
+void Gui::Draw()
 {
 	wndSize = app::engine->GetClientSize();
 

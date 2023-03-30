@@ -124,7 +124,8 @@ public:
 	~Gui();
 	void Init();
 	void SetText(cstring ok, cstring yes, cstring no, cstring cancel);
-	void Draw(bool drawLayers, bool drawDialogs);
+	void SetDrawOptions(bool drawLayers, bool drawDialogs);
+	void Draw();
 	bool AddFont(cstring filename);
 	Font* GetFont(cstring name, int size, int weight = 4, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)
@@ -265,5 +266,5 @@ private:
 	CursorMode cursorMode;
 	float lastClickTimer;
 	Int2 lastClickPos, prevCursorPos;
-	bool grayscale, doubleclk[5];
+	bool drawLayers, drawDialogs, grayscale, doubleclk[5];
 };
