@@ -1,11 +1,8 @@
 #include "Pch.h"
 #include "SceneManager.h"
 
-#include "Camera.h"
-#include "DirectX.h"
 #include "Render.h"
 #include "Scene.h"
-#include "SceneNode.h"
 #include "SuperShader.h"
 
 SceneManager* app::sceneMgr;

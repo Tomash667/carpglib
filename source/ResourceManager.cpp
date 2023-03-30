@@ -5,7 +5,6 @@
 #include "Engine.h"
 #include "Mesh.h"
 #include "Pak.h"
-#include "Render.h"
 #include "SoundManager.h"
 #include "WICTextureLoader.h"
 

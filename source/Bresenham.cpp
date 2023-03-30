@@ -95,8 +95,8 @@ void Pixel::PlotQuadBezierSeg(int x0, int y0, int x1, int y1, int x2, int y2, fl
 			cur = (w + 1.0) / 2.0f;
 			w = sqrt(w);
 			xy = 1.0f / (w + 1.0f);
-			sx = floor((x0 + 2.0f*w*x1 + x2)*xy / 2.0 + 0.5f);    /* subdivide curve  */
-			sy = floor((y0 + 2.0f*w*y1 + y2)*xy / 2.0 + 0.5f);     /* plot separately */
+			sx = floor((x0 + 2.0f*w*x1 + x2)*xy / 2.0f + 0.5f);    /* subdivide curve  */
+			sy = floor((y0 + 2.0f*w*y1 + y2)*xy / 2.0f + 0.5f);     /* plot separately */
 			dx = floor((w*x1 + x0)*xy + 0.5f);
 			dy = floor((y1*w + y0)*xy + 0.5f);
 			PlotQuadBezierSeg(x0, y0, dx, dy, sx, sy, cur, th, pixels);
@@ -222,7 +222,7 @@ void Pixel::PlotQuadBezier(int x0, int y0, int x1, int y1, int x2, int y2, float
 				q = -q;
 			t = (2.0f*w*(x0 - x1) - x0 + x2 + q) / (2.0f*(1.0f - w)*(x2 - x0));        /* t at P4 */
 		}
-		q = 1.0f / (2.0f*t*(1.0 - t)*(w - 1.0f) + 1.0f);                 /* sub-divide at t */
+		q = 1.0f / (2.0f*t*(1.0f - t)*(w - 1.0f) + 1.0f);                 /* sub-divide at t */
 		xx = (t*t*(x0 - 2.0f*w*x1 + x2) + 2.0f*t*(w*x1 - x0) + x0)*q;               /* = P4 */
 		yy = (t*t*(y0 - 2.0f*w*y1 + y2) + 2.0f*t*(w*y1 - y0) + y0)*q;
 		ww = t*(w - 1.0) + 1.0;

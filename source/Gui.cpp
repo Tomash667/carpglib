@@ -8,7 +8,6 @@
 #include "GuiRect.h"
 #include "GuiShader.h"
 #include "Input.h"
-#include "Layout.h"
 #include "Render.h"
 #include "ResourceManager.h"
 #include "WindowsIncludes.h"
