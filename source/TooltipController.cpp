@@ -86,47 +86,47 @@ void TooltipController::Draw(ControlDrawData*)
 	if(state != State::VISIBLE || !anything)
 		return;
 
-	int a = int(alpha * 222);
+	const int a = int(alpha * 222);
+	const Color boxColor = Color::Alpha(a);
+	const Color textColor = Color(0, 0, 0, a);
 
 	// box
-	gui->DrawArea(Box2d::Create(pos, size), layout->box);
+	gui->DrawArea(Box2d::Create(pos, size), layout->box, nullptr, &boxColor);
 
 	// image
 	if(img)
 	{
 		if(imgSize == Int2::Zero)
-			gui->DrawSprite(img, pos + Int2(12, 12), Color::Alpha(a));
+			gui->DrawSprite(img, pos + Int2(12, 12), boxColor);
 		else
 		{
 			const Rect rect = Rect::Create(pos + Int2(12, 12), imgSize);
-			gui->DrawSpriteRect(img, rect, Color::Alpha(a));
+			gui->DrawSpriteRect(img, rect, boxColor);
 		}
 	}
-
-	Rect r;
 
 	// big text
 	if(!big_text.empty())
 	{
-		r = r_big_text;
+		Rect r = r_big_text;
 		r += pos;
-		gui->DrawText(layout->font_big, big_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a), r);
+		gui->DrawText(layout->font_big, big_text, DTF_PARSE_SPECIAL, textColor, r);
 	}
 
 	// text
 	if(!text.empty())
 	{
-		r = r_text;
+		Rect r = r_text;
 		r += pos;
-		gui->DrawText(layout->font, text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a), r);
+		gui->DrawText(layout->font, text, DTF_PARSE_SPECIAL, textColor, r);
 	}
 
 	// small text
 	if(!small_text.empty())
 	{
-		r = r_small_text;
+		Rect r = r_small_text;
 		r += pos;
-		gui->DrawText(layout->font_small, small_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a), r);
+		gui->DrawText(layout->font_small, small_text, DTF_PARSE_SPECIAL, textColor, r);
 	}
 }
 

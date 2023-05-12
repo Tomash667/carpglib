@@ -2067,7 +2067,7 @@ void Gui::DrawRect(Color color, const Rect& rect, int width)
 }
 
 //=================================================================================================
-void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect, Color* tint)
+void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect, const Color* tint)
 {
 	if(area_layout.mode == AreaLayout::Mode::None)
 		return;

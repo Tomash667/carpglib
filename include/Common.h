@@ -56,6 +56,7 @@ struct Music;
 struct MusicList;
 struct Resource;
 struct Sound;
+struct TexOverride;
 struct Texture;
 struct VertexData;
 typedef Font* FontPtr;
