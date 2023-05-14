@@ -1611,6 +1611,13 @@ inline float Vec3::Distance(const Vec3& v1, const Vec3& v2)
 	return XMVectorGetX(X);
 }
 
+inline float Vec3::Distance2d(const Vec3& v1, const Vec3& v2)
+{
+	const float x = abs(v1.x - v2.x),
+		z = abs(v1.z - v2.z);
+	return sqrt(x * x + z * z);
+}
+
 inline float Vec3::DistanceSquared(const Vec3& v1, const Vec3& v2)
 {
 	XMVECTOR x1 = XMLoadFloat3(&v1);
@@ -1620,11 +1627,11 @@ inline float Vec3::DistanceSquared(const Vec3& v1, const Vec3& v2)
 	return XMVectorGetX(X);
 }
 
-inline float Vec3::Distance2d(const Vec3& v1, const Vec3& v2)
+inline float Vec3::DistanceSquared2d(const Vec3& v1, const Vec3& v2)
 {
-	float x = abs(v1.x - v2.x),
+	const float x = abs(v1.x - v2.x),
 		z = abs(v1.z - v2.z);
-	return sqrt(x * x + z * z);
+	return x * x + z * z;
 }
 
 // https://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToEuler/index.htm

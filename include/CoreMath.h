@@ -840,8 +840,9 @@ struct Vec3 : XMFLOAT3
 	static void CatmullRom(const Vec3& v1, const Vec3& v2, const Vec3& v3, const Vec3& v4, float t, Vec3& result);
 	static Vec3 CatmullRom(const Vec3& v1, const Vec3& v2, const Vec3& v3, const Vec3& v4, float t);
 	static float Distance(const Vec3& v1, const Vec3& v2);
-	static float DistanceSquared(const Vec3& v1, const Vec3& v2);
 	static float Distance2d(const Vec3& v1, const Vec3& v2);
+	static float DistanceSquared(const Vec3& v1, const Vec3& v2);
+	static float DistanceSquared2d(const Vec3& v1, const Vec3& v2);
 	static Vec3 FromAxisAngle(const Vec3& v, float angle);
 	static void Hermite(const Vec3& v1, const Vec3& t1, const Vec3& v2, const Vec3& t2, float t, Vec3& result);
 	static Vec3 Hermite(const Vec3& v1, const Vec3& t1, const Vec3& v2, const Vec3& t2, float t);
