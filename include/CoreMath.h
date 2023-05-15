@@ -207,7 +207,7 @@ inline T Min(T a, T2 b, Args... args)
 		return Min(a, args...);
 }
 template<typename T, int N>
-inline T Min(const T(&arr)[N])
+inline T Min(const array<T, N>& arr)
 {
 	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
 	T value = arr[0];
@@ -219,7 +219,7 @@ inline T Min(const T(&arr)[N])
 	return value;
 }
 template<typename T>
-inline T Min(const T(&arr)[2])
+inline T Min(const array<T, 2>& arr)
 {
 	return Min(arr[0], arr[1]);
 }
@@ -244,7 +244,7 @@ inline T Max(T a, T2 b, Args... args)
 		return Max(a, args...);
 }
 template<typename T, int N>
-inline T Max(const T(&arr)[N])
+inline T Max(const array<T, N>& arr)
 {
 	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
 	T value = arr[0];
@@ -256,7 +256,7 @@ inline T Max(const T(&arr)[N])
 	return value;
 }
 template<typename T>
-inline T Max(const T(&arr)[2])
+inline T Max(const array<T, 2>& arr)
 {
 	return Max(arr[0], arr[1]);
 }
