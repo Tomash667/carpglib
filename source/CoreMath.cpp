@@ -514,9 +514,9 @@ bool FrustumPlanes::BoxToFrustum(const Box2d& box) const
 			vmin.x = box.v2.x;
 
 		if(planes[i].y <= 0.0f)
-			vmin.y = 0.f;
+			vmin.y = -999.f;
 		else
-			vmin.y = 25.f;
+			vmin.y = 999.f;
 
 		if(planes[i].z <= 0.0f)
 			vmin.z = box.v1.y;
