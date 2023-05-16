@@ -39,6 +39,7 @@ struct DynamicTexture : public Texture
 	void Lock();
 	void Unlock(bool generateMipmaps = false);
 	void Fill(Color color);
+	void Fill(delegate<Color(int, int)> callback);
 	uint* operator [] (uint row) { return (uint*)(data + pitch * row); }
 
 private:

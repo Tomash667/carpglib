@@ -86,7 +86,7 @@ public:
 	const Box& GetBox() const { return box; }
 	const Vec3& GetPos() const { return pos; }
 	float* GetHeightMap() { return h; }
-	uint GetTerrainWidth() const { return width; }
+	uint GetWidth() const { return width; }
 	uint GetTilesCount() const { return n_tiles; }
 	uint GetSplatSize() const { return tex_size; }
 	float GetPartSize() const { return tiles_size / n_parts; }
