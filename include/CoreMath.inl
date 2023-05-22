@@ -2814,6 +2814,11 @@ inline constexpr Box::Box(const Box& box) : v1(box.v1), v2(box.v2)
 {
 }
 
+inline constexpr Box::Box(const Box& box, float margin) : v1(box.v1.x - margin, box.v1.y - margin, box.v1.z - margin),
+v2(box.v2.x + margin, box.v2.y + margin, box.v2.z + margin)
+{
+}
+
 inline constexpr Box::Box(float x, float y, float z) : v1(x, y, z), v2(x, y, z)
 {
 }

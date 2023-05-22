@@ -1170,6 +1170,7 @@ struct Box
 	constexpr Box(float minx, float miny, float minz, float maxx, float maxy, float maxz);
 	constexpr Box(const Vec3& v1, const Vec3& v2);
 	constexpr Box(const Box& box);
+	constexpr Box(const Box& box, float margin);
 	constexpr Box(float x, float y, float z);
 	explicit constexpr Box(const Vec3& v);
 
