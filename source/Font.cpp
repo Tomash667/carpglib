@@ -225,7 +225,7 @@ Int2 Font::CalculateSizeWrap(Cstring str, const Int2& max_size, int border) cons
 	int line_pts = size.x / height;
 	int total_pts = line_pts * lines;
 
-	while(line_pts > 9 + lines)
+	while(line_pts > 15 + lines)
 	{
 		++lines;
 		line_pts = total_pts / lines;

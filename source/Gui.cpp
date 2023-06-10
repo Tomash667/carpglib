@@ -1539,6 +1539,7 @@ void Gui::SimpleDialog(cstring text, Control* parent, cstring name)
 	di.name = name;
 	di.parent = parent;
 	di.pause = false;
+	di.auto_wrap = true;
 	di.text = text;
 	di.order = DialogBox::GetOrder(parent);
 	di.type = DialogType::Ok;

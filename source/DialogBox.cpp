@@ -82,14 +82,14 @@ void DialogBox::Update(float dt)
 //=================================================================================================
 void DialogBox::Event(GuiEvent e)
 {
-	if(e >= GuiEvent_Custom)
-		result = e - GuiEvent_Custom;
-	else if(e == GuiEvent_Show || e == GuiEvent_Resize)
+	if(Any(e, GuiEvent_Show, GuiEvent_Resize, GuiEvent_WindowResize))
 	{
 		pos = global_pos = (gui->wndSize - size) / 2;
 		for(uint i = 0; i < bts.size(); ++i)
 			bts[i].global_pos = bts[i].pos + pos;
 	}
+	else if(e >= GuiEvent_Custom)
+		result = e - GuiEvent_Custom;
 }
 
 //=================================================================================================
