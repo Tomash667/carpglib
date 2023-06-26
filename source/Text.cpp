@@ -812,7 +812,6 @@ void Utf8ToAscii(string& str)
 				r = '¿';
 				break;
 			default:
-				assert(0);
 				r = '?';
 				break;
 			}
