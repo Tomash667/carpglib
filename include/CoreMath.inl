@@ -198,6 +198,11 @@ inline int Int2::Distance(const Int2& i1, const Int2& i2)
 	return (int)sqrt((float)(x * x + y * y));
 }
 
+inline int Int2::DistanceSteep(const Int2& i1, const Int2& i2)
+{
+	return abs(i1.x - i2.x) + abs(i1.y - i2.y);
+}
+
 inline Int2 Int2::Lerp(const Int2& i1, const Int2& i2, float t)
 {
 	return Int2((int)::Lerp(float(i1.x), float(i2.x), t), (int)::Lerp(float(i1.y), float(i2.y), t));

@@ -555,6 +555,7 @@ struct Int2
 
 	// Static functions
 	static int Distance(const Int2& i1, const Int2& i2);
+	static int DistanceSteep(const Int2& i1, const Int2& i2);
 	static Int2 Lerp(const Int2& i1, const Int2& i2, float t);
 	static Int2 Max(const Int2& i1, const Int2& i2);
 	static Int2 Min(const Int2& i1, const Int2& i2);
