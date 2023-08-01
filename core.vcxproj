@@ -38,7 +38,6 @@
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp" />
     <ClCompile Include="source\Bresenham.cpp" />
-    <ClCompile Include="source\Color.cpp" />
     <ClCompile Include="source\Config.cpp" />
     <ClCompile Include="source\Containers.cpp" />
     <ClCompile Include="source\CoreMath.cpp" />
@@ -58,7 +57,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{F4474539-550F-4B4C-B497-DDA017E53854}</ProjectGuid>
     <RootNamespace>engine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
