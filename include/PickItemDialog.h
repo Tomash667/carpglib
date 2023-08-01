@@ -9,20 +9,20 @@
 //-----------------------------------------------------------------------------
 struct PickItemDialogParams
 {
-	PickItemDialogParams() : event(nullptr), get_tooltip(nullptr), parent(nullptr), multiple(0), size_min(300, 200), size_max(300, 512)
+	PickItemDialogParams() : event(nullptr), getTooltip(nullptr), parent(nullptr), multiple(0), sizeMin(300, 200), sizeMax(300, 512)
 	{
 	}
 
 	vector<FlowItem*> items;
-	int multiple;
 	DialogEvent event;
-	TooltipController::Callback get_tooltip;
+	TooltipController::Callback getTooltip;
 	Control* parent;
 	string text;
-	Int2 size_min, size_max; // size.x is always taken from size_min for now
+	Int2 sizeMin, sizeMax; // size.x is always taken from sizeMin for now
+	int multiple;
 
-	void AddItem(cstring item_text, int group, int id, bool disabled = false);
-	void AddSeparator(cstring item_text);
+	void AddItem(cstring itemText, int id, int group = 0, bool disabled = false);
+	void AddSeparator(cstring itemText);
 };
 
 //-----------------------------------------------------------------------------
@@ -53,14 +53,13 @@ public:
 			id = -1;
 		}
 	}
+	int GetSelectedId() const { return selected.empty() ? -1 : selected.front()->id; }
 	vector<FlowItem*>& GetSelected()
 	{
 		return selected;
 	}
 
 	static PickItemDialog* Show(PickItemDialogParams& params);
-
-	static PickItemDialog* self;
 
 private:
 	enum Id
@@ -77,10 +76,11 @@ private:
 	void Create(PickItemDialogParams& params);
 	void OnSelect();
 
+	static PickItemDialog* self;
 	FlowContainer flow;
-	TooltipController::Callback get_tooltip;
-	int multiple;
+	TooltipController::Callback getTooltip;
 	Button btClose;
 	TooltipController tooltip;
 	vector<FlowItem*> selected;
+	int multiple;
 };

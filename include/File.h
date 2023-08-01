@@ -327,6 +327,9 @@ public:
 		return buf;
 	}
 
+	template<typename T>
+	void operator << (const T&) = delete;
+
 protected:
 	bool ok;
 	static string buf;
@@ -565,6 +568,9 @@ public:
 		Write(a);
 		SetPos(current_pos);
 	}
+
+	template<typename T>
+	void operator >> (const T&) = delete;
 };
 
 //-----------------------------------------------------------------------------

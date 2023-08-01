@@ -10,7 +10,7 @@ static const Int2 NOT_SELECTED = Int2(-1, -1);
 
 //=================================================================================================
 TextBox::TextBox(bool is_new) : Control(is_new), added(false), multiline(false), numeric(false), label(nullptr), scrollbar(nullptr), readonly(false), caret_index(-1),
-select_start_index(-1), down(false), offset(0), offset_move(0.f), require_scrollbar(false), last_y_move(-1)
+select_start_index(-1), down(false), offset(0), offset_move(0.f), require_scrollbar(false), last_y_move(-1), errorMode(false)
 {
 }
 
@@ -27,7 +27,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 	{
 		cstring txt = (caret_blink >= 0.f ? Format("%s|", text.c_str()) : text.c_str());
 
-		gui->DrawArea(Box2d::Create(global_pos, size), layout->background);
+		gui->DrawArea(Box2d::Create(global_pos, size), errorMode ? layout->background_error : layout->background);
 
 		Rect r = { global_pos.x + padding, global_pos.y + padding, global_pos.x + size.x - padding, global_pos.y + size.y - padding };
 

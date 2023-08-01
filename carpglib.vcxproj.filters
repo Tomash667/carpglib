@@ -307,6 +307,9 @@
     <ClInclude Include="include\PhysicsDrawer.h">
       <Filter>utility</Filter>
     </ClInclude>
+    <ClInclude Include="include\DialogInfo.h">
+      <Filter>gui dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">

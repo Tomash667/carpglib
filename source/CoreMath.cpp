@@ -9,12 +9,12 @@ void MurmurHash3_x86_32(const void* key, int len, uint32_t seed, void* out);
 //=================================================================================================
 std::minstd_rand internal::rng;
 
-int RandVal()
+uint RandVal()
 {
 	// ugly hack
 	static_assert(sizeof(internal::rng) == sizeof(uint), "Failed to get random seed, implementation changed.");
 	uint seed = *(uint*)&internal::rng;
-	return (int)seed;
+	return seed;
 }
 
 void Srand()
@@ -441,6 +441,28 @@ void FrustumPlanes::GetPoints(const Matrix& worldViewProj, array<Vec3, 8>& point
 		points[i] = Vec3::Transform(P[i], worldViewProjInv);
 }
 
+Box2d FrustumPlanes::GetBox2d() const
+{
+	array<Vec3, 8> pts;
+	GetPoints(pts);
+	float minx, minz, maxx, maxz;
+	minx = maxx = pts[0].x;
+	minz = maxz = pts[0].z;
+	for(int i = 1; i < 8; ++i)
+	{
+		const Vec3& pt = pts[i];
+		if(pt.x < minx)
+			minx = pt.x;
+		else if(pt.x > maxx)
+			maxx = pt.x;
+		if(pt.z < minz)
+			minz = pt.z;
+		else if(pt.z > maxz)
+			maxz = pt.z;
+	}
+	return Box2d(minx, minz, maxx, maxz);
+}
+
 bool FrustumPlanes::PointInFrustum(const Vec3 &p) const
 {
 	for(int i = 0; i < 6; ++i)
@@ -492,9 +514,9 @@ bool FrustumPlanes::BoxToFrustum(const Box2d& box) const
 			vmin.x = box.v2.x;
 
 		if(planes[i].y <= 0.0f)
-			vmin.y = 0.f;
+			vmin.y = -999.f;
 		else
-			vmin.y = 25.f;
+			vmin.y = 999.f;
 
 		if(planes[i].z <= 0.0f)
 			vmin.z = box.v1.y;

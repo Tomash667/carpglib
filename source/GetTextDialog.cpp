@@ -67,7 +67,16 @@ void GetTextDialog::Update(float dt)
 		{
 		got_result:
 			if(result == BUTTON_OK)
-				*input_str = textBox.GetText();
+			{
+				*inputStr = textBox.GetText();
+				if(validate && !validate())
+				{
+					textBox.SetText(*inputStr);
+					textBox.SetErrorMode(true);
+					result = -1;
+					return;
+				}
+			}
 			gui->CloseDialog(this);
 			if(event)
 				event(result);
@@ -78,29 +87,35 @@ void GetTextDialog::Update(float dt)
 //=================================================================================================
 void GetTextDialog::Event(GuiEvent e)
 {
-	if(e == GuiEvent_GainFocus)
+	switch(e)
 	{
+	case GuiEvent_Show:
+		textBox.SetErrorMode(false);
+		break;
+	case GuiEvent_GainFocus:
 		textBox.focus = true;
 		textBox.Event(GuiEvent_GainFocus);
-	}
-	else if(e == GuiEvent_LostFocus || e == GuiEvent_Close)
-	{
+		break;
+	case GuiEvent_LostFocus:
+	case GuiEvent_Close:
 		textBox.focus = false;
 		textBox.Event(GuiEvent_LostFocus);
-	}
-	else if(e == GuiEvent_WindowResize)
-	{
+		break;
+	case GuiEvent_WindowResize:
 		self->pos = self->global_pos = (gui->wndSize - self->size) / 2;
 		self->bts[0].global_pos = self->bts[0].pos + self->global_pos;
 		self->bts[1].global_pos = self->bts[1].pos + self->global_pos;
 		self->textBox.global_pos = self->textBox.pos + self->global_pos;
-	}
-	else if(e >= GuiEvent_Custom)
-	{
-		if(e == Result_Ok)
-			result = BUTTON_OK;
-		else if(e == Result_Cancel)
-			result = BUTTON_CANCEL;
+		break;
+	default:
+		if(e >= GuiEvent_Custom)
+		{
+			if(e == Result_Ok)
+				result = BUTTON_OK;
+			else if(e == Result_Cancel)
+				result = BUTTON_CANCEL;
+		}
+		break;
 	}
 }
 
@@ -114,8 +129,8 @@ GetTextDialog* GetTextDialog::Show(const GetTextDialogParams& params)
 		info.name = "GetTextDialog";
 		info.parent = nullptr;
 		info.pause = false;
-		info.order = ORDER_NORMAL;
-		info.type = DIALOG_CUSTOM;
+		info.order = DialogOrder::Normal;
+		info.type = DialogType::Custom;
 
 		self = new GetTextDialog(info);
 		self->bts.resize(2);
@@ -132,6 +147,8 @@ GetTextDialog* GetTextDialog::Show(const GetTextDialogParams& params)
 		bt2.parent = self;
 
 		self->textBox.pos = Int2(25, 60);
+
+		gui->RegisterControl(self);
 	}
 
 	self->Create(params);
@@ -155,15 +172,15 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	textBox.size = Int2(params.width - 50, 15 + lines * 20);
 	textBox.SetMultiline(params.multiline);
 	textBox.limit = params.limit;
-	textBox.SetText(params.input_str->c_str());
+	textBox.SetText(params.inputStr->c_str());
 
 	// ustaw przyciski
 	bt1.pos = Int2(size.x - 100 - 16, size.y - 40 - 16);
 	bt2.pos = Int2(16, size.y - 40 - 16);
-	if(params.custom_names)
+	if(params.customNames)
 	{
-		bt1.text = (params.custom_names[0] ? params.custom_names[0] : gui->txCancel);
-		bt2.text = (params.custom_names[1] ? params.custom_names[1] : gui->txOk);
+		bt1.text = (params.customNames[0] ? params.customNames[0] : gui->txCancel);
+		bt2.text = (params.customNames[1] ? params.customNames[1] : gui->txOk);
 	}
 	else
 	{
@@ -174,10 +191,11 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	// ustaw parametry
 	result = -1;
 	parent = params.parent;
-	order = parent ? static_cast<DialogBox*>(parent)->order : ORDER_NORMAL;
+	order = GetOrder(params.parent);
 	event = params.event;
+	validate = params.validate;
 	text = params.text;
-	input_str = params.input_str;
+	inputStr = params.inputStr;
 
 	// ustaw pozycjê
 	pos = global_pos = (gui->wndSize - size) / 2;

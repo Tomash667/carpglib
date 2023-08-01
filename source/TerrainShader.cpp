@@ -5,6 +5,7 @@
 #include "DirectX.h"
 #include "Render.h"
 #include "Scene.h"
+#include "SceneManager.h"
 #include "Terrain.h"
 #include "Texture.h"
 
@@ -57,9 +58,11 @@ void TerrainShader::OnRelease()
 }
 
 //=================================================================================================
-void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const vector<uint>& parts)
+void TerrainShader::Prepare(Scene* scene, Camera* camera)
 {
-	assert(scene && camera && terrain);
+	assert(scene && camera);
+
+	this->camera = camera;
 
 	app::render->SetBlendState(Render::BLEND_NO);
 	app::render->SetDepthState(Render::DEPTH_YES);
@@ -72,18 +75,7 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 	deviceContext->PSSetConstantBuffers(0, 1, &psGlobals);
 	ID3D11SamplerState* samplers[] = { sampler, app::render->GetSampler() };
 	deviceContext->PSSetSamplers(0, 2, samplers);
-	uint stride = sizeof(VTerrain), offset = 0;
 	deviceContext->IASetInputLayout(layout);
-	deviceContext->IASetVertexBuffers(0, 1, &terrain->vb, &stride, &offset);
-	deviceContext->IASetIndexBuffer(terrain->ib, DXGI_FORMAT_R32_UINT, 0);
-
-	// vertex shader constants
-	{
-		ResourceLock lock(vsGlobals);
-		VsGlobals& vsg = *lock.Get<VsGlobals>();
-		vsg.matCombined = camera->matViewProj.Transpose();
-		vsg.matWorld = Matrix::IdentityMatrix.Transpose();
-	}
 
 	// pixel shader constants
 	{
@@ -94,6 +86,28 @@ void TerrainShader::Draw(Scene* scene, Camera* camera, Terrain* terrain, const v
 		psg.lightDir = scene->GetLightDir();
 		psg.fogColor = scene->GetFogColor();
 		psg.fogParam = scene->GetFogParams();
+		if(!app::sceneMgr->useLighting)
+			psg.colorAmbient = Vec4::One;
+	}
+}
+
+//=================================================================================================
+void TerrainShader::Draw(Terrain* terrain, const vector<uint>& parts)
+{
+	assert(terrain);
+
+	// setup shader
+	uint stride = sizeof(VTerrain), offset = 0;
+	deviceContext->IASetVertexBuffers(0, 1, &terrain->vb, &stride, &offset);
+	deviceContext->IASetIndexBuffer(terrain->ib, DXGI_FORMAT_R32_UINT, 0);
+
+	// vertex shader constants
+	{
+		ResourceLock lock(vsGlobals);
+		VsGlobals& vsg = *lock.Get<VsGlobals>();
+		Matrix matPos = Matrix::Translation(terrain->pos);
+		vsg.matWorld = matPos.Transpose();
+		vsg.matCombined = (matPos * camera->matViewProj).Transpose();
 	}
 
 	// set textures

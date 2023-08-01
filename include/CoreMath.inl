@@ -158,6 +158,11 @@ inline Int2 operator * (int a, const Int2& i)
 	return i * a;
 }
 
+inline Vec2 operator * (float a, const Int2& i)
+{
+	return Vec2(a * i.x, a * i.y);
+}
+
 //------------------------------------------------------------------------------
 // Methods
 //------------------------------------------------------------------------------
@@ -187,6 +192,13 @@ inline int Int2::Random() const
 //------------------------------------------------------------------------------
 
 inline int Int2::Distance(const Int2& i1, const Int2& i2)
+{
+	const int x = i1.x - i2.x;
+	const int y = i1.y - i2.y;
+	return (int)sqrt((float)(x * x + y * y));
+}
+
+inline int Int2::DistanceSteep(const Int2& i1, const Int2& i2)
 {
 	return abs(i1.x - i2.x) + abs(i1.y - i2.y);
 }
@@ -274,7 +286,11 @@ inline constexpr Rect::Rect(const Int2& p1, const Int2& p2) : p1(p1), p2(p2)
 {
 }
 
-inline constexpr Rect::Rect(const Rect& box) : p1(box.p1), p2(box.p2)
+inline constexpr Rect::Rect(const Rect& rect) : p1(rect.p1), p2(rect.p2)
+{
+}
+
+inline constexpr Rect::Rect(const Rect& rect, int pad) : p1(rect.p1.x - pad, rect.p1.y - pad), p2(rect.p2.x + pad, rect.p2.y + pad)
 {
 }
 
@@ -1600,6 +1616,13 @@ inline float Vec3::Distance(const Vec3& v1, const Vec3& v2)
 	return XMVectorGetX(X);
 }
 
+inline float Vec3::Distance2d(const Vec3& v1, const Vec3& v2)
+{
+	const float x = abs(v1.x - v2.x),
+		z = abs(v1.z - v2.z);
+	return sqrt(x * x + z * z);
+}
+
 inline float Vec3::DistanceSquared(const Vec3& v1, const Vec3& v2)
 {
 	XMVECTOR x1 = XMLoadFloat3(&v1);
@@ -1609,11 +1632,11 @@ inline float Vec3::DistanceSquared(const Vec3& v1, const Vec3& v2)
 	return XMVectorGetX(X);
 }
 
-inline float Vec3::Distance2d(const Vec3& v1, const Vec3& v2)
+inline float Vec3::DistanceSquared2d(const Vec3& v1, const Vec3& v2)
 {
-	float x = abs(v1.x - v2.x),
+	const float x = abs(v1.x - v2.x),
 		z = abs(v1.z - v2.z);
-	return sqrt(x * x + z * z);
+	return x * x + z * z;
 }
 
 // https://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToEuler/index.htm
@@ -2793,6 +2816,11 @@ inline constexpr Box::Box(const Vec3& v1, const Vec3& v2) : v1(v1), v2(v2)
 }
 
 inline constexpr Box::Box(const Box& box) : v1(box.v1), v2(box.v2)
+{
+}
+
+inline constexpr Box::Box(const Box& box, float margin) : v1(box.v1.x - margin, box.v1.y - margin, box.v1.z - margin),
+v2(box.v2.x + margin, box.v2.y + margin, box.v2.z + margin)
 {
 }
 

@@ -21,10 +21,6 @@ constexpr void SetBitValue(int& flags, int bit, bool value) { if(value) SetBit(f
 constexpr void CopyBit(int& flags, int flags2, int bit) { if((flags2 & bit) != 0) SetBit(flags, bit); else ClearBit(flags, bit); }
 constexpr float FLT10(float a) { return float(0.1f * int(a * 10)); }
 constexpr float FLT100(float a) { return float(0.01f * int(a * 100)); }
-template<typename T, typename T1, typename T2>
-constexpr bool OR2_EQ(const T& var, const T1& val1, const T2& val2) { return var == val1 || var == val2; }
-template<typename T, typename T1, typename T2, typename T3>
-constexpr bool OR3_EQ(const T& var, const T1& val1, const T2& val2, const T3& val3) { return var == val1 || var == val2 || var == val3; }
 template<class T, size_t N>
 constexpr size_t countof(T(&)[N]) { return N; }
 constexpr size_t alignto(size_t size, size_t align) { return size % align == 0 ? size : (size / align + 1) * align; }

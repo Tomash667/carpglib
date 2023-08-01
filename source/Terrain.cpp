@@ -38,11 +38,8 @@ Terrain::~Terrain()
 	SafeRelease(vbStaging);
 	SafeRelease(ib);
 	delete texSplat;
-
 	delete[] parts;
-	// h jest przechowywany w OutsideLocation wiêc nie mo¿na tu usuwaæ
-	//delete[] h;
-	state = 0;
+	delete[] h;
 }
 
 //=================================================================================================
@@ -51,7 +48,7 @@ void Terrain::Init(const Options& o)
 	assert(state == 0);
 	assert(o.tile_size > 0.f && o.n_parts > 0 && o.tiles_per_part > 0 && IsPow2(o.tex_size));
 
-	pos = Vec3(0, 0, 0);
+	pos = o.pos;
 	tile_size = o.tile_size;
 	n_parts = o.n_parts;
 	n_parts2 = n_parts * n_parts;
@@ -66,9 +63,8 @@ void Terrain::Init(const Options& o)
 	part_tris = tiles_per_part * tiles_per_part * 2;
 	part_verts = tiles_per_part * tiles_per_part * 6;
 	tex_size = o.tex_size;
-	box.v1 = Vec3(0, 0, 0);
-	box.v2.x = box.v2.z = tile_size * n_tiles;
-	box.v2.y = 0;
+	box.v1 = pos;
+	box.v2 = pos + Vec3(tiles_size, 0, tiles_size);
 
 	h = new float[width2];
 	parts = new Part[n_parts2];
@@ -305,6 +301,23 @@ void Terrain::SetHeight(float height)
 }
 
 //=================================================================================================
+void Terrain::SetBordersHeight(float height)
+{
+	assert(state > 0);
+	for(uint i = 0; i < width; ++i)
+	{
+		// back
+		h[i] = height;
+		// front
+		h[i + (width - 1) * width] = height;
+		// left
+		h[i * width] = height;
+		// right
+		h[width - 1 + i * width] = height;
+	}
+}
+
+//=================================================================================================
 void Terrain::RandomizeHeight(float hmin, float hmax)
 {
 	assert(state > 0);
@@ -319,9 +332,6 @@ void Terrain::RoundHeight()
 {
 	assert(state > 0);
 
-	float sum;
-	int count;
-
 #define H(xx,zz) h[x+(xx)+(z+(zz))*width]
 
 	// aby przyœpieszyæ t¹ funkcje mo¿na by obliczyæ najpierw dla krawêdzi a
@@ -332,8 +342,8 @@ void Terrain::RoundHeight()
 	{
 		for(uint x = 0; x < width; ++x)
 		{
-			count = 1;
-			sum = H(0, 0);
+			int count = 1;
+			float sum = H(0, 0);
 
 			// wysokoœæ z prawej
 			if(x < width - 1)
@@ -361,6 +371,22 @@ void Terrain::RoundHeight()
 			}
 			// mo¿na by dodaæ jeszcze elementy na ukos
 			H(0, 0) = sum / count;
+		}
+	}
+}
+
+
+//=================================================================================================
+void Terrain::RoundHeightWithoutBorders()
+{
+	assert(state > 0);
+
+	for(uint z = 1; z < width - 1; ++z)
+	{
+		for(uint x = 1; x < width - 1; ++x)
+		{
+			float sum = H(0, 0) + H(1, 0) + H(-1, 0) + H(0, 1) + H(0, -1);
+			H(0, 0) = sum / 5;
 		}
 	}
 }
@@ -592,37 +618,24 @@ void Terrain::SmoothNormals(VTerrain* v)
 float Terrain::GetH(float x, float z) const
 {
 	assert(state > 0);
-
-	// sprawdŸ czy nie jest poza terenem
-	assert(x >= 0.f && z >= 0.f);
+	assert(IsInside(x, z));
 
 	// oblicz które to kafle
 	uint tx, tz;
-	tx = (uint)floor(x / tile_size);
-	tz = (uint)floor(z / tile_size);
+	tx = (uint)floor((x - pos.x) / tile_size);
+	tz = (uint)floor((z - pos.z) / tile_size);
 
 	// sprawdŸ czy nie jest to poza terenem
-	//assert_return(tx < n_tiles && tz < n_tiles, 0.f);
 	// teren na samej krawêdzi wykrywa jako b³¹d
 	if(tx == n_tiles)
-	{
-		if(Equal(x, tiles_size))
-			--tx;
-		else
-			assert(tx < n_tiles);
-	}
+		--tx;
 	if(tz == n_tiles)
-	{
-		if(Equal(z, tiles_size))
-			--tz;
-		else
-			assert(tz < n_tiles);
-	}
+		--tz;
 
 	// oblicz offset od kafla do punktu
 	float offsetx, offsetz;
-	offsetx = (x - tile_size * tx) / tile_size;
-	offsetz = (z - tile_size * tz) / tile_size;
+	offsetx = ((x - pos.x) - tile_size * tx) / tile_size;
+	offsetz = ((z - pos.z) - tile_size * tz) / tile_size;
 
 	// pobierz wysokoœci na krawêdziach
 	float hTopLeft = h[tx + (tz + 1) * width];
@@ -650,34 +663,24 @@ float Terrain::GetH(float x, float z) const
 //=================================================================================================
 void Terrain::GetAngle(float x, float z, Vec3& angle) const
 {
-	// sprawdŸ czy nie jest to poza map¹
-	assert(x >= 0.f && z >= 0.f);
+	assert(IsInside(x, z));
 
 	// oblicz które to kafle
 	uint tx, tz;
-	tx = (uint)floor(x / tile_size);
-	tz = (uint)floor(z / tile_size);
+	tx = (uint)floor((x - pos.x) / tile_size);
+	tz = (uint)floor((z - pos.z) / tile_size);
 
-	// sprawdŸ czy nie jest to poza map¹
+	// sprawdŸ czy nie jest to poza terenem
+	// teren na samej krawêdzi wykrywa jako b³¹d
 	if(tx == n_tiles)
-	{
-		if(Equal(x, tiles_size))
-			--tx;
-		else
-			assert(tx < n_tiles);
-	}
+		--tx;
 	if(tz == n_tiles)
-	{
-		if(Equal(z, tiles_size))
-			--tz;
-		else
-			assert(tz < n_tiles);
-	}
+		--tz;
 
 	// oblicz offset od kafla do punktu
 	float offsetx, offsetz;
-	offsetx = (x - tile_size * tx) / tile_size;
-	offsetz = (z - tile_size * tz) / tile_size;
+	offsetx = ((x - pos.x) - tile_size * tx) / tile_size;
+	offsetz = ((z - pos.z) - tile_size * tz) / tile_size;
 
 	// pobierz wysokoœci na krawêdziach
 	float hTopLeft = h[tx + (tz + 1) * width];
@@ -797,11 +800,23 @@ void Terrain::SetHeightMap(float* _h)
 }
 
 //=================================================================================================
+bool Terrain::IsInside(float x, float z) const
+{
+	return x >= pos.x
+		&& x <= pos.x + tiles_size
+		&& z >= pos.z
+		&& z <= pos.z + tiles_size;
+}
+
+//=================================================================================================
 void Terrain::ListVisibleParts(vector<uint>& outParts, const FrustumPlanes& frustum) const
 {
-	for(uint i = 0; i < n_parts2; ++i)
+	if(frustum.BoxToFrustum(box))
 	{
-		if(frustum.BoxToFrustum(parts[i].box))
-			outParts.push_back(i);
+		for(uint i = 0; i < n_parts2; ++i)
+		{
+			if(frustum.BoxToFrustum(parts[i].box))
+				outParts.push_back(i);
+		}
 	}
 }

@@ -11,6 +11,9 @@ public:
 	//---------------------------
 	struct Options
 	{
+		Options() : pos(Vec3::Zero) {}
+
+		Vec3 pos;
 		float tile_size;
 		uint n_parts;
 		uint tiles_per_part;
@@ -54,9 +57,11 @@ public:
 	void RebuildUv();
 	void Make(bool smooth = true);
 	void SetHeight(float height);
+	void SetBordersHeight(float height);
 	void ClearHeight() { SetHeight(0.f); }
 	void RandomizeHeight(float hmin, float hmax);
 	void RoundHeight();
+	void RoundHeightWithoutBorders();
 	void Randomize();
 	void CalculateBox();
 	void SmoothNormals();
@@ -81,7 +86,7 @@ public:
 	const Box& GetBox() const { return box; }
 	const Vec3& GetPos() const { return pos; }
 	float* GetHeightMap() { return h; }
-	uint GetTerrainWidth() const { return width; }
+	uint GetWidth() const { return width; }
 	uint GetTilesCount() const { return n_tiles; }
 	uint GetSplatSize() const { return tex_size; }
 	float GetPartSize() const { return tiles_size / n_parts; }
@@ -91,7 +96,7 @@ public:
 	void SetTextures(TexturePtr* textures);
 	void RemoveHeightMap(bool _delete = false);
 	void SetHeightMap(float* h);
-	bool IsInside(float x, float z) const { return x >= 0.f && z >= 0.f && x < tiles_size && z < tiles_size; }
+	bool IsInside(float x, float z) const;
 	bool IsInside(const Vec3& v) const { return IsInside(v.x, v.z); }
 	void ListVisibleParts(vector<uint>& parts, const FrustumPlanes& frustum) const;
 

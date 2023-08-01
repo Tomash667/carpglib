@@ -38,8 +38,12 @@ inline void Srand(uint seed)
 {
 	internal::rng.seed(seed);
 }
-int RandVal();
+uint RandVal();
 inline int Rand()
+{
+	return internal::rng();
+}
+inline uint RandU()
 {
 	return internal::rng();
 }
@@ -203,7 +207,7 @@ inline T Min(T a, T2 b, Args... args)
 		return Min(a, args...);
 }
 template<typename T, int N>
-inline T Min(const T(&arr)[N])
+inline T Min(const array<T, N>& arr)
 {
 	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
 	T value = arr[0];
@@ -215,7 +219,7 @@ inline T Min(const T(&arr)[N])
 	return value;
 }
 template<typename T>
-inline T Min(const T(&arr)[2])
+inline T Min(const array<T, 2>& arr)
 {
 	return Min(arr[0], arr[1]);
 }
@@ -240,7 +244,7 @@ inline T Max(T a, T2 b, Args... args)
 		return Max(a, args...);
 }
 template<typename T, int N>
-inline T Max(const T(&arr)[N])
+inline T Max(const array<T, N>& arr)
 {
 	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
 	T value = arr[0];
@@ -252,7 +256,7 @@ inline T Max(const T(&arr)[N])
 	return value;
 }
 template<typename T>
-inline T Max(const T(&arr)[2])
+inline T Max(const array<T, 2>& arr)
 {
 	return Max(arr[0], arr[1]);
 }
@@ -395,6 +399,12 @@ inline constexpr bool IsPow2(T x)
 	return ((x > 0) && ((x & (x - 1)) == 0));
 }
 
+template<typename T>
+inline constexpr T Pow2(const T value)
+{
+	return value * value;
+}
+
 // Round up to next highest power of 2
 template<typename T>
 inline constexpr T NextPow2(T x)
@@ -437,6 +447,12 @@ inline float Round10(float value)
 {
 	// +0 required to get rid of (0, -0) flickering
 	return round(value * 10) / 10 + 0.0f;
+}
+
+inline float RoundTo(float value, int n)
+{
+	// +0 required to get rid of (0, -0) flickering
+	return round(value * n) / n + 0.0f;
 }
 
 // Return module
@@ -539,6 +555,7 @@ struct Int2
 
 	// Static functions
 	static int Distance(const Int2& i1, const Int2& i2);
+	static int DistanceSteep(const Int2& i1, const Int2& i2);
 	static Int2 Lerp(const Int2& i1, const Int2& i2, float t);
 	static Int2 Max(const Int2& i1, const Int2& i2);
 	static Int2 Min(const Int2& i1, const Int2& i2);
@@ -562,7 +579,8 @@ struct Rect
 	constexpr Rect(int x1, int y1, int x2, int y2);
 	constexpr Rect(const Int2& p);
 	constexpr Rect(const Int2& p1, const Int2& p2);
-	constexpr Rect(const Rect& box);
+	constexpr Rect(const Rect& rect);
+	constexpr Rect(const Rect& rect, int pad);
 	explicit constexpr Rect(const Box2d& box);
 	constexpr Rect(const Box2d& box, const Int2& pad);
 
@@ -823,8 +841,9 @@ struct Vec3 : XMFLOAT3
 	static void CatmullRom(const Vec3& v1, const Vec3& v2, const Vec3& v3, const Vec3& v4, float t, Vec3& result);
 	static Vec3 CatmullRom(const Vec3& v1, const Vec3& v2, const Vec3& v3, const Vec3& v4, float t);
 	static float Distance(const Vec3& v1, const Vec3& v2);
-	static float DistanceSquared(const Vec3& v1, const Vec3& v2);
 	static float Distance2d(const Vec3& v1, const Vec3& v2);
+	static float DistanceSquared(const Vec3& v1, const Vec3& v2);
+	static float DistanceSquared2d(const Vec3& v1, const Vec3& v2);
 	static Vec3 FromAxisAngle(const Vec3& v, float angle);
 	static void Hermite(const Vec3& v1, const Vec3& t1, const Vec3& v2, const Vec3& t2, float t, Vec3& result);
 	static Vec3 Hermite(const Vec3& v1, const Vec3& t1, const Vec3& v2, const Vec3& t2, float t);
@@ -1152,6 +1171,7 @@ struct Box
 	constexpr Box(float minx, float miny, float minz, float maxx, float maxy, float maxz);
 	constexpr Box(const Vec3& v1, const Vec3& v2);
 	constexpr Box(const Box& box);
+	constexpr Box(const Box& box, float margin);
 	constexpr Box(float x, float y, float z);
 	explicit constexpr Box(const Vec3& v);
 
@@ -1450,6 +1470,7 @@ struct FrustumPlanes
 	// Return points on edge of frustum
 	void GetPoints(array<Vec3, 8>& points) const;
 	static void GetPoints(const Matrix& worldViewProj, array<Vec3, 8>& points);
+	Box2d GetBox2d() const;
 	// Checks if point is inside frustum
 	bool PointInFrustum(const Vec3 &p) const;
 	// Checks if box collide with frustum

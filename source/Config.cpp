@@ -57,9 +57,9 @@ bool Config::GetBool(cstring name, bool def)
 	if(!value)
 		return def;
 
-	if(OR3_EQ(*value, "0", "false", "FALSE"))
+	if(Any(*value, "0", "false", "FALSE"))
 		return false;
-	else if(OR3_EQ(*value, "1", "true", "TRUE"))
+	else if(Any(*value, "1", "true", "TRUE"))
 		return true;
 	else
 		return def;
@@ -275,7 +275,7 @@ Config::Result Config::Load(cstring defaultFilename)
 			else
 			{
 				if(t.IsSymbol('{'))
-					value = t.GetBlock();
+					value = t.ParseBlock();
 				else
 					value = t.GetTokenString();
 			}

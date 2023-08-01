@@ -47,6 +47,7 @@ class SkyboxShader;
 class SoundManager;
 class SuperShader;
 class TerrainShader;
+typedef SceneNode* SceneNodePtr;
 
 // Resource types
 struct Font;
@@ -55,6 +56,7 @@ struct Music;
 struct MusicList;
 struct Resource;
 struct Sound;
+struct TexOverride;
 struct Texture;
 struct VertexData;
 typedef Font* FontPtr;
@@ -77,6 +79,7 @@ class DrawBox;
 class Grid;
 class GuiDialog;
 class GuiElement;
+class InputTextBox;
 class Label;
 class Layout;
 class ListBox;
@@ -88,6 +91,7 @@ class Overlay;
 class Panel;
 class PickItemDialog;
 class TextBox;
+class TooltipController;
 class TreeView;
 
 // Windows types

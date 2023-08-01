@@ -1,6 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "DialogInfo.h"
 #include "Font.h"
 #include "VertexDeclaration.h"
 #include "Key.h"
@@ -53,43 +54,6 @@ enum CursorMode
 	CURSOR_HOVER,
 	CURSOR_TEXT,
 	CURSOR_MAX
-};
-
-//-----------------------------------------------------------------------------
-enum GUI_DialogType
-{
-	DIALOG_OK,
-	DIALOG_YESNO,
-	DIALOG_CUSTOM
-};
-
-//-----------------------------------------------------------------------------
-typedef delegate<void(int)> DialogEvent;
-typedef delegate<void(int, int)> DialogEvent2;
-
-//-----------------------------------------------------------------------------
-enum DialogOrder
-{
-	ORDER_NORMAL,
-	ORDER_TOP,
-	ORDER_TOPMOST
-};
-
-//-----------------------------------------------------------------------------
-struct DialogInfo
-{
-	DialogInfo() : custom_names(nullptr), img(nullptr), have_tick(false), ticked(false), auto_wrap(false), type(DIALOG_OK), parent(nullptr), order(ORDER_TOP), pause(true)
-	{
-	}
-
-	string name, text;
-	GUI_DialogType type;
-	Control* parent;
-	DialogEvent event;
-	DialogOrder order;
-	cstring* custom_names, tick_text;
-	Texture* img;
-	bool pause, have_tick, ticked, auto_wrap;
 };
 
 //-----------------------------------------------------------------------------
@@ -178,9 +142,10 @@ public:
 	{
 		DrawArea(color, rect.LeftTop(), rect.Size(), clip_rect);
 	}
+	void DrawRect(Color color, const Rect& rect, int width = 1);
 	void SetLayout(Layout* layout);
 	Layout* GetLayout() const { return masterLayout; }
-	void DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect = nullptr, Color* tint = nullptr);
+	void DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect = nullptr, const Color* tint = nullptr);
 	void SetOverlay(Overlay* overlay);
 	Overlay* GetOverlay() const { return overlay; }
 	bool MouseMoved() const { return cursorPos != prevCursorPos; }
@@ -216,6 +181,7 @@ public:
 		assert(key >= Key::LeftButton && key <= Key::X2Button);
 		return doubleclk[(int)key - 1];
 	}
+	void RegisterControl(Control* control);
 
 	Matrix mViewProj;
 	Int2 cursorPos, prevCursorPos, wndSize;
@@ -249,6 +215,7 @@ private:
 	FontLoader* fontLoader;
 	GuiShader* shader;
 	vector<DialogBox*> createdDialogs;
+	vector<Control*> registeredControls;
 	Container* layer, *dialogLayer;
 	VGui vBuf[256 * 6], vBuf2[256 * 6];
 	HitboxContext tmpHitboxContext;

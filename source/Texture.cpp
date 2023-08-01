@@ -71,3 +71,33 @@ void DynamicTexture::Unlock(bool generateMipmaps)
 	if(generateMipmaps)
 		deviceContext->GenerateMips(tex);
 }
+
+//=================================================================================================
+void DynamicTexture::Fill(Color color)
+{
+	const Int2 size = GetSize();
+	for(int y = 0; y < size.y; ++y)
+	{
+		uint* row = (uint*)(data + pitch * y);
+		for(int x = 0; x < size.x; ++x)
+		{
+			*row = color;
+			++row;
+		}
+	}
+}
+
+//=================================================================================================
+void DynamicTexture::Fill(delegate<Color(int, int)> callback)
+{
+	const Int2 size = GetSize();
+	for(int y = 0; y < size.y; ++y)
+	{
+		uint* row = (uint*)(data + pitch * y);
+		for(int x = 0; x < size.x; ++x)
+		{
+			*row = callback(x, y);
+			++row;
+		}
+	}
+}

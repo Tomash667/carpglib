@@ -150,6 +150,21 @@ inline bool RemoveElementTry(vector<T>& v, const T& e)
 	return false;
 }
 
+template<typename T, typename Pred>
+inline bool RemoveElementTry(vector<T>& v, Pred pred)
+{
+	for(typename vector<T>::iterator it = v.begin(), end = v.end(); it != end; ++it)
+	{
+		if(pred(*it))
+		{
+			std::iter_swap(it, end - 1);
+			v.pop_back();
+			return true;
+		}
+	}
+	return false;
+}
+
 template<typename T>
 inline bool RemoveElementTry(vector<T>* v, const T& e)
 {
@@ -170,7 +185,7 @@ inline void RemoveElementIndexOrder(vector<T>& v, int index)
 }
 
 template<typename T>
-inline bool is_null(const T ptr)
+inline bool IsNull(const T ptr)
 {
 	return !ptr;
 }
@@ -178,7 +193,7 @@ inline bool is_null(const T ptr)
 template<typename T>
 inline void RemoveNullElements(vector<T>& v)
 {
-	auto it = std::remove_if(v.begin(), v.end(), is_null<T>);
+	auto it = std::remove_if(v.begin(), v.end(), IsNull<T>);
 	auto end = v.end();
 	if(it != end)
 		v.erase(it, end);
@@ -258,6 +273,12 @@ inline T RandomItem(std::initializer_list<T> cont)
 	return *it;
 }
 
+template<typename T, uint N>
+inline T RandomItem(const array<T, N>& arr)
+{
+	return arr[Rand() % N];
+}
+
 template<typename It>
 inline void Shuffle(It begin, It end)
 {
@@ -279,6 +300,13 @@ template<typename T>
 inline bool IsInside(const vector<T>* v, const T& elem)
 {
 	return IsInside(*v, elem);
+}
+
+template<typename T, uint N>
+void CopyItems(vector<T>& items, const array<T, N>& arr)
+{
+	items.resize(N);
+	memcpy(items.data(), arr.data(), sizeof(T) * N);
 }
 
 //-----------------------------------------------------------------------------
@@ -827,14 +855,14 @@ template<typename T, typename Pred>
 inline void DeleteElements(vector<T>& items, Pred pred)
 {
 	items.erase(std::remove_if(items.begin(), items.end(), [&](T item)
+	{
+		if(pred(item))
 		{
-			if(pred(item))
-			{
-				delete item;
-				return true;
-			}
-			return false;
-		}), items.end());
+			delete item;
+			return true;
+		}
+		return false;
+	}), items.end());
 }
 
 //-----------------------------------------------------------------------------

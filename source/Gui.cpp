@@ -26,6 +26,7 @@ fontLoader(nullptr), lastClick(Key::LeftButton), lastClickTimer(1.f)
 Gui::~Gui()
 {
 	DeleteElements(createdDialogs);
+	DeleteElements(registeredControls);
 	delete masterLayout;
 	delete layer;
 	delete dialogLayer;
@@ -802,7 +803,7 @@ void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Colo
 	}
 
 	VGui* v = vBuf;
-	Vec4 col = Color(color);
+	const Vec4 col = color;
 
 	/*
 		0---1----------2---3
@@ -998,7 +999,7 @@ void Gui::DrawSprite(Texture* t, const Int2& pos, Color color, const Rect* clipp
 		return;
 
 	VGui* v = vBuf;
-	Vec4 col = Color(color);
+	const Vec4 col = color;
 
 	if(clip_result == 0)
 	{
@@ -1210,7 +1211,7 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 	d->size = text_size + Int2(24 + extra_limit, 24 + max(0, min_size.y - text_size.y));
 
 	// set buttons
-	if(info.type == DIALOG_OK)
+	if(info.type == DialogType::Ok)
 	{
 		Button& bt = Add1(d->bts);
 		bt.text = txOk;
@@ -1220,7 +1221,7 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 
 		min_size.x = bt.size.x + 24;
 	}
-	else
+	else if(info.type == DialogType::YesNo)
 	{
 		d->bts.resize(2);
 		Button& bt1 = d->bts[0],
@@ -1248,8 +1249,43 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 		bt1.size = bt2.size = Int2::Max(bt1.size, bt2.size);
 		min_size.x = bt1.size.x * 2 + 24 + 16;
 	}
+	else
+	{
+		d->bts.resize(3);
+		Button& bt1 = d->bts[0],
+			& bt2 = d->bts[1],
+			& bt3 = d->bts[2];
 
-	// powiêksz rozmiar okna o przyciski
+		if(info.custom_names)
+		{
+			bt1.text = (info.custom_names[0] ? info.custom_names[0] : txYes);
+			bt2.text = (info.custom_names[1] ? info.custom_names[1] : txNo);
+			bt3.text = (info.custom_names[2] ? info.custom_names[2] : txCancel);
+		}
+		else
+		{
+			bt1.text = txYes;
+			bt2.text = txNo;
+			bt3.text = txCancel;
+		}
+
+		bt1.id = GuiEvent_Custom + BUTTON_YES;
+		bt1.size = font->CalculateSize(bt1.text) + Int2(24, 24);
+		bt1.parent = d;
+
+		bt2.id = GuiEvent_Custom + BUTTON_NO;
+		bt2.size = font->CalculateSize(bt2.text) + Int2(24, 24);
+		bt2.parent = d;
+
+		bt3.id = GuiEvent_Custom + BUTTON_CANCEL;
+		bt3.size = font->CalculateSize(bt3.text) + Int2(24, 24);
+		bt3.parent = d;
+
+		bt1.size = bt2.size = bt3.size = Int2::Max(bt1.size, Int2::Max(bt2.size, bt3.size));
+		min_size.x = bt1.size.x * 3 + 24 + 32;
+	}
+
+	// resize dialog size for buttons
 	if(d->size.x < min_size.x)
 		d->size.x = min_size.x;
 	d->size.y += d->bts[0].size.y + 8;
@@ -1268,14 +1304,14 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 		dwc->checkbox.size = Int2(d->size.x - 24, 32);
 	}
 
-	// ustaw przyciski
+	// set buttons positions
 	if(d->bts.size() == 1)
 	{
 		Button& bt = d->bts[0];
 		bt.pos.x = (d->size.x - bt.size.x) / 2;
 		bt.pos.y = d->size.y - 8 - bt.size.y;
 	}
-	else
+	else if(d->bts.size() == 2)
 	{
 		Button& bt1 = d->bts[0],
 			& bt2 = d->bts[1];
@@ -1283,8 +1319,18 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 		bt1.pos.x = 12;
 		bt2.pos.x = d->size.x - bt2.size.x - 12;
 	}
+	else
+	{
+		Button& bt1 = d->bts[0],
+			& bt2 = d->bts[1],
+			& bt3 = d->bts[2];
+		bt1.pos.y = bt2.pos.y = bt3.pos.y = d->size.y - 8 - bt1.size.y;
+		bt1.pos.x = 12;
+		bt2.pos.x = (d->size.x - bt2.size.x) / 2;
+		bt3.pos.x = d->size.x - bt3.size.x - 12;
+	}
 
-	// dodaj
+	// add
 	d->need_delete = true;
 	d->Setup(text_size);
 	ShowDialog(d);
@@ -1305,7 +1351,7 @@ void Gui::ShowDialog(DialogBox* d)
 		d->focus = true;
 		d->Event(GuiEvent_GainFocus);
 	}
-	else if(d->order == ORDER_TOPMOST)
+	else if(d->order == DialogOrder::TopMost)
 	{
 		// dezaktywuj aktualny i aktywuj nowy
 		Control* prev_d = dialogLayer->Top();
@@ -1318,7 +1364,7 @@ void Gui::ShowDialog(DialogBox* d)
 	else
 	{
 		// szukaj pierwszego dialogu który jest wy¿ej ni¿ ten
-		DialogOrder above_order = DialogOrder(d->order + 1);
+		DialogOrder above_order = DialogOrder((int)d->order + 1);
 		vector<DialogBox*>& ctrls = (vector<DialogBox*>&)dialogLayer->GetControls();
 		vector<DialogBox*>::iterator first_above = ctrls.end();
 		for(vector<DialogBox*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
@@ -1427,7 +1473,7 @@ void Gui::DrawSpriteFull(Texture* t, const Color color)
 	assert(t && t->IsLoaded());
 
 	VGui* v = vBuf;
-	Vec4 col = Color(color);
+	const Vec4 col = color;
 
 	v->pos = Vec2(0, 0);
 	v->color = col;
@@ -1493,16 +1539,10 @@ void Gui::SimpleDialog(cstring text, Control* parent, cstring name)
 	di.name = name;
 	di.parent = parent;
 	di.pause = false;
+	di.auto_wrap = true;
 	di.text = text;
-	di.order = ORDER_NORMAL;
-	di.type = DIALOG_OK;
-
-	if(parent)
-	{
-		DialogBox* d = dynamic_cast<DialogBox*>(parent);
-		if(d)
-			di.order = d->order;
-	}
+	di.order = DialogBox::GetOrder(parent);
+	di.type = DialogType::Ok;
 
 	ShowDialog(di);
 }
@@ -1513,7 +1553,7 @@ void Gui::DrawSpriteRect(Texture* t, const Rect& rect, Color color)
 	assert(t && t->IsLoaded());
 
 	VGui* v = vBuf;
-	Vec4 col = Color(color);
+	const Vec4 col = color;
 
 	v->pos = Vec2(float(rect.Left()), float(rect.Top()));
 	v->color = col;
@@ -1597,7 +1637,7 @@ void Gui::DrawSpriteRectPart(Texture* t, const Rect& rect, const Rect& part, Col
 
 	VGui* v = vBuf;
 	Int2 size = t->GetSize();
-	Vec4 col = Color(color);
+	const Vec4 col = color;
 	Box2d uv(float(part.Left()) / size.x, float(part.Top()) / size.y, float(part.Right()) / size.x, float(part.Bottom()) / size.y);
 
 	v->pos = Vec2(float(rect.Left()), float(rect.Top()));
@@ -1640,7 +1680,7 @@ void Gui::DrawSpriteTransform(Texture* t, const Matrix& mat, Color color)
 
 	Int2 size = t->GetSize();
 	VGui* v = vBuf;
-	Vec4 col = Color(color);
+	const Vec4 col = color;
 
 	Vec2 leftTop(0, 0),
 		rightTop(float(size.x), 0),
@@ -1855,7 +1895,7 @@ void Gui::DrawSpriteTransformPart(Texture* t, const Matrix& mat, const Rect& par
 	VGui* v = vBuf;
 	Int2 size = t->GetSize();
 	Box2d uv(float(part.Left()) / size.x, float(part.Top() / size.y), float(part.Right()) / size.x, float(part.Bottom()) / size.y);
-	Vec4 col = Color(color);
+	const Vec4 col = color;
 
 	Vec2 leftTop(part.LeftTop()),
 		rightTop(part.RightTop()),
@@ -1906,7 +1946,7 @@ void Gui::CloseDialogs()
 	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialogLayer->GetControls();
 	for(DialogBox* dialog : dialogs)
 	{
-		if(!OR2_EQ(dialog->type, DIALOG_OK, DIALOG_YESNO))
+		if(dialog->type != DialogType::Custom)
 			dialog->Event(GuiEvent_Close);
 		if(dialog->need_delete)
 		{
@@ -2007,7 +2047,7 @@ void Gui::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* 
 	gui_rect.Set(pos, size);
 	if(!clip_rect || gui_rect.Clip(*clip_rect))
 	{
-		Vec4 col = Color(color);
+		const Vec4 col = color;
 		VGui* v = vBuf;
 		gui_rect.Populate(v, col);
 		shader->Draw(nullptr, vBuf, 1);
@@ -2015,7 +2055,20 @@ void Gui::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* 
 }
 
 //=================================================================================================
-void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect, Color* tint)
+void Gui::DrawRect(Color color, const Rect& rect, int width)
+{
+	assert(width > 0);
+	const Vec4 col = color;
+	VGui* v = vBuf;
+	AddRect(v, Vec2(float(rect.p1.x), float(rect.p1.y)), Vec2(float(rect.p2.x), float(rect.p1.y + width)), col);
+	AddRect(v, Vec2(float(rect.p1.x), float(rect.p2.y - width)), Vec2(float(rect.p2.x), float(rect.p2.y)), col);
+	AddRect(v, Vec2(float(rect.p1.x), float(rect.p1.y + width)), Vec2(float(rect.p1.x + width), float(rect.p2.y - width)), col);
+	AddRect(v, Vec2(float(rect.p2.x - width), float(rect.p1.y + width)), Vec2(float(rect.p2.x), float(rect.p2.y - width)), col);
+	shader->Draw(nullptr, vBuf, 4);
+}
+
+//=================================================================================================
+void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect, const Color* tint)
 {
 	if(area_layout.mode == AreaLayout::Mode::None)
 		return;
@@ -2361,4 +2414,11 @@ void Gui::SetOverlay(Overlay* newOverlay)
 	assert(!overlay); // TODO
 	overlay = newOverlay;
 	Add(overlay);
+}
+
+//=================================================================================================
+void Gui::RegisterControl(Control* control)
+{
+	assert(control);
+	registeredControls.push_back(control);
 }

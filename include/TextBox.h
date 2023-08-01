@@ -11,7 +11,7 @@ namespace layout
 {
 	struct TextBox : public Control
 	{
-		AreaLayout background;
+		AreaLayout background, background_error;
 		Font* font;
 		Color font_color, selection_color, selection_color_disabled;
 	};
@@ -43,9 +43,11 @@ public:
 	void SetText(Cstring text);
 	const string& GetText() const { return text; }
 	void SelectAll();
+	bool IsErrorMode() const { return errorMode; }
 	bool IsMultiline() const { return multiline; }
 	bool IsNumeric() const { return numeric; }
 	bool IsReadonly() const { return readonly; }
+	void SetErrorMode(bool errorMode) { this->errorMode = errorMode; }
 	void SetMultiline(bool new_multiline) { assert(!initialized); multiline = new_multiline; }
 	void SetNumeric(bool new_numeric) { numeric = new_numeric; }
 	void SetReadonly(bool new_readonly) { readonly = new_readonly; }
@@ -69,5 +71,5 @@ private:
 	Int2 real_size, text_size, caret_pos, select_start_pos, select_end_pos, caret_index, select_start_index, select_end_index, select_fixed_index;
 	float caret_blink, offset_move;
 	int offset, last_y_move;
-	bool added, down, readonly, multiline, numeric, require_scrollbar;
+	bool added, down, readonly, multiline, numeric, require_scrollbar, errorMode;
 };
