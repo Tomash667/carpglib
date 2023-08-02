@@ -44,21 +44,6 @@ void SceneManager::ListNodes()
 //=================================================================================================
 void SceneManager::Draw()
 {
-	batch.Process();
-
-	superShader->Prepare();
-	superShader->SetScene(scene, camera);
-
-	if(!batch.nodeGroups.empty())
-		DrawSceneNodes(batch.nodes, batch.nodeGroups);
-
-	if(!batch.alphaNodes.empty())
-		DrawAlphaSceneNodes(batch.alphaNodes);
-}
-
-//=================================================================================================
-void SceneManager::DrawSceneNodes()
-{
 	if(batch.nodeGroups.empty() && batch.alphaNodes.empty())
 		return;
 
