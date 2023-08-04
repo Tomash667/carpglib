@@ -7,6 +7,7 @@
 #include "Mesh.h"
 #include "Render.h"
 #include "ResourceManager.h"
+#include "SimpleMesh.h"
 
 struct VsGlobals
 {
@@ -132,7 +133,7 @@ void BasicShader::DrawDebugNodes(const vector<DebugNode*>& nodes)
 			deviceContext->IASetVertexBuffers(0, 1, &node.trimesh->vb, &stride, &offset);
 			deviceContext->IASetIndexBuffer(node.trimesh->ib, DXGI_FORMAT_R16_UINT, 0);
 
-			deviceContext->DrawIndexed(node.trimesh->indices.size(), 0, 0);
+			deviceContext->DrawIndexed(node.trimesh->indexCount, 0, 0);
 		}
 		else
 		{

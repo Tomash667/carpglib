@@ -11,8 +11,8 @@ namespace layout
 	{
 		AreaLayout box;
 		Font* font;
-		Font* font_big;
-		Font* font_small;
+		Font* fontBig;
+		Font* fontSmall;
 	};
 }
 
@@ -23,13 +23,13 @@ public:
 	typedef delegate<void(TooltipController*, int, int, bool)> Callback;
 
 	TooltipController() : imgSize(Int2::Zero) {}
-	void Draw(ControlDrawData* cdd = nullptr) override;
-	void Init(Callback get_text);
+	void Draw() override;
+	void Init(Callback getText);
 	void Clear();
 	void Refresh() { FormatBox(true); }
 	void UpdateTooltip(float dt, int group, int id);
 
-	string big_text, text, small_text;
+	string bigText, text, smallText;
 	Texture* img;
 	Int2 imgSize;
 	bool anything;
@@ -46,7 +46,7 @@ private:
 
 	State state;
 	int group, id;
-	Callback get_text;
+	Callback getText;
 	float timer, alpha;
-	Rect r_big_text, r_text, r_small_text;
+	Rect rBigText, rText, rSmallText;
 };

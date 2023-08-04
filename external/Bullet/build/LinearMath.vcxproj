@@ -27,6 +27,7 @@
     <ClInclude Include="..\src\LinearMath\btMatrix3x3.h" />
     <ClInclude Include="..\src\LinearMath\btMatrixX.h" />
     <ClInclude Include="..\src\LinearMath\btMinMax.h" />
+    <ClInclude Include="..\src\LinearMath\btModifiedGramSchmidt.h" />
     <ClInclude Include="..\src\LinearMath\btMotionState.h" />
     <ClInclude Include="..\src\LinearMath\btPolarDecomposition.h" />
     <ClInclude Include="..\src\LinearMath\btPoolAllocator.h" />
@@ -34,6 +35,7 @@
     <ClInclude Include="..\src\LinearMath\btQuaternion.h" />
     <ClInclude Include="..\src\LinearMath\btQuickprof.h" />
     <ClInclude Include="..\src\LinearMath\btRandom.h" />
+    <ClInclude Include="..\src\LinearMath\btReducedVector.h" />
     <ClInclude Include="..\src\LinearMath\btScalar.h" />
     <ClInclude Include="..\src\LinearMath\btSerializer.h" />
     <ClInclude Include="..\src\LinearMath\btSpatialAlgebra.h" />
@@ -51,6 +53,7 @@
     <ClCompile Include="..\src\LinearMath\btGeometryUtil.cpp" />
     <ClCompile Include="..\src\LinearMath\btPolarDecomposition.cpp" />
     <ClCompile Include="..\src\LinearMath\btQuickprof.cpp" />
+    <ClCompile Include="..\src\LinearMath\btReducedVector.cpp" />
     <ClCompile Include="..\src\LinearMath\btSerializer.cpp" />
     <ClCompile Include="..\src\LinearMath\btSerializer64.cpp" />
     <ClCompile Include="..\src\LinearMath\btThreads.cpp" />
@@ -91,10 +94,10 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\lib\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)output\$(ProjectName)\$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\output\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectName)</TargetName>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\lib\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)output\$(ProjectName)\$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\output\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)_debug</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

@@ -4,23 +4,24 @@
 #include "Input.h"
 
 //=================================================================================================
-Grid::Grid() : items(0), height(20), selected(-1), allow_select(true), single_line(false), select_event(nullptr)
+Grid::Grid() : items(0), height(20), selected(-1), allowSelect(true), singleLine(false), selectEvent(nullptr)
 {
 }
 
 //=================================================================================================
-void Grid::Draw(ControlDrawData*)
+void Grid::Draw()
 {
-	int x = global_pos.x, y = global_pos.y;
-	Rect r = { 0,y,0,y + height };
+	const int headerHeight = height + layout->border * 2;
+	int x = globalPos.x, y = globalPos.y;
+	Rect r = { 0, y, 0, y + headerHeight };
 
 	// box i nag³ówki
 	for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it)
 	{
 		// box nag³ówka
-		gui->DrawArea(Box2d::Create(Int2(x, y), Int2(it->width, height)), layout->box);
+		gui->DrawArea(Box2d::Create(Int2(x, y), Int2(it->width, headerHeight)), layout->box);
 		// box zawartoœci
-		gui->DrawArea(Box2d::Create(Int2(x, y + height), Int2(it->width, size.y - height)), layout->box);
+		gui->DrawArea(Box2d::Create(Int2(x, y + headerHeight), Int2(it->width, size.y - headerHeight)), layout->box);
 		// tekst nag³ówka
 		if(!it->title.empty())
 		{
@@ -32,46 +33,38 @@ void Grid::Draw(ControlDrawData*)
 	}
 
 	// zawartoœæ
+	const Rect clipRect = { globalPos.x + layout->border, globalPos.y + headerHeight + layout->border,
+		globalPos.x + size.x - layout->border, globalPos.y + size.y - layout->border };
 	Cell cell;
-	int clip_state;
-	y += height - int(scroll.offset);
-	const int clip_y[4] = { global_pos.y, global_pos.y + height, global_pos.y + size.y - height, global_pos.y + size.y };
-	Rect clip_r;
+	y = clipRect.Top() - int(scroll.offset);
 
-	uint text_flags = DTF_CENTER | DTF_VCENTER;
-	if(single_line)
-		text_flags |= DTF_SINGLELINE;
+	uint textFlags = DTF_CENTER | DTF_VCENTER;
+	if(singleLine)
+		textFlags |= DTF_SINGLELINE;
 
 	for(int i = 0; i < items; ++i)
 	{
-		int n = 0;
-		x = global_pos.x;
-
-		// ustal przycinanie komórek
-		if(y < clip_y[0])
+		if(y < clipRect.Top() - height)
 		{
+			// row above visible region
 			y += height;
 			continue;
 		}
-		else if(y < clip_y[1])
-			clip_state = 1;
-		else if(y > clip_y[3])
+		else if(y > clipRect.Bottom() + height)
+		{
+			// row below visible region
 			break;
-		else if(y > clip_y[2])
-			clip_state = 2;
-		else
-			clip_state = 0;
+		}
+
+		int n = 0;
+		x = globalPos.x;
 
 		// zaznaczenie t³a
-		if(i == selected && allow_select)
+		if(i == selected && allowSelect)
 		{
-			Rect r2 = { x, y, x + total_width, y + height };
-			if(clip_state == 1)
-				r2.Top() = global_pos.y + height;
-			else if(clip_state == 2)
-				r2.Bottom() = global_pos.y + size.y;
-			if(r2.Top() < r2.Bottom())
-				gui->DrawArea(Box2d(r2), layout->selection);
+			Rect r2 = { x + layout->border, y, x + totalWidth - layout->border, y + height };
+			Box2d clip(clipRect);
+			gui->DrawArea(Box2d(r2), layout->selection, &clip);
 		}
 
 		for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it, ++n)
@@ -90,56 +83,20 @@ void Grid::Draw(ControlDrawData*)
 				else
 				{
 					TextColor tc;
-					cell.text_color = &tc;
+					cell.textColor = &tc;
 					event(i, n, cell);
 					text = tc.text;
 					color = tc.color;
 				}
 
 				r = Rect(x, y, x + it->width, y + height);
-
-				if(clip_state == 0)
-					gui->DrawText(layout->font, text, text_flags, color, r, &r);
-				else
-				{
-					clip_r.Left() = r.Left();
-					clip_r.Right() = r.Right();
-					if(clip_state == 1)
-					{
-						clip_r.Top() = global_pos.y + height;
-						clip_r.Bottom() = r.Bottom();
+				gui->DrawText(layout->font, text, textFlags, color, r, &clipRect);
 					}
-					else
-					{
-						clip_r.Top() = r.Top();
-						clip_r.Bottom() = global_pos.y + size.y;
-					}
-					gui->DrawText(layout->font, text, text_flags, color, r, &clip_r);
-				}
-			}
 			else if(it->type == IMG)
 			{
 				event(i, n, cell);
-				Rect* clipping = nullptr;
-				if(clip_state != 0)
-				{
-					clipping = &clip_r;
-					clip_r.Left() = 0;
-					clip_r.Right() = gui->wndSize.x;
-					if(clip_state == 1)
-					{
-						clip_r.Top() = global_pos.y + height;
-						clip_r.Bottom() = gui->wndSize.y;
+				gui->DrawSprite(cell.img, Int2(x + (it->width - 16) / 2, y + (height - 16) / 2), Color::White, &clipRect);
 					}
-					else
-					{
-						clip_r.Top() = 0;
-						clip_r.Bottom() = global_pos.y + size.y;
-					}
-				}
-
-				gui->DrawSprite(cell.img, Int2(x + (it->width - 16) / 2, y + (height - 16) / 2), Color::White, clipping);
-			}
 			else //if(it->type == IMGSET)
 			{
 				cell.imgset = &imgset;
@@ -147,42 +104,24 @@ void Grid::Draw(ControlDrawData*)
 				event(i, n, cell);
 				if(!imgset.empty())
 				{
-					int img_total_width = 16 * imgset.size();
+					int imgTotalWidth = 16 * imgset.size();
 					int y2 = y + (height - 16) / 2;
 					int dist, startx;
-					if(img_total_width > it->width && imgset.size() > 1)
+					if(imgTotalWidth > it->width && imgset.size() > 1)
 					{
-						dist = 16 - (img_total_width - it->width) / (imgset.size() - 1);
+						dist = 16 - (imgTotalWidth - it->width) / (imgset.size() - 1);
 						startx = 0;
 					}
 					else
 					{
 						dist = 16;
-						startx = (it->width - img_total_width) / 2;
-					}
-
-					Rect* clipping = nullptr;
-					if(clip_state != 0)
-					{
-						clipping = &clip_r;
-						clip_r.Left() = 0;
-						clip_r.Right() = gui->wndSize.x;
-						if(clip_state == 1)
-						{
-							clip_r.Top() = global_pos.y + height;
-							clip_r.Bottom() = gui->wndSize.y;
-						}
-						else
-						{
-							clip_r.Top() = 0;
-							clip_r.Bottom() = global_pos.y + size.y;
-						}
+						startx = (it->width - imgTotalWidth) / 2;
 					}
 
 					int x2 = x + startx;
 					for(uint j = 0; j < imgset.size(); ++j)
 					{
-						gui->DrawSprite(imgset[j], Int2(x2, y2), Color::White, clipping);
+						gui->DrawSprite(imgset[j], Int2(x2, y2), Color::White, &clipRect);
 						x2 += dist;
 					}
 				}
@@ -200,21 +139,22 @@ void Grid::Update(float dt)
 {
 	if(input->Focus() && focus)
 	{
-		if(gui->cursorPos.x >= global_pos.x && gui->cursorPos.x < global_pos.x + total_width
-			&& gui->cursorPos.y >= global_pos.y + height && gui->cursorPos.y < global_pos.y + size.y)
+		const int headerHeight = height + layout->border * 2;
+		if(gui->cursorPos.x >= globalPos.x && gui->cursorPos.x < globalPos.x + totalWidth
+			&& gui->cursorPos.y >= globalPos.y + headerHeight && gui->cursorPos.y < globalPos.y + size.y)
 		{
-			int n = (gui->cursorPos.y - (global_pos.y + height) + int(scroll.offset)) / height;
+			int n = (gui->cursorPos.y - (globalPos.y + headerHeight) + int(scroll.offset)) / height;
 			if(n >= 0 && n < items)
 			{
-				if(allow_select)
+				if(allowSelect)
 				{
-					gui->cursorMode = CURSOR_HOVER;
+					gui->SetCursorMode(CURSOR_HOVER);
 					if(input->PressedRelease(Key::LeftButton))
 						selected = n;
 				}
-				if(select_event)
+				if(selectEvent)
 				{
-					int y = gui->cursorPos.x - global_pos.x, ysum = 0;
+					int y = gui->cursorPos.x - globalPos.x, ysum = 0;
 					int col = -1;
 
 					for(int i = 0; i < (int)columns.size(); ++i)
@@ -230,11 +170,11 @@ void Grid::Update(float dt)
 					// celowo nie zaznacza 1 kolumny!
 					if(col > 0)
 					{
-						gui->cursorMode = CURSOR_HOVER;
+						gui->SetCursorMode(CURSOR_HOVER);
 						if(input->PressedRelease(Key::LeftButton))
-							select_event(n, col, 0);
+							selectEvent(n, col, 0);
 						else if(input->PressedRelease(Key::RightButton))
-							select_event(n, col, 1);
+							selectEvent(n, col, 1);
 					}
 				}
 			}
@@ -242,7 +182,7 @@ void Grid::Update(float dt)
 
 		if(IsInside(gui->cursorPos))
 			scroll.ApplyMouseWheel();
-		scroll.mouse_focus = mouse_focus;
+		scroll.mouseFocus = mouseFocus;
 		scroll.Update(dt);
 	}
 }
@@ -250,22 +190,23 @@ void Grid::Update(float dt)
 //=================================================================================================
 void Grid::Init()
 {
-	scroll.pos = Int2(size.x - 16, height);
-	scroll.size = Int2(16, size.y - height);
+	const int headerHeight = height + layout->border * 2;
+	scroll.pos = Int2(size.x - 16, headerHeight);
+	scroll.size = Int2(16, size.y - headerHeight);
 	scroll.total = height * items;
-	scroll.part = scroll.size.y;
+	scroll.part = scroll.size.y - layout->border * 2;
 	scroll.offset = 0;
 
-	total_width = 0;
+	totalWidth = 0;
 	for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it)
-		total_width += it->width;
+		totalWidth += it->width;
 }
 
 //=================================================================================================
-void Grid::Move(Int2& _global_pos)
+void Grid::Move(const Int2& movePos)
 {
-	global_pos = _global_pos + pos;
-	scroll.global_pos = global_pos + scroll.pos;
+	globalPos = movePos + pos;
+	scroll.globalPos = globalPos + scroll.pos;
 }
 
 //=================================================================================================

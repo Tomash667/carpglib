@@ -333,7 +333,7 @@ bool Config::Save()
 			continue;
 
 		cstring s;
-		if(entry.value[0] != '{' && entry.value.find_first_of(" \n\t\\,./;'[]-=<>?:\"{}!@#$%^&*()_+") != string::npos)
+		if(NeedEscapeValue(entry.value))
 			s = Format("%s = \"%s\"\n", entry.name.c_str(), Escape(entry.value));
 		else
 			s = Format("%s = %s\n", entry.name.c_str(), entry.value.c_str());
@@ -369,4 +369,22 @@ void Config::Rename(cstring name, cstring newName)
 		e->name = newName;
 		changes = true;
 	}
+}
+
+//=================================================================================================
+bool Config::NeedEscapeValue(const string& value)
+{
+	if(value.empty())
+		return false;
+
+	if(value[0] == '{')
+		return false;
+
+	if(value[0] == '-' && TextHelper::IsNumber(value.c_str()))
+		return false;
+
+	if(value.find_first_of(" \n\t\\,./;'[]-=<>?:\"{}!@#$%^&*()_+") != string::npos)
+		return true;
+
+	return false;
 }

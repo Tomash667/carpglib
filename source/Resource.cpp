@@ -19,11 +19,11 @@ Buffer* Resource::GetBuffer()
 	if(!pak)
 		return FileReader::ReadToBuffer(path);
 
-	Pak::File& file = pak->files[pak_index];
-	Buffer* buf = pak->file.ReadToBuffer(file.offset, file.compressed_size);
+	Pak::File& file = pak->files[pakIndex];
+	Buffer* buf = pak->file.ReadToBuffer(file.offset, file.compressedSize);
 	if(pak->encrypted)
 		io::Crypt((char*)buf->Data(), buf->Size(), pak->key.c_str(), pak->key.length());
-	if(file.compressed_size != file.size)
+	if(file.compressedSize != file.size)
 		buf = buf->Decompress(file.size);
 	return buf;
 }

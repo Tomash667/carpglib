@@ -34,10 +34,10 @@ public:
 	void Add(CheckBox& checkbox) { Add(&checkbox); }
 	void GainFocus();
 	void LostFocus();
-	void Move(const Int2& global_pos);
+	void Move(const Int2& globalPos);
 	void CheckGiveFocus();
 
 	vector<GuiItem> items;
-	Control* focus_ctrl, *give_focus;
+	Control* focusCtrl, *giveFocus;
 	bool focus;
 };

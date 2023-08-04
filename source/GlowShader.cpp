@@ -149,10 +149,10 @@ void GlowShader::DrawGlowNodes(Camera& camera, const vector<GlowNode>& glowNodes
 		// set vertex shader & layout
 		Mesh* mesh = glow.node->mesh;
 		const bool isAnimated = IsSet(glow.node->flags, SceneNode::F_ANIMATED);
-		if(prevDecl != mesh->vertex_decl || prevAnimated != isAnimated)
+		if(prevDecl != mesh->vertexDecl || prevAnimated != isAnimated)
 		{
 			ID3D11InputLayout* layout;
-			switch(mesh->vertex_decl)
+			switch(mesh->vertexDecl)
 			{
 			default:
 			case VDI_DEFAULT:
@@ -170,7 +170,7 @@ void GlowShader::DrawGlowNodes(Camera& camera, const vector<GlowNode>& glowNodes
 			}
 			deviceContext->VSSetShader(isAnimated ? vertexShaderAni : vertexShaderMesh, nullptr, 0);
 			deviceContext->IASetInputLayout(layout);
-			prevDecl = mesh->vertex_decl;
+			prevDecl = mesh->vertexDecl;
 			prevAnimated = isAnimated;
 		}
 
@@ -196,7 +196,7 @@ void GlowShader::DrawGlowNodes(Camera& camera, const vector<GlowNode>& glowNodes
 		}
 
 		// set mesh
-		uint stride = mesh->vertex_size, offset = 0;
+		uint stride = mesh->vertexSize, offset = 0;
 		deviceContext->IASetVertexBuffers(0, 1, &mesh->vb, &stride, &offset);
 		deviceContext->IASetIndexBuffer(mesh->ib, DXGI_FORMAT_R16_UINT, 0);
 

@@ -28,12 +28,12 @@ public:
 
 	CheckBox(Cstring text = "", bool checked = false);
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 
 	string text;
 	int id;
 	State state;
-	Int2 bt_size;
+	Int2 btSize;
 	bool checked, radiobox;
 };

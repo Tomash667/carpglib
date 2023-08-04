@@ -2,6 +2,8 @@ CHANGELOG
 Minor updates have changes only in exporter/converer, don't affect qmsh file.
 ---------------------------
 v22.3:
+IMPORTER:
++ skip mesh splits
 EXPORTER:
 + converter flags textbox
 CONVERTER:

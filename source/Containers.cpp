@@ -27,21 +27,21 @@ struct ObjectPoolLeakManager::CallStackEntry
 
 ObjectPoolLeakManager::~ObjectPoolLeakManager()
 {
-	if(!call_stacks.empty())
+	if(!callStacks.empty())
 	{
-		OutputDebugString(Format("!!!!!!!!!!!!!!!!!!!!!!!!!!\nObjectPool leaks detected (%u):\n", call_stacks.size()));
+		OutputDebugString(Format("!!!!!!!!!!!!!!!!!!!!!!!!!!\nObjectPool leaks detected (%u):\n", callStacks.size()));
 
 		HANDLE handle = GetCurrentProcess();
 		SymInitialize(handle, nullptr, true);
-		byte symbol_data[sizeof(SYMBOL_INFO) + 1000] = { 0 };
-		SYMBOL_INFO& symbol = *(SYMBOL_INFO*)&symbol_data[0];
+		byte symbolData[sizeof(SYMBOL_INFO) + 1000] = { 0 };
+		SYMBOL_INFO& symbol = *(SYMBOL_INFO*)&symbolData[0];
 		symbol.SizeOfStruct = sizeof(SYMBOL_INFO);
 		symbol.MaxNameLen = 1000;
 		DWORD64 displacement;
 		IMAGEHLP_LINE64 line;
 
 		uint index = 0;
-		for(auto& pcs : call_stacks)
+		for(auto& pcs : callStacks)
 		{
 			OutputDebugString(Format("[%u] Address: %p Call stack:\n", index, pcs.first));
 			CallStackEntry& cs = *pcs.second;
@@ -60,51 +60,83 @@ ObjectPoolLeakManager::~ObjectPoolLeakManager()
 		}
 	}
 
-	DeleteElements(call_stack_pool);
+	DeleteElements(callStackPool);
 }
 
 void ObjectPoolLeakManager::Register(void* ptr)
 {
 	assert(ptr && ptr != (void*)0xCDCDCDCD);
-	assert(call_stacks.find(ptr) == call_stacks.end());
+	assert(callStacks.find(ptr) == callStacks.end());
 
 	CallStackEntry* cs;
-	if(call_stack_pool.empty())
+	if(callStackPool.empty())
 		cs = new CallStackEntry;
 	else
 	{
-		cs = call_stack_pool.back();
-		call_stack_pool.pop_back();
+		cs = callStackPool.back();
+		callStackPool.pop_back();
 	}
 
 	memset(cs, 0, sizeof(CallStackEntry));
 
 	RtlCaptureStackBackTrace(1, CallStackEntry::MAX_FRAMES, cs->frames, nullptr);
 
-	call_stacks[ptr] = cs;
+	callStacks[ptr] = cs;
 }
 
 void ObjectPoolLeakManager::Unregister(void* ptr)
 {
 	assert(ptr && ptr != (void*)0xCDCDCDCD);
 
-	auto it = call_stacks.find(ptr);
-	assert(it != call_stacks.end());
-	call_stack_pool.push_back(it->second);
-	call_stacks.erase(it);
+	auto it = callStacks.find(ptr);
+	assert(it != callStacks.end());
+	callStackPool.push_back(it->second);
+	callStacks.erase(it);
 }
 
 #endif
 
 //=================================================================================================
-#ifndef CORE_ONLY
-Buffer* Buffer::Decompress(uint real_size)
+Buffer* Buffer::Compress()
 {
+	uint safeSize = compressBound(Size());
 	Buffer* buf = Buffer::Get();
-	buf->Resize(real_size);
-	uLong size = real_size;
-	uncompress((Bytef*)buf->Data(), &size, (const Bytef*)Data(), Size());
+	buf->Resize(safeSize);
+	uint realSize = safeSize;
+	compress(static_cast<Bytef*>(buf->Data()), (uLongf*)&realSize, static_cast<const Bytef*>(Data()), Size());
+	buf->Resize(realSize);
 	Free();
 	return buf;
 }
-#endif
+
+//=================================================================================================
+Buffer* Buffer::TryCompress()
+{
+	uint safeSize = compressBound(Size());
+	Buffer* buf = Buffer::Get();
+	buf->Resize(safeSize);
+	uint realSize = safeSize;
+	compress(static_cast<Bytef*>(buf->Data()), (uLongf*)&realSize, static_cast<const Bytef*>(Data()), Size());
+	if(realSize < Size())
+	{
+		Free();
+		buf->Resize(realSize);
+		return buf;
+	}
+	else
+	{
+		buf->Free();
+		return this;
+	}
+}
+
+//=================================================================================================
+Buffer* Buffer::Decompress(uint realSize)
+{
+	Buffer* buf = Buffer::Get();
+	buf->Resize(realSize);
+	uLong size = realSize;
+	uncompress(static_cast<Bytef*>(buf->Data()), &size, static_cast<const Bytef*>(Data()), Size());
+	Free();
+	return buf;
+}

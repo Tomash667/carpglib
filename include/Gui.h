@@ -31,23 +31,6 @@ struct Hitbox
 };
 
 //-----------------------------------------------------------------------------
-enum class HitboxOpen
-{
-	No,
-	Yes,
-	Group
-};
-
-//-----------------------------------------------------------------------------
-struct HitboxContext
-{
-	vector<Hitbox>* hitbox;
-	int counter, group_index, group_index2;
-	HitboxOpen open;
-	Rect region;
-};
-
-//-----------------------------------------------------------------------------
 enum CursorMode
 {
 	CURSOR_NORMAL,
@@ -84,12 +67,28 @@ namespace layout
 // GUI
 class Gui
 {
+	enum class HitboxOpen
+	{
+		No,
+		Yes,
+		Group
+	};
+
+	struct HitboxContext
+	{
+		vector<Hitbox>* hitbox;
+		int counter, groupIndex, groupIndex2;
+		HitboxOpen open;
+		Rect region;
+	};
+
 public:
 	Gui();
 	~Gui();
 	void Init();
 	void SetText(cstring ok, cstring yes, cstring no, cstring cancel);
-	void Draw(bool draw_layers = true, bool draw_dialogs = true);
+	void SetDrawOptions(bool drawLayers, bool drawDialogs);
+	void Draw();
 	bool AddFont(cstring filename);
 	Font* GetFont(cstring name, int size, int weight = 4, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)
@@ -103,10 +102,10 @@ public:
 		/$n - nie przerywaj tekstu a¿ do nastêpnego takiego symbolu (np $njakiœ tekst$n - ten tekst nigdy nie zostanie rozdzielony pomiêdzy dwie linijki)
 	*/
 	bool DrawText(Font* font, Cstring str, uint flags, Color color, const Rect& rect, const Rect* clipping = nullptr,
-		vector<Hitbox>* hitboxes = nullptr, int* hitbox_counter = nullptr, const vector<TextLine>* lines = nullptr);
+		vector<Hitbox>* hitboxes = nullptr, int* hitboxCounter = nullptr, const vector<TextLine>* lines = nullptr);
 	void Add(Control* ctrl);
-	void DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Color color, int corner = 16, int size = 64, const Box2d* clip_rect = nullptr);
-	void Update(float dt, float mouse_speed);
+	void DrawItem(Texture* t, const Int2& itemPos, const Int2& itemSize, Color color, int corner = 16, int size = 64, const Box2d* clipRect = nullptr);
+	void Update(float dt, float mouseSpeed);
 	void DrawSprite(Texture* t, const Int2& pos, Color color = Color::White, const Rect* clipping = nullptr);
 	void OnChar(char c);
 	DialogBox* ShowDialog(const DialogInfo& info);
@@ -123,13 +122,14 @@ public:
 	void DrawSpriteRect(Texture* t, const Rect& rect, Color color = Color::White);
 	bool HaveDialog(cstring name);
 	bool HaveDialog(DialogBox* dialog);
+	bool HaveDialog(delegate<bool(DialogBox*)>& pred);
 	bool AnythingVisible() const;
 	void OnResize();
 	void DrawSpriteRectPart(Texture* t, const Rect& rect, const Rect& part, Color color = Color::White);
 	void DrawSpriteTransform(Texture* t, const Matrix& mat, Color color = Color::White);
 	void DrawLine(const Vec2& from, const Vec2& to, Color color = Color::Black, float width = 1.f);
 	bool NeedCursor();
-	bool DrawText3D(Font* font, Cstring text, uint flags, Color color, const Vec3& pos, Rect* text_rect = nullptr);
+	bool DrawText3D(Font* font, Cstring text, uint flags, Color color, const Vec3& pos, Rect* textRect = nullptr);
 	bool To2dPoint(const Vec3& pos, Int2& pt);
 	static bool Intersect(vector<Hitbox>& hitboxes, const Int2& pt, int* index, int* index2 = nullptr);
 	void DrawSpriteTransformPart(Texture* t, const Matrix& mat, const Rect& part, Color color = Color::White);
@@ -137,16 +137,16 @@ public:
 	bool HavePauseDialog() const;
 	DialogBox* GetDialog(cstring name);
 	void DrawSprite2(Texture* t, const Matrix& mat, const Rect* part = nullptr, const Rect* clipping = nullptr, Color color = Color::White);
-	void DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* clip_rect = nullptr);
-	void DrawArea(Color color, const Rect& rect, const Box2d* clip_rect = nullptr)
+	void DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* clipRect = nullptr);
+	void DrawArea(Color color, const Rect& rect, const Box2d* clipRect = nullptr)
 	{
-		DrawArea(color, rect.LeftTop(), rect.Size(), clip_rect);
+		DrawArea(color, rect.LeftTop(), rect.Size(), clipRect);
 	}
+	void DrawArea(const Box2d& rect, const AreaLayout& areaLayout, const Box2d* clipRect = nullptr, Color* tint = nullptr);
 	void DrawRect(Color color, const Rect& rect, int width = 1);
 	void SetLayout(Layout* layout);
 	Layout* GetLayout() const { return masterLayout; }
-	void DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect = nullptr, const Color* tint = nullptr);
-	void SetOverlay(Overlay* overlay);
+	void SetOverlay(Overlay* overlay) { this->overlay = overlay; }
 	Overlay* GetOverlay() const { return overlay; }
 	bool MouseMoved() const { return cursorPos != prevCursorPos; }
 	void SetClipboard(cstring text);
@@ -162,16 +162,16 @@ public:
 		Rect rect;
 		const Rect* clipping;
 		vector<Hitbox>* hitboxes;
-		int* hitbox_counter;
+		int* hitboxCounter;
 		const vector<TextLine>* lines;
 		Vec2 scale;
-		uint lines_start;
-		uint lines_end;
-		uint str_length;
+		uint linesStart;
+		uint linesEnd;
+		uint strLength;
 
 		DrawTextOptions(Font* font, Cstring str) : font(font), str(str), rect(Rect::Zero), flags(DTF_LEFT), color(Color::Black),
-			clipping(nullptr), hitboxes(nullptr), hitbox_counter(nullptr), lines(nullptr), scale(Vec2::One), lines_start(0), lines_end(UINT_MAX),
-			str_length(strlen(str))
+			clipping(nullptr), hitboxes(nullptr), hitboxCounter(nullptr), lines(nullptr), scale(Vec2::One), linesStart(0), linesEnd(UINT_MAX),
+			strLength(strlen(str))
 		{
 		}
 	};
@@ -182,13 +182,13 @@ public:
 		return doubleclk[(int)key - 1];
 	}
 	void RegisterControl(Control* control);
+	void SetCursorMode(CursorMode cursorMode) { this->cursorMode = cursorMode; }
+	Box2d* SetClipRect(Box2d* clipRect);
+	Box2d* GetClipRect() const { return clipRect; }
 
 	Matrix mViewProj;
-	Int2 cursorPos, prevCursorPos, wndSize;
-	CursorMode cursorMode;
+	Int2 cursorPos, wndSize;
 	cstring txOk, txYes, txNo, txCancel;
-	Control* focusedCtrl;
-	float mouseWheel;
 
 private:
 	struct DrawLineContext
@@ -206,25 +206,28 @@ private:
 		bool parseSpecial;
 	};
 
-	void DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int x, int y, const Rect* clipping);
-	void DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, int x, int y, const Rect* clipping);
+	void DrawTextLine(DrawLineContext& ctx, uint lineBegin, uint lineEnd, int x, int y, const Rect* clipping);
+	void DrawTextOutline(DrawLineContext& ctx, uint lineBegin, uint lineEnd, int x, int y, const Rect* clipping);
 	int Clip(int x, int y, int w, int h, const Rect* clipping);
-	void SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc);
-	void AddRect(VGui*& v, const Vec2& left_top, const Vec2& right_bottom, const Vec4& color);
+	void SkipLine(cstring text, uint lineBegin, uint lineEnd, HitboxContext* hc);
+	void AddRect(VGui*& v, const Vec2& leftTop, const Vec2& rightBottom, const Vec4& color);
 
 	FontLoader* fontLoader;
 	GuiShader* shader;
-	vector<DialogBox*> createdDialogs;
-	vector<Control*> registeredControls;
-	Container* layer, *dialogLayer;
-	VGui vBuf[256 * 6], vBuf2[256 * 6];
-	HitboxContext tmpHitboxContext;
-	vector<OnCharHandler*> onChar;
-	bool grayscale, doubleclk[5];
-	Key lastClick;
-	float lastClickTimer;
-	Int2 lastClickPos;
 	Layout* masterLayout;
 	layout::Gui* layout;
 	Overlay* overlay;
+	vector<DialogBox*> createdDialogs;
+	vector<Control*> registeredControls;
+	Container* layer, *dialogLayer;
+	Control* focusedCtrl;
+	Box2d* clipRect;
+	VGui vBuf[256 * 6], vBuf2[256 * 6];
+	HitboxContext tmpHitboxContext;
+	vector<OnCharHandler*> onChar;
+	Key lastClick;
+	CursorMode cursorMode;
+	float lastClickTimer;
+	Int2 lastClickPos, prevCursorPos;
+	bool drawLayers, drawDialogs, grayscale, doubleclk[5];
 };

@@ -22,7 +22,7 @@ int FileTime::Compare(const FileTime& fileTime) const
 
 
 //-----------------------------------------------------------------------------
-FileReader::FileReader(FileHandle file) : file(file), own_handle(false)
+FileReader::FileReader(FileHandle file) : file(file), ownHandle(false)
 {
 	if(file != INVALID_HANDLE_VALUE)
 		size = GetFileSize(file, nullptr);
@@ -32,7 +32,7 @@ FileReader::FileReader(FileHandle file) : file(file), own_handle(false)
 
 FileReader::~FileReader()
 {
-	if(own_handle && file != INVALID_HANDLE_VALUE)
+	if(ownHandle && file != INVALID_HANDLE_VALUE)
 	{
 		CloseHandle(file);
 		file = INVALID_HANDLE_VALUE;
@@ -44,7 +44,7 @@ void FileReader::operator = (FileReader& f)
 {
 	assert(file == INVALID_HANDLE_VALUE);
 	file = f.file;
-	own_handle = f.own_handle;
+	ownHandle = f.ownHandle;
 	ok = f.ok;
 	size = f.size;
 	f.file = INVALID_HANDLE_VALUE;
@@ -53,7 +53,7 @@ void FileReader::operator = (FileReader& f)
 bool FileReader::Open(Cstring filename)
 {
 	file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	own_handle = true;
+	ownHandle = true;
 	if(file != INVALID_HANDLE_VALUE)
 	{
 		size = GetFileSize(file, nullptr);
@@ -71,7 +71,7 @@ void FileReader::Close()
 {
 	if(file != INVALID_HANDLE_VALUE)
 	{
-		if(own_handle)
+		if(ownHandle)
 			CloseHandle(file);
 		file = INVALID_HANDLE_VALUE;
 		ok = false;
@@ -150,13 +150,13 @@ bool FileReader::SetPos(uint pos)
 
 
 //-----------------------------------------------------------------------------
-MemoryReader::MemoryReader(BufferHandle& buf_handle) : buf(*buf_handle.Pin())
+MemoryReader::MemoryReader(BufferHandle& bufHandle) : buf(*bufHandle.Pin())
 {
 	ok = true;
 	pos = 0;
 }
 
-MemoryReader::MemoryReader(Buffer* p_buf) : buf(*p_buf)
+MemoryReader::MemoryReader(Buffer* buf) : buf(*buf)
 {
 	ok = true;
 	pos = 0;
@@ -199,7 +199,7 @@ bool MemoryReader::SetPos(uint pos)
 //-----------------------------------------------------------------------------
 FileWriter::~FileWriter()
 {
-	if(own_handle && file != INVALID_HANDLE_VALUE)
+	if(ownHandle && file != INVALID_HANDLE_VALUE)
 	{
 		CloseHandle(file);
 		file = INVALID_HANDLE_VALUE;
@@ -217,7 +217,7 @@ void FileWriter::Close()
 {
 	if(file != INVALID_HANDLE_VALUE)
 	{
-		if(own_handle)
+		if(ownHandle)
 			CloseHandle(file);
 		file = INVALID_HANDLE_VALUE;
 	}
@@ -248,7 +248,7 @@ void FileWriter::operator = (FileWriter& f)
 {
 	assert(file == INVALID_FILE_HANDLE && f.file != INVALID_HANDLE_VALUE);
 	file = f.file;
-	own_handle = f.own_handle;
+	ownHandle = f.ownHandle;
 	f.file = INVALID_FILE_HANDLE;
 }
 
@@ -260,8 +260,6 @@ void FileWriter::SetTime(FileTime fileTime)
 
 bool FileWriter::SetPos(uint pos)
 {
-	if(pos > GetFileSize(file, nullptr))
-		return false;
 	SetFilePointer(file, pos, nullptr, FILE_BEGIN);
 	return true;
 }
@@ -360,12 +358,12 @@ FileTime io::GetFileTime(cstring filename)
 }
 
 //=================================================================================================
-void io::MoveFile(cstring filename, cstring new_filename)
+void io::MoveFile(cstring filename, cstring newFilename)
 {
-	if(MoveFileExA(filename, new_filename, MOVEFILE_REPLACE_EXISTING) == 0)
+	if(MoveFileExA(filename, newFilename, MOVEFILE_REPLACE_EXISTING) == 0)
 	{
 		uint error = GetLastError();
-		Error("Failed to move file '%s' to '%s' (%u).", filename, new_filename, error);
+		Error("Failed to move file '%s' to '%s' (%u).", filename, newFilename, error);
 	}
 }
 
@@ -374,26 +372,27 @@ bool io::FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func)
 {
 	assert(pattern);
 
-	WIN32_FIND_DATA find_data;
-	HANDLE find = FindFirstFile(pattern, &find_data);
+	WIN32_FIND_DATA findData;
+	HANDLE find = FindFirstFile(pattern, &findData);
 	if(find == INVALID_HANDLE_VALUE)
 		return false;
 
 	do
 	{
 		// exclude special directories
-		if(strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
+		if(strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
 			continue;
 
 		// callback
 		FileInfo info =
 		{
-			find_data.cFileName,
-			IsSet(find_data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY)
+			findData.cFileName,
+			findData.nFileSizeLow,
+			IsSet(findData.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY)
 		};
 		if(!func(info))
 			break;
-	} while(FindNextFile(find, &find_data) != 0);
+	} while(FindNextFile(find, &findData) != 0);
 
 	DWORD result = GetLastError();
 	FindClose(find);
@@ -409,14 +408,14 @@ void io::Execute(cstring file)
 }
 
 //=================================================================================================
-bool io::LoadFileToString(cstring path, string& str, uint max_size)
+bool io::LoadFileToString(cstring path, string& str, uint maxSize)
 {
 	HANDLE file = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if(file == INVALID_HANDLE_VALUE)
 		return false;
 
-	uint file_size = (uint)GetFileSize(file, nullptr);
-	uint size = min(file_size, max_size);
+	uint fileSize = (uint)GetFileSize(file, nullptr);
+	uint size = min(fileSize, maxSize);
 	str.resize(size);
 
 	ReadFile(file, (char*)str.c_str(), size, &tmp, nullptr);
@@ -524,6 +523,22 @@ string io::PathToDirectory(Cstring path)
 }
 
 //=================================================================================================
+string io::CombinePath(cstring path, cstring filename)
+{
+	string s;
+	int pos = FindCharInString(path, "/\\");
+	if(pos != -1)
+	{
+		s.assign(path, pos);
+		s += '/';
+		s += filename;
+	}
+	else
+		s = filename;
+	return s;
+}
+
+//=================================================================================================
 void io::OpenUrl(Cstring url)
 {
 	ShellExecute(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
@@ -538,15 +553,23 @@ cstring io::GetCurrentDirectory()
 }
 
 //=================================================================================================
-#ifndef CORE_ONLY
 Buffer* io::Compress(byte* data, uint size)
 {
-	uint safe_size = size + size / 1000 + 13;
+	uint safeSize = compressBound(size);
 	Buffer* buf = Buffer::Get();
-	buf->Resize(safe_size);
-	uint real_size;
-	compress((Bytef*)buf->Data(), (uLongf*)&real_size, data, size);
-	buf->Resize(real_size);
+	buf->Resize(safeSize);
+	uint realSize = safeSize;
+	compress(static_cast<Bytef*>(buf->Data()), (uLongf*)&realSize, data, size);
+	buf->Resize(realSize);
 	return buf;
 }
-#endif
+
+//=================================================================================================
+Buffer* io::TryCompress(byte* data, uint size)
+{
+	Buffer* buf = Compress(data, size);
+	if(buf->Size() < size)
+		return buf;
+	buf->Free();
+	return nullptr;
+}

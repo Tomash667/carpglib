@@ -120,5 +120,5 @@ void TerrainShader::Draw(Terrain* terrain, const vector<uint>& parts)
 
 	// draw
 	for(uint part : parts)
-		deviceContext->DrawIndexed(terrain->part_tris * 3, terrain->part_tris * part * 3, 0);
+		deviceContext->DrawIndexed(terrain->partTris * 3, terrain->partTris * part * 3, 0);
 }

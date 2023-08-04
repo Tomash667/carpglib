@@ -1,6 +1,7 @@
 #pragma once
 
-#ifndef CORE_ONLY
-#	define CORE_ONLY
+#if !defined(CARPGLIB_CORE_ONLY)
+#	define CARPGLIB_CORE_ONLY
 #endif
+
 #include "Pch.h"

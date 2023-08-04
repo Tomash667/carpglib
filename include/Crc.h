@@ -4,9 +4,9 @@
 class Crc
 {
 public:
-	Crc() : m_crc(CRC32_NEGL) {}
+	Crc() : mCrc(CRC32_NEGL) {}
 	void Update(const byte *input, size_t length);
-	uint Get() const { return ~m_crc; }
+	uint Get() const { return ~mCrc; }
 	operator uint() const { return Get(); }
 
 	// Don't use for types with padding!
@@ -62,6 +62,6 @@ public:
 
 private:
 	static const uint CRC32_NEGL = 0xffffffffL;
-	static const uint m_tab[256];
-	uint m_crc;
+	static const uint mTab[256];
+	uint mCrc;
 };

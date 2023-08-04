@@ -33,7 +33,7 @@ namespace ssvu
 			template<class TThis, class TFunc>
 			inline static AnyPtrThis convert(const TThis*, TFunc, AnyPtrFunc&) noexcept
 			{
-				static_assert(false, "Unsupported member function pointer on this compiler");
+				static_assert(TN == 0, "Unsupported member function pointer on this compiler");
 				return 0;
 			}
 		};

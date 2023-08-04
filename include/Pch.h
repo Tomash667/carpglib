@@ -8,7 +8,7 @@
 #	define _HAS_ITERATOR_DEBUGGING 0
 #else
 #	define D3D_DEBUG_INFO
-#	ifndef CORE_ONLY
+#	ifndef CARPGLIB_CORE_ONLY
 #		include <vld.h>
 #	endif
 #endif
@@ -45,6 +45,6 @@ using std::array;
 
 //-----------------------------------------------------------------------------
 #include "Core.h"
-#ifndef CORE_ONLY
+#ifndef CARPGLIB_CORE_ONLY
 #	include "Common.h"
 #endif

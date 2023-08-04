@@ -16,9 +16,9 @@ void Timer::Start()
 	QueryPerformanceFrequency(&qwTicksPerSec);
 
 	LARGE_INTEGER qwTime;
-	ticks_per_sec = (double)qwTicksPerSec.QuadPart;
+	ticksPerSec = (double)qwTicksPerSec.QuadPart;
 	QueryPerformanceCounter(&qwTime);
-	last_time = qwTime.QuadPart;
+	lastTime = qwTime.QuadPart;
 
 	started = true;
 }
@@ -30,8 +30,8 @@ float Timer::Tick()
 
 	LARGE_INTEGER qwTime;
 	QueryPerformanceCounter(&qwTime);
-	float delta = (float)((double)(qwTime.QuadPart - last_time) / ticks_per_sec);
-	last_time = qwTime.QuadPart;
+	float delta = (float)((double)(qwTime.QuadPart - lastTime) / ticksPerSec);
+	lastTime = qwTime.QuadPart;
 
 	return delta < 0 ? 0 : delta;
 }
@@ -41,5 +41,5 @@ void Timer::Reset()
 {
 	LARGE_INTEGER qwTime;
 	QueryPerformanceCounter(&qwTime);
-	last_time = qwTime.QuadPart;
+	lastTime = qwTime.QuadPart;
 }

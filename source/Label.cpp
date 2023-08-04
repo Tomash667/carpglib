@@ -11,9 +11,9 @@ Label::Label(cstring text, bool autoSize) : text(text), autoSize(autoSize)
 		CalculateSize();
 }
 
-void Label::Draw(ControlDrawData*)
+void Label::Draw()
 {
-	Rect rect = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
+	Rect rect = { globalPos.x, globalPos.y, globalPos.x + size.x, globalPos.y + size.y };
 	gui->DrawText(layout->font, text, 0, layout->color, rect);
 }
 

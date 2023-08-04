@@ -12,16 +12,16 @@ GetTextDialog::GetTextDialog(const DialogInfo& info) : DialogBox(info), singleli
 }
 
 //=================================================================================================
-void GetTextDialog::Draw(ControlDrawData*)
+void GetTextDialog::Draw()
 {
 	gui->DrawArea(Box2d::Create(Int2::Zero, gui->wndSize), layout->background);
-	gui->DrawArea(Box2d::Create(global_pos, size), layout->box);
+	gui->DrawArea(Box2d::Create(globalPos, size), layout->box);
 
 	for(int i = 0; i < 2; ++i)
 		bts[i].Draw();
 
-	Rect r = { global_pos.x + 16,global_pos.y + 16,global_pos.x + size.x,global_pos.y + size.y };
-	gui->DrawText(layout->font, text, DTF_CENTER, Color::Black, r);
+	Rect r = { globalPos.x + 16, globalPos.y + 16, globalPos.x + size.x - 16, globalPos.y + 60 - 16 };
+	gui->DrawText(layout->font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 
 	textBox.Draw();
 }
@@ -29,25 +29,24 @@ void GetTextDialog::Draw(ControlDrawData*)
 //=================================================================================================
 void GetTextDialog::Update(float dt)
 {
-	textBox.mouse_focus = focus;
+	textBox.mouseFocus = focus;
 
 	if(input->Focus() && focus)
 	{
 		for(int i = 0; i < 2; ++i)
 		{
-			bts[i].mouse_focus = focus;
+			bts[i].mouseFocus = focus;
 			bts[i].Update(dt);
-			if(result != -1)
-				goto got_result;
 		}
 
 		textBox.focus = true;
 		textBox.Update(dt);
 
-		if(textBox.GetText().empty())
-			bts[1].state = Button::DISABLED;
-		else if(bts[1].state == Button::DISABLED)
-			bts[1].state = Button::NONE;
+		if(prevText != textBox.GetText())
+		{
+			prevText = textBox.GetText();
+			UpdateButtons();
+		}
 
 		if(result == -1)
 		{
@@ -65,7 +64,6 @@ void GetTextDialog::Update(float dt)
 
 		if(result != -1)
 		{
-		got_result:
 			if(result == BUTTON_OK)
 			{
 				*inputStr = textBox.GetText();
@@ -168,7 +166,7 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	if(!params.multiline || params.lines < 1)
 		lines = 1;
 
-	size = Int2(params.width, 180 + lines * 20);
+	size = Int2(params.width, 140 + lines * 20);
 	textBox.size = Int2(params.width - 50, 15 + lines * 20);
 	textBox.SetMultiline(params.multiline);
 	textBox.limit = params.limit;
@@ -196,10 +194,31 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	validate = params.validate;
 	text = params.text;
 	inputStr = params.inputStr;
+	prevText = *inputStr;
+	UpdateButtons();
 
 	// ustaw pozycjê
-	pos = global_pos = (gui->wndSize - size) / 2;
-	bt1.global_pos = bt1.pos + global_pos;
-	bt2.global_pos = bt2.pos + global_pos;
-	textBox.global_pos = textBox.pos + global_pos;
+	pos = globalPos = (gui->wndSize - size) / 2;
+	bt1.globalPos = bt1.pos + globalPos;
+	bt2.globalPos = bt2.pos + globalPos;
+	textBox.globalPos = textBox.pos + globalPos;
+}
+
+//=================================================================================================
+void GetTextDialog::UpdateButtons()
+{
+	const string& text = textBox.GetText();
+	bool ok;
+	if(validate)
+		ok = validate(text);
+	else
+		ok = !text.empty();
+
+	if(ok)
+	{
+		if(bts[1].state == Button::DISABLED)
+			bts[1].state = Button::NONE;
+	}
+	else
+		bts[1].state = Button::DISABLED;
 }

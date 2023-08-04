@@ -10,7 +10,8 @@ namespace io
 	struct FileInfo
 	{
 		cstring filename;
-		bool is_dir;
+		uint size;
+		bool isDir;
 	};
 
 	void CreateDirectory(Cstring dir);
@@ -22,7 +23,7 @@ namespace io
 	bool FileExists(cstring filename);
 	bool DeleteFile(cstring filename);
 	FileTime GetFileTime(cstring filename);
-	void MoveFile(cstring filename, cstring new_filename);
+	void MoveFile(cstring filename, cstring newFilename);
 	// Find files matching pattern, return false from func to stop.
 	bool FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func);
 	// Call ShellExecute on file
@@ -31,19 +32,19 @@ namespace io
 	cstring FilenameFromPath(const string& path);
 	cstring FilenameFromPath(cstring path);
 	string PathToDirectory(Cstring path);
+	string CombinePath(cstring path, cstring filename);
 	// load text file to string (whole or up to max size)
-	bool LoadFileToString(cstring path, string& str, uint max_size = (uint)-1);
+	bool LoadFileToString(cstring path, string& str, uint maxSize = (uint)-1);
 	// simple encryption (pass encrypted to decrypt data)
 	void Crypt(char* inp, uint inplen, cstring key, uint keylen);
 	// open url in default web browser
 	void OpenUrl(Cstring url);
 	// get current directory
 	cstring GetCurrentDirectory();
-
-#ifndef CORE_ONLY
 	// Compress data to buffer
 	Buffer* Compress(byte* data, uint size);
-#endif
+	// Compress or return nullptr if result is bigger
+	Buffer* TryCompress(byte* data, uint size);
 }
 
 //-----------------------------------------------------------------------------
@@ -69,17 +70,17 @@ public:
 	operator bool() const { return IsOk(); }
 	const string& GetStringBuffer() const { return buf; }
 
-	bool Ensure(uint elements_size) const
+	bool Ensure(uint elementsSize) const
 	{
 		auto pos = GetPos();
 		uint offset;
-		return ok && CheckedAdd(pos, elements_size, offset) && offset <= GetSize();
+		return ok && CheckedAdd(pos, elementsSize, offset) && offset <= GetSize();
 	}
-	bool Ensure(uint count, uint element_size) const
+	bool Ensure(uint count, uint elementSize) const
 	{
 		auto pos = GetPos();
 		uint offset;
-		return ok && CheckedMultiplyAdd(count, element_size, pos, offset) && offset <= GetSize();
+		return ok && CheckedMultiplyAdd(count, elementSize, pos, offset) && offset <= GetSize();
 	}
 	template<typename T>
 	T Read()
@@ -339,7 +340,7 @@ protected:
 class FileReader : public StreamReader
 {
 public:
-	FileReader() : file(INVALID_FILE_HANDLE), size(0), own_handle(false) {}
+	FileReader() : file(INVALID_FILE_HANDLE), size(0), ownHandle(false) {}
 	explicit FileReader(FileHandle file);
 	explicit FileReader(Cstring filename) { Open(filename); }
 	~FileReader();
@@ -365,7 +366,7 @@ public:
 protected:
 	FileHandle file;
 	uint size;
-	bool own_handle;
+	bool ownHandle;
 };
 
 //-----------------------------------------------------------------------------
@@ -439,6 +440,10 @@ public:
 	{
 		WriteString<uint>(s);
 	}
+	void WriteString0(const string& s)
+	{
+		Write(s.c_str(), s.length() + 1);
+	}
 
 	template<typename SizeType>
 	void WriteString(cstring str)
@@ -463,8 +468,11 @@ public:
 	}
 	void WriteStringF(cstring str)
 	{
-		uint length = strlen(str);
-		Write(str, length);
+		Write(str, strlen(str));
+	}
+	void WriteString0(cstring str)
+	{
+		Write(str, strlen(str) + 1);
 	}
 
 	template<typename CountType, typename LengthType>
@@ -563,10 +571,10 @@ public:
 	void Patch(uint pos, const T& a)
 	{
 		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
-		uint current_pos = GetPos();
+		uint currentPos = GetPos();
 		SetPos(pos);
 		Write(a);
-		SetPos(current_pos);
+		SetPos(currentPos);
 	}
 
 	template<typename T>
@@ -577,9 +585,9 @@ public:
 class FileWriter : public StreamWriter
 {
 public:
-	FileWriter() : file(INVALID_FILE_HANDLE), own_handle(true) {}
-	explicit FileWriter(FileHandle file) : file(file), own_handle(false) {}
-	explicit FileWriter(cstring filename) : own_handle(true) { Open(filename); }
+	FileWriter() : file(INVALID_FILE_HANDLE), ownHandle(true) {}
+	explicit FileWriter(FileHandle file) : file(file), ownHandle(false) {}
+	explicit FileWriter(cstring filename) : ownHandle(true) { Open(filename); }
 	explicit FileWriter(const string& filename) : FileWriter(filename.c_str()) {}
 	~FileWriter();
 
@@ -594,14 +602,14 @@ public:
 	bool IsOpen() const { return file != INVALID_FILE_HANDLE; }
 	operator bool() const { return IsOpen(); }
 	void operator = (FileWriter& f);
-	void SetTime(FileTime file_time);
+	void SetTime(FileTime fileTime);
 	bool SetPos(uint pos) override final;
 
 	static bool WriteAll(Cstring filename, Buffer* buf);
 
 protected:
 	FileHandle file;
-	bool own_handle;
+	bool ownHandle;
 };
 
 //-----------------------------------------------------------------------------

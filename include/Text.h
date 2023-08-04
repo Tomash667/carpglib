@@ -1,8 +1,5 @@
 #pragma once
 
-// gdy trzeba coœ na chwilê wczytaæ to mo¿na u¿ywaæ tego stringa
-extern string g_tmp_string;
-
 //-----------------------------------------------------------------------------
 struct Cstring
 {
@@ -82,10 +79,10 @@ void FormatStr(string& str, cstring fmt, ...);
 cstring Upper(cstring str);
 vector<string> Split(cstring str, char delimiter = ' ', char quote = '"');
 void SplitText(char* buf, vector<cstring>& lines);
-bool Unescape(const string& str_in, uint pos, uint length, string& str_out);
-inline bool Unescape(const string& str_in, string& str_out)
+bool Unescape(const string& strIn, uint pos, uint length, string& strOut);
+inline bool Unescape(const string& strIn, string& strOut)
 {
-	return Unescape(str_in, 0u, str_in.length(), str_out);
+	return Unescape(strIn, 0u, strIn.length(), strOut);
 }
 bool StringInString(cstring s1, cstring s2);
 cstring Escape(Cstring str, char quote = '"');
@@ -94,7 +91,7 @@ cstring EscapeChar(char c);
 cstring EscapeChar(char c, string& out);
 cstring ToString(const wchar_t* str);
 const wchar_t* ToWString(cstring str);
-void Replace(string& s, cstring in_chars, cstring out_chars);
+void Replace(string& str, cstring inChars, cstring outChars);
 inline bool StartsWith(const string& value, const string& start)
 {
 	if(value.size() < start.size())
@@ -117,11 +114,13 @@ char CharInStr(char c, cstring chrs);
 void RemoveEndOfLine(string& str, bool remove);
 uint FindClosingPos(const string& str, uint pos, char start = '(', char end = ')');
 string UrlEncode(const string& s);
+bool StartsWith(cstring str, cstring start);
 // replace all occurrences of 'from' with 'to'
 cstring ReplaceAll(cstring str, cstring from, cstring to);
 cstring FindLastOf(cstring str, cstring chars);
 void Utf8ToAscii(string& str);
 bool IsIdentifier(Cstring str);
+int FindCharInString(cstring str, cstring chars);
 
 namespace TextHelper
 {
@@ -137,6 +136,7 @@ namespace TextHelper
 	bool ToUint(cstring s, uint& result);
 	bool ToFloat(cstring s, float& result);
 	bool ToBool(cstring s, bool& result);
+	bool IsNumber(cstring s);
 }
 
 // trim from start

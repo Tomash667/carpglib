@@ -24,14 +24,14 @@ public:
 	InputTextBox();
 
 	// from Control
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	// from OnCharHandler
 	void OnChar(char c) override;
 
 	void Init();
-	void Reset(bool cache = false);
+	void Reset(bool resetCache = false);
 	void Add(Cstring str);
 	void CheckLines();
 	const string& GetInput() const { return input_str; }

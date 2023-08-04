@@ -12,72 +12,84 @@ GetNumberDialog::GetNumberDialog(const DialogInfo& info) : DialogBox(info), scro
 }
 
 //=================================================================================================
-void GetNumberDialog::Draw(ControlDrawData*)
+void GetNumberDialog::Draw()
 {
 	gui->DrawArea(Box2d::Create(Int2::Zero, gui->wndSize), layout->background);
-	gui->DrawArea(Box2d::Create(global_pos, size), layout->box);
+	gui->DrawArea(Box2d::Create(globalPos, size), layout->box);
 
 	for(int i = 0; i < 2; ++i)
 		bts[i].Draw();
 
-	Rect r = { global_pos.x + 16,global_pos.y + 16,global_pos.x + size.x,global_pos.y + size.y };
-	gui->DrawText(layout->font, text, DTF_CENTER, Color::Black, r);
+	Rect r = { globalPos.x + 16, globalPos.y + 16, globalPos.x + size.x - 16, globalPos.y + 60 - 16 };
+	gui->DrawText(layout->font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 
 	textBox.Draw();
 	scrollbar.Draw();
 
-	Rect r2 = { global_pos.x + 16,global_pos.y + 120,global_pos.x + size.x - 16,global_pos.y + size.y };
-	gui->DrawText(layout->font, Format("%d", min_value), DTF_LEFT, Color::Black, r2);
-	gui->DrawText(layout->font, Format("%d", max_value), DTF_RIGHT, Color::Black, r2);
+	Rect r2 = { globalPos.x + 16, globalPos.y + 120, globalPos.x + size.x - 16, globalPos.y + size.y };
+	gui->DrawText(layout->font, Format("%d", minValue), DTF_LEFT, Color::Black, r2);
+	gui->DrawText(layout->font, Format("%d", maxValue), DTF_RIGHT, Color::Black, r2);
 }
 
 //=================================================================================================
 void GetNumberDialog::Update(float dt)
 {
-	textBox.mouse_focus = focus;
+	textBox.mouseFocus = focus;
 
 	if(input->Focus() && focus)
 	{
 		for(int i = 0; i < 2; ++i)
 		{
-			bts[i].mouse_focus = focus;
+			bts[i].mouseFocus = focus;
 			bts[i].Update(dt);
 		}
 
+		const float wheel = input->GetMouseWheel();
 		bool moving = scrollbar.clicked;
-		float prev_offset = scrollbar.offset;
+		float prevOffset = scrollbar.offset;
 		scrollbar.ApplyMouseWheel();
-		scrollbar.mouse_focus = focus;
+		scrollbar.mouseFocus = focus;
 		scrollbar.Update(dt);
 		bool changed = false;
-		if(scrollbar.change != 0 || gui->mouseWheel != 0.f)
+		if(scrollbar.change != 0 || wheel != 0.f)
 		{
 			int num = atoi(textBox.GetText().c_str());
 			int newNum = num;
 
-			if(gui->mouseWheel != 0.f)
+			if(wheel != 0.f)
 			{
 				int change = 1;
 				if(input->Down(Key::Shift))
-					change = max(1, (max_value - min_value) / 20);
-				if(gui->mouseWheel < 0.f)
+					change = max(1, (maxValue - minValue) / 20);
+				if(wheel < 0.f)
 					change = -change;
 				newNum += change;
 			}
 			else
 				newNum += scrollbar.change;
 
-			newNum = Clamp(newNum, min_value, max_value);
+			newNum = Clamp(newNum, minValue, maxValue);
 			if(num != newNum)
 			{
 				textBox.SetText(Format("%d", newNum));
-				scrollbar.offset = float(newNum - min_value) / (max_value - min_value) * (scrollbar.total - scrollbar.part);
+				*value = newNum;
+				if(getText)
+					text = getText();
+				scrollbar.offset = float(newNum - minValue) / (maxValue - minValue) * (scrollbar.total - scrollbar.part);
 				changed = true;
 			}
 		}
-		else if(!Equal(scrollbar.offset, prev_offset))
+		else if(!Equal(scrollbar.offset, prevOffset))
 		{
-			textBox.SetText(Format("%d", (int)Lerp(float(min_value), float(max_value), scrollbar.offset / (scrollbar.total - scrollbar.part))));
+			const float progress = scrollbar.offset / (scrollbar.total - scrollbar.part);
+			const int newValue = (int)round((maxValue - minValue) * progress) + minValue;
+			if(newValue != *value)
+			{
+				*value = newValue;
+				textBox.SetText(Format("%d", newValue));
+				if(getText)
+					text = getText();
+			}
 			changed = true;
 		}
 
@@ -98,11 +110,17 @@ void GetNumberDialog::Update(float dt)
 		}
 
 		textBox.Update(dt);
-		if(!changed)
+		if(!changed && !textBox.GetText().empty())
 		{
 			int num = atoi(textBox.GetText().c_str());
-			if(!scrollbar.clicked && min_value != max_value)
-				scrollbar.offset = float(num - min_value) / (max_value - min_value) * (scrollbar.total - scrollbar.part);
+			if(num != *value)
+			{
+				*value = num;
+				if(getText)
+					text = getText();
+		}
+			if(!scrollbar.clicked && minValue != maxValue)
+				scrollbar.offset = float(num - minValue) / (maxValue - minValue) * (scrollbar.total - scrollbar.part);
 		}
 		if(textBox.GetText().empty())
 			bts[1].state = Button::DISABLED;
@@ -119,8 +137,6 @@ void GetNumberDialog::Update(float dt)
 
 		if(result != -1)
 		{
-			if(result == BUTTON_OK)
-				*value = atoi(textBox.GetText().c_str());
 			gui->CloseDialog(this);
 			if(event)
 				event(result);
@@ -144,11 +160,11 @@ void GetNumberDialog::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_WindowResize)
 	{
-		self->pos = self->global_pos = (gui->wndSize - self->size) / 2;
-		self->bts[0].global_pos = self->bts[0].pos + self->global_pos;
-		self->bts[1].global_pos = self->bts[1].pos + self->global_pos;
-		self->textBox.global_pos = self->textBox.pos + self->global_pos;
-		self->scrollbar.global_pos = self->scrollbar.pos + self->global_pos;
+		self->pos = self->globalPos = (gui->wndSize - self->size) / 2;
+		self->bts[0].globalPos = self->bts[0].pos + self->globalPos;
+		self->bts[1].globalPos = self->bts[1].pos + self->globalPos;
+		self->textBox.globalPos = self->textBox.pos + self->globalPos;
+		self->scrollbar.globalPos = self->scrollbar.pos + self->globalPos;
 	}
 	else if(e >= GuiEvent_Custom)
 	{
@@ -160,8 +176,10 @@ void GetNumberDialog::Event(GuiEvent e)
 }
 
 //=================================================================================================
-GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstring text, int min_value, int max_value, int* value)
+GetNumberDialog* GetNumberDialog::Show(const GetNumberDialogParams& params)
 {
+	assert(params.text || params.getText);
+
 	if(!self)
 	{
 		DialogInfo info;
@@ -170,7 +188,7 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 		info.parent = nullptr;
 		info.pause = false;
 		info.order = DialogOrder::Normal;
-		info.type = DialogType::Custom;
+		info.type = DIALOG_CUSTOM;
 
 		self = new GetNumberDialog(info);
 		self->size = Int2(300, 200);
@@ -206,23 +224,27 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 	}
 
 	self->result = -1;
-	self->parent = parent;
-	self->order = GetOrder(parent);
-	self->event = event;
-	self->text = text;
-	self->min_value = min_value;
-	self->max_value = max_value;
-	self->value = value;
-	self->pos = self->global_pos = (gui->wndSize - self->size) / 2;
-	self->bts[0].global_pos = self->bts[0].pos + self->global_pos;
-	self->bts[1].global_pos = self->bts[1].pos + self->global_pos;
-	self->textBox.global_pos = self->textBox.pos + self->global_pos;
-	self->textBox.num_min = min_value;
-	self->textBox.num_max = max_value;
-	self->scrollbar.global_pos = self->scrollbar.pos + self->global_pos;
+	self->parent = params.parent;
+	self->order = GetOrder(params.parent);
+	self->event = params.event;
+	self->getText = params.getText;
+	if(self->getText)
+		self->text = self->getText();
+	else
+		self->text = params.text;
+	self->minValue = params.minValue;
+	self->maxValue = params.maxValue;
+	self->value = params.value;
+	self->pos = self->globalPos = (gui->wndSize - self->size) / 2;
+	self->bts[0].globalPos = self->bts[0].pos + self->globalPos;
+	self->bts[1].globalPos = self->bts[1].pos + self->globalPos;
+	self->textBox.globalPos = self->textBox.pos + self->globalPos;
+	self->textBox.numMin = params.minValue;
+	self->textBox.numMax = params.maxValue;
+	self->scrollbar.globalPos = self->scrollbar.pos + self->globalPos;
 	self->scrollbar.offset = 0;
-	self->scrollbar.manual_change = true;
-	self->textBox.SetText(Format("%d", *value));
+	self->scrollbar.manualChange = true;
+	self->textBox.SetText(Format("%d", *params.value));
 
 	gui->ShowDialog(self);
 

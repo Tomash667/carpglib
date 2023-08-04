@@ -23,7 +23,7 @@ public:
 	~Overlay();
 
 	bool NeedCursor() const override;
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 
 	void CloseDialog(GuiDialog* dialog);
@@ -41,10 +41,9 @@ private:
 	void CloseMenus();
 
 	Control* focused;
-	Control* mouse_focused;
 	Control* clicked;
-	MenuStrip* to_add;
-	vector<MenuStrip*> menus, menus_to_close;
-	vector<GuiDialog*> dialogs, dialogs_to_close;
+	MenuStrip* toAdd;
+	vector<MenuStrip*> menus, menusToClose;
+	vector<GuiDialog*> dialogs, dialogsToClose;
 	bool mouse_click, drawCursor;
 };

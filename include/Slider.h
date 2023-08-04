@@ -19,19 +19,17 @@ class Slider : public Control, public LayoutControl<layout::Slider>
 public:
 	Slider();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
+	void SetHold(float holdVal);
 
-	void SetHold(bool hold);
-
-	int minv, maxv, val, id;
+	int width, minv, maxv, val, id;
 	string text;
-	Button bt[2];
-	float hold_val;
 
 private:
-	float hold_tmp;
-	int hold_state;
-	bool hold, minstep;
+	Button bt[2];
+	float holdVal, holdTmp;
+	int holdState;
+	bool minstep;
 };

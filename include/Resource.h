@@ -28,7 +28,7 @@ struct Resource
 	ResourceState state;
 	ResourceType type;
 	Pak* pak;
-	uint pak_index;
+	uint pakIndex;
 
 	virtual ~Resource() {}
 	bool IsFile() const { return !pak; }

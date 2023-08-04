@@ -13,7 +13,7 @@ MenuBar::~MenuBar()
 	DeleteElements(items);
 }
 
-void MenuBar::Draw(ControlDrawData*)
+void MenuBar::Draw()
 {
 	// backgroud
 	gui->DrawArea(rect, layout->background);
@@ -21,30 +21,30 @@ void MenuBar::Draw(ControlDrawData*)
 	// items
 	for(Item* item : items)
 	{
-		AreaLayout* area_layout;
-		Color font_color;
+		AreaLayout* areaLayout;
+		Color fontColor;
 		switch(item->mode)
 		{
 		case Item::Up:
 		default:
-			area_layout = &layout->button;
-			font_color = layout->font_color;
+			areaLayout = &layout->button;
+			fontColor = layout->fontColor;
 			break;
 		case Item::Hover:
-			area_layout = &layout->button_hover;
-			font_color = layout->font_color_hover;
+			areaLayout = &layout->buttonHover;
+			fontColor = layout->fontColorHover;
 			break;
 		case Item::Down:
-			area_layout = &layout->button_down;
-			font_color = layout->font_color_down;
+			areaLayout = &layout->buttonDown;
+			fontColor = layout->fontColorDown;
 			break;
 		}
 
 		// item background
-		gui->DrawArea(item->rect, *area_layout);
+		gui->DrawArea(item->rect, *areaLayout);
 
 		// item text
-		gui->DrawText(layout->font, item->text, DTF_CENTER | DTF_VCENTER, font_color, Rect(item->rect));
+		gui->DrawText(layout->font, item->text, DTF_CENTER | DTF_VCENTER, fontColor, Rect(item->rect));
 	}
 }
 
@@ -59,7 +59,7 @@ void MenuBar::Update(float dt)
 			down = true;
 	}
 
-	if(!mouse_focus || !rect.IsInside(gui->cursorPos))
+	if(!mouseFocus || !rect.IsInside(gui->cursorPos))
 		return;
 
 	for(Item* item : items)
@@ -115,12 +115,12 @@ void MenuBar::AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const 
 {
 	assert(text);
 
-	float item_height = (float)layout->font->height + layout->item_padding.y * 2;
-	float item_width = (float)layout->font->CalculateSize(text).x + layout->item_padding.x * 2;
+	float itemHeight = (float)layout->font->height + layout->itemPadding.y * 2;
+	float itemWidth = (float)layout->font->CalculateSize(text).x + layout->itemPadding.x * 2;
 
 	Item* item = new Item;
 	item->text = text;
-	item->rect = Box2d(0, 0, item_width, item_height);
+	item->rect = Box2d(0, 0, itemWidth, itemHeight);
 	item->rect += Vec2(layout->padding) / 2;
 	if(!items.empty())
 		item->rect += Vec2(items.back()->rect.v2.x, 0);
@@ -132,15 +132,15 @@ void MenuBar::AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const 
 void MenuBar::Update(bool move, bool resize)
 {
 	assert(parent);
-	Int2 prev_pos = global_pos;
+	Int2 prevPos = globalPos;
 	if(move)
-		global_pos = parent->global_pos;
+		globalPos = parent->globalPos;
 	if(resize)
-		size = Int2(parent->size.x, layout->font->height + layout->padding.y + layout->item_padding.y * 2);
-	rect = Box2d::Create(global_pos, size);
+		size = Int2(parent->size.x, layout->font->height + layout->padding.y + layout->itemPadding.y * 2);
+	rect = Box2d::Create(globalPos, size);
 	if(move)
 	{
-		Vec2 offset = Vec2(global_pos - prev_pos);
+		Vec2 offset = Vec2(globalPos - prevPos);
 		for(Item* item : items)
 			item->rect += offset;
 	}

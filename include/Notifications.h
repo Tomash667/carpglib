@@ -54,7 +54,7 @@ public:
 	uint GetMaxNotifications() const { return maxNotifications; }
 	void SetShortcuts(KeyPair acceptKey, KeyPair declineKey, cstring acceptText, cstring declineText);
 	void SetMaxNotifications(uint value) { assert(value >= 1u); maxNotifications = value; }
-	void Draw(ControlDrawData*) override;
+	void Draw() override;
 	void Update(float dt) override;
 
 private:

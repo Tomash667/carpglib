@@ -84,17 +84,17 @@ struct MeshInstance
 	void Play(uint group = 0) { SetBit(GetGroup(group).state, FLAG_PLAYING); }
 	void Stop(uint group = 0) { ClearBit(GetGroup(group).state, FLAG_PLAYING); }
 	bool IsPlaying(uint group = 0) const { return GetGroup(group).IsPlaying(); }
-	void Deactivate(uint group = 0, bool in_update = false);
+	void Deactivate(uint group = 0, bool inUpdate = false);
 	void Update(float dt);
 	void SetupBones();
 	void DisableAnimations();
 	void SetToEnd(cstring anim)
 	{
 		Mesh::Animation* a = mesh->GetAnimation(anim);
-		SetToEnd(a);
+		SetAnimation(a, 1.f);
 	}
-	void SetToEnd(Mesh::Animation* anim);
-	void SetToEnd();
+	void SetToEnd(Mesh::Animation* anim) { SetAnimation(anim, 1.f); }
+	void SetToEnd() { SetAnimation(GetGroup(0).anim, 1.f); }
 	void ResetAnimation();
 	void Save(FileWriter& f) const;
 	void SaveV2(StreamWriter& f) const;
@@ -111,12 +111,12 @@ struct MeshInstance
 	const Matrix& GetBoneMatrix(uint bone) const { return matBones[bone]; }
 	Group& GetGroup(uint group)
 	{
-		assert(group < mesh->head.n_groups);
+		assert(group < mesh->head.nGroups);
 		return groups[group];
 	}
 	const Group& GetGroup(uint group) const
 	{
-		assert(group < mesh->head.n_groups);
+		assert(group < mesh->head.nGroups);
 		return groups[group];
 	}
 	int GetHighestPriority(uint& group) const;
@@ -130,6 +130,8 @@ struct MeshInstance
 	bool IsBlending() const;
 	bool IsEnded(uint group = 0) const { return GetGroup(group).frameEnd; }
 
+	void SetAnimation(Mesh::Animation* anim, float p);
+	void SetMesh(Mesh* mesh);
 	void SetPredraw(PredrawFunc predraw) { this->predraw = predraw; }
 	void SetProgress(float progress, uint group = 0) { GetGroup(group).SetProgress(progress); }
 	void SetScaling(Matrix* matScale) { this->matScale = matScale; }
@@ -140,7 +142,7 @@ struct MeshInstance
 	static void LoadOptional(StreamReader& f, MeshInstance*& meshInst);
 
 private:
-	void SetupBlending(uint group, bool first = true, bool in_update = false);
+	void SetupBlending(uint group, bool first = true, bool inUpdate = false);
 
 	Mesh* mesh;
 	vector<Matrix> matBones;

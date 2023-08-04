@@ -2,9 +2,9 @@
 #include "ComboBox.h"
 
 //=================================================================================================
-ComboBox::ComboBox() : menu_changed(false), selected(-1)
+ComboBox::ComboBox() : menuChanged(false), selected(-1)
 {
-	menu.event_handler = delegate<void(int)>(this, &ComboBox::OnSelect);
+	menu.eventHandler = delegate<void(int)>(this, &ComboBox::OnSelect);
 }
 
 //=================================================================================================
@@ -19,7 +19,7 @@ ComboBox::~ComboBox()
 }
 
 //=================================================================================================
-void ComboBox::Draw(ControlDrawData*)
+void ComboBox::Draw()
 {
 	TextBox::Draw();
 	if(menu.visible)
@@ -32,7 +32,7 @@ void ComboBox::Event(GuiEvent e)
 	switch(e)
 	{
 	case GuiEvent_GainFocus:
-		menu_changed = true;
+		menuChanged = true;
 		break;
 	case GuiEvent_LostFocus:
 		menu.visible = false;
@@ -45,21 +45,19 @@ void ComboBox::Event(GuiEvent e)
 void ComboBox::Update(float dt)
 {
 	TextBox::Update(dt);
-	if(menu_changed)
+	if(menuChanged)
 	{
-		if(menu.items.empty())
-			menu.visible = false;
-		else
+		menu.Hide();
+		if(!menu.items.empty())
 		{
-			menu.visible = true;
-			menu.Init();
-			menu.global_pos = menu.pos = global_pos - Int2(0, menu.size.y);
+			menu.Show();
+			menu.globalPos = menu.pos = globalPos - Int2(0, menu.size.y);
 		}
-		menu_changed = false;
+		menuChanged = false;
 	}
 	if(menu.visible)
 	{
-		menu.mouse_focus = focus;
+		menu.mouseFocus = focus;
 		menu.focus = true;
 		menu.Update(dt);
 		if(!menu.focus)
@@ -79,7 +77,7 @@ void ComboBox::Reset()
 	TextBox::Reset();
 	menu.visible = false;
 	ClearItems();
-	menu_changed = false;
+	menuChanged = false;
 }
 
 //=================================================================================================
@@ -87,7 +85,7 @@ void ComboBox::ClearItems()
 {
 	if(!menu.items.empty())
 	{
-		menu_changed = true;
+		menuChanged = true;
 		if(destructor)
 		{
 			for(GuiElement* e : menu.items)
@@ -100,7 +98,7 @@ void ComboBox::ClearItems()
 //=================================================================================================
 void ComboBox::AddItem(GuiElement* e)
 {
-	menu_changed = true;
+	menuChanged = true;
 	menu.AddItem(e);
 }
 

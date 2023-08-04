@@ -21,7 +21,7 @@ public:
 	~Viewer();
 	bool OnInit() override;
 	void OnDraw() override;
-	void Draw(ControlDrawData*) override;
+	void Draw() override;
 	void OnUpdate(float dt) override;
 	void SetCamera(CamMode mode);
 	void UpdateCamera();

@@ -1,35 +1,7 @@
-#include <windows.h>
-#include <cstdio>
-#include <conio.h>
-#include <vector>
-#include <string>
-#include <map>
-#include <zlib.h>
-
-using namespace std;
-
-typedef unsigned char byte;
-typedef unsigned int uint;
-typedef const char* cstring;
-
-static const uint FORMAT_STRINGS = 8;
-static const uint FORMAT_LENGTH = 2048;
-static char format_buf[FORMAT_STRINGS][FORMAT_LENGTH];
-static int format_marker;
-
-//=================================================================================================
-cstring Format(cstring str, ...)
-{
-	va_list list;
-	va_start(list, str);
-	char* cbuf = format_buf[format_marker];
-	_vsnprintf_s(cbuf, FORMAT_LENGTH, FORMAT_LENGTH - 1, str, list);
-	cbuf[FORMAT_LENGTH - 1] = 0;
-	format_marker = (format_marker + 1) % FORMAT_STRINGS;
-	va_end(list);
-
-	return cbuf;
-}
+#define CARPGLIB_USE_ZLIB
+#include <CarpgLibCore.h>
+#include <File.h>
+#include <Crc.h>
 
 struct Pak
 {
@@ -40,7 +12,7 @@ struct Pak
 		char sign[3];
 		byte version;
 		int flags;
-		uint file_count, file_entry_table_size;
+		uint fileCount, fileEntryTableSize;
 
 		bool HaveValidSign()
 		{
@@ -53,10 +25,10 @@ struct Pak
 		union
 		{
 			cstring filename;
-			uint filename_offset;
+			uint filenameOffset;
 		};
 		uint size;
-		uint compressed_size;
+		uint compressedSize;
 		uint offset;
 	};
 
@@ -66,18 +38,17 @@ struct Pak
 		F_FULL_ENCRYPTION = 1 << 1
 	};
 
-	HANDLE file;
+	FileReader file;
 	union
 	{
 		byte* table;
-		File* file_table;
+		File* fileTable;
 	};
-	uint file_count;
+	uint fileCount;
 	bool encrypted;
 
 	~Pak()
 	{
-		CloseHandle(file);
 		delete[] table;
 	}
 };
@@ -96,16 +67,17 @@ struct Paker
 		Key,
 		Browse,
 		Unpack,
-		Path
+		Path,
+		Crc
 	};
 
 	struct File
 	{
 		string path, name;
-		uint size, compressed_size, offset, name_offset;
+		uint size, compressedSize, offset, nameOffset;
 	};
 
-	map<string, Cmd> cmds =
+	std::map<string, Cmd> cmds =
 	{
 		{"?", Help}, {"h", Help}, {"help", Help},
 		{"e", Encrypt}, {"encrypt", Encrypt},
@@ -120,19 +92,18 @@ struct Paker
 	};
 
 	vector<File> files;
-	string crypt_key, decrypt_key, output;
-	DWORD tmp;
-	bool compress, encrypt, full_encrypt, subdir, done_anything, full_path;
+	string cryptKey, decryptKey, output;
+	bool compress, encrypt, fullEncrypt, subdir, doneAnything, fullPath;
 
 	Paker()
 	{
 		output = "data.pak";
 		compress = true;
 		encrypt = false;
-		full_encrypt = false;
+		fullEncrypt = false;
 		subdir = true;
-		done_anything = false;
-		full_path = false;
+		doneAnything = false;
+		fullPath = false;
 	}
 
 	void Add(cstring path, vector<File>& files, bool subdir, uint pathOffset = 0)
@@ -142,158 +113,61 @@ struct Paker
 			pathOffset = strlen(path) + 1;
 
 		// start find
-		WIN32_FIND_DATA find_data;
-		HANDLE find = FindFirstFile(path, &find_data);
-		if(find == INVALID_HANDLE_VALUE)
+		io::FindFiles(path, [&](const io::FileInfo& fileInfo)
 		{
-			DWORD result = GetLastError();
-			printf("ERROR: Can't search for '%s', result %u.\n", path, result);
-			return;
-		}
-
-		do
-		{
-			if(strcmp(find_data.cFileName, ".") != 0 && strcmp(find_data.cFileName, "..") != 0)
+			if(strcmp(fileInfo.filename, ".") != 0 && strcmp(fileInfo.filename, "..") != 0)
 			{
-				string new_path = CombinePath(path, find_data.cFileName);
-				if((find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+				string newPath = io::CombinePath(path, fileInfo.filename);
+				if(fileInfo.isDir)
 				{
 					// directory
 					if(subdir)
 					{
-						new_path += "/*";
-						Add(new_path.c_str(), files, true, pathOffset);
+						newPath += "/*";
+						Add(newPath.c_str(), files, true, pathOffset);
 					}
 				}
 				else
 				{
 					File f;
-					f.path = new_path;
-					if(full_path)
-						f.name = new_path.substr(pathOffset);
+					f.path = newPath;
+					if(fullPath)
+						f.name = newPath.substr(pathOffset);
 					else
-						f.name = find_data.cFileName;
-					f.size = find_data.nFileSizeLow;
-					f.name_offset = 0;
+						f.name = fileInfo.filename;
+					f.size = fileInfo.size;
+					f.nameOffset = 0;
 					files.push_back(f);
 				}
 			}
-		} while(FindNextFile(find, &find_data));
-
-		DWORD result = GetLastError();
-		if(result != ERROR_NO_MORE_FILES)
-			printf("ERROR: Can't search for more files '%s', result %u.\n", path, result);
-
-		FindClose(find);
+			return true;
+		});
 	}
 
 	void BrowsePak(cstring path)
 	{
-		done_anything = true;
+		doneAnything = true;
 
 		Pak* pak = OpenPak(path);
 		if(!pak)
 			return;
 
-		printf("Browsing files: %u\n", pak->file_count);
-		uint total_size = 0u, total_compressed_size = 0u;
-		for(uint i = 0; i < pak->file_count; ++i)
+		printf("Browsing files: %u\n", pak->fileCount);
+		uint totalSize = 0u, totalCompressedSize = 0u;
+		for(uint i = 0; i < pak->fileCount; ++i)
 		{
-			Pak::File& f = pak->file_table[i];
-			if(f.compressed_size == f.size)
+			Pak::File& f = pak->fileTable[i];
+			if(f.compressedSize == f.size)
 				printf("  %s - size %s, offset %u\n", f.filename, GetSize(f.size), f.offset);
 			else
-				printf("  %s - size %s, compressed %s, offset %u\n", f.filename, GetSize(f.size), GetSize(f.compressed_size), f.offset);
-			total_size += f.size;
-			total_compressed_size += f.compressed_size;
+				printf("  %s - size %s, compressed %s, offset %u\n", f.filename, GetSize(f.size), GetSize(f.compressedSize), f.offset);
+			totalSize += f.size;
+			totalCompressedSize += f.compressedSize;
 		}
-		printf("Size: %s, compressed %s (%d%%)\n", GetSize(total_size), GetSize(total_compressed_size), (int)floor(double(total_compressed_size) * 100 / total_size));
+		printf("Size: %s, compressed %s (%d%%)\n", GetSize(totalSize), GetSize(totalCompressedSize), (int)floor(double(totalCompressedSize) * 100 / totalSize));
 		printf("Done.\n");
 
 		delete pak;
-	}
-
-	string CombinePath(cstring path, cstring filename)
-	{
-		string s;
-		int pos = FindCharInString(path, "/\\");
-		if(pos != -1)
-		{
-			s.assign(path, pos);
-			s += '/';
-			s += filename;
-		}
-		else
-			s = filename;
-		return s;
-	}
-
-	void Crypt(char *inp, DWORD inplen, cstring key, DWORD keylen)
-	{
-		//we will consider size of sbox 256 bytes
-		//(extra byte are only to prevent any mishep just in case)
-		char Sbox[257], Sbox2[257];
-		unsigned long i, j, t, x;
-
-		//this unsecured key is to be used only when there is no input key from user
-		char temp, k;
-		i = j = t = x = 0;
-		temp = k = 0;
-
-		//always initialize the arrays with zero
-		ZeroMemory(Sbox, sizeof(Sbox));
-		ZeroMemory(Sbox2, sizeof(Sbox2));
-
-		//initialize sbox i
-		for(i = 0; i < 256U; i++)
-		{
-			Sbox[i] = (char)i;
-		}
-
-		j = 0;
-		//initialize the sbox2 with user key
-		for(i = 0; i < 256U; i++)
-		{
-			if(j == keylen)
-			{
-				j = 0;
-			}
-			Sbox2[i] = key[j++];
-		}
-
-		j = 0; //Initialize j
-			   //scramble sbox1 with sbox2
-		for(i = 0; i < 256; i++)
-		{
-			j = (j + (unsigned long)Sbox[i] + (unsigned long)Sbox2[i]) % 256U;
-			temp = Sbox[i];
-			Sbox[i] = Sbox[j];
-			Sbox[j] = temp;
-		}
-
-		i = j = 0;
-		for(x = 0; x < inplen; x++)
-		{
-			//increment i
-			i = (i + 1U) % 256U;
-			//increment j
-			j = (j + (unsigned long)Sbox[i]) % 256U;
-
-			//Scramble SBox #1 further so encryption routine will
-			//will repeat itself at great interval
-			temp = Sbox[i];
-			Sbox[i] = Sbox[j];
-			Sbox[j] = temp;
-
-			//Get ready to create pseudo random  byte for encryption key
-			t = ((unsigned long)Sbox[i] + (unsigned long)Sbox[j]) % 256U;
-
-			//get the random byte
-			k = Sbox[t];
-
-			//xor with the data and done
-			inp[x] = (inp[x] ^ k);
-		}
 	}
 
 	void DisplayHelp()
@@ -309,7 +183,7 @@ struct Paker
 			"-b/browse filename - display list of files\n"
 			"-u/unpack filename - unpack files from pak\n"
 			"Parameters without '-' are treated as files/directories.\n");
-		done_anything = true;
+		doneAnything = true;
 	}
 
 	Cmd GetCommand(cstring arg)
@@ -353,65 +227,41 @@ struct Paker
 		}
 	}
 
-	int FindCharInString(cstring str, cstring chars)
-	{
-		int last = -1, index = 0;
-		char c;
-		while((c = *str++) != 0)
-		{
-			cstring cs = chars;
-			char c2;
-			while((c2 = *cs++) != 0)
-			{
-				if(c == c2)
-				{
-					last = index;
-					break;
-				}
-			}
-			++index;
-		}
-
-		return last;
-	}
-
 	Pak* OpenPak(cstring path)
 	{
 		// open file
 		printf("Opening pak '%s'.\n", path);
-		HANDLE file = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-		if(file == INVALID_HANDLE_VALUE)
+		FileReader f(path);
+		if(!f)
 		{
-			printf("ERROR: Failed to open (%d).\n", GetLastError());
+			printf("ERROR: Failed to open.\n");
 			return nullptr;
 		}
 
 		// read header
 		Pak::Header header;
-		if(!ReadFile(file, &header, sizeof(header), &tmp, nullptr))
+		f >> header;
+		if(!f)
 		{
 			printf("ERROR: Unexpected end of file at header.\n");
-			CloseHandle(file);
 			return nullptr;
 		}
 		if(!header.HaveValidSign())
 		{
 			printf("ERROR: Invalid file signature.\n");
-			CloseHandle(file);
 			return nullptr;
 		}
 		if(header.version != Pak::CURRENT_VERSION)
 		{
 			printf("ERROR: Unsupported version %u (current version is %u).\n", header.version, Pak::CURRENT_VERSION);
-			CloseHandle(file);
 			return nullptr;
 		}
 
 		// read file list
 		Pak* pak = new Pak;
-		pak->file = file;
-		pak->table = new byte[header.file_entry_table_size];
-		if(!ReadFile(file, pak->table, header.file_entry_table_size, &tmp, nullptr))
+		pak->table = new byte[header.fileEntryTableSize];
+		f.Read(pak->table, header.fileEntryTableSize);
+		if(!f)
 		{
 			printf("ERROR: Unexpected end of file at file entry table.\n");
 			delete pak;
@@ -421,25 +271,25 @@ struct Paker
 		// decrypt
 		if(header.flags & Pak::F_ENCRYPTION)
 		{
-			if(decrypt_key.empty())
+			if(decryptKey.empty())
 			{
 				printf("ERROR: Missing decryption key, use -key to enter it.\n");
 				delete pak;
 				return nullptr;
 			}
 
-			Crypt((char*)pak->table, header.file_entry_table_size, decrypt_key.c_str(), decrypt_key.length());
+			io::Crypt((char*)pak->table, header.fileEntryTableSize, decryptKey.c_str(), decryptKey.length());
 		}
 		pak->encrypted = (header.flags & Pak::F_FULL_ENCRYPTION) != 0;
-		pak->file_count = header.file_count;
+		pak->fileCount = header.fileCount;
 
 		// verify file list, set name
-		DWORD total_size = GetFileSize(file, nullptr);
-		for(uint i = 0; i < pak->file_count; ++i)
+		uint totalSize = f.GetSize();
+		for(uint i = 0; i < pak->fileCount; ++i)
 		{
-			Pak::File& f = pak->file_table[i];
-			f.filename = (cstring)pak->table + f.filename_offset;
-			if(f.offset + f.compressed_size > total_size)
+			Pak::File& f = pak->fileTable[i];
+			f.filename = (cstring)pak->table + f.filenameOffset;
+			if(f.offset + f.compressedSize > totalSize)
 			{
 				printf("ERROR: Broken file entry (index %u, name %s).\n", i, f.filename);
 				delete pak;
@@ -447,6 +297,7 @@ struct Paker
 			}
 		}
 
+		pak->file = f;
 		return pak;
 	}
 
@@ -469,9 +320,9 @@ struct Paker
 					if(i < argc)
 					{
 						printf("Using encryption.\n");
-						crypt_key = argv[++i];
+						cryptKey = argv[++i];
 						encrypt = true;
-						full_encrypt = false;
+						fullEncrypt = false;
 					}
 					else
 						printf("ERROR: Missing encryption password.\n");
@@ -480,9 +331,9 @@ struct Paker
 					if(i < argc)
 					{
 						printf("Using full encryption.\n");
-						crypt_key = argv[++i];
+						cryptKey = argv[++i];
 						encrypt = true;
-						full_encrypt = true;
+						fullEncrypt = true;
 					}
 					else
 						printf("ERROR: Missing encryption password.\n");
@@ -509,7 +360,7 @@ struct Paker
 					if(i < argc)
 					{
 						printf("Using decrypt key,\n");
-						decrypt_key = argv[++i];
+						decryptKey = argv[++i];
 					}
 					else
 						printf("ERROR: Missing decryption password.\n");
@@ -527,7 +378,7 @@ struct Paker
 						printf("ERROR: Missing pak filename.\n");
 					break;
 				case Path:
-					full_path = true;
+					fullPath = true;
 					break;
 				default:
 					printf("ERROR: Invalid switch '%s'.\n", argv[i]);
@@ -545,109 +396,91 @@ struct Paker
 
 		if(files.empty())
 		{
-			if(!done_anything)
+			if(!doneAnything)
 				printf("No input files. Use '%s -?' to get help.\n", argv[0]);
 			return 0;
 		}
 
-		return SavePak() ? 0 : 1;
+		if(SavePak())
+		{
+			printf(Format("Crc: %u\nDone.\n", Crc::Calculate(output)));
+			return 0;
+		}
+		else
+			return 1;
 	}
 
 	bool SavePak()
 	{
 		// open pak
 		printf("Creating pak file...\n");
-		HANDLE pak = CreateFile(output.c_str(), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-		if(pak == INVALID_HANDLE_VALUE)
+		FileWriter pak(output);
+		if(!pak)
 		{
-			DWORD result = GetLastError();
-			printf("ERROR: Failed to open '%s' (%u).\n", output.c_str(), result);
+			printf("ERROR: Failed to open '%s'.\n", output.c_str());
 			return false;
 		}
 
 		// calculate data size & offset
-		const uint header_size = 16;
-		const uint entries_offset = header_size;
-		const uint entries_size = files.size() * 16;
-		const uint names_offset = entries_offset + entries_size;
-		uint names_size = 0;
-		uint offset = names_offset - header_size;
+		const uint headerSize = 16;
+		const uint entriesOffset = headerSize;
+		const uint entriesSize = files.size() * 16;
+		const uint namesOffset = entriesOffset + entriesSize;
+		uint namesSize = 0;
+		uint offset = namesOffset - headerSize;
 		for(File& f : files)
 		{
-			f.name_offset = offset;
+			f.nameOffset = offset;
 			uint len = 1 + f.name.length();
 			offset += len;
-			names_size += len;
+			namesSize += len;
 		}
-		const uint table_size = entries_size + names_size;
-		const uint data_offset = entries_offset + table_size;
+		const uint tableSize = entriesSize + namesSize;
+		const uint dataOffset = entriesOffset + tableSize;
 
 		// write header
 		printf("Writing header...\n");
-		DWORD tmp;
 		char sign[4] = { 'P', 'A', 'K', Pak::CURRENT_VERSION };
-		WriteFile(pak, sign, sizeof(sign), &tmp, NULL);
+		pak.Write(sign, sizeof(sign));
 		int flags = 0;
 		if(encrypt)
 			flags |= Pak::F_ENCRYPTION;
-		if(full_encrypt)
+		if(fullEncrypt)
 			flags |= Pak::F_FULL_ENCRYPTION;
-		WriteFile(pak, &flags, sizeof(flags), &tmp, NULL);
-		uint count = files.size();
-		WriteFile(pak, &count, sizeof(count), &tmp, NULL);
-		WriteFile(pak, &table_size, sizeof(table_size), &tmp, NULL);
+		pak << flags;
+		pak << files.size();
+		pak << tableSize;
 
 		// write data
 		printf("Writing files data...\n");
-		vector<byte> buf;
-		vector<byte> cbuf;
-		offset = data_offset;
-		SetFilePointer(pak, offset, NULL, FILE_BEGIN);
+		offset = dataOffset;
+		pak.SetPos(offset);
 		for(File& f : files)
 		{
 			f.offset = offset;
 
 			// read file to buf
-			HANDLE file = CreateFile(f.path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-			if(file == INVALID_HANDLE_VALUE)
+			FileReader file(f.path);
+			Buffer* buf = file.ReadToBuffer(f.size);
+			if(!file)
 			{
-				DWORD result = GetLastError();
-				printf("ERROR: Failed to open file '%s' (%u).", f.path.c_str(), result);
+				printf("ERROR: Failed to open file '%s'.", f.path.c_str());
 				f.size = 0;
-				f.compressed_size = 0;
+				f.compressedSize = 0;
 				continue;
 			}
-			buf.resize(f.size);
-			ReadFile(file, &buf[0], f.size, &tmp, NULL);
-			CloseHandle(file);
 
-			// compress if required
-			byte* b = NULL;
-			uint size;
-			if(compress)
-			{
-				uLong cbuf_size = compressBound(f.size);
-				cbuf.resize(cbuf_size);
-				::compress(&cbuf[0], &cbuf_size, &buf[0], f.size);
-				if(cbuf_size < f.size)
-				{
-					b = &cbuf[0];
-					f.compressed_size = cbuf_size;
-					size = cbuf_size;
-				}
-			}
-			if(!b)
-			{
-				b = &buf[0];
-				size = f.size;
-				f.compressed_size = f.size;
-			}
-			if(full_encrypt)
-				Crypt((char*)b, f.compressed_size, crypt_key.c_str(), crypt_key.length());
+			// compress & encrypt
+			f.size = buf->Size();
+			buf = buf->TryCompress();
+			f.compressedSize = buf->Size();
+			if(fullEncrypt)
+				io::Crypt((char*)buf->Data(), f.compressedSize, cryptKey.c_str(), cryptKey.length());
 
 			// write
-			WriteFile(pak, b, size, &tmp, NULL);
-			offset += size;
+			pak.Write(buf->Data(), buf->Size());
+			buf->Free();
+			offset += f.compressedSize;
 		}
 
 		if(!encrypt)
@@ -655,38 +488,35 @@ struct Paker
 			printf("Writing file entries...\n");
 
 			// file entries
-			SetFilePointer(pak, entries_offset, NULL, FILE_BEGIN);
+			pak.SetPos(entriesOffset);
 			for(File& f : files)
 			{
-				WriteFile(pak, &f.name_offset, sizeof(f.name_offset), &tmp, NULL);
-				WriteFile(pak, &f.size, sizeof(f.size), &tmp, NULL);
-				WriteFile(pak, &f.compressed_size, sizeof(f.compressed_size), &tmp, NULL);
-				WriteFile(pak, &f.offset, sizeof(f.offset), &tmp, NULL);
+				pak << f.nameOffset;
+				pak << f.size;
+				pak << f.compressedSize;
+				pak << f.offset;
 			}
 
 			// file names
-			byte zero = 0;
 			for(File& f : files)
-			{
-				WriteFile(pak, f.name.c_str(), f.name.length(), &tmp, NULL);
-				WriteFile(pak, &zero, 1, &tmp, NULL);
-			}
+				pak.WriteString0(f.name);
 		}
 		else
 		{
 			printf("Writing encrypted file entries...\n");
 
-			buf.resize(table_size);
-			byte* b = buf.data();
+			Buffer* buf = Buffer::Get();
+			buf->Resize(tableSize);
+			byte* b = (byte*)buf->Data();
 
 			// file entries
 			for(File& f : files)
 			{
-				memcpy(b, &f.name_offset, sizeof(f.name_offset));
+				memcpy(b, &f.nameOffset, sizeof(f.nameOffset));
 				b += 4;
 				memcpy(b, &f.size, sizeof(f.size));
 				b += 4;
-				memcpy(b, &f.compressed_size, sizeof(f.compressed_size));
+				memcpy(b, &f.compressedSize, sizeof(f.compressedSize));
 				b += 4;
 				memcpy(b, &f.offset, sizeof(f.offset));
 				b += 4;
@@ -702,66 +532,47 @@ struct Paker
 				++b;
 			}
 
-			Crypt((char*)buf.data(), table_size, crypt_key.c_str(), crypt_key.length());
+			io::Crypt((char*)buf->Data(), tableSize, cryptKey.c_str(), cryptKey.length());
 
-			SetFilePointer(pak, entries_offset, NULL, FILE_BEGIN);
-			WriteFile(pak, buf.data(), buf.size(), &tmp, NULL);
+			pak.SetPos(entriesOffset);
+			pak.Write(buf->Data(), buf->Size());
 		}
-
-		CloseHandle(pak);
-		printf("Done.\n");
 
 		return true;
 	}
 
 	void UnpackPak(cstring path)
 	{
-		done_anything = true;
+		doneAnything = true;
 
 		Pak* pak = OpenPak(path);
 		if(!pak)
 			return;
 
-		vector<byte> buf, buf2;
-
-		printf("Unpacking files: %u\n", pak->file_count);
-		for(uint i = 0; i < pak->file_count; ++i)
+		printf("Unpacking files: %u\n", pak->fileCount);
+		for(uint i = 0; i < pak->fileCount; ++i)
 		{
 			// read
-			Pak::File& f = pak->file_table[i];
-			buf.resize(f.compressed_size);
-			SetFilePointer(pak->file, f.offset, nullptr, FILE_BEGIN);
-			if(!ReadFile(pak->file, buf.data(), f.compressed_size, &tmp, nullptr))
+			Pak::File& f = pak->fileTable[i];
+			pak->file.SetPos(f.offset);
+			Buffer* buf = pak->file.ReadToBuffer(f.compressedSize);
+			if(!pak->file)
 			{
-				printf("  ERROR: Failed to read file (name %s, offset %u, size %u).\n", f.filename, f.offset, f.compressed_size);
+				printf("  ERROR: Failed to read file (name %s, offset %u, size %u).\n", f.filename, f.offset, f.compressedSize);
 				continue;
 			}
 
 			// decrypt
 			if(pak->encrypted)
-				Crypt((char*)buf.data(), buf.size(), decrypt_key.c_str(), decrypt_key.length());
+				io::Crypt((char*)buf->Data(), buf->Size(), decryptKey.c_str(), decryptKey.length());
 
 			// decompress
-			vector<byte>* result;
-			if(f.compressed_size == f.size)
-				result = &buf;
-			else
-			{
-				uint real_size = f.size;
-				buf2.resize(real_size);
-				uncompress((Bytef*)buf2.data(), (uLongf*)&real_size, (const Bytef*)buf.data(), f.compressed_size);
-				result = &buf2;
-			}
+			if(f.compressedSize != f.size)
+				buf = buf->Decompress(f.size);
 
 			// save
-			HANDLE out_file = CreateFile(f.filename, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-			if(out_file == INVALID_HANDLE_VALUE)
-			{
-				printf("  ERROR: Failed to create output file '%s'.\n", f.filename);
-				continue;
-			}
-			WriteFile(out_file, result->data(), result->size(), &tmp, nullptr);
-			CloseHandle(out_file);
+			FileWriter::WriteAll(f.filename, buf);
+			buf->Free();
 		}
 		printf("Done.\n");
 

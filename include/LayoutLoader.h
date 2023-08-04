@@ -15,7 +15,8 @@ class LayoutLoader
 			Image,
 			Color,
 			Int2,
-			Int
+			Int,
+			Bool
 		} type;
 		string name;
 		uint offset;
@@ -84,5 +85,6 @@ private:
 	std::map<string, Font*> fonts;
 	std::map<string, Control*> controls;
 	Tokenizer t;
+	string path;
 	bool initialized;
 };

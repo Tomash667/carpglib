@@ -17,7 +17,7 @@ public:
 	void LoadConfiguration(Config& cfg);
 	bool Start();
 	void Shutdown();
-	void DoPseudotick(bool msg_only = false);
+	void DoPseudotick(bool msgOnly = false);
 	void RestoreFocus();
 	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);
 	void FatalError(cstring err);
@@ -48,13 +48,13 @@ private:
 	void Init();
 	void AdjustWindowSize();
 	void Cleanup();
-	void DoTick(bool update_game);
+	void DoTick(bool updateGame);
 	long HandleEvent(HWND hwnd, uint msg, uint wParam, long lParam);
 	bool MsgToKey(uint msg, uint wParam, byte& key, int& result);
 	void InitWindow();
 	void PlaceCursor();
 	void ShowCursor(bool show);
-	void UpdateActivity(bool is_active);
+	void UpdateActivity(bool isActive);
 	void WindowLoop();
 	bool IsWindowActive();
 	void SetWindowSizeInternal(const Int2& size);

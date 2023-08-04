@@ -5,7 +5,7 @@
 
 //=================================================================================================
 DialogBox::DialogBox(const DialogInfo& info) : name(info.name), text(info.text), type(info.type), event(info.event), order(info.order), pause(info.pause),
-need_delete(false), result(-1)
+needDelete(false), result(-1)
 {
 	parent = info.parent;
 	focusable = true;
@@ -13,7 +13,7 @@ need_delete(false), result(-1)
 }
 
 //=================================================================================================
-void DialogBox::Draw(ControlDrawData*)
+void DialogBox::Draw()
 {
 	DrawPanel();
 
@@ -39,7 +39,7 @@ void DialogBox::Update(float dt)
 
 	for(Button& button : bts)
 	{
-		button.mouse_focus = focus;
+		button.mouseFocus = focus;
 		button.Update(dt);
 	}
 
@@ -84,9 +84,9 @@ void DialogBox::Event(GuiEvent e)
 {
 	if(Any(e, GuiEvent_Show, GuiEvent_Resize, GuiEvent_WindowResize))
 	{
-		pos = global_pos = (gui->wndSize - size) / 2;
+		pos = globalPos = (gui->wndSize - size) / 2;
 		for(uint i = 0; i < bts.size(); ++i)
-			bts[i].global_pos = bts[i].pos + pos;
+			bts[i].globalPos = bts[i].pos + pos;
 	}
 	else if(e >= GuiEvent_Custom)
 		result = e - GuiEvent_Custom;
@@ -105,7 +105,7 @@ DialogWithCheckbox::DialogWithCheckbox(const DialogInfo& info) : DialogBox(info)
 }
 
 //=================================================================================================
-void DialogWithCheckbox::Draw(ControlDrawData*)
+void DialogWithCheckbox::Draw()
 {
 	DialogBox::Draw();
 
@@ -117,7 +117,7 @@ void DialogWithCheckbox::Update(float dt)
 {
 	if(result == -1)
 	{
-		checkbox.mouse_focus = focus;
+		checkbox.mouseFocus = focus;
 		checkbox.Update(dt);
 	}
 
@@ -137,7 +137,7 @@ void DialogWithCheckbox::Event(GuiEvent e)
 	else if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
 		DialogBox::Event(e);
-		checkbox.global_pos = checkbox.pos + pos;
+		checkbox.globalPos = checkbox.pos + pos;
 	}
 }
 
@@ -145,29 +145,29 @@ void DialogWithCheckbox::Event(GuiEvent e)
 DialogWithImage::DialogWithImage(const DialogInfo& info) : DialogBox(info), img(info.img)
 {
 	assert(img);
-	img_size = img->GetSize();
+	imgSize = img->GetSize();
 }
 
 //=================================================================================================
-void DialogWithImage::Draw(ControlDrawData*)
+void DialogWithImage::Draw()
 {
 	DrawPanel();
 
 	for(uint i = 0; i < bts.size(); ++i)
 	{
-		bts[i].global_pos = bts[i].pos + pos;
+		bts[i].globalPos = bts[i].pos + pos;
 		bts[i].Draw();
 	}
 
-	Rect r = text_rect + pos;
+	Rect r = textRect + pos;
 	gui->DrawText(layout->font, text, DTF_CENTER, Color::Black, r);
 
-	gui->DrawSprite(img, img_pos + pos);
+	gui->DrawSprite(img, imgPos + pos);
 }
 
 //=================================================================================================
-void DialogWithImage::Setup(const Int2& text_size)
+void DialogWithImage::Setup(const Int2& textSize)
 {
-	img_pos = Int2(12, (max(text_size.y, img_size.y) - img_size.y) / 2);
-	text_rect = Rect::Create(Int2(img_pos.x + img_size.x + 8, 12), text_size);
+	imgPos = Int2(12, (max(textSize.y, imgSize.y) - imgSize.y) / 2);
+	textRect = Rect::Create(Int2(imgPos.x + imgSize.x + 8, 12), textSize);
 }

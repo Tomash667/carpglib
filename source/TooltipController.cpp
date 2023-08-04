@@ -7,10 +7,10 @@ static const int INVALID_INDEX = -1;
 static const float TIMER = 0.3f;
 
 //=================================================================================================
-void TooltipController::Init(Callback get_text)
+void TooltipController::Init(Callback getText)
 {
-	assert(get_text);
-	this->get_text = get_text;
+	assert(getText);
+	this->getText = getText;
 	Clear();
 }
 
@@ -26,15 +26,15 @@ void TooltipController::Clear()
 }
 
 //=================================================================================================
-void TooltipController::UpdateTooltip(float dt, int new_group, int new_id)
+void TooltipController::UpdateTooltip(float dt, int newGroup, int newId)
 {
-	if(new_group != INVALID_INDEX)
+	if(newGroup != INVALID_INDEX)
 	{
-		if(new_group != group || new_id != id)
+		if(newGroup != group || newId != id)
 		{
 			state = State::COUNTING;
-			group = new_group;
-			id = new_id;
+			group = newGroup;
+			id = newId;
 			timer = TIMER;
 		}
 		else
@@ -81,7 +81,7 @@ void TooltipController::UpdateTooltip(float dt, int new_group, int new_id)
 }
 
 //=================================================================================================
-void TooltipController::Draw(ControlDrawData*)
+void TooltipController::Draw()
 {
 	if(state != State::VISIBLE || !anything)
 		return;
@@ -106,7 +106,7 @@ void TooltipController::Draw(ControlDrawData*)
 	}
 
 	// big text
-	if(!big_text.empty())
+	if(!bigText.empty())
 	{
 		Rect r = r_big_text;
 		r += pos;
@@ -122,7 +122,7 @@ void TooltipController::Draw(ControlDrawData*)
 	}
 
 	// small text
-	if(!small_text.empty())
+	if(!smallText.empty())
 	{
 		Rect r = r_small_text;
 		r += pos;
@@ -133,52 +133,52 @@ void TooltipController::Draw(ControlDrawData*)
 //=================================================================================================
 void TooltipController::FormatBox(bool refresh)
 {
-	get_text(this, group, id, refresh);
+	getText(this, group, id, refresh);
 
 	if(!anything)
 		return;
 
 	int w = 0, h = 0;
 
-	Int2 img_size;
+	Int2 tmpImgSize;
 	if(img)
 	{
 		if(imgSize == Int2::Zero)
-			img_size = img->GetSize();
+			tmpImgSize = img->GetSize();
 		else
-			img_size = imgSize;
+			tmpImgSize = imgSize;
 	}
 	else
-		img_size = Int2::Zero;
+		tmpImgSize = Int2::Zero;
 
 	// big text
-	if(!big_text.empty())
+	if(!bigText.empty())
 	{
-		Int2 text_size = layout->font_big->CalculateSize(big_text, 400);
-		w = text_size.x;
-		h = text_size.y + 12;
-		r_big_text.Left() = 0;
-		r_big_text.Right() = w;
-		r_big_text.Top() = 12;
-		r_big_text.Bottom() = h + 12;
+		Int2 textSize = layout->fontBig->CalculateSize(bigText, 400);
+		w = textSize.x;
+		h = textSize.y + 12;
+		rBigText.Left() = 0;
+		rBigText.Right() = w;
+		rBigText.Top() = 12;
+		rBigText.Bottom() = h + 12;
 	}
 
 	// text
-	Int2 text_size(0, 0);
+	Int2 textSize(0, 0);
 	if(!text.empty())
 	{
 		if(h)
 			h += 5;
 		else
 			h = 12;
-		text_size = layout->font->CalculateSize(text, 400);
-		if(text_size.x > w)
-			w = text_size.x;
-		r_text.Left() = 0;
-		r_text.Right() = w;
-		r_text.Top() = h;
-		h += text_size.y;
-		r_text.Bottom() = h;
+		textSize = layout->font->CalculateSize(text, 400);
+		if(textSize.x > w)
+			w = textSize.x;
+		rText.Left() = 0;
+		rText.Right() = w;
+		rText.Top() = h;
+		h += textSize.y;
+		rText.Bottom() = h;
 	}
 
 	int shift = 12;
@@ -186,42 +186,42 @@ void TooltipController::FormatBox(bool refresh)
 	// image
 	if(img)
 	{
-		shift += img_size.x + 4;
-		w += img_size.x + 4;
+		shift += tmpImgSize.x + 4;
+		w += tmpImgSize.x + 4;
 	}
 
 	// small text
-	if(!small_text.empty())
+	if(!smallText.empty())
 	{
 		if(h)
 			h += 5;
-		Int2 text_size = layout->font_small->CalculateSize(small_text, 400);
-		text_size.x += 12;
-		if(text_size.x > w)
-			w = text_size.x;
-		r_small_text.Left() = 12;
-		r_small_text.Right() = w;
-		r_small_text.Top() = h;
-		h += text_size.y;
-		r_small_text.Bottom() = h;
+		Int2 textSize = layout->fontSmall->CalculateSize(smallText, 400);
+		textSize.x += 12;
+		if(textSize.x > w)
+			w = textSize.x;
+		rSmallText.Left() = 12;
+		rSmallText.Right() = w;
+		rSmallText.Top() = h;
+		h += textSize.y;
+		rSmallText.Bottom() = h;
 
-		int img_bot = img_size.y + 24;
-		if(r_small_text.Top() < img_bot)
+		int imgBottom = tmpImgSize.y + 24;
+		if(rSmallText.Top() < imgBottom)
 		{
-			int dif = r_small_text.SizeY();
-			r_small_text.Top() = img_bot;
-			r_small_text.Bottom() = img_bot + dif;
-			h = r_small_text.Bottom();
+			int dif = rSmallText.SizeY();
+			rSmallText.Top() = imgBottom;
+			rSmallText.Bottom() = imgBottom + dif;
+			h = rSmallText.Bottom();
 		}
 	}
-	else if(img && h < img_size.y + 12)
-		h = img_size.y + 12;
+	else if(img && h < tmpImgSize.y + 12)
+		h = tmpImgSize.y + 12;
 
 	w += 24;
 	h += 12;
 
-	r_big_text += Int2(shift, 0);
-	r_text += Int2(shift, 0);
+	rBigText += Int2(shift, 0);
+	rText += Int2(shift, 0);
 
 	size = Int2(w, h);
 }

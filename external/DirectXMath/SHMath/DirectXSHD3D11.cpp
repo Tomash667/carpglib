@@ -1,12 +1,13 @@
 //-------------------------------------------------------------------------------------
 // DirectXSHD3D11.cpp -- C++ Spherical Harmonics Math Library
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/p/?LinkId=262885
 //-------------------------------------------------------------------------------------
 
+#ifdef _MSC_VER
 #pragma warning( disable : 4616 4619 4061 4265 4626 5039 )
 // C4616/C4619 #pragma warning warnings
 // C4061 numerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label
@@ -16,8 +17,11 @@
 
 #pragma warning(push)
 #pragma warning(disable: 4365)
+#endif
 #include <d3d11_1.h>
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 #include "DirectXSH.h"
 
@@ -89,10 +93,12 @@ namespace
         }\
         return false;
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 6101)
+#endif
     _Success_(return)
-        bool _LoadScanline(
+        bool LoadScanline(
             _Out_writes_(count) DirectX::XMVECTOR* pDestination,
             size_t count,
             _In_reads_bytes_(size) LPCVOID pSource,
@@ -165,8 +171,9 @@ namespace
             return false;
         }
     }
+#ifdef _MSC_VER
 #pragma warning(pop)
-
+#endif
 } // namespace anonymous
 
 //-------------------------------------------------------------------------------------
@@ -207,7 +214,7 @@ HRESULT DirectX::SHProjectCubeMap(
     case DXGI_FORMAT_R16G16_FLOAT:
     case DXGI_FORMAT_R32_FLOAT:
     case DXGI_FORMAT_R16_FLOAT:
-        // See _LoadScanline to support more pixel formats
+        // See LoadScanline to support more pixel formats
         break;
 
     default:
@@ -286,18 +293,18 @@ HRESULT DirectX::SHProjectCubeMap(
         for (UINT y = 0; y < desc.Height; ++y)
         {
             XMVECTOR* ptr = scanline.get();
-            if (!_LoadScanline(ptr, desc.Width, pSrc, mapped.RowPitch, desc.Format))
+            if (!LoadScanline(ptr, desc.Width, pSrc, mapped.RowPitch, desc.Format))
             {
                 context->Unmap(texture, dindex);
                 return E_FAIL;
             }
 
-            const float v = y * fS + fB;
+            const float v = float(y) * fS + fB;
 
             XMVECTOR* pixel = ptr;
             for (UINT x = 0; x < desc.Width; ++x, ++pixel)
             {
-                const float u = x * fS + fB;
+                const float u = float(x) * fS + fB;
 
                 float ix, iy, iz;
                 switch (face)

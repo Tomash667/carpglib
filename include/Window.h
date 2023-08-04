@@ -18,9 +18,9 @@ namespace layout
 		AreaLayout background;
 		AreaLayout header;
 		Font* font;
-		Color font_color;
+		Color fontColor;
 		Int2 padding;
-		int header_height;
+		int headerHeight;
 	};
 }
 
@@ -31,18 +31,18 @@ public:
 	Window(bool fullscreen = false, bool borderless = false);
 	~Window();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;
 
 	Int2 GetAreaSize() const { return Int2(area.Size()); }
-	Control* GetEventProxy() const { return event_proxy; }
+	Control* GetEventProxy() const { return eventProxy; }
 	MenuBar* GetMenu() const { return menu; }
 	const string& GetText() const { return text; }
 	bool IsBorderless() const { return borderless; }
 	bool IsFullscreen() const { return fullscreen; }
 	void SetAreaSize(const Int2& size);
-	void SetEventProxy(Control* _event_proxy) { event_proxy = _event_proxy; }
+	void SetEventProxy(Control* eventProxy) { this->eventProxy = eventProxy; }
 	void SetMenu(MenuBar* menu);
 	void SetText(Cstring s) { text = s.s; }
 
@@ -50,8 +50,8 @@ private:
 	void CalculateArea();
 
 	MenuBar* menu;
-	Control* event_proxy;
+	Control* eventProxy;
 	string text;
-	Box2d body_rect, header_rect, area;
+	Box2d bodyRect, headerRect, area;
 	bool fullscreen, borderless;
 };

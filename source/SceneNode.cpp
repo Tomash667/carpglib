@@ -79,7 +79,7 @@ void SceneBatch::Add(SceneNode* node)
 	const Mesh& mesh = *node->mesh;
 	if(!IsSet(node->subs, SceneNode::SPLIT_INDEX))
 	{
-		assert(mesh.head.n_subs < 31);
+		assert(mesh.head.nSubs < 31);
 		if(app::sceneMgr->useNormalmap && IsSet(mesh.head.flags, Mesh::F_NORMAL_MAP))
 			node->flags |= SceneNode::F_NORMAL_MAP;
 		if(app::sceneMgr->useSpecularmap && IsSet(mesh.head.flags, Mesh::F_SPECULAR_MAP))
@@ -90,7 +90,7 @@ void SceneBatch::Add(SceneNode* node)
 		int sub = node->subs & SceneNode::SPLIT_MASK;
 		if(app::sceneMgr->useNormalmap && mesh.subs[sub].tex_normal)
 			node->flags |= SceneNode::F_NORMAL_MAP;
-		if(app::sceneMgr->useSpecularmap && mesh.subs[sub].tex_specular)
+		if(app::sceneMgr->useSpecularmap && mesh.subs[sub].texSpecular)
 			node->flags |= SceneNode::F_SPECULAR_MAP;
 	}
 
@@ -122,15 +122,15 @@ void SceneBatch::Process()
 		});
 
 		// group nodes
-		int prev_flags = -1, index = 0;
+		int prevFlags = -1, index = 0;
 		for(SceneNode* node : nodes)
 		{
-			if(node->flags != prev_flags)
+			if(node->flags != prevFlags)
 			{
 				if(!nodeGroups.empty())
 					nodeGroups.back().end = index - 1;
 				nodeGroups.push_back({ node->flags, index, 0 });
-				prev_flags = node->flags;
+				prevFlags = node->flags;
 			}
 			++index;
 		}

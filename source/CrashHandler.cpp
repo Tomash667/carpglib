@@ -3,6 +3,8 @@
 
 #include <CrashRpt.h>
 
+static delegate<void()> callback;
+
 //=================================================================================================
 cstring ExceptionTypeToString(int exctype)
 {
@@ -69,12 +71,12 @@ cstring CodeToString(DWORD err)
 }
 
 //=================================================================================================
-int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crash_info)
+int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crashInfo)
 {
-	cstring type = ExceptionTypeToString(crash_info->pExceptionInfo->exctype);
-	if(crash_info->pExceptionInfo->pexcptrs && crash_info->pExceptionInfo->pexcptrs->ExceptionRecord)
+	cstring type = ExceptionTypeToString(crashInfo->pExceptionInfo->exctype);
+	if(crashInfo->pExceptionInfo->pexcptrs && crashInfo->pExceptionInfo->pexcptrs->ExceptionRecord)
 	{
-		PEXCEPTION_RECORD ptr = crash_info->pExceptionInfo->pexcptrs->ExceptionRecord;
+		PEXCEPTION_RECORD ptr = crashInfo->pExceptionInfo->pexcptrs->ExceptionRecord;
 		Error("Engine: Unhandled exception caught!\nType: %s\nCode: 0x%x (%s)\nFlags: %d\nAddress: 0x%p\n\nPlease report this error.",
 			type, ptr->ExceptionCode, CodeToString(ptr->ExceptionCode), ptr->ExceptionFlags, ptr->ExceptionAddress);
 	}
@@ -85,11 +87,14 @@ int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crash_info)
 	if(textLogger)
 		textLogger->Flush();
 
+	if(callback)
+		callback();
+
 	return CR_CB_DODEFAULT;
 }
 
 //=================================================================================================
-void CrashHandler::Register(cstring title, cstring version, cstring url, int minidumpLevel)
+void CrashHandler::Register(cstring title, cstring version, cstring url, int minidumpLevel, delegate<void()> callback)
 {
 	if(IsDebuggerPresent())
 		return;
@@ -123,6 +128,7 @@ void CrashHandler::Register(cstring title, cstring version, cstring url, int min
 	int r = crInstall(&info);
 	assert(r == 0);
 
+	::callback = callback;
 	r = crSetCrashCallback(OnCrash, nullptr);
 	assert(r == 0);
 
@@ -134,6 +140,13 @@ void CrashHandler::Register(cstring title, cstring version, cstring url, int min
 	}
 
 	r = crAddScreenshot2(CR_AS_MAIN_WINDOW | CR_AS_PROCESS_WINDOWS | CR_AS_USE_JPEG_FORMAT | CR_AS_ALLOW_DELETE, 50);
+	assert(r == 0);
+}
+
+//=================================================================================================
+void CrashHandler::AddFile(cstring path, cstring name)
+{
+	int r = crAddFile2(path, nullptr, name, CR_AF_MAKE_FILE_COPY | CR_AF_MISSING_FILE_OK | CR_AF_ALLOW_DELETE);
 	assert(r == 0);
 }
 

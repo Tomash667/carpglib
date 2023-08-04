@@ -36,18 +36,18 @@ Viewer::~Viewer()
 
 bool Viewer::OnInit()
 {
-	app::res_mgr->AddDir(dataDir.c_str());
+	app::resMgr->AddDir(dataDir.c_str());
 
 	app::gui->Add(this);
 	font = app::gui->GetFont("Arial", 14);
 
 	scene = new Scene;
-	scene->clear_color = Color(128, 128, 255);
+	scene->clearColor = Color(128, 128, 255);
 
 	node = SceneNode::Get();
 	node->mesh = nullptr;
-	node->mesh_inst = nullptr;
-	node->tex_override = nullptr;
+	node->meshInst = nullptr;
+	node->texOverride = nullptr;
 	node->mat = Matrix::IdentityMatrix;
 	node->tint = Vec4::One;
 	node->center = Vec3::Zero;
@@ -55,7 +55,7 @@ bool Viewer::OnInit()
 
 	camera = new Camera;
 
-	app::scene_mgr->SetScene(scene, camera);
+	app::sceneMgr->SetScene(scene, camera);
 
 	shader = app::render->GetShader<BasicShader>();
 
@@ -64,7 +64,7 @@ bool Viewer::OnInit()
 
 void Viewer::OnDraw()
 {
-	app::scene_mgr->Draw(nullptr);
+	app::sceneMgr->Draw(nullptr);
 
 	shader->Prepare(*camera);
 	shader->DrawLine(Vec3(-100, 0, 0), Vec3(100, 0, 0), 0.01f, Color::Black);
@@ -75,31 +75,31 @@ void Viewer::OnDraw()
 	app::render->Present();
 }
 
-void Viewer::Draw(ControlDrawData*)
+void Viewer::Draw()
 {
 	Rect r = { 0,0,500,500 };
 	string text = Format("Fps: %g\nF1 - open mesh, F2 - toggle details", app::engine->GetFps());
 	if(node->mesh)
 	{
 		text += Format("\nMesh: %s (v %d)", node->mesh->filename, node->mesh->head.version);
-		if(node->mesh_inst)
+		if(node->meshInst)
 		{
-			MeshInstance::Group& group = node->mesh_inst->groups[0];
+			MeshInstance::Group& group = node->meshInst->groups[0];
 			Mesh::Animation* anim = group.anim;
 			text += Format("\nAnimation: %s (%d/%u - [1] prev, [2] next)", anim ? anim->name.c_str() : "null",
 				node->mesh->GetAnimationIndex(anim) + 1, node->mesh->anims.size());
 			if(anim)
 			{
 				bool hit;
-				text += Format("\nTime: %g/%g (%d/%d)", FLT10(group.time), FLT10(anim->length), group.GetFrameIndex(hit) + 1, anim->n_frames);
+				text += Format("\nTime: %g/%g (%d/%d)", FLT10(group.time), FLT10(anim->length), group.GetFrameIndex(hit) + 1, anim->nFrames);
 			}
 		}
 	}
 	if(details)
 	{
 		text += Format("\nVerts: %u   Tris: %u   Subs: %u\nBones: %u   Groups: %u   Anims: %u   Points: %u",
-			node->mesh->head.n_verts, node->mesh->head.n_tris, node->mesh->head.n_subs,
-			node->mesh->head.n_bones, node->mesh->head.n_groups, node->mesh->head.n_anims, node->mesh->head.n_points);
+			node->mesh->head.nVerts, node->mesh->head.nTris, node->mesh->head.nSubs,
+			node->mesh->head.nBones, node->mesh->head.nGroups, node->mesh->head.nAnims, node->mesh->head.nPoints);
 	}
 	gui->DrawText(font, text, 0, Color::Black, r);
 }
@@ -121,19 +121,19 @@ void Viewer::OnUpdate(float dt)
 	if(app::input->Down(Key::Right))
 		rot -= dt * 3;
 	node->mat = Matrix::RotationY(rot);
-	if(node->mesh_inst)
+	if(node->meshInst)
 	{
-		MeshInstance::Group& group = node->mesh_inst->groups[0];
+		MeshInstance::Group& group = node->meshInst->groups[0];
 		if(group.anim)
 		{
 			if(app::input->Pressed(Key::Spacebar))
 			{
-				if(node->mesh_inst->IsPlaying())
-					node->mesh_inst->Stop();
+				if(node->meshInst->IsPlaying())
+					node->meshInst->Stop();
 				else
-					node->mesh_inst->Play();
+					node->meshInst->Play();
 			}
-			if(!node->mesh_inst->IsPlaying())
+			if(!node->meshInst->IsPlaying())
 			{
 				bool hit;
 				int index = group.GetFrameIndex(hit);
@@ -143,26 +143,26 @@ void Viewer::OnUpdate(float dt)
 					{
 						--index;
 						if(index == -1)
-							index = group.anim->n_frames - 1;
+							index = group.anim->nFrames - 1;
 					}
 					group.time = group.anim->frames[index].time;
-					node->mesh_inst->Changed();
+					node->meshInst->Changed();
 				}
 				else if(app::input->Pressed(Key::N4))
 				{
 					if(hit)
 					{
 						++index;
-						if(index == group.anim->n_frames)
+						if(index == group.anim->nFrames)
 							index = 0;
 					}
 					group.time = group.anim->frames[index].time;
-					node->mesh_inst->Changed();
+					node->meshInst->Changed();
 				}
 			}
 		}
-		node->mesh_inst->Update(dt);
-		node->mesh_inst->SetupBones();
+		node->meshInst->Update(dt);
+		node->meshInst->SetupBones();
 	}
 
 	if(app::input->Pressed(Key::Num5))
@@ -200,9 +200,9 @@ void Viewer::OnUpdate(float dt)
 			try
 			{
 				cstring filename = io::FilenameFromPath(buf);
-				Mesh* mesh = app::res_mgr->Load<Mesh>(filename);
-				if(node->mesh_inst)
-					delete node->mesh_inst;
+				Mesh* mesh = app::resMgr->Load<Mesh>(filename);
+				if(node->meshInst)
+					delete node->meshInst;
 				if(mesh->IsAnimated() && !mesh->IsStatic())
 				{
 					MeshInstance* meshInst = new MeshInstance(mesh);
@@ -210,7 +210,7 @@ void Viewer::OnUpdate(float dt)
 				}
 				else
 					node->SetMesh(mesh);
-				lastMeshInst = node->mesh_inst;
+				lastMeshInst = node->meshInst;
 
 				SetCamera(Free);
 
@@ -231,23 +231,23 @@ void Viewer::OnUpdate(float dt)
 
 	if(app::input->Pressed(Key::N1))
 	{
-		int index = node->mesh->GetAnimationIndex(node->mesh_inst->groups[0].anim);
+		int index = node->mesh->GetAnimationIndex(node->meshInst->groups[0].anim);
 		if(index != -1)
 		{
 			--index;
 			if(index != -1)
-				node->mesh_inst->Play(&node->mesh->anims[index], 0, 0);
+				node->meshInst->Play(&node->mesh->anims[index], 0, 0);
 			else
-				node->mesh_inst->DisableAnimations();
+				node->meshInst->DisableAnimations();
 		}
 	}
 	if(app::input->Pressed(Key::N2))
 	{
-		int index = node->mesh->GetAnimationIndex(node->mesh_inst->groups[0].anim);
+		int index = node->mesh->GetAnimationIndex(node->meshInst->groups[0].anim);
 		if(index + 1 != (int)node->mesh->anims.size())
 		{
 			++index;
-			node->mesh_inst->Play(&node->mesh->anims[index], 0, 0);
+			node->meshInst->Play(&node->mesh->anims[index], 0, 0);
 		}
 	}
 }
@@ -268,8 +268,8 @@ void Viewer::UpdateCamera()
 	switch(mode)
 	{
 	case Free:
-		camera->to = mesh->head.cam_target;
-		camera->from = mesh->head.cam_pos;
+		camera->to = mesh->head.camTarget;
+		camera->from = mesh->head.camPos;
 		break;
 	case Front:
 		camera->to = Vec3::Zero;
@@ -297,7 +297,5 @@ void Viewer::UpdateCamera()
 		break;
 	}
 
-	Matrix matView = Matrix::CreateLookAt(camera->from, camera->to);
-	Matrix matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, app::engine->GetWindowAspect(), camera->znear, camera->zfar);
-	camera->mat_view_proj = matView * matProj;
+	camera->UpdateMatrix();
 }

@@ -61,57 +61,57 @@ float Angle(float x1, float y1, float x2, float y2)
 //=================================================================================================
 // Ray and box test
 // If there is no collision returns false.
-// If there is collision returns true and out_t is multiple of ray_dir.
-// If there is collision with back of ray returns true and out_t is negative.
-// If ray_pos is inside box it returns true and out_t is 0.
+// If there is collision returns true and outT is multiple of rayDir.
+// If there is collision with back of ray returns true and outT is negative.
+// If rayPos is inside box it returns true and outT is 0.
 //=================================================================================================
-bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box &box, float* out_t)
+bool RayToBox(const Vec3& rayPos, const Vec3& rayDir, const Box &box, float* outT)
 {
 	bool inside = true;
 
 	float xt;
-	if(ray_pos.x < box.v1.x)
+	if(rayPos.x < box.v1.x)
 	{
-		xt = box.v1.x - ray_pos.x;
-		xt /= ray_dir.x;
+		xt = box.v1.x - rayPos.x;
+		xt /= rayDir.x;
 		inside = false;
 	}
-	else if(ray_pos.x > box.v2.x)
+	else if(rayPos.x > box.v2.x)
 	{
-		xt = box.v2.x - ray_pos.x;
-		xt /= ray_dir.x;
+		xt = box.v2.x - rayPos.x;
+		xt /= rayDir.x;
 		inside = false;
 	}
 	else
 		xt = -1.0f;
 
 	float yt;
-	if(ray_pos.y < box.v1.y)
+	if(rayPos.y < box.v1.y)
 	{
-		yt = box.v1.y - ray_pos.y;
-		yt /= ray_dir.y;
+		yt = box.v1.y - rayPos.y;
+		yt /= rayDir.y;
 		inside = false;
 	}
-	else if(ray_pos.y > box.v2.y)
+	else if(rayPos.y > box.v2.y)
 	{
-		yt = box.v2.y - ray_pos.y;
-		yt /= ray_dir.y;
+		yt = box.v2.y - rayPos.y;
+		yt /= rayDir.y;
 		inside = false;
 	}
 	else
 		yt = -1.0f;
 
 	float zt;
-	if(ray_pos.z < box.v1.z)
+	if(rayPos.z < box.v1.z)
 	{
-		zt = box.v1.z - ray_pos.z;
-		zt /= ray_dir.z;
+		zt = box.v1.z - rayPos.z;
+		zt /= rayDir.z;
 		inside = false;
 	}
-	else if(ray_pos.z > box.v2.z)
+	else if(rayPos.z > box.v2.z)
 	{
-		zt = box.v2.z - ray_pos.z;
-		zt /= ray_dir.z;
+		zt = box.v2.z - rayPos.z;
+		zt /= rayDir.z;
 		inside = false;
 	}
 	else
@@ -119,7 +119,7 @@ bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box &box, float* o
 
 	if(inside)
 	{
-		*out_t = 0.0f;
+		*outT = 0.0f;
 		return true;
 	}
 
@@ -143,20 +143,20 @@ bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box &box, float* o
 	{
 	case 0: // ray intersects with yz plane
 		{
-			float y = ray_pos.y + ray_dir.y * t;
+			float y = rayPos.y + rayDir.y * t;
 			if(y < box.v1.y || y > box.v2.y)
 				return false;
-			float z = ray_pos.z + ray_dir.z * t;
+			float z = rayPos.z + rayDir.z * t;
 			if(z < box.v1.z || z > box.v2.z)
 				return false;
 		}
 		break;
 	case 1: // ray intersects with xz plane
 		{
-			float x = ray_pos.x + ray_dir.x * t;
+			float x = rayPos.x + rayDir.x * t;
 			if(x < box.v1.x || x > box.v2.x)
 				return false;
-			float z = ray_pos.z + ray_dir.z * t;
+			float z = rayPos.z + rayDir.z * t;
 			if(z < box.v1.z || z > box.v2.z)
 				return false;
 		}
@@ -164,17 +164,17 @@ bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box &box, float* o
 	default:
 	case 2: // ray intersects with xy plane
 		{
-			float x = ray_pos.x + ray_dir.x * t;
+			float x = rayPos.x + rayDir.x * t;
 			if(x < box.v1.x || x > box.v2.x)
 				return false;
-			float y = ray_pos.y + ray_dir.y * t;
+			float y = rayPos.y + rayDir.y * t;
 			if(y < box.v1.y || y > box.v2.y)
 				return false;
 		}
 		break;
 	}
 
-	*out_t = t;
+	*outT = t;
 	return true;
 }
 
@@ -238,17 +238,17 @@ bool CircleToRectangle(float circlex, float circley, float radius, float rectx, 
 	//         |
 	//         |
 	//        \|/  h
-	float dist_x = abs(circlex - rectx);
-	float dist_y = abs(circley - recty);
+	float distX = abs(circlex - rectx);
+	float distY = abs(circley - recty);
 
-	if((dist_x > (w + radius)) || (dist_y > (h + radius)))
+	if((distX > (w + radius)) || (distY > (h + radius)))
 		return false;
 
-	if((dist_x <= w) || (dist_y <= h))
+	if((distX <= w) || (distY <= h))
 		return true;
 
-	float dx = dist_x - w;
-	float dy = dist_y - h;
+	float dx = distX - w;
+	float dy = distY - h;
 
 	return (dx * dx + dy * dy) <= (radius * radius);
 }
@@ -544,24 +544,24 @@ bool FrustumPlanes::BoxInFrustum(const Box& box) const
 	return true;
 }
 
-bool FrustumPlanes::SphereToFrustum(const Vec3& sphere_center, float sphere_radius) const
+bool FrustumPlanes::SphereToFrustum(const Vec3& sphereCenter, float sphereRadius) const
 {
-	sphere_radius = -sphere_radius;
+	sphereRadius = -sphereRadius;
 
 	for(int i = 0; i < 6; ++i)
 	{
-		if(planes[i].DotCoordinate(sphere_center) <= sphere_radius)
+		if(planes[i].DotCoordinate(sphereCenter) <= sphereRadius)
 			return false;
 	}
 
 	return true;
 }
 
-bool FrustumPlanes::SphereInFrustum(const Vec3& sphere_center, float sphere_radius) const
+bool FrustumPlanes::SphereInFrustum(const Vec3& sphereCenter, float sphereRadius) const
 {
 	for(int i = 0; i < 6; ++i)
 	{
-		if(planes[i].DotCoordinate(sphere_center) < sphere_radius)
+		if(planes[i].DotCoordinate(sphereCenter) < sphereRadius)
 			return false;
 	}
 
@@ -580,119 +580,25 @@ bool RayToPlane(const Vec3& rayPos, const Vec3& rayDir, const Plane& plane, floa
 	return true;
 }
 
-// https://www.shadertoy.com/view/XtlBDs
-// 0-b-3
-// |\
-// a c
-// |  \
-// 1   2
-// result: 0 - no intersection, 1 - intersection, -1 - backface intersection
-int RayToQuad(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v0, const Vec3& v1, const Vec3& v2, const Vec3& v3, float* outT)
+bool RayToSphere(const Vec3& rayPos, const Vec3& rayDir, const Vec3& center, float radius, float& dist)
 {
-	// lets make v0 the origin
-	Vec3 a = v1 - v0;
-	Vec3 b = v3 - v0;
-	Vec3 c = v2 - v0;
-	Vec3 p = rayPos - v0;
+	Vec3 rayPosMinusCenter = rayPos - center;
+	float a = rayDir.Dot(rayDir);
+	float b = 2.f * rayDir.Dot(rayPosMinusCenter);
+	float c = rayPosMinusCenter.Dot(rayPosMinusCenter) - (radius * radius);
+	float delta = b * b - 4.f * a * c;
 
-	// intersect plane
-	Vec3 nor = a.Cross(b);
-	float t = -p.Dot(nor) / rayDir.Dot(nor);
-	if(t < 0.0f)
-		return 0;
-
-	// intersection point
-	Vec3 pos = p + t * rayDir;
-
-	// select projection plane
-	Vec3 mor = Vec3(abs(nor.x), abs(nor.y), abs(nor.z));
-	int id = (mor.x > mor.y && mor.x > mor.z) ? 0 :
-		(mor.y > mor.z) ? 1 :
-		2;
-
-	const int lut[4]{ 1, 2, 0, 1 };
-	int idu = lut[id];
-	int idv = lut[id + 1];
-
-	// project to 2D
-	Vec2 kp = Vec2(pos[idu], pos[idv]);
-	Vec2 ka = Vec2(a[idu], a[idv]);
-	Vec2 kb = Vec2(b[idu], b[idv]);
-	Vec2 kc = Vec2(c[idu], c[idv]);
-
-	// find barycentric coords of the quadrilateral
-	Vec2 kg = kc - kb - ka;
-
-	float k0 = kp.Cross2d(kb);
-	float k2 = (kc - kb).Cross2d(ka);        // float k2 = cross2d( kg, ka );
-	float k1 = kp.Cross2d(kg) - nor[id]; // float k1 = cross2d( kb, ka ) + cross2d( kp, kg );
-
-	// if edges are parallel, this is a linear equation
-	float u, v;
-	if(abs(k2) < 0.00001f)
-	{
-		v = -k0 / k1;
-		u = kp.Cross2d(ka) / k1;
-	}
-	else
-	{
-		// otherwise, it's a quadratic
-		float w = k1 * k1 - 4.0f * k0 * k2;
-		if(w < 0.0f)
-			return 0;
-		w = sqrt(w);
-
-		float ik2 = 1.0f / (2.0f * k2);
-
-		v = (-k1 - w) * ik2;
-		if(v < 0.0f || v>1.0f)
-			v = (-k1 + w) * ik2;
-
-		u = (kp.x - ka.x * v) / (kb.x + kg.x * v);
-	}
-
-	if(u < 0.0f || u>1.0f || v < 0.0f || v>1.0f)
-		return 0;
-
-	if(outT)
-		*outT = t;
-
-	const float hitNormal = rayDir.Dot(nor);
-	return hitNormal >= 0 ? -1 : 1;
-}
-
-bool RayToElipsis(const Vec3& from, const Vec3& dir, const Vec3& pos, float sizeX, float sizeZ, float& t)
-{
-	const Plane plane(pos, Vec3::Up);
-	if(!RayToPlane(from, dir, plane, &t))
+	if(delta < 0.f)
 		return false;
 
-	const Vec3 hitpoint = from + dir * t;
-	const float dx = hitpoint.x - pos.x;
-	const float dz = hitpoint.z - pos.z;
-	const float p = (dx * dx) / (sizeX * sizeX) + (dz * dz) / (sizeZ * sizeZ);
-	return p <= 1.f;
-}
+	float a2 = 2.f * a;
+	float minusB = -b;
+	float sqrtDelta = sqrtf(delta);
 
-bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, float radius, float& dist)
-{
-	Vec3 RayOrig_minus_SphereCenter = ray_pos - center;
-	float a = ray_dir.Dot(ray_dir);
-	float b = 2.f * ray_dir.Dot(RayOrig_minus_SphereCenter);
-	float c = RayOrig_minus_SphereCenter.Dot(RayOrig_minus_SphereCenter) - (radius * radius);
-	float Delta = b * b - 4.f * a * c;
-
-	if(Delta < 0.f)
-		return false;
-
-	float a_2 = 2.f * a;
-	float minus_b = -b;
-	float sqrt_Delta = sqrtf(Delta);
-
-	dist = (minus_b - sqrt_Delta) / a_2;
+	dist = (minusB - sqrtDelta) / a2;
 	if(dist >= 0.f)
 		return true;
-	dist = (minus_b + sqrt_Delta) / a_2;
+	dist = (minusB + sqrtDelta) / a2;
 	if(dist >= 0.f)
 	{
 		dist = 0.f;
@@ -702,7 +608,7 @@ bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, f
 }
 
 // Doesn't do backface culling
-bool RayToTriangle(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& v1, const Vec3& v2, const Vec3& v3, float& dist)
+bool RayToTriangle(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v1, const Vec3& v2, const Vec3& v3, float& dist)
 {
 	Vec3 tvec, pvec, qvec;
 
@@ -711,19 +617,19 @@ bool RayToTriangle(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& v1, con
 	Vec3 edge2 = v3 - v1;
 
 	// begin calculating determinant - also used to calculate U parameter
-	pvec = ray_dir.Cross(edge2);
+	pvec = rayDir.Cross(edge2);
 
 	// if determinant is near zero, ray lies in plane of triangle
 	float det = edge1.Dot(pvec);
 	if(AlmostZero(det))
 		return false;
-	float inv_det = 1.0f / det;
+	float invDet = 1.0f / det;
 
 	// calculate distance from vert0 to ray origin
-	tvec = ray_pos - v1;
+	tvec = rayPos - v1;
 
 	// calculate U parameter and test bounds
-	float u = tvec.Dot(pvec) * inv_det;
+	float u = tvec.Dot(pvec) * invDet;
 	if(u < 0.0f || u > 1.0f)
 		return false;
 
@@ -731,25 +637,25 @@ bool RayToTriangle(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& v1, con
 	qvec = tvec.Cross(edge1);
 
 	// calculate V parameter and test bounds
-	float v = ray_dir.Dot(qvec) * inv_det;
+	float v = rayDir.Dot(qvec) * invDet;
 	if(v < 0.0f || u + v > 1.0f)
 		return false;
 
 	// calculate t, ray intersects triangle
-	dist = edge2.Dot(qvec) * inv_det;
+	dist = edge2.Dot(qvec) * invDet;
 	return true;
 }
 
 bool LineToLine(const Vec2& start1, const Vec2& end1, const Vec2& start2, const Vec2& end2, float* t)
 {
-	float ua_t = (end2.x - start2.x) * (start1.y - start2.y) - (end2.y - start2.y) * (start1.x - start2.x);
-	float ub_t = (end1.x - start1.x) * (start1.y - start2.y) - (end1.y - start1.y) * (start1.x - start2.x);
-	float u_b = (end2.y - start2.y) * (end1.x - start1.x) - (end2.x - start2.x) * (end1.y - start1.y);
+	float uaT = (end2.x - start2.x) * (start1.y - start2.y) - (end2.y - start2.y) * (start1.x - start2.x);
+	float ubT = (end1.x - start1.x) * (start1.y - start2.y) - (end1.y - start1.y) * (start1.x - start2.x);
+	float uB = (end2.y - start2.y) * (end1.x - start1.x) - (end2.x - start2.x) * (end1.y - start1.y);
 
-	if(u_b != 0)
+	if(uB != 0)
 	{
-		float ua = ua_t / u_b;
-		float ub = ub_t / u_b;
+		float ua = uaT / uB;
+		float ub = ubT / uB;
 		if(0 <= ua && ua <= 1 && 0 <= ub && ub <= 1)
 		{
 			if(t)
@@ -761,7 +667,7 @@ bool LineToLine(const Vec2& start1, const Vec2& end1, const Vec2& start2, const 
 	}
 	else
 	{
-		if(ua_t == 0 || ub_t == 0)
+		if(uaT == 0 || ubT == 0)
 		{
 			if(t)
 				*t = 0;
@@ -772,32 +678,32 @@ bool LineToLine(const Vec2& start1, const Vec2& end1, const Vec2& start2, const 
 	}
 }
 
-bool LineToRectangle(const Vec2& start, const Vec2& end, const Vec2& rect_pos, const Vec2& rect_pos2, float* t_result)
+bool LineToRectangle(const Vec2& start, const Vec2& end, const Vec2& rectPos, const Vec2& rectPos2, float* tResult)
 {
-	assert(rect_pos.x <= rect_pos2.x && rect_pos.y <= rect_pos2.y);
+	assert(rectPos.x <= rectPos2.x && rectPos.y <= rectPos2.y);
 
-	const Vec2 topRight(rect_pos2.x, rect_pos.y),
-		bottomLeft(rect_pos.x, rect_pos2.y);
+	const Vec2 topRight(rectPos2.x, rectPos.y),
+		bottomLeft(rectPos.x, rectPos2.y);
 
-	if(t_result)
+	if(tResult)
 	{
 		float tt, t = 1.001f;
 
-		if(LineToLine(start, end, rect_pos, topRight, &tt) && tt < t) t = tt;
-		if(LineToLine(start, end, topRight, rect_pos2, &tt) && tt < t) t = tt;
-		if(LineToLine(start, end, rect_pos2, bottomLeft, &tt) && tt < t) t = tt;
-		if(LineToLine(start, end, bottomLeft, rect_pos, &tt) && tt < t) t = tt;
+		if(LineToLine(start, end, rectPos, topRight, &tt) && tt < t) t = tt;
+		if(LineToLine(start, end, topRight, rectPos2, &tt) && tt < t) t = tt;
+		if(LineToLine(start, end, rectPos2, bottomLeft, &tt) && tt < t) t = tt;
+		if(LineToLine(start, end, bottomLeft, rectPos, &tt) && tt < t) t = tt;
 
-		*t_result = t;
+		*tResult = t;
 
 		return (t <= 1.f);
 	}
 	else
 	{
-		if(LineToLine(rect_pos, topRight, start, end))    return true;
-		if(LineToLine(topRight, rect_pos2, start, end))   return true;
-		if(LineToLine(rect_pos2, bottomLeft, start, end)) return true;
-		if(LineToLine(bottomLeft, rect_pos, start, end))  return true;
+		if(LineToLine(rectPos, topRight, start, end))    return true;
+		if(LineToLine(topRight, rectPos2, start, end))   return true;
+		if(LineToLine(rectPos2, bottomLeft, start, end)) return true;
+		if(LineToLine(bottomLeft, rectPos, start, end))  return true;
 
 		return false;
 	}
@@ -1206,11 +1112,11 @@ const Vec2 POISSON_DISC_2D[] = {
 	Vec2(0.8654963f, 0.04940263f),
 	Vec2(0.9577024f, 0.1808657f)
 };
-const int poisson_disc_count = countof(POISSON_DISC_2D);
+const int poissonDiscCount = countof(POISSON_DISC_2D);
 
 Vec2 Vec2::RandomPoissonDiscPoint()
 {
-	int index = Rand() % poisson_disc_count;
+	int index = Rand() % poissonDiscCount;
 	const Vec2& pos = POISSON_DISC_2D[index];
 	return pos;
 }

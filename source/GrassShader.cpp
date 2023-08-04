@@ -109,7 +109,7 @@ void GrassShader::ReserveVertexBuffer(uint vertexCount)
 //=================================================================================================
 void GrassShader::Draw(Mesh* mesh, const vector<const vector<Matrix>*>& patches, uint count)
 {
-	assert(mesh->vertex_decl == VDI_DEFAULT);
+	assert(mesh->vertexDecl == VDI_DEFAULT);
 
 	ReserveVertexBuffer(count);
 

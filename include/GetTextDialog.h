@@ -14,7 +14,7 @@ struct GetTextDialogParams
 
 	Control* parent;
 	DialogEvent event;
-	delegate<bool()> validate;
+	delegate<bool(const string&)> validate;
 	cstring text;
 	string* inputStr;
 	int limit, lines, width;
@@ -25,26 +25,27 @@ struct GetTextDialogParams
 //-----------------------------------------------------------------------------
 class GetTextDialog : public DialogBox
 {
-public:
 	enum Result
 	{
 		Result_Ok = GuiEvent_Custom,
 		Result_Cancel
 	};
 
+public:
 	static GetTextDialog* Show(const GetTextDialogParams& params);
-
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
 private:
 	explicit GetTextDialog(const DialogInfo& info);
 	void Create(const GetTextDialogParams& params);
+	void UpdateButtons();
 
 	static GetTextDialog* self;
 	string* inputStr;
-	delegate<bool()> validate;
+	string prevText;
+	delegate<bool(const string&)> validate;
 	TextBox textBox;
 	bool singleline;
 };

@@ -11,27 +11,20 @@ struct Billboard
 //-----------------------------------------------------------------------------
 struct ParticleEmitter
 {
-	enum PARTICLE_OP
-	{
-		POP_CONST,
-		POP_LINEAR_SHRINK
-	};
-
 	struct Particle
 	{
 		Vec3 pos, speed;
-		float life, gravity;
+		float life;
 		bool exists;
 	};
 
 	TexturePtr tex;
 	Vec3 pos, speedMin, speedMax, posMin, posMax;
-	float emissionInterval, life, particleLife, alpha, size;
-	int emissions, spawnMin, spawnMax, maxParticles, mode;
-	PARTICLE_OP opSize, opAlpha;
-
-	// nowe wartoœci, dla kompatybilnoœci zerowane w Init
-	int manualDelete;
+	Vec2 alpha, size;
+	Int2 spawn;
+	float emissionInterval, life, particleLife;
+	int emissions, maxParticles, mode, manualDelete;
+	bool gravity;
 
 	// automatycznie ustawiane
 	float time, radius;
@@ -39,23 +32,18 @@ struct ParticleEmitter
 	int alive;
 	bool destroy;
 
+	ParticleEmitter() : manualDelete(0), gravity(true) {}
 	void Init();
 	bool Update(float dt);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 	float GetAlpha(const Particle &p) const
 	{
-		if(opAlpha == POP_CONST)
-			return alpha;
-		else
-			return Lerp(0.f, alpha, p.life / particleLife);
+		return Lerp(alpha.y, alpha.x, p.life / particleLife);
 	}
 	float GetScale(const Particle &p) const
 	{
-		if(opSize == POP_CONST)
-			return size;
-		else
-			return Lerp(0.f, size, p.life / particleLife);
+		return Lerp(size.y, size.x, p.life / particleLife);
 	}
 };
 

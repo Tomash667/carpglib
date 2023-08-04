@@ -31,7 +31,7 @@ public:
 	cstring GetName() const override { return "super"; }
 	void OnInit() override;
 	void OnRelease() override;
-	uint GetShaderId(bool have_weights, bool have_tangents, bool animated, bool fog, bool specular_map, bool normal_map, bool point_light, bool dir_light) const;
+	uint GetShaderId(bool haveWeights, bool haveTangents, bool animated, bool fog, bool specularMap, bool normalMap, bool pointLight, bool dirLight) const;
 	void SetScene(Scene* scene, Camera* camera);
 	void Prepare();
 	void PrepareDecals();

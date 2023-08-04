@@ -25,15 +25,15 @@ void AreaLayout::SetFromArea(const Rect* area)
 	if(!tex->IsLoaded())
 		app::resMgr->LoadInstant(tex);
 
-	Int2 tex_size = tex->GetSize();
+	Int2 texSize = tex->GetSize();
 	if(area)
 	{
 		size = area->Size();
-		region = Box2d(*area) / Vec2((float)tex_size.x, (float)tex_size.y);
+		region = Box2d(*area) / Vec2((float)texSize.x, (float)texSize.y);
 	}
 	else
 	{
-		size = tex_size;
+		size = texSize;
 		region = Box2d::Unit;
 	}
 }

@@ -6,18 +6,16 @@
 
 static const uint FORMAT_STRINGS = 8;
 static const uint FORMAT_LENGTH = 2048;
-static thread_local char format_buf[FORMAT_STRINGS][FORMAT_LENGTH];
-static thread_local int format_marker;
-static string g_escp;
-string g_tmp_string;
-static const char escape_from[] = { '\n', '\t', '\r', ' ' };
-static cstring escape_to[] = { "\\n", "\\t", "\\r", " " };
+static thread_local char formatBuf[FORMAT_STRINGS][FORMAT_LENGTH];
+static thread_local int formatMarker;
+static const char ESCAPE_FROM[] = { '\n', '\t', '\r', ' ' };
+static cstring ESCAPE_TO[] = { "\\n", "\\t", "\\r", " " };
 
 //=================================================================================================
 char* GetFormatString()
 {
-	char* str = format_buf[format_marker];
-	format_marker = (format_marker + 1) % FORMAT_STRINGS;
+	char* str = formatBuf[formatMarker];
+	formatMarker = (formatMarker + 1) % FORMAT_STRINGS;
 	return str;
 }
 
@@ -231,6 +229,14 @@ bool TextHelper::ToBool(cstring s, bool& result)
 }
 
 //=================================================================================================
+bool TextHelper::IsNumber(cstring s)
+{
+	int64 i;
+	float f;
+	return ToNumber(s, i, f) != Broken;
+}
+
+//=================================================================================================
 vector<string> Split(cstring str, const char delimiter, const char quote)
 {
 	assert(str);
@@ -302,10 +308,10 @@ void SplitText(char* buf, vector<cstring>& lines)
 }
 
 //=================================================================================================
-bool Unescape(const string& str_in, uint pos, uint size, string& str_out)
+bool Unescape(const string& strIn, uint pos, uint size, string& strOut)
 {
-	str_out.clear();
-	str_out.reserve(str_in.length());
+	strOut.clear();
+	strOut.reserve(strIn.length());
 
 	cstring unesc = "nt\\\"'";
 	cstring esc = "\n\t\\\"'";
@@ -313,25 +319,25 @@ bool Unescape(const string& str_in, uint pos, uint size, string& str_out)
 
 	for(; pos < end; ++pos)
 	{
-		if(str_in[pos] == '\\')
+		if(strIn[pos] == '\\')
 		{
 			++pos;
 			if(pos == end)
 			{
-				Error("Unescape error in string \"%.*s\", character '\\' at end of string.", size, str_in.c_str() + pos);
+				Error("Unescape error in string \"%.*s\", character '\\' at end of string.", size, strIn.c_str() + pos);
 				return false;
 			}
-			int index = StrCharIndex(unesc, str_in[pos]);
+			int index = StrCharIndex(unesc, strIn[pos]);
 			if(index != -1)
-				str_out += esc[index];
+				strOut += esc[index];
 			else
 			{
-				Error("Unescape error in string \"%.*s\", unknown escape sequence '\\%c'.", size, str_in.c_str() + pos, str_in[pos]);
+				Error("Unescape error in string \"%.*s\", unknown escape sequence '\\%c'.", size, strIn.c_str() + pos, strIn[pos]);
 				return false;
 			}
 		}
 		else
-			str_out += str_in[pos];
+			strOut += strIn[pos];
 	}
 
 	return true;
@@ -342,7 +348,7 @@ cstring Escape(Cstring s, char quote)
 {
 	cstring str = s.s;
 	char* out = GetFormatString();
-	char* out_buf = out;
+	char* outBuf = out;
 	cstring from = "\n\t\r\\";
 	cstring to = "ntr\\";
 
@@ -365,8 +371,8 @@ cstring Escape(Cstring s, char quote)
 	}
 
 	*out = 0;
-	out_buf[FORMAT_LENGTH - 1] = 0;
-	return out_buf;
+	outBuf[FORMAT_LENGTH - 1] = 0;
+	return outBuf;
 }
 
 //=================================================================================================
@@ -402,11 +408,11 @@ cstring Escape(Cstring str, string& out, char quote)
 cstring EscapeChar(char c)
 {
 	char* out = GetFormatString();
-	for(uint i = 0; i < countof(escape_from); ++i)
+	for(uint i = 0; i < countof(ESCAPE_FROM); ++i)
 	{
-		if(c == escape_from[i])
+		if(c == ESCAPE_FROM[i])
 		{
-			strcpy_s(out, FORMAT_LENGTH, escape_to[i]);
+			strcpy_s(out, FORMAT_LENGTH, ESCAPE_TO[i]);
 			return out;
 		}
 	}
@@ -584,21 +590,20 @@ void RemoveEndOfLine(string& str, bool remove)
 }
 
 //=================================================================================================
-void Replace(string& s, cstring in_chars, cstring out_chars)
+void Replace(string& str, cstring inChars, cstring outChars)
 {
-	assert(in_chars && out_chars && strlen(in_chars) == strlen(out_chars));
+	assert(inChars && outChars && strlen(inChars) == strlen(outChars));
 
-	for(char& c : s)
+	for(char& c : str)
 	{
-		cstring i_in_chars = in_chars,
-			i_out_chars = out_chars;
-		char i_char;
-		while((i_char = *i_in_chars) != 0)
+		cstring tmpInChars = inChars,
+			tmpOutChars = outChars;
+		while(*tmpInChars)
 		{
-			if(c == i_char)
-				c = *i_out_chars;
-			++i_in_chars;
-			++i_out_chars;
+			if(c == *tmpInChars)
+				c = *tmpOutChars;
+			++tmpInChars;
+			++tmpOutChars;
 		}
 	}
 }
@@ -843,4 +848,27 @@ bool IsIdentifier(Cstring str)
 			return false;
 	}
 	return ok;
+}
+
+//=================================================================================================
+int FindCharInString(cstring str, cstring chars)
+{
+	int last = -1, index = 0;
+	char c;
+	while((c = *str++) != 0)
+	{
+		cstring cs = chars;
+		char c2;
+		while((c2 = *cs++) != 0)
+		{
+			if(c == c2)
+			{
+				last = index;
+				break;
+			}
+		}
+		++index;
+	}
+
+	return last;
 }

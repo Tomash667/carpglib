@@ -304,6 +304,9 @@
     <ClInclude Include="include\CrashHandler.h">
       <Filter>components</Filter>
     </ClInclude>
+    <ClInclude Include="include\SimpleMesh.h">
+      <Filter>entity</Filter>
+    </ClInclude>
     <ClInclude Include="include\PhysicsDrawer.h">
       <Filter>utility</Filter>
     </ClInclude>
@@ -561,6 +564,12 @@
     </ClCompile>
     <ClCompile Include="source\ImageFormat.cpp">
       <Filter>const</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Camera.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SimpleMesh.cpp">
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\PhysicsDrawer.cpp">
       <Filter>utility</Filter>

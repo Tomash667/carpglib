@@ -12,10 +12,11 @@ namespace layout
 	{
 		AreaLayout box;
 		AreaLayout selection;
-		Texture* down_arrow;
+		AreaLayout hover;
+		Texture* downArrow;
 		Font* font;
-		Color font_color[2];
-		int auto_padding;
+		Color fontColor[2];
+		int padding, autoPadding, border;
 	};
 }
 
@@ -34,10 +35,10 @@ public:
 
 	typedef delegate<bool(int, int)> Handler;
 
-	ListBox(bool is_new = false);
+	ListBox(bool isNew = false);
 	~ListBox();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	void OnChar(char c) override;
@@ -49,8 +50,8 @@ public:
 	GuiElement* Find(int value) const;
 	int FindIndex(int value) const;
 	int FindIndex(GuiElement* e) const;
-	void Select(int index, bool send_event = false);
-	void Select(delegate<bool(GuiElement*)> pred, bool send_event = false);
+	void Select(int index, bool sendEvent = false);
+	void Select(delegate<bool(GuiElement*)> pred);
 	void SelectByValue(int value, bool send_event = false);
 	void ForceSelect(int index);
 	void Insert(GuiElement* e, int index);
@@ -60,12 +61,19 @@ public:
 	void Reset();
 
 	int GetIndex() const { return selected; }
+	int GetHover() const { return hover; }
 	GuiElement* GetItem() const { return selected == -1 ? nullptr : items[selected]; }
-	template<typename T> T* GetItemCast() const { return (T*)GetItem(); }
+	template<typename T>
+	T* GetItemCast() const { return static_cast<T*>(GetItem()); }
 	int GetItemHeight() const { return itemHeight; }
 	const Int2& GetForceImageSize() const { return forceImgSize; }
 	vector<GuiElement*>& GetItems() { return items; }
-	template<typename T> vector<T*>& GetItemsCast() { return (vector<T*>&)items; }
+	template<typename T>
+	vector<T*>& GetItemsCast()
+	{
+		static_assert(std::is_convertible<T*, GuiElement*>::value);
+		return reinterpret_cast<vector<T*>&>(items);
+	}
 	uint GetCount() const { return items.size(); }
 
 	bool IsCollapsed() { return collapsed; }
@@ -93,9 +101,9 @@ public:
 	}
 
 	MenuList* menu;
-	MenuStrip* menu_strip;
-	DialogEvent event_handler;
-	Handler event_handler2;
+	MenuStrip* menuStrip;
+	DialogEvent eventHandler;
+	Handler eventHandler2;
 	int textFlags;
 
 private:
@@ -109,6 +117,7 @@ private:
 	Scrollbar scrollbar;
 	vector<GuiElement*> items;
 	int selected; // index of selected item or -1, default -1
+	int hover; // index of hover item or -1
 	int itemHeight; // height of item, default 20, -1 is auto
 	Int2 realSize;
 	Int2 forceImgSize; // forced image size, Int2(0,0) if not forced, default Int2(0,0)

@@ -4,43 +4,43 @@
 #include "Input.h"
 
 //=================================================================================================
-Scrollbar::Scrollbar(bool hscrollbar, bool is_new) : Control(is_new), clicked(false), hscrollbar(hscrollbar), manual_change(false), offset(0.f)
+Scrollbar::Scrollbar(bool hscrollbar, bool isNew) : Control(isNew), clicked(false), hscrollbar(hscrollbar), manualChange(false), offset(0.f)
 {
 }
 
 //=================================================================================================
-void Scrollbar::Draw(ControlDrawData* cdd)
+void Scrollbar::Draw()
 {
-	gui->DrawArea(Box2d::Create(global_pos, size), layout->tex);
+	gui->DrawArea(Box2d::Create(globalPos, size), layout->tex);
 
-	int s_pos, s_size;
+	int sPos, sSize;
 	if(hscrollbar)
 	{
 		if(part >= total)
 		{
-			s_pos = 0;
-			s_size = size.x;
+			sPos = 0;
+			sSize = size.x;
 		}
 		else
 		{
-			s_pos = int(float(offset) / total*size.x);
-			s_size = int(float(part) / total*size.x);
+			sPos = int(float(offset) / total * size.x);
+			sSize = int(float(part) / total * size.x);
 		}
-		gui->DrawArea(Box2d::Create(Int2(global_pos.x + s_pos, global_pos.y), Int2(s_size, size.y)), layout->tex2);
+		gui->DrawArea(Box2d::Create(Int2(globalPos.x + sPos, globalPos.y), Int2(sSize, size.y)), layout->tex2);
 	}
 	else
 	{
 		if(part >= total)
 		{
-			s_pos = 0;
-			s_size = size.y;
+			sPos = 0;
+			sSize = size.y;
 		}
 		else
 		{
-			s_pos = int(float(offset) / total*size.y);
-			s_size = int(float(part) / total*size.y);
+			sPos = int(float(offset) / total * size.y);
+			sSize = int(float(part) / total * size.y);
 		}
-		gui->DrawArea(Box2d::Create(Int2(global_pos.x, global_pos.y + s_pos), Int2(size.x, s_size)), layout->tex2);
+		gui->DrawArea(Box2d::Create(Int2(globalPos.x, globalPos.y + sPos), Int2(size.x, sSize)), layout->tex2);
 	}
 }
 
@@ -52,7 +52,7 @@ void Scrollbar::Update(float dt)
 
 	change = 0;
 
-	Int2 cpos = gui->cursorPos - global_pos;
+	Int2 cpos = gui->cursorPos - globalPos;
 
 	if(clicked)
 	{
@@ -62,7 +62,7 @@ void Scrollbar::Update(float dt)
 		{
 			if(hscrollbar)
 			{
-				int dif = cpos.x - click_pt.x;
+				int dif = cpos.x - clickedPt.x;
 				float move = float(dif)*total / size.x;
 				bool changed = true;
 				if(offset + move < 0)
@@ -73,13 +73,13 @@ void Scrollbar::Update(float dt)
 					changed = false;
 				offset += move;
 				if(changed)
-					click_pt.x += int(move / total*size.x);
+					clickedPt.x += int(move / total * size.x);
 				else
-					click_pt.x = cpos.x;
+					clickedPt.x = cpos.x;
 			}
 			else
 			{
-				int dif = cpos.y - click_pt.y;
+				int dif = cpos.y - clickedPt.y;
 				float move = float(dif)*total / size.y;
 				bool changed = true;
 				if(offset + move < 0)
@@ -90,29 +90,29 @@ void Scrollbar::Update(float dt)
 					changed = false;
 				offset += move;
 				if(changed)
-					click_pt.y += int(move / total*size.y);
+					clickedPt.y += int(move / total * size.y);
 				else
-					click_pt.y = cpos.y;
+					clickedPt.y = cpos.y;
 			}
 		}
 	}
-	else if(mouse_focus && input->Pressed(Key::LeftButton))
+	else if(mouseFocus && input->Pressed(Key::LeftButton))
 	{
 		if(cpos.x >= 0 && cpos.y >= 0 && cpos.x < size.x && cpos.y < size.y)
 		{
-			int pos_o = hscrollbar ? int(float(cpos.x)*total / size.x) : int(float(cpos.y)*total / size.y);
-			if(hscrollbar ? (pos_o >= offset && pos_o < offset + part) : (pos_o + 2 >= offset && pos_o + 2 < offset + part))
+			int posO = hscrollbar ? int(float(cpos.x) * total / size.x) : int(float(cpos.y) * total / size.y);
+			if(hscrollbar ? (posO >= offset && posO < offset + part) : (posO + 2 >= offset && posO + 2 < offset + part))
 			{
 				input->SetState(Key::LeftButton, Input::IS_DOWN);
 				clicked = true;
-				click_pt = cpos;
+				clickedPt = cpos;
 			}
 			else
 			{
 				input->SetState(Key::LeftButton, Input::IS_UP);
-				if(pos_o < offset)
+				if(posO < offset)
 				{
-					if(!manual_change)
+					if(!manualChange)
 					{
 						offset -= part;
 						if(offset < 0)
@@ -123,7 +123,7 @@ void Scrollbar::Update(float dt)
 				}
 				else
 				{
-					if(!manual_change)
+					if(!manualChange)
 					{
 						offset += part;
 						if(offset + part > total)
@@ -135,7 +135,7 @@ void Scrollbar::Update(float dt)
 			}
 		}
 
-		if(is_new)
+		if(isNew)
 			TakeFocus(true);
 	}
 }
@@ -149,34 +149,35 @@ void Scrollbar::LostFocus()
 //=================================================================================================
 bool Scrollbar::ApplyMouseWheel()
 {
-	if(gui->mouseWheel != 0.f)
+	const float wheel = input->GetMouseWheel();
+	if(wheel != 0.f)
 	{
 		LostFocus();
-		float mod = (!is_new ? (input->Down(Key::Shift) ? 1.f : 0.2f) : 0.2f);
-		float prev_offset = offset;
-		offset -= part*gui->mouseWheel*mod;
+		float mod = (!isNew ? (input->Down(Key::Shift) ? 1.f : 0.2f) : 0.2f);
+		float prevOffset = offset;
+		offset -= part * wheel * mod;
 		if(offset < 0.f)
 			offset = 0.f;
 		else if(offset + part > total)
 			offset = max(0.f, float(total - part));
-		return !Equal(offset, prev_offset);
+		return !Equal(offset, prevOffset);
 	}
 	else
 		return false;
 }
 
 //=================================================================================================
-void Scrollbar::UpdateTotal(int new_total)
+void Scrollbar::UpdateTotal(int total)
 {
-	total = new_total;
+	this->total = total;
 	if(offset + part > total)
 		offset = max(0.f, float(total - part));
 }
 
 //=================================================================================================
-void Scrollbar::UpdateOffset(float _change)
+void Scrollbar::UpdateOffset(float change)
 {
-	offset += _change;
+	offset += change;
 	if(offset < 0)
 		offset = 0;
 	else if(offset + part > total)

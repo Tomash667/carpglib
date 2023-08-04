@@ -7,25 +7,6 @@
 #include "FlowContainer.h"
 
 //-----------------------------------------------------------------------------
-struct PickItemDialogParams
-{
-	PickItemDialogParams() : event(nullptr), getTooltip(nullptr), parent(nullptr), multiple(0), sizeMin(300, 200), sizeMax(300, 512)
-	{
-	}
-
-	vector<FlowItem*> items;
-	DialogEvent event;
-	TooltipController::Callback getTooltip;
-	Control* parent;
-	string text;
-	Int2 sizeMin, sizeMax; // size.x is always taken from sizeMin for now
-	int multiple;
-
-	void AddItem(cstring itemText, int id, int group = 0, bool disabled = false);
-	void AddSeparator(cstring itemText);
-};
-
-//-----------------------------------------------------------------------------
 namespace layout
 {
 	struct PickItemDialog : public DialogBox
@@ -35,11 +16,31 @@ namespace layout
 }
 
 //-----------------------------------------------------------------------------
+struct PickItemDialogParams
+{
+	PickItemDialogParams() : event(nullptr), getTooltip(nullptr), parent(nullptr), multiple(0), sizeMin(300, 200), sizeMax(300, 512)
+	{
+	}
+
+	Control* parent;
+	DialogEvent event;
+	TooltipController::Callback getTooltip;
+	vector<FlowItem*> items;
+	string text;
+	Int2 sizeMin, sizeMax; // size.x is always taken from sizeMin for now
+	int multiple;
+
+	void AddItem(cstring itemText, int id, int group = 0, bool disabled = false);
+	void AddSeparator(cstring itemText);
+};
+
+//-----------------------------------------------------------------------------
 class PickItemDialog : public DialogBox, public LayoutControl<layout::PickItemDialog>
 {
 public:
 	using LayoutControl<layout::PickItemDialog>::layout;
 
+	static PickItemDialog* Show(PickItemDialogParams& params);
 	void GetSelected(int& group, int& id) const
 	{
 		if(!selected.empty())
@@ -59,8 +60,6 @@ public:
 		return selected;
 	}
 
-	static PickItemDialog* Show(PickItemDialogParams& params);
-
 private:
 	enum Id
 	{
@@ -69,7 +68,7 @@ private:
 
 	explicit PickItemDialog(const DialogInfo& info);
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 

@@ -218,14 +218,14 @@ void ParticleShader::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpe
 			{
 				const TrailParticleEmitter::Particle& p = tp.parts[id];
 
-				Vec3 line_dir = p.pt - prev->pt;
-				Vec3 quad_normal = camPos - (p.pt + prev->pt) / 2;
-				Vec3 extrude_dir = line_dir.Cross(quad_normal).Normalize();
+				Vec3 lineDir = p.pt - prev->pt;
+				Vec3 quadNormal = camPos - (p.pt + prev->pt) / 2;
+				Vec3 extrudeDir = lineDir.Cross(quadNormal).Normalize();
 
-				v[idx].pos = prev->pt + extrude_dir * width;
-				v[idx + 1].pos = prev->pt - extrude_dir * width;
-				v[idx + 2].pos = p.pt + extrude_dir * width;
-				v[idx + 3].pos = p.pt - extrude_dir * width;
+				v[idx].pos = prev->pt + extrudeDir * width;
+				v[idx + 1].pos = prev->pt - extrudeDir * width;
+				v[idx + 2].pos = p.pt + extrudeDir * width;
+				v[idx + 3].pos = p.pt - extrudeDir * width;
 
 				v[idx].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - prev->t / tp.fade);
 				v[idx + 1].color = v[idx].color;

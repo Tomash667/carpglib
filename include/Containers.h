@@ -312,7 +312,7 @@ void CopyItems(vector<T>& items, const array<T, N>& arr)
 //-----------------------------------------------------------------------------
 // Object pool pattern
 //-----------------------------------------------------------------------------
-#if defined(_DEBUG) && !defined(CORE_ONLY)
+#if defined(_DEBUG) && !defined(CARPGLIB_CORE_ONLY)
 #	define CHECK_POOL_LEAKS
 #endif
 #ifdef CHECK_POOL_LEAKS
@@ -324,8 +324,8 @@ struct ObjectPoolLeakManager
 	void Unregister(void* ptr);
 	static ObjectPoolLeakManager instance;
 private:
-	vector<CallStackEntry*> call_stack_pool;
-	std::unordered_map<void*, CallStackEntry*> call_stacks;
+	vector<CallStackEntry*> callStackPool;
+	std::unordered_map<void*, CallStackEntry*> callStacks;
 };
 #endif
 
@@ -544,42 +544,6 @@ private:
 	T* ptr;
 };
 
-namespace internal
-{
-	template<typename T>
-	struct ObjectPoolAllocator : IAllocator<T>
-	{
-		static_assert(std::is_base_of<ObjectPoolProxy<T>, T>::value, "T must inherit from ObjectPoolProxy<T>");
-
-		T* Create()
-		{
-			return T::Get();
-		}
-
-		void Destroy(T* item)
-		{
-			T::Free(item);
-		}
-	};
-
-	template<typename T>
-	struct ObjectPoolVectorAllocator : IVectorAllocator<T>
-	{
-		static_assert(std::is_base_of<ObjectPoolProxy<T>, T>::value, "T must inherit from ObjectPoolProxy<T>");
-
-		void Destroy(vector<T*>& items)
-		{
-			T::Free(items);
-		}
-	};
-}
-
-template<typename T>
-using ObjectPoolRef = Ptr<T, internal::ObjectPoolAllocator<T>>;
-
-template<typename T>
-using ObjectPoolVectorRef = VectorPtr<T, internal::ObjectPoolVectorAllocator<T>>;
-
 // global pools
 extern ObjectPool<string> StringPool;
 extern ObjectPool<vector<void*>> VectorPool;
@@ -602,10 +566,10 @@ struct LocalString
 		*s = str;
 	}
 
-	LocalString(cstring str, cstring str_to)
+	LocalString(cstring str, cstring strTo)
 	{
 		s = StringPool.Get();
-		uint len = str_to - str;
+		uint len = strTo - str;
 		s->resize(len);
 		memcpy((char*)s->data(), str, len);
 	}
@@ -877,11 +841,11 @@ struct WeightPair
 };
 
 template<typename T>
-inline T& RandomItemWeight(vector<WeightPair<T>>& items, int max_weight)
+inline T& RandomItemWeight(vector<WeightPair<T>>& items, int maxWeight)
 {
-	if(items.size() == (uint)max_weight)
+	if(items.size() == (uint)maxWeight)
 		return RandomItem(items).item;
-	int a = Rand() % max_weight, b = 0;
+	int a = Rand() % maxWeight, b = 0;
 	for(auto& item : items)
 	{
 		b += item.weight;
@@ -893,17 +857,17 @@ inline T& RandomItemWeight(vector<WeightPair<T>>& items, int max_weight)
 }
 
 template<typename T, typename GetWeight, typename GetItem>
-inline auto RandomItemWeight(const vector<T>& items, int max_weight, GetWeight get_weight, GetItem get_item)
+inline auto RandomItemWeight(const vector<T>& items, int maxWeight, GetWeight getWeight, GetItem getItem)
 {
-	int a = Rand() % max_weight, b = 0;
+	int a = Rand() % maxWeight, b = 0;
 	for(auto& item : items)
 	{
-		b += get_weight(item);
+		b += getWeight(item);
 		if(a < b)
-			return get_item(item);
+			return getItem(item);
 	}
 	// if it gets here max_count is wrong, return random item
-	return get_item(items[Rand() % items.size()]);
+	return getItem(items[Rand() % items.size()]);
 }
 
 template<typename T>
@@ -1428,10 +1392,12 @@ public:
 	void* At(uint offset) { return data.data() + offset; }
 	void Clear() { data.clear(); }
 	void* Data() { return data.data(); }
-	// decompress buffer to new buffer and return it, old one is freed
-#ifndef CORE_ONLY
-	Buffer* Decompress(uint real_size);
-#endif
+	// Compress to new buffer and return it, old one is freed
+	Buffer* Compress();
+	// Compress to new buffer and return it if worth it, otherwise return old buffer
+	Buffer* TryCompress();
+	// Decompress buffer to new buffer and return it, old one is freed
+	Buffer* Decompress(uint realSize);
 	void Resize(uint size) { data.resize(size); }
 	uint Size() const { return data.size(); }
 

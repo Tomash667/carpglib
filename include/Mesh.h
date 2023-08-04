@@ -10,7 +10,7 @@ NASTÊPNA WERSJA:
 - kolor zamiast tekstury
 - FVF i vertex size w nag³ówku
 - wczytywanie ze strumienia
-- brak model_to_bone, odrazu policzone
+- brak modelToBone, odrazu policzone
 - lepsza organizacja pliku, wczytywanie wszystkiego za jednym zamachem i ustawianie wskaŸników
 - brak zerowej koœci bo i po co
 - materia³y
@@ -37,25 +37,25 @@ struct Mesh : public Resource
 	{
 		char format[4];
 		byte version, flags;
-		word n_verts, n_tris, n_subs, n_bones, n_anims, n_points, n_groups;
+		word nVerts, nTris, nSubs, nBones, nAnims, nPoints, nGroups;
 		float radius;
 		Box bbox;
-		uint points_offset;
-		Vec3 cam_pos, cam_target, cam_up;
+		uint pointsOffset;
+		Vec3 camPos, camTarget, camUp;
 	};
 
 	struct Submesh
 	{
 		word first; // pierwszy trójk¹t do narysowania
 		word tris; // ile trójk¹tów narysowaæ
-		word min_ind; // odpowiednik parametru DrawIndexedPrimitive - MinIndex (tylko wyra¿ony w trójk¹tach)
-		word n_ind; // odpowiednik parametru DrawIndexedPrimitive - NumVertices (tylko wyra¿ony w trójk¹tach)
-		string name;//, normal_name, specular_name;
-		TexturePtr tex, tex_normal, tex_specular;
-		Vec3 specular_color;
-		float specular_intensity;
-		int specular_hardness;
-		float normal_factor, specular_factor, specular_color_factor;
+		word minInd; // odpowiednik parametru DrawIndexedPrimitive - MinIndex (tylko wyra¿ony w trójk¹tach)
+		word nInd; // odpowiednik parametru DrawIndexedPrimitive - NumVertices (tylko wyra¿ony w trójk¹tach)
+		string name;
+		TexturePtr tex, texNormal, texSpecular;
+		Vec3 specularColor;
+		float specularIntensity;
+		int specularHardness;
+		float normalFactor, specularFactor, specularColorFactor;
 
 		static const uint MIN_SIZE = 10;
 	};
@@ -102,7 +102,7 @@ struct Mesh : public Resource
 	{
 		string name;
 		float length;
-		word n_frames;
+		word nFrames;
 		vector<Keyframe> frames;
 
 		static const uint MIN_SIZE = 7;
@@ -161,13 +161,13 @@ struct Mesh : public Resource
 	Point* GetPoint(cstring name);
 	TEX GetTexture(uint idx) const
 	{
-		assert(idx < head.n_subs && subs[idx].tex && subs[idx].tex->tex);
+		assert(idx < head.nSubs && subs[idx].tex && subs[idx].tex->tex);
 		return subs[idx].tex->tex;
 	}
-	TEX GetTexture(uint index, const TexOverride* tex_override) const
+	TEX GetTexture(uint index, const TexOverride* texOverride) const
 	{
-		if(tex_override && tex_override[index].diffuse)
-			return tex_override[index].diffuse->tex;
+		if(texOverride && texOverride[index].diffuse)
+			return texOverride[index].diffuse->tex;
 		else
 			return GetTexture(index);
 	}
@@ -183,27 +183,13 @@ struct Mesh : public Resource
 	Header head;
 	ID3D11Buffer* vb;
 	ID3D11Buffer* ib;
-	VertexDeclarationId vertex_decl;
-	uint vertex_size;
+	VertexDeclarationId vertexDecl;
+	uint vertexSize;
 	vector<Submesh> subs;
 	vector<Bone> bones;
 	vector<Animation> anims;
-	vector<Matrix> model_to_bone;
-	vector<Point> attach_points;
+	vector<Matrix> modelToBone;
+	vector<Point> attachPoints;
 	vector<BoneGroup> groups;
 	vector<Split> splits;
-};
-
-//-----------------------------------------------------------------------------
-struct SimpleMesh
-{
-	SimpleMesh() : vb(nullptr), ib(nullptr) {}
-	~SimpleMesh();
-	void Build();
-	void Clear();
-
-	ID3D11Buffer* vb;
-	ID3D11Buffer* ib;
-	vector<Vec3> vertices;
-	vector<word> indices;
 };

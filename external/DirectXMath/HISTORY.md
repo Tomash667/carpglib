@@ -6,13 +6,52 @@ Release available for download on [GitHub](https://github.com/microsoft/DirectXM
 
 ## Release History
 
+### December 2022 (3.18)
+* C++20 spaceship operators for XMFLOAT2, XMFLOAT3, etc. when building with ``/std:c++20 /Zc:_cplusplus``
+* Improved conformance for ARM64 when using `/Zc:arm64-aliased-neon-types-`
+* Minor code review
+* CMake project updated to require 3.20 or later
+* Added Azure Dev Ops Pipeline YAML files
+
+### May 2022 (3.17b)
+* Hot-fix to address ``-Wreserved-identifier`` warnings with clang v13
+* C++20 spaceship operators for XMFLOAT2, XMFLOAT3, etc. when building with ``/std:c++20 /Zc:_cplusplus``
+* Minor CMake project update
+
+### January 2022 (3.17)
+* Added ColorsLinear namespace to DirectXColors.h with linear versions of .NET colors
+* Optimized the ``XMMatrixRotationRollPitchYaw(FromVector)`` functions
+* Fixed overread problem for 16bpp GPU types Load functions:
+  * ``XMUNIBBLE4``, ``XMU555``, ``XMU565``, ``XMBYTEN2``, ``XMBYTE2``, ``XMUBYTEN2``, ``XMUBYTE2``
+* ``XM_CACHE_LINE_SIZE`` updated for ARM/ARM64 targets to 128 bytes
+* A few comments added to improve IntelliSense experience
+* Conformance improvements for GNU compiler
+* Minor code cleanup
+
+### January 2021 (3.16b)
+* Hot-fixes to resolve build breaks for clang/LLVM and GCC on ARM64
+* ``XM_ALIGNED_DATA`` and ``XM_ALIGNED_STRUCT`` macros updated to use C++17 ``alignas`` when available
+
+### December 2020 (3.16)
+* Added ``XMVectorLog10`` / ``XMVectorExp10``
+* Added ``XMColorRGBToYUV_UHD`` / ``XMColorYUVToRGB_UHD`` for Rec. 2020 YUV
+* Added optional ``rhcoords`` parameter for BoundingFrustum ``CreateFromMatrix``
+* Added use of Intel&reg; Short Vector Matrix Library (SVML) supported by VS 2019
+  * Opt-in with ``_XM_SVML_INTRINSICS_``; opt-out with ``_XM_DISABLE_INTEL_SVML_``
+* Fixed denorm handling for ``XMConvertFloatToHalf``
+* Fixed flush (too small for denorm) handling for ``XMStoreFloat3PK``
+* Fixed clamping bug in ``XMStoreByteN4``
+* Cleaned up ARM-NEON intrinsics type issues for improved portability on GNUC
+* Fixed ``GXMVECTOR`` for x86 ``__vectorcall``
+* Code review
+
 ### April 2020 (3.15)
-* Added XMMatrixVectorTensorProduct for creating a matrix from two vectors
-* Use of m256 registers and FMA3 with /arch:AVX2 for stream and some matrix functions
+* Added ``XMMatrixVectorTensorProduct`` for creating a matrix from two vectors
+* Use of m256 registers and FMA3 with ``/arch:AVX2`` for stream and some matrix functions
 * Optimized load/stores for SSE2 float2 & float3 functions
 * Optimized some instruction choices for better AMD CPU support
 * Improved conformance for clang/LLVM, GCC, and MinGW compilers
-* Code review (constexpr / noexcept usage)
+* Code review (``constexpr`` / ``noexcept`` usage)
 * Retired VS 2015 support
 
 ### August 2019 (3.14)
@@ -72,8 +111,8 @@ Release available for download on [GitHub](https://github.com/microsoft/DirectXM
 
 ### April 2015 (3.07)
 * Fix customer reported bugs in BoundingBox methods
-* Fix customer reported bug in XMStoreFloat3SE  
-* Fix customer reported bug in XMVectorATan2, XMVectorATan2Est  
+* Fix customer reported bug in XMStoreFloat3SE
+* Fix customer reported bug in XMVectorATan2, XMVectorATan2Est
 * Fix customer reported bug in XMVectorRound
 
 ### October 2013 (3.06)
@@ -85,14 +124,14 @@ Release available for download on [GitHub](https://github.com/microsoft/DirectXM
 * Use x86/x64 ``__vectorcall`` calling-convention when available (``XM_CALLCONV``, ``HXMVECTOR``, ``FXMMATRIX`` introduced)
 * Fixed bug with XMVectorFloor and XMVectorCeiling when given whole odd numbers (i.e. 105.0)
 * Improved XMVectorRound algorithm
-* ARM-NEON optimizations for XMVectorExp2, XMVectorLog2, XMVectorExpE, and XMVectorLogE  
+* ARM-NEON optimizations for XMVectorExp2, XMVectorLog2, XMVectorExpE, and XMVectorLogE
 * ARM-NEON code paths use multiply-by-scalar intrinsics when supported
 * Additional optimizations for ARM-NEON Stream functions
 * Fixed potential warning C4723 using ``operator/`` or ``operator/=``
 
 ### March 2013 (3.04)
 * ``XMVectorExp2``, ``XMVectorLog2``, ``XMVectorExpE``, and ``XMVectorLogE`` functions added to provide base-e support in addition to the existing base-2 support
-* ``XMVectorExp`` and ``XMVectorLog`` are now aliases for XMVectorExp2 and XMVectorLog2  
+* ``XMVectorExp`` and ``XMVectorLog`` are now aliases for XMVectorExp2 and XMVectorLog2
 * Additional optimizations for Stream functions
 * XMVector3Cross now ensures w component is zero on ARM
 * XMConvertHalfToFloat and XMConvertFloatToHalf  now use IEEE 754 standard float16 behavior for INF/QNAN

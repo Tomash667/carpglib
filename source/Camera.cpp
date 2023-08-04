@@ -6,8 +6,9 @@
 //=================================================================================================
 void Camera::UpdateMatrix()
 {
-	Matrix matView = Matrix::CreateLookAt(from, to);
-	Matrix matProj = Matrix::CreatePerspectiveFieldOfView(fov, app::engine->GetWindowAspect(), znear, zfar);
+	const float usedAspect = aspect > 0 ? aspect : app::engine->GetWindowAspect();
+	Matrix matView = Matrix::CreateLookAt(from, to, up);
+	Matrix matProj = Matrix::CreatePerspectiveFieldOfView(fov, usedAspect, znear, zfar);
 	matViewProj = matView * matProj;
 	matViewInv = matView.Inverse();
 }

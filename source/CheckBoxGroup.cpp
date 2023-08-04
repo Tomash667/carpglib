@@ -5,7 +5,7 @@
 
 CheckBoxGroup::CheckBoxGroup() : scrollbar(false, true)
 {
-	row_height = max(layout->font->height, layout->box.size.y) + 2;
+	rowHeight = max(layout->font->height, layout->box.size.y) + 2;
 }
 
 CheckBoxGroup::~CheckBoxGroup()
@@ -13,53 +13,53 @@ CheckBoxGroup::~CheckBoxGroup()
 	DeleteElements(items);
 }
 
-void CheckBoxGroup::Draw(ControlDrawData*)
+void CheckBoxGroup::Draw()
 {
-	Box2d rect = Box2d::Create(global_pos, size);
+	Box2d rect = Box2d::Create(globalPos, size);
 	gui->DrawArea(rect, layout->background);
 
-	int box_height = layout->box.size.y;
-	int box_x = global_pos.x + 2;
-	int box_y = global_pos.y + (row_height - box_height) / 2;
-	int text_x = box_x + layout->box.size.x + 2;
-	int text_y = global_pos.y + (row_height - layout->font->height) / 2;
+	int boxHeight = layout->box.size.y;
+	int boxX = globalPos.x + 2;
+	int boxY = globalPos.y + (rowHeight - boxHeight) / 2;
+	int textX = boxX + layout->box.size.x + 2;
+	int textY = globalPos.y + (rowHeight - layout->font->height) / 2;
 
 	Box2d r;
 	Rect re;
 	int offset = 0;
 	for(auto item : items)
 	{
-		r.v1 = Vec2((float)box_x, (float)box_y + offset);
+		r.v1 = Vec2((float)boxX, (float)boxY + offset);
 		r.v2 = r.v1 + Vec2(layout->box.size);
 		gui->DrawArea(r, item->checked ? layout->checked : layout->box);
 
-		re = Rect(text_x, text_y, global_pos.x + size.x - 2, text_y + offset + 50);
-		gui->DrawText(layout->font, item->name, DTF_LEFT | DTF_SINGLELINE, layout->font_color, re);
+		re = Rect(textX, textY, globalPos.x + size.x - 2, textY + offset + 50);
+		gui->DrawText(layout->font, item->name, DTF_LEFT | DTF_SINGLELINE, layout->fontColor, re);
 
-		offset += row_height;
+		offset += rowHeight;
 	}
 }
 
 void CheckBoxGroup::Update(float dt)
 {
-	if(!mouse_focus)
+	if(!mouseFocus)
 		return;
 
-	const Int2& box_size = layout->box.size;
-	int box_x = global_pos.x + 2;
-	int box_y = global_pos.y + (row_height - box_size.y) / 2;
+	const Int2& boxSize = layout->box.size;
+	int boxX = globalPos.x + 2;
+	int boxY = globalPos.y + (rowHeight - boxSize.y) / 2;
 
 	int offset = 0;
 	for(auto item : items)
 	{
-		if(PointInRect(gui->cursorPos, box_x, box_y + offset, box_x + box_size.x, box_y + offset + box_size.y) && input->Pressed(Key::LeftButton))
+		if(Rect::IsInside(gui->cursorPos, boxX, boxY + offset, boxX + boxSize.x, boxY + offset + boxSize.y) && input->Pressed(Key::LeftButton))
 		{
 			item->checked = !item->checked;
 			TakeFocus(true);
 			break;
 		}
 
-		offset += row_height;
+		offset += rowHeight;
 	}
 }
 

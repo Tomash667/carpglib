@@ -1,12 +1,12 @@
 #include "Pch.h"
 #include "WindowsIncludes.h"
 
-void CriticalSection::Create(uint spin_count)
+void CriticalSection::Create(uint spinCount)
 {
 	if(!handle)
 	{
 		CRITICAL_SECTION* cs = new CRITICAL_SECTION;
-		InitializeCriticalSectionAndSpinCount(cs, 50);
+		InitializeCriticalSectionAndSpinCount(cs, spinCount);
 		handle = cs;
 	}
 }

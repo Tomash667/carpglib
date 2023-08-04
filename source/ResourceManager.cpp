@@ -11,14 +11,14 @@
 
 ResourceManager* app::resMgr;
 
-extern byte box_qmsh[];
-extern byte sphere_qmsh[];
-extern byte capsule_qmsh[];
-extern byte cylinder_qmsh[];
-extern uint box_qmsh_len;
-extern uint sphere_qmsh_len;
-extern uint capsule_qmsh_len;
-extern uint cylinder_qmsh_len;
+extern byte boxQmsh[];
+extern byte sphereQmsh[];
+extern byte capsuleQmsh[];
+extern byte cylinderQmsh[];
+extern uint boxQmshLen;
+extern uint sphereQmshLen;
+extern uint capsuleQmshLen;
+extern uint cylinderQmshLen;
 
 //=================================================================================================
 ResourceManager::ResourceManager() : mode(Mode::Instant), tmpMesh(nullptr)
@@ -35,7 +35,7 @@ ResourceManager::~ResourceManager()
 
 	for(Pak* pak : paks)
 	{
-		pak->filename_buf->Free();
+		pak->filenameBuf->Free();
 		delete pak;
 	}
 
@@ -98,17 +98,17 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 
 	int dirlen = strlen(dir) + 1;
 
-	bool ok = io::FindFiles(Format("%s/*.*", dir), [=](const io::FileInfo& file_info)
+	bool ok = io::FindFiles(Format("%s/*.*", dir), [=](const io::FileInfo& fileInfo)
 	{
-		if(file_info.is_dir && subdir)
+		if(fileInfo.isDir && subdir)
 		{
-			LocalString path = Format("%s/%s", dir, file_info.filename);
+			LocalString path = Format("%s/%s", dir, fileInfo.filename);
 			AddDir(path);
 		}
 		else
 		{
-			cstring path = Format("%s/%s", dir, file_info.filename);
-			Resource* res = AddResource(file_info.filename, path);
+			cstring path = Format("%s/%s", dir, fileInfo.filename);
+			Resource* res = AddResource(fileInfo.filename, path);
 			if(res)
 			{
 				res->pak = nullptr;
@@ -160,19 +160,19 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		return false;
 	}
 
-	uint pak_size = f.GetSize();
-	int total_size = pak_size - sizeof(Pak::Header);
+	uint pakSize = f.GetSize();
+	int totalSize = pakSize - sizeof(Pak::Header);
 
 	// read table
-	if(!f.Ensure(header.file_entry_table_size) || !f.Ensure(header.files_count * sizeof(Pak::File)))
+	if(!f.Ensure(header.fileEntryTableSize) || !f.Ensure(header.filesCount * sizeof(Pak::File)))
 	{
 		Error("ResourceManager: Failed to read pak '%s' files table (%u).", path, GetLastError());
 		return false;
 	}
 	Buffer* buf = Buffer::Get();
-	buf->Resize(header.file_entry_table_size);
-	f.Read(buf->Data(), header.file_entry_table_size);
-	total_size -= header.file_entry_table_size;
+	buf->Resize(header.fileEntryTableSize);
+	f.Read(buf->Data(), header.fileEntryTableSize);
+	totalSize -= header.fileEntryTableSize;
 
 	// decrypt table
 	if(IsSet(header.flags, Pak::Encrypted))
@@ -197,27 +197,27 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 	pak->encrypted = IsSet(header.flags, Pak::FullEncrypted);
 	if(key)
 		pak->key = key;
-	pak->filename_buf = buf;
+	pak->filenameBuf = buf;
 	pak->files = (Pak::File*)buf->Data();
-	for(uint i = 0; i < header.files_count; ++i)
+	for(uint i = 0; i < header.filesCount; ++i)
 	{
 		Pak::File& file = pak->files[i];
-		file.filename = (cstring)buf->Data() + file.filename_offset;
-		total_size -= file.compressed_size;
+		file.filename = (cstring)buf->Data() + file.filenameOffset;
+		totalSize -= file.compressedSize;
 
-		if(total_size < 0)
+		if(totalSize < 0)
 		{
 			buf->Free();
-			Error("ResourceManager: Failed to read pak '%s', broken file size %u at index %u.", path, file.compressed_size, i);
+			Error("ResourceManager: Failed to read pak '%s', broken file size %u at index %u.", path, file.compressedSize, i);
 			delete pak;
 			return false;
 		}
 
-		if(file.offset + file.compressed_size > pak_size)
+		if(file.offset + file.compressedSize > pakSize)
 		{
 			buf->Free();
 			Error("ResourceManager: Failed to read pak '%s', file at index %u has invalid offset %u (pak size %u).",
-				path, i, file.offset, pak_size);
+				path, i, file.offset, pakSize);
 			delete pak;
 			return false;
 		}
@@ -226,7 +226,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		if(res)
 		{
 			res->pak = pak;
-			res->pak_index = i;
+			res->pakIndex = i;
 			res->filename = file.filename;
 		}
 	}
@@ -320,30 +320,30 @@ Resource* ResourceManager::GetResource(Cstring filename, ResourceType type)
 	Resource* res = TryGetResource(filename, type);
 	if(!res)
 	{
-		cstring type_name;
+		cstring typeName;
 		switch(type)
 		{
 		case ResourceType::Mesh:
-			type_name = "mesh";
+			typeName = "mesh";
 			break;
 		case ResourceType::Texture:
-			type_name = "texture";
+			typeName = "texture";
 			break;
 		case ResourceType::VertexData:
-			type_name = "vertex data";
+			typeName = "vertex data";
 			break;
 		case ResourceType::Sound:
-			type_name = "sound";
+			typeName = "sound";
 			break;
 		case ResourceType::Music:
-			type_name = "music";
+			typeName = "music";
 			break;
 		default:
 			assert(0);
-			type_name = "unknown";
+			typeName = "unknown";
 			break;
 		}
-		throw Format("ResourceManager: Missing %s '%s'.", type_name, filename);
+		throw Format("ResourceManager: Missing %s '%s'.", typeName, filename);
 	}
 	return res;
 }

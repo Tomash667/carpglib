@@ -118,25 +118,25 @@ void SuperShader::OnRelease()
 }
 
 //=================================================================================================
-uint SuperShader::GetShaderId(bool have_weights, bool have_tangents, bool animated, bool fog, bool specular_map,
-	bool normal_map, bool point_light, bool dir_light) const
+uint SuperShader::GetShaderId(bool haveWeights, bool haveTangents, bool animated, bool fog, bool specularMap,
+	bool normalMap, bool pointLight, bool dirLight) const
 {
 	uint id = 0;
-	if(have_weights)
+	if(haveWeights)
 		id |= HAVE_WEIGHT;
-	if(have_tangents)
+	if(haveTangents)
 		id |= HAVE_TANGENTS;
 	if(animated)
 		id |= ANIMATED;
 	if(fog)
 		id |= FOG;
-	if(specular_map)
+	if(specularMap)
 		id |= SPECULAR_MAP;
-	if(normal_map)
+	if(normalMap)
 		id |= NORMAL_MAP;
-	if(point_light)
+	if(pointLight)
 		id |= POINT_LIGHT;
-	if(dir_light)
+	if(dirLight)
 		id |= DIR_LIGHT;
 	return id;
 }
@@ -294,9 +294,9 @@ void SuperShader::PrepareDecals()
 	app::render->SetDepthState(Render::DEPTH_READ);
 	app::render->SetRasterState(Render::RASTER_NORMAL);
 
-	const bool use_fog = app::sceneMgr->useLighting && app::sceneMgr->useFog;
+	const bool useFog = app::sceneMgr->useLighting && app::sceneMgr->useFog;
 
-	SetShader(GetShaderId(false, false, false, use_fog, false, false,
+	SetShader(GetShaderId(false, false, false, useFog, false, false,
 		!scene->useLightDir && app::sceneMgr->useLighting, scene->useLightDir && app::sceneMgr->useLighting));
 }
 
@@ -339,8 +339,8 @@ void SuperShader::SetTexture(const TexOverride* texOverride, Mesh* mesh, uint in
 	{
 		if(texOverride && texOverride[index].normal)
 			tex = texOverride[index].normal->tex;
-		else if(mesh && mesh->subs[index].tex_normal)
-			tex = mesh->subs[index].tex_normal->tex;
+		else if(mesh && mesh->subs[index].texNormal)
+			tex = mesh->subs[index].texNormal->tex;
 		else
 			tex = texEmptyNormalMap;
 		deviceContext->PSSetShaderResources(1, 1, &tex);
@@ -350,8 +350,8 @@ void SuperShader::SetTexture(const TexOverride* texOverride, Mesh* mesh, uint in
 	{
 		if(texOverride && texOverride[index].specular)
 			tex = texOverride[index].specular->tex;
-		else if(mesh && mesh->subs[index].tex_specular)
-			tex = mesh->subs[index].tex_specular->tex;
+		else if(mesh && mesh->subs[index].texSpecular)
+			tex = mesh->subs[index].texSpecular->tex;
 		else
 			tex = texEmptySpecularMap;
 		deviceContext->PSSetShaderResources(2, 1, &tex);
@@ -385,7 +385,7 @@ void SuperShader::Draw(SceneNode* node)
 	// set vertex/index buffer
 	if(&mesh != prevMesh)
 	{
-		uint stride = mesh.vertex_size, offset = 0;
+		uint stride = mesh.vertexSize, offset = 0;
 		deviceContext->IASetVertexBuffers(0, 1, &mesh.vb, &stride, &offset);
 		deviceContext->IASetIndexBuffer(mesh.ib, DXGI_FORMAT_R16_UINT, 0);
 		prevMesh = &mesh;
@@ -426,7 +426,7 @@ void SuperShader::Draw(SceneNode* node)
 	// for each submesh
 	if(!IsSet(node->subs, SceneNode::SPLIT_INDEX))
 	{
-		for(int i = 0; i < mesh.head.n_subs; ++i)
+		for(int i = 0; i < mesh.head.nSubs; ++i)
 		{
 			if(IsSet(node->subs, 1 << i))
 				DrawSubmesh(node, i);
@@ -448,9 +448,9 @@ void SuperShader::DrawSubmesh(SceneNode* node, uint index)
 	{
 		ResourceLock lock(psMaterial);
 		PsMaterial& psm = *lock.Get<PsMaterial>();
-		psm.specularColor = sub.specular_color;
-		psm.specularHardness = (float)sub.specular_hardness;
-		psm.specularIntensity = sub.specular_intensity;
+		psm.specularColor = sub.specularColor;
+		psm.specularHardness = (float)sub.specularHardness;
+		psm.specularIntensity = sub.specularIntensity;
 	}
 
 	// set texture OwO
@@ -523,34 +523,34 @@ void SuperShader::DrawDecal(const Decal& decal)
 		else
 		{
 			const Vec3 front(sin(decal.rot), 0, cos(decal.rot)), right(sin(decal.rot + PI / 2), 0, cos(decal.rot + PI / 2));
-			Vec3 v_x, v_z, v_lx, v_rx, v_lz, v_rz;
-			v_x = decal.normal.Cross(front);
-			v_z = decal.normal.Cross(right);
-			if(v_x.x > 0.f)
+			Vec3 vX, vZ, vLx, vRx, vLz, vRz;
+			vX = decal.normal.Cross(front);
+			vZ = decal.normal.Cross(right);
+			if(vX.x > 0.f)
 			{
-				v_rx = v_x * decal.scale;
-				v_lx = -v_x * decal.scale;
+				vRx = vX * decal.scale;
+				vLx = -vX * decal.scale;
 			}
 			else
 			{
-				v_rx = -v_x * decal.scale;
-				v_lx = v_x * decal.scale;
+				vRx = -vX * decal.scale;
+				vLx = vX * decal.scale;
 			}
-			if(v_z.z > 0.f)
+			if(vZ.z > 0.f)
 			{
-				v_rz = v_z * decal.scale;
-				v_lz = -v_z * decal.scale;
+				vRz = vZ * decal.scale;
+				vLz = -vZ * decal.scale;
 			}
 			else
 			{
-				v_rz = -v_z * decal.scale;
-				v_lz = v_z * decal.scale;
+				vRz = -vZ * decal.scale;
+				vLz = vZ * decal.scale;
 			}
 
-			v[0].pos = v_lx + v_lz;
-			v[1].pos = v_lx + v_rz;
-			v[2].pos = v_rx + v_lz;
-			v[3].pos = v_rx + v_rz;
+			v[0].pos = vLx + vLz;
+			v[1].pos = vLx + vRz;
+			v[2].pos = vRx + vLz;
+			v[3].pos = vRx + vRz;
 		}
 	}
 

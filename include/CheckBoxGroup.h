@@ -13,7 +13,7 @@ namespace layout
 		AreaLayout box;
 		AreaLayout checked;
 		Font* font;
-		Color font_color;
+		Color fontColor;
 	};
 }
 
@@ -24,12 +24,11 @@ public:
 	CheckBoxGroup();
 	~CheckBoxGroup();
 
-	void Draw(ControlDrawData*) override;
-	void Update(float dt) override;
-
 	void Add(cstring name, int value);
+	void Draw() override;
 	int GetValue();
 	void SetValue(int value);
+	void Update(float dt) override;
 
 private:
 	struct Item
@@ -41,5 +40,5 @@ private:
 
 	vector<Item*> items;
 	Scrollbar scrollbar;
-	int row_height;
+	int rowHeight;
 };

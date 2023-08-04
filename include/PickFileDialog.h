@@ -33,14 +33,13 @@ public:
 	using LayoutControl<layout::PickFileDialog>::layout;
 
 	static void Show(const PickFileDialogOptions& options);
-
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;
 
 	bool GetResult() const { return result; }
-	const string& GetPath() const { assert(result); return result_path; }
-	const string& GetFilename() const { assert(result); return result_filename; }
+	const string& GetPath() const { assert(result); return resultPath; }
+	const string& GetFilename() const { assert(result); return resultFilename; }
 
 private:
 	enum EventId
@@ -59,7 +58,7 @@ private:
 	~PickFileDialog();
 
 	void Setup(const PickFileDialogOptions& options);
-	void LoadDir(bool keep_selection);
+	void LoadDir(bool keepSelection);
 	void ParseFilters(const string& str);
 	bool HandleChangeExtension(int action, int index);
 	bool HandleListBoxEvent(int action, int index);
@@ -69,24 +68,25 @@ private:
 	void SetupPreview();
 
 	static PickFileDialog* self;
-	ListBox* list_box, *list_extensions;
-	TextBox* tb_path, *tb_filename, *tb_preview;
-	Button* bt_select, *bt_cancel;
-	DrawBox* draw_box;
-	Label* label_preview;
-	string root_dir, active_dir, result_filename, result_path;
+	ListBox* listBox, *listExtensions;
+	TextBox* tbPath, *tbFilename, *tbPreview;
+	Button* btSelect, *btCancel;
+	DrawBox* drawBox;
+	Label* labelPreview;
+	string rootDir, activeDir, resultFilename, resultPath;
 	vector<Filter> filters;
-	Filter* active_filter;
+	Filter* activeFilter;
 	Handler handler;
-	Texture* tex_dir;
-	std::map<string, PreviewType> preview_types;
+	Texture* texDir;
+	std::map<string, PreviewType> previewTypes;
 	bool result, preview;
 };
 
+//-----------------------------------------------------------------------------
 struct PickFileDialogOptions
 {
 	PickFileDialog::Handler handler;
-	string title, filters, root_dir, start_path;
+	string title, filters, rootDir, startPath;
 	bool preview;
 
 	void Show() { PickFileDialog::Show(*this); }

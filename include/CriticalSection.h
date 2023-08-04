@@ -8,7 +8,7 @@ class CriticalSection
 
 public:
 	CriticalSection() : handle(nullptr) {}
-	void Create(uint spin_count = 50);
+	void Create(uint spinCount = 50);
 	void Free();
 	void Enter();
 	void Leave();

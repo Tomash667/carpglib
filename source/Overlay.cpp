@@ -6,7 +6,7 @@
 #include "Input.h"
 #include "MenuStrip.h"
 
-Overlay::Overlay() : Container(true), focused(nullptr), to_add(nullptr), drawCursor(true)
+Overlay::Overlay() : Container(true), focused(nullptr), toAdd(nullptr), drawCursor(true)
 {
 }
 
@@ -25,7 +25,7 @@ bool Overlay::NeedCursor() const
 	return Container::NeedCursor();
 }
 
-void Overlay::Draw(ControlDrawData*)
+void Overlay::Draw()
 {
 	Container::Draw();
 
@@ -41,13 +41,13 @@ void Overlay::Draw(ControlDrawData*)
 
 void Overlay::Update(float dt)
 {
-	mouse_focus = true;
+	mouseFocus = true;
 	clicked = nullptr;
 
 	// close menu if old dialog window is open
 	if(gui->HaveDialog())
 	{
-		mouse_focus = false;
+		mouseFocus = false;
 		CloseMenus();
 	}
 
@@ -58,13 +58,13 @@ void Overlay::Update(float dt)
 	for(auto it = dialogs.rbegin(), end = dialogs.rend(); it != end; ++it)
 		UpdateControl(*it, dt);
 	if(!dialogs.empty())
-		mouse_focus = false;
-	for(GuiDialog* dialog : dialogs_to_close)
+		mouseFocus = false;
+	for(GuiDialog* dialog : dialogsToClose)
 	{
 		dialog->Event(GuiEvent_Close);
 		RemoveElement(dialogs, dialog);
 	}
-	dialogs_to_close.clear();
+	dialogsToClose.clear();
 
 	// update controls
 	Container::Update(dt);
@@ -85,13 +85,13 @@ void Overlay::Update(float dt)
 			menus.push_back(leftover);
 	}
 
-	for(MenuStrip* menu : menus_to_close)
+	for(MenuStrip* menu : menusToClose)
 		RemoveElement(menus, menu);
-	menus_to_close.clear();
+	menusToClose.clear();
 
-	if(to_add)
+	if(toAdd)
 	{
-		menus.push_back(to_add);
+		menus.push_back(toAdd);
 		if(focused)
 		{
 			focused->focus = false;
@@ -99,11 +99,11 @@ void Overlay::Update(float dt)
 			if(focused->IsOnCharHandler())
 				gui->RemoveOnCharHandler(dynamic_cast<OnCharHandler*>(focused));
 		}
-		to_add->focus = true;
-		focused = to_add;
-		if(to_add->IsOnCharHandler())
-			gui->AddOnCharHandler(dynamic_cast<OnCharHandler*>(to_add));
-		to_add = nullptr;
+		toAdd->focus = true;
+		focused = toAdd;
+		if(toAdd->IsOnCharHandler())
+			gui->AddOnCharHandler(dynamic_cast<OnCharHandler*>(toAdd));
+		toAdd = nullptr;
 	}
 }
 
@@ -119,31 +119,31 @@ void Overlay::ShowDialog(GuiDialog* dialog)
 void Overlay::CloseDialog(GuiDialog* dialog)
 {
 	assert(dialog);
-	dialogs_to_close.push_back(dialog);
+	dialogsToClose.push_back(dialog);
 }
 
-void Overlay::ShowMenu(MenuStrip* menu, const Int2& _pos)
+void Overlay::ShowMenu(MenuStrip* menu, const Int2& pos)
 {
 	assert(menu);
 	CloseMenus();
-	to_add = menu;
-	menu->ShowAt(_pos);
+	toAdd = menu;
+	menu->ShowAt(pos);
 }
 
 void Overlay::CloseMenu(MenuStrip* menu)
 {
 	assert(menu);
 	menu->OnClose();
-	menus_to_close.push_back(menu);
+	menusToClose.push_back(menu);
 }
 
 void Overlay::CheckFocus(Control* ctrl, bool pressed)
 {
 	assert(ctrl);
-	if(!ctrl->mouse_focus)
+	if(!ctrl->mouseFocus)
 		return;
 
-	ctrl->mouse_focus = false;
+	ctrl->mouseFocus = false;
 
 	if(input->PressedRelease(Key::LeftButton)
 		|| input->PressedRelease(Key::RightButton)
@@ -205,10 +205,10 @@ void Overlay::CloseMenus()
 	for(MenuStrip* menu : menus)
 		menu->OnClose();
 	menus.clear();
-	if(to_add)
+	if(toAdd)
 	{
-		to_add->OnClose();
-		to_add = nullptr;
+		toAdd->OnClose();
+		toAdd = nullptr;
 	}
 }
 

@@ -10,12 +10,12 @@ public:
 	float Tick();
 	void Reset();
 
-	void GetTime(int64& time) const { time = last_time; }
-	double GetTicksPerSec() const { return ticks_per_sec; }
+	void GetTime(int64& time) const { time = lastTime; }
+	double GetTicksPerSec() const { return ticksPerSec; }
 	bool IsStarted() const { return started; }
 
 private:
-	double ticks_per_sec;
-	int64 last_time;
+	double ticksPerSec;
+	int64 lastTime;
 	bool started;
 };

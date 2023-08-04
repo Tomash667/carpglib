@@ -95,6 +95,7 @@
     <ClInclude Include="include\ScreenGrab.h" />
     <ClInclude Include="include\Scrollbar.h" />
     <ClInclude Include="include\ShaderHandler.h" />
+    <ClInclude Include="include\SimpleMesh.h" />
     <ClInclude Include="include\SkyboxShader.h" />
     <ClInclude Include="include\Slider.h" />
     <ClInclude Include="include\Sound.h" />
@@ -192,6 +193,7 @@
     <ClCompile Include="source\SceneNode.cpp" />
     <ClCompile Include="source\ScreenGrab.cpp" />
     <ClCompile Include="source\Scrollbar.cpp" />
+    <ClCompile Include="source\SimpleMesh.cpp" />
     <ClCompile Include="source\SkyboxShader.cpp" />
     <ClCompile Include="source\Slider.cpp" />
     <ClCompile Include="source\SoundManager.cpp" />
@@ -246,11 +248,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <TargetName>$(ProjectName)_debug</TargetName>
-    <IntDir>$(SolutionDir)output\$(ProjectName)\$(Configuration)\</IntDir>
+    <IntDir>$(ProjectDir)output\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(ProjectDir)lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IntDir>$(SolutionDir)output\$(ProjectName)\$(Configuration)\</IntDir>
+    <IntDir>$(ProjectDir)output\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(ProjectDir)lib\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

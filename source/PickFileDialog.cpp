@@ -20,12 +20,12 @@ public:
 	}
 
 	string filename, path;
-	bool is_dir;
+	bool isDir;
 };
 
 bool PickFileDialogItemSort(const PickFileDialogItem* i1, const PickFileDialogItem* i2)
 {
-	if(i1->is_dir == i2->is_dir)
+	if(i1->isDir == i2->isDir)
 	{
 		int r = _stricmp(i1->filename.c_str(), i2->filename.c_str());
 		if(r == 0)
@@ -34,7 +34,7 @@ bool PickFileDialogItemSort(const PickFileDialogItem* i1, const PickFileDialogIt
 			return r < 0;
 	}
 	else
-		return i1->is_dir;
+		return i1->isDir;
 }
 
 PickFileDialog* PickFileDialog::self;
@@ -43,73 +43,73 @@ PickFileDialog::PickFileDialog()
 {
 	SetAreaSize(Int2(640, 480));
 
-	list_box = new ListBox(true);
-	list_box->event_handler2 = ListBox::Handler(this, &PickFileDialog::HandleListBoxEvent);
-	list_box->SetSize(Int2(640 - 4, 480 - 100));
-	list_box->SetPosition(Int2(2, 34));
-	Add(list_box);
+	listBox = new ListBox(true);
+	listBox->eventHandler2 = ListBox::Handler(this, &PickFileDialog::HandleListBoxEvent);
+	listBox->SetSize(Int2(640 - 4, 480 - 100));
+	listBox->SetPosition(Int2(2, 34));
+	Add(listBox);
 
-	list_extensions = new ListBox(true);
-	list_extensions->event_handler2 = ListBox::Handler(this, &PickFileDialog::HandleChangeExtension);
-	list_extensions->SetSize(Int2(640 - 406, 30));
-	list_extensions->SetPosition(Int2(404, 480 - 64));
-	list_extensions->SetCollapsed(true);
-	Add(list_extensions);
+	listExtensions = new ListBox(true);
+	listExtensions->eventHandler2 = ListBox::Handler(this, &PickFileDialog::HandleChangeExtension);
+	listExtensions->SetSize(Int2(640 - 406, 30));
+	listExtensions->SetPosition(Int2(404, 480 - 64));
+	listExtensions->SetCollapsed(true);
+	Add(listExtensions);
 
-	tb_path = new TextBox(true);
-	tb_path->SetReadonly(true);
-	tb_path->SetSize(Int2(640 - 4, 30));
-	tb_path->SetPosition(Int2(2, 2));
-	Add(tb_path);
+	tbPath = new TextBox(true);
+	tbPath->SetReadonly(true);
+	tbPath->SetSize(Int2(640 - 4, 30));
+	tbPath->SetPosition(Int2(2, 2));
+	Add(tbPath);
 
-	tb_filename = new TextBox(true);
-	tb_filename->SetSize(Int2(400, 30));
-	tb_filename->SetPosition(Int2(2, 480 - 64));
-	Add(tb_filename);
+	tbFilename = new TextBox(true);
+	tbFilename->SetSize(Int2(400, 30));
+	tbFilename->SetPosition(Int2(2, 480 - 64));
+	Add(tbFilename);
 
-	bt_select = new Button;
-	bt_select->id = SelectItem;
-	bt_select->text = "Open";
-	bt_select->SetSize(Int2(100, 30));
-	bt_select->SetPosition(Int2(640 - 212, 480 - 32));
-	Add(bt_select);
+	btSelect = new Button;
+	btSelect->id = SelectItem;
+	btSelect->text = "Open";
+	btSelect->SetSize(Int2(100, 30));
+	btSelect->SetPosition(Int2(640 - 212, 480 - 32));
+	Add(btSelect);
 
-	bt_cancel = new Button;
-	bt_cancel->id = Cancel;
-	bt_cancel->text = "Cancel";
-	bt_cancel->SetSize(Int2(100, 30));
-	bt_cancel->SetPosition(Int2(640 - 102, 480 - 32));
-	Add(bt_cancel);
+	btCancel = new Button;
+	btCancel->id = Cancel;
+	btCancel->text = "Cancel";
+	btCancel->SetSize(Int2(100, 30));
+	btCancel->SetPosition(Int2(640 - 102, 480 - 32));
+	Add(btCancel);
 
-	draw_box = new DrawBox;
-	draw_box->SetSize(Int2(240 - 6, 480 - 100));
-	draw_box->SetPosition(Int2(404, 34));
-	Add(draw_box);
+	drawBox = new DrawBox;
+	drawBox->SetSize(Int2(240 - 6, 480 - 100));
+	drawBox->SetPosition(Int2(404, 34));
+	Add(drawBox);
 
-	tb_preview = new TextBox(true);
-	tb_preview->SetReadonly(true);
-	tb_preview->SetMultiline(true);
-	tb_preview->SetSize(Int2(240 - 6, 480 - 100));
-	tb_preview->SetPosition(Int2(404, 34));
-	Add(tb_preview);
+	tbPreview = new TextBox(true);
+	tbPreview->SetReadonly(true);
+	tbPreview->SetMultiline(true);
+	tbPreview->SetSize(Int2(240 - 6, 480 - 100));
+	tbPreview->SetPosition(Int2(404, 34));
+	Add(tbPreview);
 
-	label_preview = new Label("Preview not available", false);
-	label_preview->SetSize(Int2(240 - 6, 480 - 100));
-	label_preview->SetPosition(Int2(404, 34));
-	Add(label_preview);
+	labelPreview = new Label("Preview not available", false);
+	labelPreview->SetSize(Int2(240 - 6, 480 - 100));
+	labelPreview->SetPosition(Int2(404, 34));
+	Add(labelPreview);
 
-	tex_dir = app::resMgr->Load<Texture>("dir.png");
+	texDir = app::resMgr->Load<Texture>("dir.png");
 
-	preview_types["txt"] = PreviewType::Text;
-	preview_types["bmp"] = PreviewType::Image;
-	preview_types["jpg"] = PreviewType::Image;
-	preview_types["tga"] = PreviewType::Image;
-	preview_types["png"] = PreviewType::Image;
-	preview_types["dds"] = PreviewType::Image;
-	preview_types["ppm"] = PreviewType::Image;
-	preview_types["dib"] = PreviewType::Image;
-	preview_types["hdr"] = PreviewType::Image;
-	preview_types["pfm"] = PreviewType::Image;
+	previewTypes["txt"] = PreviewType::Text;
+	previewTypes["bmp"] = PreviewType::Image;
+	previewTypes["jpg"] = PreviewType::Image;
+	previewTypes["tga"] = PreviewType::Image;
+	previewTypes["png"] = PreviewType::Image;
+	previewTypes["dds"] = PreviewType::Image;
+	previewTypes["ppm"] = PreviewType::Image;
+	previewTypes["dib"] = PreviewType::Image;
+	previewTypes["hdr"] = PreviewType::Image;
+	previewTypes["pfm"] = PreviewType::Image;
 }
 
 PickFileDialog::~PickFileDialog()
@@ -130,25 +130,25 @@ void PickFileDialog::Show(const PickFileDialogOptions& options)
 void PickFileDialog::Setup(const PickFileDialogOptions& options)
 {
 	SetText(options.title);
-	root_dir = options.root_dir;
+	rootDir = options.rootDir;
 	handler = options.handler;
 	preview = options.preview;
 	if(preview)
-		list_box->SetSize(Int2(400, 480 - 100));
+		listBox->SetSize(Int2(400, 480 - 100));
 	else
-		list_box->SetSize(Int2(640 - 4, 480 - 100));
-	active_dir = root_dir;
+		listBox->SetSize(Int2(640 - 4, 480 - 100));
+	activeDir = rootDir;
 	ParseFilters(options.filters);
 	LoadDir(false);
 	SetupPreview();
 }
 
-void PickFileDialog::Draw(ControlDrawData*)
+void PickFileDialog::Draw()
 {
 	Window::Draw();
 
-	if(label_preview->visible)
-		gui->DrawArea(Box2d::Create(label_preview->global_pos, label_preview->size), layout->box);
+	if(labelPreview->visible)
+		gui->DrawArea(Box2d::Create(labelPreview->globalPos, labelPreview->size), layout->box);
 }
 
 void PickFileDialog::Event(GuiEvent e)
@@ -171,32 +171,32 @@ void PickFileDialog::Update(float dt)
 {
 	if(input->PressedRelease(Key::Escape))
 		CancelPick();
-	if(list_box->focus)
+	if(listBox->focus)
 	{
 		if(input->PressedRelease(Key::Enter))
 			PickItem();
-		else if(input->PressedRelease(Key::Backspace) && !list_box->IsEmpty())
+		else if(input->PressedRelease(Key::Backspace) && !listBox->IsEmpty())
 		{
-			auto item = list_box->GetItemsCast<PickFileDialogItem>()[0];
+			auto item = listBox->GetItemsCast<PickFileDialogItem>()[0];
 			if(item->filename == "..")
 				PickDir(item);
 		}
 	}
-	else if(tb_filename->focus && input->PressedRelease(Key::Enter))
+	else if(tbFilename->focus && input->PressedRelease(Key::Enter))
 	{
-		string filename = Trimmed(tb_filename->GetText());
+		string filename = Trimmed(tbFilename->GetText());
 		if(!filename.empty())
 		{
 			bool ok = false;
-			auto& items = list_box->GetItemsCast<PickFileDialogItem>();
+			auto& items = listBox->GetItemsCast<PickFileDialogItem>();
 			uint index = 0;
 			for(auto item : items)
 			{
 				if(item->filename == filename)
 				{
-					if(item->is_dir)
-						tb_filename->Reset();
-					list_box->Select(index);
+					if(item->isDir)
+						tbFilename->Reset();
+					listBox->Select(index);
 					ok = true;
 					PickItem();
 					break;
@@ -228,37 +228,37 @@ string GetExt(const string& filename)
 	return ext;
 }
 
-void PickFileDialog::LoadDir(bool keep_selected)
+void PickFileDialog::LoadDir(bool keepSelection)
 {
-	string old_filename;
-	auto selected = list_box->GetItemCast<PickFileDialogItem>();
+	string oldFilename;
+	auto selected = listBox->GetItemCast<PickFileDialogItem>();
 	if(selected)
-		old_filename = selected->filename;
-	tb_path->SetText(Format("%s/", active_dir.c_str()));
-	list_box->Reset();
+		oldFilename = selected->filename;
+	tbPath->SetText(Format("%s/", activeDir.c_str()));
+	listBox->Reset();
 
 	// add parent dir
-	if(active_dir != root_dir)
+	if(activeDir != rootDir)
 	{
 		auto item = new PickFileDialogItem;
 		item->filename = "..";
-		item->path = GetParentDir(active_dir);
-		item->is_dir = true;
-		item->tex = tex_dir;
-		list_box->Add(item);
+		item->path = GetParentDir(activeDir);
+		item->isDir = true;
+		item->tex = texDir;
+		listBox->Add(item);
 	}
 
 	// add all files/dirs matching filter
-	io::FindFiles(Format("%s/*.*", active_dir.c_str()), [this](const io::FileInfo& info)
+	io::FindFiles(Format("%s/*.*", activeDir.c_str()), [this](const io::FileInfo& info)
 	{
-		if(info.is_dir)
+		if(info.isDir)
 		{
 			auto item = new PickFileDialogItem;
 			item->filename = info.filename;
-			item->path = Format("%s/%s", active_dir.c_str(), item->filename.c_str());
-			item->is_dir = true;
-			item->tex = tex_dir;
-			list_box->Add(item);
+			item->path = Format("%s/%s", activeDir.c_str(), item->filename.c_str());
+			item->isDir = true;
+			item->tex = texDir;
+			listBox->Add(item);
 		}
 		else
 		{
@@ -266,11 +266,11 @@ void PickFileDialog::LoadDir(bool keep_selected)
 			string ext = GetExt(filename);
 
 			bool ok = false;
-			if(active_filter->exts.empty())
+			if(activeFilter->exts.empty())
 				ok = true;
 			else
 			{
-				for(auto& filter : active_filter->exts)
+				for(auto& filter : activeFilter->exts)
 				{
 					if(filter == ext)
 					{
@@ -284,27 +284,27 @@ void PickFileDialog::LoadDir(bool keep_selected)
 			{
 				auto item = new PickFileDialogItem;
 				item->filename = filename;
-				item->path = Format("%s/%s", active_dir.c_str(), item->filename.c_str());
-				item->is_dir = false;
-				list_box->Add(item);
+				item->path = Format("%s/%s", activeDir.c_str(), item->filename.c_str());
+				item->isDir = false;
+				listBox->Add(item);
 			}
 		}
 		return true;
 	});
 
 	// sort items
-	auto& items = list_box->GetItemsCast<PickFileDialogItem>();
+	auto& items = listBox->GetItemsCast<PickFileDialogItem>();
 	std::sort(items.begin(), items.end(), PickFileDialogItemSort);
 
 	// keep old selected item if it exists
-	if(keep_selected && !old_filename.empty())
+	if(keepSelection && !oldFilename.empty())
 	{
 		uint index = 0;
 		for(auto item : items)
 		{
-			if(item->filename == old_filename)
+			if(item->filename == oldFilename)
 			{
-				list_box->Select(index);
+				listBox->Select(index);
 				break;
 			}
 			++index;
@@ -312,7 +312,7 @@ void PickFileDialog::LoadDir(bool keep_selected)
 	}
 }
 
-void SplitText(const string& str, vector<string>& splitted, char separator, bool ignore_empty)
+void SplitText(const string& str, vector<string>& splitted, char separator, bool ignoreEmpty)
 {
 	uint pos = 0;
 	string text;
@@ -323,13 +323,13 @@ void SplitText(const string& str, vector<string>& splitted, char separator, bool
 		if(pos2 == string::npos)
 		{
 			text = str.substr(pos);
-			if(!text.empty() || !ignore_empty)
+			if(!text.empty() || !ignoreEmpty)
 				splitted.push_back(text);
 			break;
 		}
 
 		text = str.substr(pos, pos2 - pos);
-		if(!text.empty() || !ignore_empty)
+		if(!text.empty() || !ignoreEmpty)
 			splitted.push_back(text);
 
 		pos = pos2 + 1;
@@ -372,19 +372,19 @@ void PickFileDialog::ParseFilters(const string& str)
 		filters.push_back(f);
 	}
 
-	active_filter = &filters[0];
+	activeFilter = &filters[0];
 
-	list_extensions->Reset();
+	listExtensions->Reset();
 	for(uint i = 0; i < filters.size(); ++i)
-		list_extensions->Add(filters[i].text.c_str(), i);
-	list_extensions->Select(0);
+		listExtensions->Add(filters[i].text.c_str(), i);
+	listExtensions->Select(0);
 }
 
 bool PickFileDialog::HandleChangeExtension(int action, int index)
 {
 	if(action == ListBox::A_INDEX_CHANGED)
 	{
-		active_filter = &filters[index];
+		activeFilter = &filters[index];
 		LoadDir(true);
 	}
 
@@ -397,9 +397,9 @@ bool PickFileDialog::HandleListBoxEvent(int action, int index)
 	{
 	case ListBox::A_INDEX_CHANGED:
 		{
-			auto item = list_box->GetItemCast<PickFileDialogItem>();
-			if(!item->is_dir)
-				tb_filename->SetText(item->filename.c_str());
+			auto item = listBox->GetItemCast<PickFileDialogItem>();
+			if(!item->isDir)
+				tbFilename->SetText(item->filename.c_str());
 			SetupPreview();
 		}
 		break;
@@ -413,16 +413,16 @@ bool PickFileDialog::HandleListBoxEvent(int action, int index)
 
 void PickFileDialog::PickItem()
 {
-	auto item = list_box->GetItemCast<PickFileDialogItem>();
+	auto item = listBox->GetItemCast<PickFileDialogItem>();
 	if(!item)
 		return;
-	if(item->is_dir)
+	if(item->isDir)
 		PickDir(item);
 	else
 	{
 		result = true;
-		result_filename = item->filename;
-		result_path = item->path;
+		resultFilename = item->filename;
+		resultPath = item->path;
 		Close();
 		if(handler)
 			handler(this);
@@ -433,18 +433,18 @@ void PickFileDialog::PickDir(PickFileDialogItem* item)
 {
 	if(item->filename == "..")
 	{
-		string current_dir = io::FilenameFromPath(active_dir);
-		active_dir = item->path;
+		string currentDir = io::FilenameFromPath(activeDir);
+		activeDir = item->path;
 		LoadDir(false);
 
 		// select old parent dir
-		auto& items = list_box->GetItemsCast<PickFileDialogItem>();
+		auto& items = listBox->GetItemsCast<PickFileDialogItem>();
 		uint index = 0;
 		for(auto item : items)
 		{
-			if(item->filename == current_dir)
+			if(item->filename == currentDir)
 			{
-				list_box->Select(index);
+				listBox->Select(index);
 				break;
 			}
 			++index;
@@ -452,7 +452,7 @@ void PickFileDialog::PickDir(PickFileDialogItem* item)
 	}
 	else
 	{
-		active_dir = item->path;
+		activeDir = item->path;
 		LoadDir(false);
 	}
 }
@@ -467,22 +467,22 @@ void PickFileDialog::CancelPick()
 
 void PickFileDialog::SetupPreview()
 {
-	tb_preview->visible = false;
-	draw_box->visible = false;
-	label_preview->visible = false;
+	tbPreview->visible = false;
+	drawBox->visible = false;
+	labelPreview->visible = false;
 
 	if(!preview)
 		return;
 
 	PreviewType type;
-	auto item = list_box->GetItemCast<PickFileDialogItem>();
-	if(!item || item->is_dir)
+	auto item = listBox->GetItemCast<PickFileDialogItem>();
+	if(!item || item->isDir)
 		type = PreviewType::None;
 	else
 	{
 		string ext = GetExt(item->filename);
-		auto it = preview_types.find(ext);
-		if(it == preview_types.end())
+		auto it = previewTypes.find(ext);
+		if(it == previewTypes.end())
 			type = PreviewType::None;
 		else
 			type = it->second;
@@ -491,21 +491,21 @@ void PickFileDialog::SetupPreview()
 	switch(type)
 	{
 	case PreviewType::None:
-		label_preview->visible = true;
+		labelPreview->visible = true;
 		break;
 	case PreviewType::Text:
 		{
-			tb_preview->visible = true;
-			tb_preview->Reset();
+			tbPreview->visible = true;
+			tbPreview->Reset();
 			LocalString preview;
 			io::LoadFileToString(item->path.c_str(), preview.get_ref(), 1024 * 1024 * 1024); // max 1MB
-			tb_preview->SetText(preview);
+			tbPreview->SetText(preview);
 		}
 		break;
 	case PreviewType::Image:
 		{
-			draw_box->visible = true;
-			draw_box->SetTexture(app::resMgr->LoadInstant<Texture>(item->path));
+			drawBox->visible = true;
+			drawBox->SetTexture(app::resMgr->LoadInstant<Texture>(item->path));
 		}
 		break;
 	}

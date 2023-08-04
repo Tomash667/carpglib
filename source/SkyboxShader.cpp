@@ -45,7 +45,7 @@ void SkyboxShader::OnRelease()
 //=================================================================================================
 void SkyboxShader::Draw(Mesh& mesh, Camera& camera)
 {
-	assert(mesh.vertex_decl == VDI_DEFAULT);
+	assert(mesh.vertexDecl == VDI_DEFAULT);
 
 	app::render->SetBlendState(Render::BLEND_NO);
 	app::render->SetDepthState(Render::DEPTH_NO);

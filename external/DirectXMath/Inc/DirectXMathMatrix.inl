@@ -1,7 +1,7 @@
 //-------------------------------------------------------------------------------------
 // DirectXMathMatrix.inl -- SIMD C++ Math library
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkID=615560
@@ -48,23 +48,25 @@ inline bool XM_CALLCONV XMMatrixIsNaN(FXMMATRIX M) noexcept
     return (i != 0);      // i == 0 if nothing matched
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     // Load in registers
-    XMVECTOR vX = M.r[0];
-    XMVECTOR vY = M.r[1];
-    XMVECTOR vZ = M.r[2];
-    XMVECTOR vW = M.r[3];
+    float32x4_t vX = M.r[0];
+    float32x4_t vY = M.r[1];
+    float32x4_t vZ = M.r[2];
+    float32x4_t vW = M.r[3];
     // Test themselves to check for NaN
-    vX = vmvnq_u32(vceqq_f32(vX, vX));
-    vY = vmvnq_u32(vceqq_f32(vY, vY));
-    vZ = vmvnq_u32(vceqq_f32(vZ, vZ));
-    vW = vmvnq_u32(vceqq_f32(vW, vW));
+    uint32x4_t xmask = vmvnq_u32(vceqq_f32(vX, vX));
+    uint32x4_t ymask = vmvnq_u32(vceqq_f32(vY, vY));
+    uint32x4_t zmask = vmvnq_u32(vceqq_f32(vZ, vZ));
+    uint32x4_t wmask = vmvnq_u32(vceqq_f32(vW, vW));
     // Or all the results
-    vX = vorrq_u32(vX, vZ);
-    vY = vorrq_u32(vY, vW);
-    vX = vorrq_u32(vX, vY);
+    xmask = vorrq_u32(xmask, zmask);
+    ymask = vorrq_u32(ymask, wmask);
+    xmask = vorrq_u32(xmask, ymask);
     // If any tested true, return true
-    uint8x8x2_t vTemp = vzip_u8(vget_low_u8(vX), vget_high_u8(vX));
-    uint16x4x2_t vTemp2 = vzip_u16(vTemp.val[0], vTemp.val[1]);
-    uint32_t r = vget_lane_u32(vTemp2.val[1], 1);
+    uint8x8x2_t vTemp = vzip_u8(
+        vget_low_u8(vreinterpretq_u8_u32(xmask)),
+        vget_high_u8(vreinterpretq_u8_u32(xmask)));
+    uint16x4x2_t vTemp2 = vzip_u16(vreinterpret_u16_u8(vTemp.val[0]), vreinterpret_u16_u8(vTemp.val[1]));
+    uint32_t r = vget_lane_u32(vreinterpret_u32_u16(vTemp2.val[1]), 1);
     return (r != 0);
 #elif defined(_XM_SSE_INTRINSICS_)
     // Load in registers
@@ -113,24 +115,31 @@ inline bool XM_CALLCONV XMMatrixIsInfinite(FXMMATRIX M) noexcept
     } while (--i);
     return (i != 0);      // i == 0 if nothing matched
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
+    // Load in registers
+    float32x4_t vX = M.r[0];
+    float32x4_t vY = M.r[1];
+    float32x4_t vZ = M.r[2];
+    float32x4_t vW = M.r[3];
     // Mask off the sign bits
-    XMVECTOR vTemp1 = vandq_u32(M.r[0], g_XMAbsMask);
-    XMVECTOR vTemp2 = vandq_u32(M.r[1], g_XMAbsMask);
-    XMVECTOR vTemp3 = vandq_u32(M.r[2], g_XMAbsMask);
-    XMVECTOR vTemp4 = vandq_u32(M.r[3], g_XMAbsMask);
+    vX = vreinterpretq_f32_u32(vandq_u32(vreinterpretq_u32_f32(vX), g_XMAbsMask));
+    vY = vreinterpretq_f32_u32(vandq_u32(vreinterpretq_u32_f32(vY), g_XMAbsMask));
+    vZ = vreinterpretq_f32_u32(vandq_u32(vreinterpretq_u32_f32(vZ), g_XMAbsMask));
+    vW = vreinterpretq_f32_u32(vandq_u32(vreinterpretq_u32_f32(vW), g_XMAbsMask));
     // Compare to infinity
-    vTemp1 = vceqq_f32(vTemp1, g_XMInfinity);
-    vTemp2 = vceqq_f32(vTemp2, g_XMInfinity);
-    vTemp3 = vceqq_f32(vTemp3, g_XMInfinity);
-    vTemp4 = vceqq_f32(vTemp4, g_XMInfinity);
+    uint32x4_t xmask = vceqq_f32(vX, g_XMInfinity);
+    uint32x4_t ymask = vceqq_f32(vY, g_XMInfinity);
+    uint32x4_t zmask = vceqq_f32(vZ, g_XMInfinity);
+    uint32x4_t wmask = vceqq_f32(vW, g_XMInfinity);
     // Or the answers together
-    vTemp1 = vorrq_u32(vTemp1, vTemp2);
-    vTemp3 = vorrq_u32(vTemp3, vTemp4);
-    vTemp1 = vorrq_u32(vTemp1, vTemp3);
-    // If any are infinity, the signs are true.
-    uint8x8x2_t vTemp = vzip_u8(vget_low_u8(vTemp1), vget_high_u8(vTemp1));
-    uint16x4x2_t vTemp5 = vzip_u16(vTemp.val[0], vTemp.val[1]);
-    uint32_t r = vget_lane_u32(vTemp5.val[1], 1);
+    xmask = vorrq_u32(xmask, zmask);
+    ymask = vorrq_u32(ymask, wmask);
+    xmask = vorrq_u32(xmask, ymask);
+    // If any tested true, return true
+    uint8x8x2_t vTemp = vzip_u8(
+        vget_low_u8(vreinterpretq_u8_u32(xmask)),
+        vget_high_u8(vreinterpretq_u8_u32(xmask)));
+    uint16x4x2_t vTemp2 = vzip_u16(vreinterpret_u16_u8(vTemp.val[0]), vreinterpret_u16_u8(vTemp.val[1]));
+    uint32_t r = vget_lane_u32(vreinterpret_u32_u16(vTemp2.val[1]), 1);
     return (r != 0);
 #elif defined(_XM_SSE_INTRINSICS_)
     // Mask off the sign bits
@@ -187,16 +196,16 @@ inline bool XM_CALLCONV XMMatrixIsIdentity(FXMMATRIX M) noexcept
     uOne |= uZero;
     return (uOne == 0);
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    XMVECTOR vTemp1 = vceqq_f32(M.r[0], g_XMIdentityR0);
-    XMVECTOR vTemp2 = vceqq_f32(M.r[1], g_XMIdentityR1);
-    XMVECTOR vTemp3 = vceqq_f32(M.r[2], g_XMIdentityR2);
-    XMVECTOR vTemp4 = vceqq_f32(M.r[3], g_XMIdentityR3);
-    vTemp1 = vandq_u32(vTemp1, vTemp2);
-    vTemp3 = vandq_u32(vTemp3, vTemp4);
-    vTemp1 = vandq_u32(vTemp1, vTemp3);
-    uint8x8x2_t vTemp = vzip_u8(vget_low_u8(vTemp1), vget_high_u8(vTemp1));
-    uint16x4x2_t vTemp5 = vzip_u16(vTemp.val[0], vTemp.val[1]);
-    uint32_t r = vget_lane_u32(vTemp5.val[1], 1);
+    uint32x4_t xmask = vceqq_f32(M.r[0], g_XMIdentityR0);
+    uint32x4_t ymask = vceqq_f32(M.r[1], g_XMIdentityR1);
+    uint32x4_t zmask = vceqq_f32(M.r[2], g_XMIdentityR2);
+    uint32x4_t wmask = vceqq_f32(M.r[3], g_XMIdentityR3);
+    xmask = vandq_u32(xmask, zmask);
+    ymask = vandq_u32(ymask, wmask);
+    xmask = vandq_u32(xmask, ymask);
+    uint8x8x2_t vTemp = vzip_u8(vget_low_u8(vreinterpretq_u8_u32(xmask)), vget_high_u8(vreinterpretq_u8_u32(xmask)));
+    uint16x4x2_t vTemp2 = vzip_u16(vreinterpret_u16_u8(vTemp.val[0]), vreinterpret_u16_u8(vTemp.val[1]));
+    uint32_t r = vget_lane_u32(vreinterpret_u32_u16(vTemp2.val[1]), 1);
     return (r == 0xFFFFFFFFU);
 #elif defined(_XM_SSE_INTRINSICS_)
     XMVECTOR vTemp1 = _mm_cmpeq_ps(M.r[0], g_XMIdentityR0);
@@ -265,10 +274,10 @@ inline XMMATRIX XM_CALLCONV XMMatrixMultiply
     float32x2_t VL = vget_low_f32(M1.r[0]);
     float32x2_t VH = vget_high_f32(M1.r[0]);
     // Perform the operation on the first row
-    XMVECTOR vX = vmulq_lane_f32(M2.r[0], VL, 0);
-    XMVECTOR vY = vmulq_lane_f32(M2.r[1], VL, 1);
-    XMVECTOR vZ = vmlaq_lane_f32(vX, M2.r[2], VH, 0);
-    XMVECTOR vW = vmlaq_lane_f32(vY, M2.r[3], VH, 1);
+    float32x4_t vX = vmulq_lane_f32(M2.r[0], VL, 0);
+    float32x4_t vY = vmulq_lane_f32(M2.r[1], VL, 1);
+    float32x4_t vZ = vmlaq_lane_f32(vX, M2.r[2], VH, 0);
+    float32x4_t vW = vmlaq_lane_f32(vY, M2.r[3], VH, 1);
     mResult.r[0] = vaddq_f32(vZ, vW);
     // Repeat for the other 3 rows
     VL = vget_low_f32(M1.r[1]);
@@ -478,10 +487,10 @@ inline XMMATRIX XM_CALLCONV XMMatrixMultiplyTranspose
     float32x2_t VL = vget_low_f32(M1.r[0]);
     float32x2_t VH = vget_high_f32(M1.r[0]);
     // Perform the operation on the first row
-    XMVECTOR vX = vmulq_lane_f32(M2.r[0], VL, 0);
-    XMVECTOR vY = vmulq_lane_f32(M2.r[1], VL, 1);
-    XMVECTOR vZ = vmlaq_lane_f32(vX, M2.r[2], VH, 0);
-    XMVECTOR vW = vmlaq_lane_f32(vY, M2.r[3], VH, 1);
+    float32x4_t vX = vmulq_lane_f32(M2.r[0], VL, 0);
+    float32x4_t vY = vmulq_lane_f32(M2.r[1], VL, 1);
+    float32x4_t vZ = vmlaq_lane_f32(vX, M2.r[2], VH, 0);
+    float32x4_t vW = vmlaq_lane_f32(vY, M2.r[3], VH, 1);
     float32x4_t r0 = vaddq_f32(vZ, vW);
     // Repeat for the other 3 rows
     VL = vget_low_f32(M1.r[1]);
@@ -1403,9 +1412,9 @@ inline XMMATRIX XM_CALLCONV XMMatrixScalingFromVector(FXMVECTOR Scale) noexcept
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     XMMATRIX M;
-    M.r[0] = vandq_u32(Scale, g_XMMaskX);
-    M.r[1] = vandq_u32(Scale, g_XMMaskY);
-    M.r[2] = vandq_u32(Scale, g_XMMaskZ);
+    M.r[0] = vreinterpretq_f32_u32(vandq_u32(vreinterpretq_u32_f32(Scale), g_XMMaskX));
+    M.r[1] = vreinterpretq_f32_u32(vandq_u32(vreinterpretq_u32_f32(Scale), g_XMMaskY));
+    M.r[2] = vreinterpretq_f32_u32(vandq_u32(vreinterpretq_u32_f32(Scale), g_XMMaskZ));
     M.r[3] = g_XMIdentityR3.v;
     return M;
 #elif defined(_XM_SSE_INTRINSICS_)
@@ -1455,12 +1464,12 @@ inline XMMATRIX XM_CALLCONV XMMatrixRotationX(float Angle) noexcept
     float    fCosAngle;
     XMScalarSinCos(&fSinAngle, &fCosAngle, Angle);
 
-    const XMVECTOR Zero = vdupq_n_f32(0);
+    const float32x4_t Zero = vdupq_n_f32(0);
 
-    XMVECTOR T1 = vsetq_lane_f32(fCosAngle, Zero, 1);
+    float32x4_t T1 = vsetq_lane_f32(fCosAngle, Zero, 1);
     T1 = vsetq_lane_f32(fSinAngle, T1, 2);
 
-    XMVECTOR T2 = vsetq_lane_f32(-fSinAngle, Zero, 1);
+    float32x4_t T2 = vsetq_lane_f32(-fSinAngle, Zero, 1);
     T2 = vsetq_lane_f32(fCosAngle, T2, 2);
 
     XMMATRIX M;
@@ -1528,12 +1537,12 @@ inline XMMATRIX XM_CALLCONV XMMatrixRotationY(float Angle) noexcept
     float    fCosAngle;
     XMScalarSinCos(&fSinAngle, &fCosAngle, Angle);
 
-    const XMVECTOR Zero = vdupq_n_f32(0);
+    const float32x4_t Zero = vdupq_n_f32(0);
 
-    XMVECTOR T0 = vsetq_lane_f32(fCosAngle, Zero, 0);
+    float32x4_t T0 = vsetq_lane_f32(fCosAngle, Zero, 0);
     T0 = vsetq_lane_f32(-fSinAngle, T0, 2);
 
-    XMVECTOR T2 = vsetq_lane_f32(fSinAngle, Zero, 0);
+    float32x4_t T2 = vsetq_lane_f32(fSinAngle, Zero, 0);
     T2 = vsetq_lane_f32(fCosAngle, T2, 2);
 
     XMMATRIX M;
@@ -1601,12 +1610,12 @@ inline XMMATRIX XM_CALLCONV XMMatrixRotationZ(float Angle) noexcept
     float    fCosAngle;
     XMScalarSinCos(&fSinAngle, &fCosAngle, Angle);
 
-    const XMVECTOR Zero = vdupq_n_f32(0);
+    const float32x4_t Zero = vdupq_n_f32(0);
 
-    XMVECTOR T0 = vsetq_lane_f32(fCosAngle, Zero, 0);
+    float32x4_t T0 = vsetq_lane_f32(fCosAngle, Zero, 0);
     T0 = vsetq_lane_f32(fSinAngle, T0, 1);
 
-    XMVECTOR T1 = vsetq_lane_f32(-fSinAngle, Zero, 0);
+    float32x4_t T1 = vsetq_lane_f32(-fSinAngle, Zero, 0);
     T1 = vsetq_lane_f32(fCosAngle, T1, 1);
 
     XMMATRIX M;
@@ -1646,8 +1655,41 @@ inline XMMATRIX XM_CALLCONV XMMatrixRotationRollPitchYaw
     float Roll
 ) noexcept
 {
+#if defined(_XM_NO_INTRINSICS_)
+    float cp = cosf(Pitch);
+    float sp = sinf(Pitch);
+
+    float cy = cosf(Yaw);
+    float sy = sinf(Yaw);
+
+    float cr = cosf(Roll);
+    float sr = sinf(Roll);
+
+    XMMATRIX M;
+    M.m[0][0] = cr * cy + sr * sp * sy;
+    M.m[0][1] = sr * cp;
+    M.m[0][2] = sr * sp * cy - cr * sy;
+    M.m[0][3] = 0.0f;
+
+    M.m[1][0] = cr * sp * sy - sr * cy;
+    M.m[1][1] = cr * cp;
+    M.m[1][2] = sr * sy + cr * sp * cy;
+    M.m[1][3] = 0.0f;
+
+    M.m[2][0] = cp * sy;
+    M.m[2][1] = -sp;
+    M.m[2][2] = cp * cy;
+    M.m[2][3] = 0.0f;
+
+    M.m[3][0] = 0.0f;
+    M.m[3][1] = 0.0f;
+    M.m[3][2] = 0.0f;
+    M.m[3][3] = 1.0f;
+    return M;
+#else
     XMVECTOR Angles = XMVectorSet(Pitch, Yaw, Roll, 0.0f);
     return XMMatrixRotationRollPitchYawFromVector(Angles);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1657,8 +1699,69 @@ inline XMMATRIX XM_CALLCONV XMMatrixRotationRollPitchYawFromVector
     FXMVECTOR Angles // <Pitch, Yaw, Roll, undefined>
 ) noexcept
 {
-    XMVECTOR Q = XMQuaternionRotationRollPitchYawFromVector(Angles);
-    return XMMatrixRotationQuaternion(Q);
+#if defined(_XM_NO_INTRINSICS_)
+    float cp = cosf(Angles.vector4_f32[0]);
+    float sp = sinf(Angles.vector4_f32[0]);
+
+    float cy = cosf(Angles.vector4_f32[1]);
+    float sy = sinf(Angles.vector4_f32[1]);
+
+    float cr = cosf(Angles.vector4_f32[2]);
+    float sr = sinf(Angles.vector4_f32[2]);
+
+    XMMATRIX M;
+    M.m[0][0] = cr * cy + sr * sp * sy;
+    M.m[0][1] = sr * cp;
+    M.m[0][2] = sr * sp * cy - cr * sy;
+    M.m[0][3] = 0.0f;
+
+    M.m[1][0] = cr * sp * sy - sr * cy;
+    M.m[1][1] = cr * cp;
+    M.m[1][2] = sr * sy + cr * sp * cy;
+    M.m[1][3] = 0.0f;
+
+    M.m[2][0] = cp * sy;
+    M.m[2][1] = -sp;
+    M.m[2][2] = cp * cy;
+    M.m[2][3] = 0.0f;
+
+    M.m[3][0] = 0.0f;
+    M.m[3][1] = 0.0f;
+    M.m[3][2] = 0.0f;
+    M.m[3][3] = 1.0f;
+    return M;
+#else
+    static const XMVECTORF32  Sign = { { { 1.0f, -1.0f, -1.0f, 1.0f } } };
+
+    XMVECTOR SinAngles, CosAngles;
+    XMVectorSinCos(&SinAngles, &CosAngles, Angles);
+
+    XMVECTOR P0 = XMVectorPermute<XM_PERMUTE_1X, XM_PERMUTE_0Z, XM_PERMUTE_1Z, XM_PERMUTE_1X>(SinAngles, CosAngles);
+    XMVECTOR Y0 = XMVectorPermute<XM_PERMUTE_0Y, XM_PERMUTE_1X, XM_PERMUTE_1X, XM_PERMUTE_1Y>(SinAngles, CosAngles);
+    XMVECTOR P1 = XMVectorPermute<XM_PERMUTE_1Z, XM_PERMUTE_0Z, XM_PERMUTE_1Z, XM_PERMUTE_0Z>(SinAngles, CosAngles);
+    XMVECTOR Y1 = XMVectorPermute<XM_PERMUTE_1Y, XM_PERMUTE_1Y, XM_PERMUTE_0Y, XM_PERMUTE_0Y>(SinAngles, CosAngles);
+    XMVECTOR P2 = XMVectorPermute<XM_PERMUTE_0Z, XM_PERMUTE_1Z, XM_PERMUTE_0Z, XM_PERMUTE_1Z>(SinAngles, CosAngles);
+    XMVECTOR P3 = XMVectorPermute<XM_PERMUTE_0Y, XM_PERMUTE_0Y, XM_PERMUTE_1Y, XM_PERMUTE_1Y>(SinAngles, CosAngles);
+    XMVECTOR Y2 = XMVectorSplatX(SinAngles);
+    XMVECTOR NS = XMVectorNegate(SinAngles);
+
+    XMVECTOR Q0 = XMVectorMultiply(P0, Y0);
+    XMVECTOR Q1 = XMVectorMultiply(P1, Sign.v);
+    Q1 = XMVectorMultiply(Q1, Y1);
+    XMVECTOR Q2 = XMVectorMultiply(P2, Y2);
+    Q2 = XMVectorMultiplyAdd(Q2, P3, Q1);
+
+    XMVECTOR V0 = XMVectorPermute<XM_PERMUTE_1X, XM_PERMUTE_0Y, XM_PERMUTE_1Z, XM_PERMUTE_0W>(Q0, Q2);
+    XMVECTOR V1 = XMVectorPermute<XM_PERMUTE_1Y, XM_PERMUTE_0Z, XM_PERMUTE_1W, XM_PERMUTE_0W>(Q0, Q2);
+    XMVECTOR V2 = XMVectorPermute<XM_PERMUTE_0X, XM_PERMUTE_1X, XM_PERMUTE_0W, XM_PERMUTE_0W>(Q0, NS);
+
+    XMMATRIX M;
+    M.r[0] = XMVectorSelect(g_XMZero, V0, g_XMSelect1110.v);
+    M.r[1] = XMVectorSelect(g_XMZero, V1, g_XMSelect1110.v);
+    M.r[2] = XMVectorSelect(g_XMZero, V2, g_XMSelect1110.v);
+    M.r[3] = g_XMIdentityR3;
+    return M;
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1770,8 +1873,42 @@ inline XMMATRIX XM_CALLCONV XMMatrixRotationAxis
 
 inline XMMATRIX XM_CALLCONV XMMatrixRotationQuaternion(FXMVECTOR Quaternion) noexcept
 {
-#if defined(_XM_NO_INTRINSICS_) || defined(_XM_ARM_NEON_INTRINSICS_)
+#if defined(_XM_NO_INTRINSICS_)
 
+    float qx = Quaternion.vector4_f32[0];
+    float qxx = qx * qx;
+
+    float qy = Quaternion.vector4_f32[1];
+    float qyy = qy * qy;
+
+    float qz = Quaternion.vector4_f32[2];
+    float qzz = qz * qz;
+
+    float qw = Quaternion.vector4_f32[3];
+
+    XMMATRIX M;
+    M.m[0][0] = 1.f - 2.f * qyy - 2.f * qzz;
+    M.m[0][1] = 2.f * qx * qy + 2.f * qz * qw;
+    M.m[0][2] = 2.f * qx * qz - 2.f * qy * qw;
+    M.m[0][3] = 0.f;
+
+    M.m[1][0] = 2.f * qx * qy - 2.f * qz * qw;
+    M.m[1][1] = 1.f - 2.f * qxx - 2.f * qzz;
+    M.m[1][2] = 2.f * qy * qz + 2.f * qx * qw;
+    M.m[1][3] = 0.f;
+
+    M.m[2][0] = 2.f * qx * qz + 2.f * qy * qw;
+    M.m[2][1] = 2.f * qy * qz - 2.f * qx * qw;
+    M.m[2][2] = 1.f - 2.f * qxx - 2.f * qyy;
+    M.m[2][3] = 0.f;
+
+    M.m[3][0] = 0.f;
+    M.m[3][1] = 0.f;
+    M.m[3][2] = 0.f;
+    M.m[3][3] = 1.0f;
+    return M;
+
+#elif defined(_XM_ARM_NEON_INTRINSICS_)
     static const XMVECTORF32 Constant1110 = { { { 1.0f, 1.0f, 1.0f, 0.0f } } };
 
     XMVECTOR Q0 = XMVectorAdd(Quaternion, Quaternion);
@@ -2166,7 +2303,7 @@ inline XMMATRIX XM_CALLCONV XMMatrixPerspectiveLH
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float TwoNearZ = NearZ + NearZ;
     float fRange = FarZ / (FarZ - NearZ);
-    const XMVECTOR Zero = vdupq_n_f32(0);
+    const float32x4_t Zero = vdupq_n_f32(0);
     XMMATRIX M;
     M.r[0] = vsetq_lane_f32(TwoNearZ / ViewWidth, Zero, 0);
     M.r[1] = vsetq_lane_f32(TwoNearZ / ViewHeight, Zero, 1);
@@ -2253,7 +2390,7 @@ inline XMMATRIX XM_CALLCONV XMMatrixPerspectiveRH
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float TwoNearZ = NearZ + NearZ;
     float fRange = FarZ / (NearZ - FarZ);
-    const XMVECTOR Zero = vdupq_n_f32(0);
+    const float32x4_t Zero = vdupq_n_f32(0);
 
     XMMATRIX M;
     M.r[0] = vsetq_lane_f32(TwoNearZ / ViewWidth, Zero, 0);
@@ -2351,7 +2488,7 @@ inline XMMATRIX XM_CALLCONV XMMatrixPerspectiveFovLH
     float fRange = FarZ / (FarZ - NearZ);
     float Height = CosFov / SinFov;
     float Width = Height / AspectRatio;
-    const XMVECTOR Zero = vdupq_n_f32(0);
+    const float32x4_t Zero = vdupq_n_f32(0);
 
     XMMATRIX M;
     M.r[0] = vsetq_lane_f32(Width, Zero, 0);
@@ -2378,10 +2515,10 @@ inline XMMATRIX XM_CALLCONV XMMatrixPerspectiveFovLH
     XMVECTOR vTemp = _mm_setzero_ps();
     // Copy x only
     vTemp = _mm_move_ss(vTemp, vValues);
-    // CosFov / SinFov,0,0,0
+    // Height / AspectRatio,0,0,0
     XMMATRIX M;
     M.r[0] = vTemp;
-    // 0,Height / AspectRatio,0,0
+    // 0,Height,0,0
     vTemp = vValues;
     vTemp = _mm_and_ps(vTemp, g_XMMaskY);
     M.r[1] = vTemp;
@@ -2452,7 +2589,7 @@ inline XMMATRIX XM_CALLCONV XMMatrixPerspectiveFovRH
     float fRange = FarZ / (NearZ - FarZ);
     float Height = CosFov / SinFov;
     float Width = Height / AspectRatio;
-    const XMVECTOR Zero = vdupq_n_f32(0);
+    const float32x4_t Zero = vdupq_n_f32(0);
 
     XMMATRIX M;
     M.r[0] = vsetq_lane_f32(Width, Zero, 0);
@@ -2478,10 +2615,10 @@ inline XMMATRIX XM_CALLCONV XMMatrixPerspectiveFovRH
     XMVECTOR vTemp = _mm_setzero_ps();
     // Copy x only
     vTemp = _mm_move_ss(vTemp, vValues);
-    // CosFov / SinFov,0,0,0
+    // Height / AspectRatio,0,0,0
     XMMATRIX M;
     M.r[0] = vTemp;
-    // 0,Height / AspectRatio,0,0
+    // 0,Height,0,0
     vTemp = vValues;
     vTemp = _mm_and_ps(vTemp, g_XMMaskY);
     M.r[1] = vTemp;
@@ -2549,7 +2686,7 @@ inline XMMATRIX XM_CALLCONV XMMatrixPerspectiveOffCenterLH
     float ReciprocalWidth = 1.0f / (ViewRight - ViewLeft);
     float ReciprocalHeight = 1.0f / (ViewTop - ViewBottom);
     float fRange = FarZ / (FarZ - NearZ);
-    const XMVECTOR Zero = vdupq_n_f32(0);
+    const float32x4_t Zero = vdupq_n_f32(0);
 
     XMMATRIX M;
     M.r[0] = vsetq_lane_f32(TwoNearZ * ReciprocalWidth, Zero, 0);
@@ -2647,7 +2784,7 @@ inline XMMATRIX XM_CALLCONV XMMatrixPerspectiveOffCenterRH
     float ReciprocalWidth = 1.0f / (ViewRight - ViewLeft);
     float ReciprocalHeight = 1.0f / (ViewTop - ViewBottom);
     float fRange = FarZ / (NearZ - FarZ);
-    const XMVECTOR Zero = vdupq_n_f32(0);
+    const float32x4_t Zero = vdupq_n_f32(0);
 
     XMMATRIX M;
     M.r[0] = vsetq_lane_f32(TwoNearZ * ReciprocalWidth, Zero, 0);
@@ -2737,7 +2874,7 @@ inline XMMATRIX XM_CALLCONV XMMatrixOrthographicLH
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float fRange = 1.0f / (FarZ - NearZ);
 
-    const XMVECTOR Zero = vdupq_n_f32(0);
+    const float32x4_t Zero = vdupq_n_f32(0);
     XMMATRIX M;
     M.r[0] = vsetq_lane_f32(2.0f / ViewWidth, Zero, 0);
     M.r[1] = vsetq_lane_f32(2.0f / ViewHeight, Zero, 1);
@@ -2821,7 +2958,7 @@ inline XMMATRIX XM_CALLCONV XMMatrixOrthographicRH
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float fRange = 1.0f / (NearZ - FarZ);
 
-    const XMVECTOR Zero = vdupq_n_f32(0);
+    const float32x4_t Zero = vdupq_n_f32(0);
     XMMATRIX M;
     M.r[0] = vsetq_lane_f32(2.0f / ViewWidth, Zero, 0);
     M.r[1] = vsetq_lane_f32(2.0f / ViewHeight, Zero, 1);
@@ -2910,7 +3047,7 @@ inline XMMATRIX XM_CALLCONV XMMatrixOrthographicOffCenterLH
     float ReciprocalWidth = 1.0f / (ViewRight - ViewLeft);
     float ReciprocalHeight = 1.0f / (ViewTop - ViewBottom);
     float fRange = 1.0f / (FarZ - NearZ);
-    const XMVECTOR Zero = vdupq_n_f32(0);
+    const float32x4_t Zero = vdupq_n_f32(0);
     XMMATRIX M;
     M.r[0] = vsetq_lane_f32(ReciprocalWidth + ReciprocalWidth, Zero, 0);
     M.r[1] = vsetq_lane_f32(ReciprocalHeight + ReciprocalHeight, Zero, 1);
@@ -3010,7 +3147,7 @@ inline XMMATRIX XM_CALLCONV XMMatrixOrthographicOffCenterRH
     float ReciprocalWidth = 1.0f / (ViewRight - ViewLeft);
     float ReciprocalHeight = 1.0f / (ViewTop - ViewBottom);
     float fRange = 1.0f / (NearZ - FarZ);
-    const XMVECTOR Zero = vdupq_n_f32(0);
+    const float32x4_t Zero = vdupq_n_f32(0);
     XMMATRIX M;
     M.r[0] = vsetq_lane_f32(ReciprocalWidth + ReciprocalWidth, Zero, 0);
     M.r[1] = vsetq_lane_f32(ReciprocalHeight + ReciprocalHeight, Zero, 1);
@@ -3164,7 +3301,7 @@ inline XMMATRIX& XMMATRIX::operator/= (float S) noexcept
     r[3] = XMVectorDivide(r[3], vS);
     return *this;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-#if defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64) || __aarch64__
+#if defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64) || defined(_M_ARM64EC) || __aarch64__
     float32x4_t vS = vdupq_n_f32(S);
     r[0] = vdivq_f32(r[0], vS);
     r[1] = vdivq_f32(r[1], vS);
@@ -3178,7 +3315,7 @@ inline XMMATRIX& XMMATRIX::operator/= (float S) noexcept
     R0 = vmul_f32(S0, R0);
     S0 = vrecps_f32(R0, vS);
     R0 = vmul_f32(S0, R0);
-    float32x4_t Reciprocal = vcombine_u32(R0, R0);
+    float32x4_t Reciprocal = vcombine_f32(R0, R0);
     r[0] = vmulq_f32(r[0], Reciprocal);
     r[1] = vmulq_f32(r[1], Reciprocal);
     r[2] = vmulq_f32(r[2], Reciprocal);
@@ -3251,7 +3388,7 @@ inline XMMATRIX XMMATRIX::operator/ (float S) const noexcept
     R.r[3] = XMVectorDivide(r[3], vS);
     return R;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-#if defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64) || __aarch64__
+#if defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64) || defined(_M_ARM64EC) || __aarch64__
     float32x4_t vS = vdupq_n_f32(S);
     XMMATRIX R;
     R.r[0] = vdivq_f32(r[0], vS);
@@ -3266,7 +3403,7 @@ inline XMMATRIX XMMATRIX::operator/ (float S) const noexcept
     R0 = vmul_f32(S0, R0);
     S0 = vrecps_f32(R0, vS);
     R0 = vmul_f32(S0, R0);
-    float32x4_t Reciprocal = vcombine_u32(R0, R0);
+    float32x4_t Reciprocal = vcombine_f32(R0, R0);
     XMMATRIX R;
     R.r[0] = vmulq_f32(r[0], Reciprocal);
     R.r[1] = vmulq_f32(r[1], Reciprocal);

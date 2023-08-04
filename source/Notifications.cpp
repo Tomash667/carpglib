@@ -3,7 +3,7 @@
 
 #include "Input.h"
 
-static const Int2 notification_size(350, 80);
+static const Int2 notificationSize(350, 80);
 
 //=================================================================================================
 void Notification::Close(float t)
@@ -56,13 +56,13 @@ Notification* Notifications::Add(cstring text, Texture* icon, float timer)
 }
 
 //=================================================================================================
-void Notifications::Draw(ControlDrawData*)
+void Notifications::Draw()
 {
 	if(notifications.empty())
 		return;
 
-	AreaLayout box_layout = layout->box;
-	int offset_y = 8;
+	AreaLayout boxLayout = layout->box;
+	int offetY = 8;
 	bool firstWithButtons = true;
 
 	for(Notification* n : notifications)
@@ -70,68 +70,68 @@ void Notifications::Draw(ControlDrawData*)
 		if(n->state == Notification::Pending)
 			break;
 
-		Int2 text_size = layout->font->CalculateSize(n->text, notification_size.x - 80);
-		Int2 box_size = Int2::Max(notification_size, text_size + Int2(0, 16));
-		Int2 real_box_size = box_size;
+		Int2 textSize = layout->font->CalculateSize(n->text, notificationSize.x - 80);
+		Int2 boxSize = Int2::Max(notificationSize, textSize + Int2(0, 16));
+		Int2 realBoxSize = boxSize;
 		if(n->buttons)
-			real_box_size.y += 40;
+			realBoxSize.y += 40;
 
 		const int alpha = int(255 * n->t2);
-		Int2 offset(gui->wndSize.x - real_box_size.x - 8, offset_y);
+		Int2 offset(gui->wndSize.x - realBoxSize.x - 8, offetY);
 		Color tint(255, 255, 255, alpha);
 
-		gui->DrawArea(Box2d::Create(offset, real_box_size), layout->box, nullptr, &tint);
+		gui->DrawArea(Box2d::Create(offset, realBoxSize), layout->box, nullptr, &tint);
 
 		if(n->icon)
 			gui->DrawSprite(n->icon, offset + Int2(8, 8), Color::Alpha(alpha));
 
-		Rect rect = { offset.x + 8 + 64, offset.y + 8, offset.x + box_size.x - 8, offset.y + box_size.y - 8 };
+		Rect rect = { offset.x + 8 + 64, offset.y + 8, offset.x + boxSize.x - 8, offset.y + boxSize.y - 8 };
 		gui->DrawText(layout->font, n->text, DTF_CENTER | DTF_VCENTER, Color(0, 0, 0, alpha), rect, &rect);
 
 		if(n->buttons)
 		{
-			int text_size2 = rect.SizeX();
+			int textSize2 = rect.SizeX();
 
 			// accept button
 			Color color = n->active == 1 ? Color(255, 255, 255, alpha) : Color(0, 0, 0, alpha);
-			gui->DrawArea(Box2d::Create(Int2(rect.p1.x + 4, offset.y + real_box_size.y - 46), Int2(text_size2 / 2 - 8, 36)), layout->button, nullptr, &color);
+			gui->DrawArea(Box2d::Create(Int2(rect.p1.x + 4, offset.y + realBoxSize.y - 46), Int2(textSize2 / 2 - 8, 36)), layout->button, nullptr, &color);
 			if(firstWithButtons && acceptText)
 			{
 				const int textWidth = layout->font->CalculateSize(acceptText).y;
 				const int totalWidth = 32 + 8 + textWidth;
-				gui->DrawSprite(layout->accept, Int2(rect.p1.x + (text_size2 / 2 - totalWidth) / 2, offset.y + real_box_size.y - 44), color);
+				gui->DrawSprite(layout->accept, Int2(rect.p1.x + (textSize2 / 2 - totalWidth) / 2, offset.y + realBoxSize.y - 44), color);
 				gui->DrawText(layout->font, acceptText, DTF_LEFT | DTF_VCENTER, Color(0, 0, 0, alpha),
-					Rect::Create(Int2(rect.p1.x + (text_size2 / 2 - totalWidth) / 2 + 40, offset.y + real_box_size.y - 46), Int2(100, 36)));
+					Rect::Create(Int2(rect.p1.x + (textSize2 / 2 - totalWidth) / 2 + 40, offset.y + realBoxSize.y - 46), Int2(100, 36)));
 			}
 			else
-				gui->DrawSprite(layout->accept, Int2(rect.p1.x + (text_size2 / 2 - 32) / 2, offset.y + real_box_size.y - 44), color);
+				gui->DrawSprite(layout->accept, Int2(rect.p1.x + (textSize2 / 2 - 32) / 2, offset.y + realBoxSize.y - 44), color);
 
 			// cancel button
 			color = n->active == 2 ? Color(255, 255, 255, alpha) : Color(0, 0, 0, alpha);
-			gui->DrawArea(Box2d::Create(Int2(rect.p1.x + text_size2 / 2 + 4, offset.y + real_box_size.y - 46), Int2(text_size2 / 2 - 8, 36)),
+			gui->DrawArea(Box2d::Create(Int2(rect.p1.x + textSize2 / 2 + 4, offset.y + realBoxSize.y - 46), Int2(textSize2 / 2 - 8, 36)),
 				layout->button, nullptr, &color);
 			if(firstWithButtons && declineText)
 			{
 				const int textWidth = layout->font->CalculateSize(declineText).y;
 				const int totalWidth = 32 + 8 + textWidth;
-				gui->DrawSprite(layout->cancel, Int2(rect.p1.x + text_size2 / 2 + (text_size2 / 2 - totalWidth) / 2, offset.y + real_box_size.y - 44), color);
+				gui->DrawSprite(layout->cancel, Int2(rect.p1.x + textSize2 / 2 + (textSize2 / 2 - totalWidth) / 2, offset.y + realBoxSize.y - 44), color);
 				gui->DrawText(layout->font, declineText, DTF_LEFT | DTF_VCENTER, Color(0, 0, 0, alpha),
-					Rect::Create(Int2(rect.p1.x + text_size2 / 2 + (text_size2 / 2 - totalWidth) / 2 + 40, offset.y + real_box_size.y - 46), Int2(100, 36)));
+					Rect::Create(Int2(rect.p1.x + textSize2 / 2 + (textSize2 / 2 - totalWidth) / 2 + 40, offset.y + realBoxSize.y - 46), Int2(100, 36)));
 			}
 			else
-				gui->DrawSprite(layout->cancel, Int2(rect.p1.x + text_size2 / 2 + (text_size2 / 2 - 32) / 2, offset.y + real_box_size.y - 44), color);
+				gui->DrawSprite(layout->cancel, Int2(rect.p1.x + textSize2 / 2 + (textSize2 / 2 - 32) / 2, offset.y + realBoxSize.y - 44), color);
 
 			firstWithButtons = false;
 		}
 
-		offset_y += real_box_size.y + 4;
+		offetY += realBoxSize.y + 4;
 	}
 }
 
 //=================================================================================================
 void Notifications::Update(float dt)
 {
-	int offset_y = 8;
+	int offetY = 8;
 	bool firstWithButtons = true;
 	uint index = 0;
 	LoopAndRemove(notifications, [&](Notification* n)
@@ -170,29 +170,29 @@ void Notifications::Update(float dt)
 
 		++index;
 
-		Int2 text_size = layout->font->CalculateSize(n->text, notification_size.x - 80);
-		Int2 box_size = Int2::Max(notification_size, text_size + Int2(0, 16));
-		Int2 real_box_size = box_size;
+		Int2 textSize = layout->font->CalculateSize(n->text, notificationSize.x - 80);
+		Int2 boxSize = Int2::Max(notificationSize, textSize + Int2(0, 16));
+		Int2 realBoxSize = boxSize;
 		if(n->buttons)
 		{
 			if(gui->NeedCursor())
 			{
-				real_box_size.y += 40;
+				realBoxSize.y += 40;
 
-				Int2 offset(gui->wndSize.x - real_box_size.x - 8, offset_y);
-				Rect rect = { offset.x + 8 + 64, offset.y + 8, offset.x + box_size.x - 8, offset.y + box_size.y - 8 };
+				Int2 offset(gui->wndSize.x - realBoxSize.x - 8, offetY);
+				Rect rect = { offset.x + 8 + 64, offset.y + 8, offset.x + boxSize.x - 8, offset.y + boxSize.y - 8 };
 
-				int text_size2 = rect.SizeX();
-				if(PointInRect(gui->cursorPos, Int2(rect.p1.x + 4, offset.y + real_box_size.y - 46), Int2(text_size2 / 2 - 8, 36)))
+				int textSize2 = rect.SizeX();
+				if(Rect::IsInside(gui->cursorPos, Int2(rect.p1.x + 4, offset.y + realBoxSize.y - 46), Int2(textSize2 / 2 - 8, 36)))
 					n->active = 1;
-				else if(PointInRect(gui->cursorPos, Int2(rect.p1.x + text_size2 / 2 + 4, offset.y + real_box_size.y - 46), Int2(text_size2 / 2 - 8, 36)))
+				else if(Rect::IsInside(gui->cursorPos, Int2(rect.p1.x + textSize2 / 2 + 4, offset.y + realBoxSize.y - 46), Int2(textSize2 / 2 - 8, 36)))
 					n->active = 2;
 				else
 					n->active = 0;
 
 				if(n->active != 0 && !gui->HaveDialog())
 				{
-					gui->cursorMode = CURSOR_HOVER;
+					gui->SetCursorMode(CURSOR_HOVER);
 					if(input->Pressed(Key::LeftButton))
 					{
 						n->callback(n->active == 1);
@@ -215,7 +215,7 @@ void Notifications::Update(float dt)
 		else
 			n->active = 0;
 
-		offset_y += real_box_size.y + 4;
+		offetY += realBoxSize.y + 4;
 		return false;
 	});
 }

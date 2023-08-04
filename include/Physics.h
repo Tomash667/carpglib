@@ -17,6 +17,7 @@ public:
 	void AddShape(btCollisionShape* shape) { shapes.push_back(shape); }
 	void UpdateAabb(btCollisionObject* cobj);
 	btCollisionWorld* GetWorld() { return world; }
+	btBvhTriangleMeshShape* CreateTrimeshShape(VertexData* vd);
 	void SetGhostCallback();
 
 private:
@@ -26,6 +27,7 @@ private:
 	btCollisionWorld* world;
 	btGhostPairCallback* ghostCallback;
 	vector<btCollisionShape*> shapes;
+	vector<btBvhTriangleMeshShape*> trimeshes;
 };
 
 //-----------------------------------------------------------------------------

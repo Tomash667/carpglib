@@ -17,8 +17,8 @@
 Gui* app::gui;
 
 //=================================================================================================
-Gui::Gui() : cursorMode(CURSOR_NORMAL), focusedCtrl(nullptr), masterLayout(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), shader(nullptr),
-fontLoader(nullptr), lastClick(Key::LeftButton), lastClickTimer(1.f)
+Gui::Gui() : cursorMode(CURSOR_NORMAL), focusedCtrl(nullptr), masterLayout(nullptr), layout(nullptr), overlay(nullptr), drawLayers(true), drawDialogs(true),
+grayscale(false), shader(nullptr), fontLoader(nullptr), lastClick(Key::LeftButton), lastClickTimer(1.f), clipRect(nullptr)
 {
 }
 
@@ -43,9 +43,9 @@ void Gui::Init()
 	cursorPos = wndSize / 2;
 
 	layer = new Container;
-	layer->auto_focus = true;
+	layer->autoFocus = true;
 	dialogLayer = new Container;
-	dialogLayer->focus_top = true;
+	dialogLayer->focusTop = true;
 
 	shader = app::render->GetShader<GuiShader>();
 
@@ -59,6 +59,13 @@ void Gui::SetText(cstring ok, cstring yes, cstring no, cstring cancel)
 	txYes = yes;
 	txNo = no;
 	txCancel = cancel;
+}
+
+//=================================================================================================
+void Gui::SetDrawOptions(bool drawLayers, bool drawDialogs)
+{
+	this->drawLayers = drawLayers;
+	this->drawDialogs = drawDialogs;
 }
 
 //=================================================================================================
@@ -83,15 +90,15 @@ Font* Gui::GetFont(cstring name, int size, int weight, int outline)
 {
 	assert(name && size > 0 && InRange(weight, 1, 9) && outline >= 0);
 
-	string res_name = Format("%s;%d;%d;%d", name, size, weight, outline);
-	Font* existing_font = app::resMgr->TryGet<Font>(res_name);
-	if(existing_font)
-		return existing_font;
+	string resName = Format("%s;%d;%d;%d", name, size, weight, outline);
+	Font* existingFont = app::resMgr->TryGet<Font>(resName);
+	if(existingFont)
+		return existingFont;
 
 	Font* font = fontLoader->Load(name, size, weight, outline);
 	font->type = ResourceType::Font;
 	font->state = ResourceState::Loaded;
-	font->path = res_name;
+	font->path = resName;
 	font->filename = font->path.c_str();
 	app::resMgr->AddResource(font);
 
@@ -101,21 +108,21 @@ Font* Gui::GetFont(cstring name, int size, int weight, int outline)
 //=================================================================================================
 // Draw text - rewritten from TFQ
 bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect& rect, const Rect* clipping, vector<Hitbox>* hitboxes,
-	int* hitbox_counter, const vector<TextLine>* lines)
+	int* hitboxCounter, const vector<TextLine>* lines)
 {
 	assert(font);
 
-	uint line_begin, line_end, line_index = 0;
-	int line_width, width = rect.SizeX();
+	uint lineBegin, lineEnd, lineIndex = 0;
+	int lineWidth, width = rect.SizeX();
 	cstring text = str;
-	uint text_end = strlen(str);
-	bool bottom_clip = false;
+	uint textEnd = strlen(str);
+	bool bottomClip = false;
 
 	DrawLineContext ctx;
 	ctx.font = font;
 	ctx.text = text;
 	ctx.v = vBuf;
-	ctx.v2 = (IsSet(flags, DTF_OUTLINE) && font->tex_outline) ? vBuf2 : nullptr;
+	ctx.v2 = (IsSet(flags, DTF_OUTLINE) && font->texOutline) ? vBuf2 : nullptr;
 	ctx.inBuffer = 0;
 	ctx.inBuffer2 = 0;
 	ctx.parseSpecial = IsSet(flags, DTF_PARSE_SPECIAL);
@@ -126,7 +133,7 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 	{
 		ctx.hc = &tmpHitboxContext;
 		ctx.hc->hitbox = hitboxes;
-		ctx.hc->counter = (hitbox_counter ? *hitbox_counter : 0);
+		ctx.hc->counter = (hitboxCounter ? *hitboxCounter : 0);
 		ctx.hc->open = HitboxOpen::No;
 	}
 	else
@@ -139,34 +146,34 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 		if(!lines)
 		{
 			// tekst pionowo po œrodku lub na dole
-			while(font->SplitLine(line_begin, line_end, line_width, line_index, text, text_end, flags, width))
+			while(font->SplitLine(lineBegin, lineEnd, lineWidth, lineIndex, text, textEnd, flags, width))
 			{
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
 				if(IsSet(flags, DTF_CENTER))
-					x = rect.Left() + (width - line_width) / 2;
+					x = rect.Left() + (width - lineWidth) / 2;
 				else if(IsSet(flags, DTF_RIGHT))
-					x = rect.Right() - line_width;
+					x = rect.Right() - lineWidth;
 				else
 					x = rect.Left();
 
-				int clip_result = (clipping ? Clip(x, y, line_width, font->height, clipping) : 0);
+				int clipResult = (clipping ? Clip(x, y, lineWidth, font->height, clipping) : 0);
 
 				// znaki w tej linijce
-				if(clip_result == 0)
-					DrawTextLine(ctx, line_begin, line_end, x, y, nullptr);
-				else if(clip_result == 5)
-					DrawTextLine(ctx, line_begin, line_end, x, y, clipping);
-				else if(clip_result == 2)
+				if(clipResult == 0)
+					DrawTextLine(ctx, lineBegin, lineEnd, x, y, nullptr);
+				else if(clipResult == 5)
+					DrawTextLine(ctx, lineBegin, lineEnd, x, y, clipping);
+				else if(clipResult == 2)
 				{
 					// tekst jest pod widocznym regionem, przerwij rysowanie
-					bottom_clip = true;
+					bottomClip = true;
 					break;
 				}
 				else
 				{
 					// pomiñ hitbox
-					SkipLine(text, line_begin, line_end, ctx.hc);
+					SkipLine(text, lineBegin, lineEnd, ctx.hc);
 				}
 
 				// zmieñ y na kolejn¹ linijkê
@@ -186,17 +193,17 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 				else
 					x = rect.Left();
 
-				int clip_result = (clipping ? Clip(x, y, it->width, font->height, clipping) : 0);
+				int clipResult = (clipping ? Clip(x, y, it->width, font->height, clipping) : 0);
 
 				// znaki w tej linijce
-				if(clip_result == 0)
+				if(clipResult == 0)
 					DrawTextLine(ctx, it->begin, it->end, x, y, nullptr);
-				else if(clip_result == 5)
+				else if(clipResult == 5)
 					DrawTextLine(ctx, it->begin, it->end, x, y, clipping);
-				else if(clip_result == 2)
+				else if(clipResult == 2)
 				{
 					// tekst jest pod widocznym regionem, przerwij rysowanie
-					bottom_clip = true;
+					bottomClip = true;
 					break;
 				}
 				else
@@ -215,14 +222,14 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 		// tekst u góry
 		if(!lines)
 		{
-			static vector<TextLine> lines_data;
-			lines_data.clear();
+			static vector<TextLine> linesData;
+			linesData.clear();
 
 			// oblicz wszystkie linijki
-			while(font->SplitLine(line_begin, line_end, line_width, line_index, text, text_end, flags, width))
-				lines_data.push_back(TextLine(line_begin, line_end, line_width));
+			while(font->SplitLine(lineBegin, lineEnd, lineWidth, lineIndex, text, textEnd, flags, width))
+				linesData.push_back(TextLine(lineBegin, lineEnd, lineWidth));
 
-			lines = &lines_data;
+			lines = &linesData;
 		}
 
 		// pocz¹tkowa pozycja y
@@ -243,17 +250,17 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 			else
 				x = rect.Left();
 
-			int clip_result = (clipping ? Clip(x, y, it->width, font->height, clipping) : 0);
+			int clipResult = (clipping ? Clip(x, y, it->width, font->height, clipping) : 0);
 
 			// znaki w tej linijce
-			if(clip_result == 0)
+			if(clipResult == 0)
 				DrawTextLine(ctx, it->begin, it->end, x, y, nullptr);
-			else if(clip_result == 5)
+			else if(clipResult == 5)
 				DrawTextLine(ctx, it->begin, it->end, x, y, clipping);
-			else if(clip_result == 2)
+			else if(clipResult == 2)
 			{
 				// tekst jest pod widocznym regionem, przerwij rysowanie
-				bottom_clip = true;
+				bottomClip = true;
 				break;
 			}
 			else if(hitboxes)
@@ -268,35 +275,35 @@ bool Gui::DrawText(Font* font, Cstring str, uint flags, Color color, const Rect&
 	}
 
 	if(ctx.inBuffer2 > 0)
-		shader->Draw(font->tex_outline, vBuf2, ctx.inBuffer2);
+		shader->Draw(font->texOutline, vBuf2, ctx.inBuffer2);
 	if(ctx.inBuffer > 0)
 		shader->Draw(font->tex, vBuf, ctx.inBuffer);
 
-	if(hitbox_counter)
-		*hitbox_counter = ctx.hc->counter;
+	if(hitboxCounter)
+		*hitboxCounter = ctx.hc->counter;
 
-	return !bottom_clip;
+	return !bottomClip;
 }
 
 //=================================================================================================
-void Gui::DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int x, int y, const Rect* clipping)
+void Gui::DrawTextLine(DrawLineContext& ctx, uint lineBegin, uint lineEnd, int x, int y, const Rect* clipping)
 {
 	if(ctx.v2)
-		DrawTextOutline(ctx, line_begin, line_end, x, y, clipping);
+		DrawTextOutline(ctx, lineBegin, lineEnd, x, y, clipping);
 
-	for(uint i = line_begin; i < line_end; ++i)
+	for(uint i = lineBegin; i < lineEnd; ++i)
 	{
 		char c = ctx.text[i];
 		if(c == '$' && ctx.parseSpecial)
 		{
 			++i;
-			assert(i < line_end);
+			assert(i < lineEnd);
 			c = ctx.text[i];
 			if(c == 'c')
 			{
 				// kolor
 				++i;
-				assert(i < line_end);
+				assert(i < lineEnd);
 				c = ctx.text[i];
 				switch(c)
 				{
@@ -338,7 +345,7 @@ void Gui::DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int
 			else if(c == 'h')
 			{
 				++i;
-				assert(i < line_end);
+				assert(i < lineEnd);
 				c = ctx.text[i];
 				if(c == '+')
 				{
@@ -381,21 +388,21 @@ void Gui::DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int
 				// $g+123[,123];
 				// $g-
 				++i;
-				assert(i < line_end);
+				assert(i < lineEnd);
 				c = ctx.text[i];
 				if(c == '+')
 				{
 					// start group hitbox
 					int index, index2;
 					++i;
-					assert(i < line_end);
-					if(ctx.font->ParseGroupIndex(ctx.text, line_end, i, index, index2) && ctx.hc)
+					assert(i < lineEnd);
+					if(ctx.font->ParseGroupIndex(ctx.text, lineEnd, i, index, index2) && ctx.hc)
 					{
 						assert(ctx.hc->open == HitboxOpen::No);
 						ctx.hc->open = HitboxOpen::Group;
 						ctx.hc->region.Left() = INT_MAX;
-						ctx.hc->group_index = index;
-						ctx.hc->group_index2 = index2;
+						ctx.hc->groupIndex = index;
+						ctx.hc->groupIndex2 = index2;
 					}
 				}
 				else if(c == '-')
@@ -409,8 +416,8 @@ void Gui::DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int
 						{
 							Hitbox& h = Add1(ctx.hc->hitbox);
 							h.rect = ctx.hc->region;
-							h.index = ctx.hc->group_index;
-							h.index2 = ctx.hc->group_index2;
+							h.index = ctx.hc->groupIndex;
+							h.index2 = ctx.hc->groupIndex2;
 						}
 					}
 				}
@@ -434,11 +441,11 @@ void Gui::DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int
 		}
 
 		Font::Glyph& g = ctx.font->glyph[byte(c)];
-		Int2 glyph_size = Int2(g.width, ctx.font->height) * ctx.scale;
+		Int2 glyphSize = Int2(g.width, ctx.font->height) * ctx.scale;
 
-		int clip_result = (clipping ? Clip(x, y, glyph_size.x, glyph_size.y, clipping) : 0);
+		int clipResult = (clipping ? Clip(x, y, glyphSize.x, glyphSize.y, clipping) : 0);
 
-		if(clip_result == 0)
+		if(clipResult == 0)
 		{
 			// dodaj znak do bufora
 			ctx.v->pos = Vec2(float(x), float(y));
@@ -446,107 +453,107 @@ void Gui::DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int
 			ctx.v->tex = g.uv.LeftTop();
 			++ctx.v;
 
-			ctx.v->pos = Vec2(float(x + glyph_size.x), float(y));
+			ctx.v->pos = Vec2(float(x + glyphSize.x), float(y));
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = g.uv.RightTop();
 			++ctx.v;
 
-			ctx.v->pos = Vec2(float(x), float(y + glyph_size.y));
+			ctx.v->pos = Vec2(float(x), float(y + glyphSize.y));
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = g.uv.LeftBottom();
 			++ctx.v;
 
-			ctx.v->pos = Vec2(float(x + glyph_size.x), float(y));
+			ctx.v->pos = Vec2(float(x + glyphSize.x), float(y));
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = g.uv.RightTop();
 			++ctx.v;
 
-			ctx.v->pos = Vec2(float(x + glyph_size.x), float(y + glyph_size.y));
+			ctx.v->pos = Vec2(float(x + glyphSize.x), float(y + glyphSize.y));
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = g.uv.RightBottom();
 			++ctx.v;
 
-			ctx.v->pos = Vec2(float(x), float(y + glyph_size.y));
+			ctx.v->pos = Vec2(float(x), float(y + glyphSize.y));
 			ctx.v->color = ctx.currentColor;
 			ctx.v->tex = g.uv.LeftBottom();
 			++ctx.v;
 
 			if(ctx.hc && ctx.hc->open != HitboxOpen::No)
 			{
-				Rect r_clip = Rect::Create(Int2(x, y), glyph_size);
+				Rect rClip = Rect::Create(Int2(x, y), glyphSize);
 				if(ctx.hc->region.Left() == INT_MAX)
-					ctx.hc->region = r_clip;
+					ctx.hc->region = rClip;
 				else
-					ctx.hc->region.Resize(r_clip);
+					ctx.hc->region.Resize(rClip);
 			}
 
 			++ctx.inBuffer;
 		}
-		else if(clip_result == 5)
+		else if(clipResult == 5)
 		{
 			// przytnij znak
-			Box2d orig_pos = Box2d::Create(Int2(x, y), glyph_size);
-			Box2d clip_pos(float(max(x, clipping->Left())), float(max(y, clipping->Top())),
-				float(min(x + glyph_size.x, clipping->Right())), float(min(y + glyph_size.y, clipping->Bottom())));
-			Vec2 orig_size = orig_pos.Size();
-			Vec2 clip_size = clip_pos.Size();
-			Vec2 s(clip_size.x / orig_size.x, clip_size.y / orig_size.y);
-			Vec2 shift = clip_pos.v1 - orig_pos.v1;
-			shift.x /= orig_size.x;
-			shift.y /= orig_size.y;
-			Vec2 uv_size = g.uv.Size();
-			Box2d clip_uv(g.uv.v1 + Vec2(shift.x * uv_size.x, shift.y * uv_size.y));
-			clip_uv.v2 += Vec2(uv_size.x * s.x, uv_size.y * s.y);
+			Box2d origPos = Box2d::Create(Int2(x, y), glyphSize);
+			Box2d clipPos(float(max(x, clipping->Left())), float(max(y, clipping->Top())),
+				float(min(x + glyphSize.x, clipping->Right())), float(min(y + glyphSize.y, clipping->Bottom())));
+			Vec2 origSize = origPos.Size();
+			Vec2 clipSize = clipPos.Size();
+			Vec2 s(clipSize.x / origSize.x, clipSize.y / origSize.y);
+			Vec2 shift = clipPos.v1 - origPos.v1;
+			shift.x /= origSize.x;
+			shift.y /= origSize.y;
+			Vec2 uvSize = g.uv.Size();
+			Box2d clipUv(g.uv.v1 + Vec2(shift.x * uvSize.x, shift.y * uvSize.y));
+			clipUv.v2 += Vec2(uvSize.x * s.x, uvSize.y * s.y);
 
 			// dodaj znak do bufora
-			ctx.v->pos = clip_pos.LeftTop();
+			ctx.v->pos = clipPos.LeftTop();
 			ctx.v->color = ctx.currentColor;
-			ctx.v->tex = clip_uv.LeftTop();
+			ctx.v->tex = clipUv.LeftTop();
 			++ctx.v;
 
-			ctx.v->pos = clip_pos.RightTop();
+			ctx.v->pos = clipPos.RightTop();
 			ctx.v->color = ctx.currentColor;
-			ctx.v->tex = clip_uv.RightTop();
+			ctx.v->tex = clipUv.RightTop();
 			++ctx.v;
 
-			ctx.v->pos = clip_pos.LeftBottom();
+			ctx.v->pos = clipPos.LeftBottom();
 			ctx.v->color = ctx.currentColor;
-			ctx.v->tex = clip_uv.LeftBottom();
+			ctx.v->tex = clipUv.LeftBottom();
 			++ctx.v;
 
-			ctx.v->pos = clip_pos.RightTop();
+			ctx.v->pos = clipPos.RightTop();
 			ctx.v->color = ctx.currentColor;
-			ctx.v->tex = clip_uv.RightTop();
+			ctx.v->tex = clipUv.RightTop();
 			++ctx.v;
 
-			ctx.v->pos = clip_pos.RightBottom();
+			ctx.v->pos = clipPos.RightBottom();
 			ctx.v->color = ctx.currentColor;
-			ctx.v->tex = clip_uv.RightBottom();
+			ctx.v->tex = clipUv.RightBottom();
 			++ctx.v;
 
-			ctx.v->pos = clip_pos.LeftBottom();
+			ctx.v->pos = clipPos.LeftBottom();
 			ctx.v->color = ctx.currentColor;
-			ctx.v->tex = clip_uv.LeftBottom();
+			ctx.v->tex = clipUv.LeftBottom();
 			++ctx.v;
 
 			if(ctx.hc && ctx.hc->open != HitboxOpen::No)
 			{
-				Rect r_clip(clip_pos);
+				Rect rClip(clipPos);
 				if(ctx.hc->region.Left() == INT_MAX)
-					ctx.hc->region = r_clip;
+					ctx.hc->region = rClip;
 				else
-					ctx.hc->region.Resize(r_clip);
+					ctx.hc->region.Resize(rClip);
 			}
 
 			++ctx.inBuffer;
 		}
-		else if(clip_result == 3)
+		else if(clipResult == 3)
 		{
 			// tekst jest ju¿ poza regionem z prawej, mo¿na przerwaæ
 			break;
 		}
 
-		x += glyph_size.x;
+		x += glyphSize.x;
 		if(ctx.inBuffer == 256)
 		{
 			shader->Draw(ctx.font->tex, vBuf, 256);
@@ -564,55 +571,55 @@ void Gui::DrawTextLine(DrawLineContext& ctx, uint line_begin, uint line_end, int
 			h.index = ctx.hc->counter;
 		else
 		{
-			h.index = ctx.hc->group_index;
-			h.index2 = ctx.hc->group_index2;
+			h.index = ctx.hc->groupIndex;
+			h.index2 = ctx.hc->groupIndex2;
 		}
 		ctx.hc->region.Left() = INT_MAX;
 	}
 }
 
 //=================================================================================================
-void Gui::DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, int x, int y, const Rect* clipping)
+void Gui::DrawTextOutline(DrawLineContext& ctx, uint lineBegin, uint lineEnd, int x, int y, const Rect* clipping)
 {
 	// scale is TODO here
 	assert(ctx.scale == Vec2::One);
 
 	const Vec4 col(0, 0, 0, ctx.defColor.w);
 	const float outline = (float)ctx.font->outline;
-	const Vec2& osh = ctx.font->outline_shift;
+	const Vec2& osh = ctx.font->outlineShift;
 
-	for(uint i = line_begin; i < line_end; ++i)
+	for(uint i = lineBegin; i < lineEnd; ++i)
 	{
 		char c = ctx.text[i];
 		if(c == '$' && ctx.parseSpecial)
 		{
 			++i;
-			assert(i < line_end);
+			assert(i < lineEnd);
 			c = ctx.text[i];
 			if(c == 'c')
 			{
 				// kolor
 				++i;
-				assert(i < line_end);
+				assert(i < lineEnd);
 				continue;
 			}
 			else if(c == 'h')
 			{
 				++i;
-				assert(i < line_end);
+				assert(i < lineEnd);
 				continue;
 			}
 			else if(c == 'g')
 			{
 				++i;
-				assert(i < line_end);
+				assert(i < lineEnd);
 				c = ctx.text[i];
 				if(c == '+')
 				{
 					++i;
-					assert(i < line_end);
+					assert(i < lineEnd);
 					int tmp;
-					ctx.font->ParseGroupIndex(ctx.text, line_end, i, tmp, tmp);
+					ctx.font->ParseGroupIndex(ctx.text, lineEnd, i, tmp, tmp);
 				}
 				else if(c == '-')
 					continue;
@@ -635,9 +642,9 @@ void Gui::DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, 
 
 		Font::Glyph& g = ctx.font->glyph[byte(c)];
 		const Box2d uv = Box2d(g.uv.v1.x - osh.x, g.uv.v1.y - osh.y, g.uv.v2.x + osh.x, g.uv.v2.y + osh.y);
-		const int clip_result = (clipping ? Clip(x, y, g.width, ctx.font->height, clipping) : 0);
+		const int clipResult = (clipping ? Clip(x, y, g.width, ctx.font->height, clipping) : 0);
 
-		if(clip_result == 0)
+		if(clipResult == 0)
 		{
 			// dodaj znak do bufora
 			ctx.v2->pos = Vec2(float(x) - outline, float(y) - outline);
@@ -673,57 +680,57 @@ void Gui::DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, 
 			++ctx.inBuffer2;
 			x += g.width;
 		}
-		else if(clip_result == 5)
+		else if(clipResult == 5)
 		{
 			// przytnij znak
-			Box2d orig_pos(float(x) - outline, float(y) - outline, float(x + g.width) + outline, float(y + ctx.font->height) + outline);
-			Box2d clip_pos(float(max(x, clipping->Left())), float(max(y, clipping->Top())),
+			Box2d origPos(float(x) - outline, float(y) - outline, float(x + g.width) + outline, float(y + ctx.font->height) + outline);
+			Box2d clipPos(float(max(x, clipping->Left())), float(max(y, clipping->Top())),
 				float(min(x + g.width, clipping->Right())), float(min(y + ctx.font->height, clipping->Bottom())));
-			Vec2 orig_size = orig_pos.Size();
-			Vec2 clip_size = clip_pos.Size();
-			Vec2 s(clip_size.x / orig_size.x, clip_size.y / orig_size.y);
-			Vec2 shift = clip_pos.v1 - orig_pos.v1;
-			shift.x /= orig_size.x;
-			shift.y /= orig_size.y;
-			Vec2 uv_size = uv.Size();
-			Box2d clip_uv(uv.v1 + Vec2(shift.x * uv_size.x, shift.y * uv_size.y));
-			clip_uv.v2 += Vec2(uv_size.x * s.x, uv_size.y * s.y);
+			Vec2 origSize = origPos.Size();
+			Vec2 clipSize = clipPos.Size();
+			Vec2 s(clipSize.x / origSize.x, clipSize.y / origSize.y);
+			Vec2 shift = clipPos.v1 - origPos.v1;
+			shift.x /= origSize.x;
+			shift.y /= origSize.y;
+			Vec2 uvSize = uv.Size();
+			Box2d clipUv(uv.v1 + Vec2(shift.x * uvSize.x, shift.y * uvSize.y));
+			clipUv.v2 += Vec2(uvSize.x * s.x, uvSize.y * s.y);
 
 			// dodaj znak do bufora
-			ctx.v2->pos = clip_pos.LeftTop();
+			ctx.v2->pos = clipPos.LeftTop();
 			ctx.v2->color = col;
-			ctx.v2->tex = clip_uv.LeftTop();
+			ctx.v2->tex = clipUv.LeftTop();
 			++ctx.v2;
 
-			ctx.v2->pos = clip_pos.RightTop();
+			ctx.v2->pos = clipPos.RightTop();
 			ctx.v2->color = col;
-			ctx.v2->tex = clip_uv.RightTop();
+			ctx.v2->tex = clipUv.RightTop();
 			++ctx.v2;
 
-			ctx.v2->pos = clip_pos.LeftBottom();
+			ctx.v2->pos = clipPos.LeftBottom();
 			ctx.v2->color = col;
-			ctx.v2->tex = clip_uv.LeftBottom();
+			ctx.v2->tex = clipUv.LeftBottom();
 			++ctx.v2;
 
-			ctx.v2->pos = clip_pos.RightTop();
+			ctx.v2->pos = clipPos.RightTop();
 			ctx.v2->color = col;
-			ctx.v2->tex = clip_uv.RightTop();
+			ctx.v2->tex = clipUv.RightTop();
 			++ctx.v2;
 
-			ctx.v2->pos = clip_pos.RightBottom();
+			ctx.v2->pos = clipPos.RightBottom();
 			ctx.v2->color = col;
-			ctx.v2->tex = clip_uv.RightBottom();
+			ctx.v2->tex = clipUv.RightBottom();
 			++ctx.v2;
 
-			ctx.v2->pos = clip_pos.LeftBottom();
+			ctx.v2->pos = clipPos.LeftBottom();
 			ctx.v2->color = col;
-			ctx.v2->tex = clip_uv.LeftBottom();
+			ctx.v2->tex = clipUv.LeftBottom();
 			++ctx.v2;
 
 			++ctx.inBuffer2;
 			x += g.width;
 		}
-		else if(clip_result == 3)
+		else if(clipResult == 3)
 		{
 			// tekst jest ju¿ poza regionem z prawej, mo¿na przerwaæ
 			break;
@@ -733,7 +740,7 @@ void Gui::DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, 
 
 		if(ctx.inBuffer2 == 256)
 		{
-			shader->Draw(ctx.font->tex_outline, vBuf2, 256);
+			shader->Draw(ctx.font->texOutline, vBuf2, 256);
 			ctx.v2 = vBuf2;
 			ctx.inBuffer2 = 0;
 		}
@@ -741,19 +748,19 @@ void Gui::DrawTextOutline(DrawLineContext& ctx, uint line_begin, uint line_end, 
 }
 
 //=================================================================================================
-void Gui::Draw(bool draw_layers, bool draw_dialogs)
+void Gui::Draw()
 {
 	wndSize = app::engine->GetClientSize();
 
-	if(!draw_layers && !draw_dialogs)
+	if(!drawLayers && !drawDialogs)
 		return;
 
 	shader->Prepare();
 
 	// rysowanie
-	if(draw_layers)
+	if(drawLayers)
 		layer->Draw();
-	if(draw_dialogs)
+	if(drawDialogs)
 		dialogLayer->Draw();
 
 	// draw cursor
@@ -774,30 +781,30 @@ void Gui::Add(Control* ctrl)
 }
 
 //=================================================================================================
-void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Color color, int corner, int size, const Box2d* clip_rect)
+void Gui::DrawItem(Texture* t, const Int2& itemPos, const Int2& itemSize, Color color, int corner, int size, const Box2d* clipRect)
 {
 	assert(t && t->IsLoaded());
 
-	GuiRect gui_rect;
-	gui_rect.Set(item_pos, item_size);
+	GuiRect guiRect;
+	guiRect.Set(itemPos, itemSize);
 
-	bool require_clip = false;
-	if(clip_rect)
+	bool requireClip = false;
+	if(clipRect)
 	{
-		int result = gui_rect.RequireClip(*clip_rect);
+		int result = guiRect.RequireClip(*clipRect);
 		if(result == -1)
 			return;
 		else if(result == 1)
-			require_clip = true;
+			requireClip = true;
 	}
 
-	if(item_size.x < corner || item_size.y < corner)
+	if(itemSize.x < corner || itemSize.y < corner)
 	{
-		if(item_size.x == 0 || item_size.y == 0)
+		if(itemSize.x == 0 || itemSize.y == 0)
 			return;
 
-		Rect r = { item_pos.x, item_pos.y, item_pos.x + item_size.x, item_pos.y + item_size.y };
-		assert(!clip_rect);
+		Rect r = { itemPos.x, itemPos.y, itemPos.x + itemSize.x, itemPos.y + itemSize.y };
+		assert(!clipRect);
 		DrawSpriteRect(t, r, color);
 		return;
 	}
@@ -834,25 +841,25 @@ void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Colo
 	};
 
 	Vec2 ipos[16] = {
-		Vec2(float(item_pos.x), float(item_pos.y)),
-		Vec2(float(item_pos.x + corner), float(item_pos.y)),
-		Vec2(float(item_pos.x + item_size.x - corner), float(item_pos.y)),
-		Vec2(float(item_pos.x + item_size.x), float(item_pos.y)),
+		Vec2(float(itemPos.x), float(itemPos.y)),
+		Vec2(float(itemPos.x + corner), float(itemPos.y)),
+		Vec2(float(itemPos.x + itemSize.x - corner), float(itemPos.y)),
+		Vec2(float(itemPos.x + itemSize.x), float(itemPos.y)),
 
-		Vec2(float(item_pos.x), float(item_pos.y + corner)),
-		Vec2(float(item_pos.x + corner), float(item_pos.y + corner)),
-		Vec2(float(item_pos.x + item_size.x - corner), float(item_pos.y + corner)),
-		Vec2(float(item_pos.x + item_size.x), float(item_pos.y + corner)),
+		Vec2(float(itemPos.x), float(itemPos.y + corner)),
+		Vec2(float(itemPos.x + corner), float(itemPos.y + corner)),
+		Vec2(float(itemPos.x + itemSize.x - corner), float(itemPos.y + corner)),
+		Vec2(float(itemPos.x + itemSize.x), float(itemPos.y + corner)),
 
-		Vec2(float(item_pos.x), float(item_pos.y + item_size.y - corner)),
-		Vec2(float(item_pos.x + corner), float(item_pos.y + item_size.y - corner)),
-		Vec2(float(item_pos.x + item_size.x - corner), float(item_pos.y + item_size.y - corner)),
-		Vec2(float(item_pos.x + item_size.x), float(item_pos.y + item_size.y - corner)),
+		Vec2(float(itemPos.x), float(itemPos.y + itemSize.y - corner)),
+		Vec2(float(itemPos.x + corner), float(itemPos.y + itemSize.y - corner)),
+		Vec2(float(itemPos.x + itemSize.x - corner), float(itemPos.y + itemSize.y - corner)),
+		Vec2(float(itemPos.x + itemSize.x), float(itemPos.y + itemSize.y - corner)),
 
-		Vec2(float(item_pos.x), float(item_pos.y + item_size.y)),
-		Vec2(float(item_pos.x + corner), float(item_pos.y + item_size.y)),
-		Vec2(float(item_pos.x + item_size.x - corner), float(item_pos.y + item_size.y)),
-		Vec2(float(item_pos.x + item_size.x), float(item_pos.y + item_size.y)),
+		Vec2(float(itemPos.x), float(itemPos.y + itemSize.y)),
+		Vec2(float(itemPos.x + corner), float(itemPos.y + itemSize.y)),
+		Vec2(float(itemPos.x + itemSize.x - corner), float(itemPos.y + itemSize.y)),
+		Vec2(float(itemPos.x + itemSize.x), float(itemPos.y + itemSize.y)),
 	};
 
 	Vec2 itex[16] = {
@@ -878,17 +885,17 @@ void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Colo
 	};
 
 	int inBuffer;
-	if(require_clip)
+	if(requireClip)
 	{
 		inBuffer = 0;
 		for(int i = 0; i < 9; ++i)
 		{
 			int index1 = ids[i * 2 + 0];
 			int index2 = ids[i * 2 + 1];
-			gui_rect.Set(ipos[index1], ipos[index2], itex[index1], itex[index2]);
-			if(gui_rect.Clip(*clip_rect))
+			guiRect.Set(ipos[index1], ipos[index2], itex[index1], itex[index2]);
+			if(guiRect.Clip(*clipRect))
 			{
-				gui_rect.Populate(v, col);
+				guiRect.Populate(v, col);
 				++inBuffer;
 			}
 		}
@@ -899,8 +906,8 @@ void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Colo
 		{
 			int index1 = ids[i * 2 + 0];
 			int index2 = ids[i * 2 + 1];
-			gui_rect.Set(ipos[index1], ipos[index2], itex[index1], itex[index2]);
-			gui_rect.Populate(v, col);
+			guiRect.Set(ipos[index1], ipos[index2], itex[index1], itex[index2]);
+			guiRect.Populate(v, col);
 		}
 		inBuffer = 9;
 	}
@@ -909,15 +916,14 @@ void Gui::DrawItem(Texture* t, const Int2& item_pos, const Int2& item_size, Colo
 }
 
 //=================================================================================================
-void Gui::Update(float dt, float mouse_speed)
+void Gui::Update(float dt, float mouseSpeed)
 {
 	// update cursor
 	cursorMode = CURSOR_NORMAL;
-	mouseWheel = app::input->GetMouseWheel();
 	prevCursorPos = cursorPos;
-	if(NeedCursor() && mouse_speed > 0)
+	if(NeedCursor() && mouseSpeed > 0)
 	{
-		cursorPos += app::input->GetMouseDif() * mouse_speed;
+		cursorPos += app::input->GetMouseDif() * mouseSpeed;
 		if(cursorPos.x < 0)
 			cursorPos.x = 0;
 		if(cursorPos.y < 0)
@@ -966,9 +972,9 @@ void Gui::Update(float dt, float mouse_speed)
 			focusedCtrl = nullptr;
 		else if(dialogLayer->Empty())
 		{
-			layer->dont_focus = true;
+			layer->dontFocus = true;
 			layer->Update(dt);
-			layer->dont_focus = false;
+			layer->dontFocus = false;
 		}
 		else
 		{
@@ -994,14 +1000,14 @@ void Gui::DrawSprite(Texture* t, const Int2& pos, Color color, const Rect* clipp
 
 	Int2 size = t->GetSize();
 
-	int clip_result = (clipping ? Clip(pos.x, pos.y, size.x, size.y, clipping) : 0);
-	if(clip_result > 0 && clip_result < 5)
+	int clipResult = (clipping ? Clip(pos.x, pos.y, size.x, size.y, clipping) : 0);
+	if(clipResult > 0 && clipResult < 5)
 		return;
 
 	VGui* v = vBuf;
 	const Vec4 col = color;
 
-	if(clip_result == 0)
+	if(clipResult == 0)
 	{
 		v->pos = Vec2(float(pos.x), float(pos.y));
 		v->color = col;
@@ -1035,46 +1041,46 @@ void Gui::DrawSprite(Texture* t, const Int2& pos, Color color, const Rect* clipp
 	}
 	else
 	{
-		Box2d orig_pos(float(pos.x), float(pos.y), float(pos.x + size.x), float(pos.y + size.y));
-		Box2d clip_pos(float(max(pos.x, clipping->Left())), float(max(pos.y, clipping->Top())),
+		Box2d origPos(float(pos.x), float(pos.y), float(pos.x + size.x), float(pos.y + size.y));
+		Box2d clipPos(float(max(pos.x, clipping->Left())), float(max(pos.y, clipping->Top())),
 			float(min(pos.x + (int)size.x, clipping->Right())), float(min(pos.y + (int)size.y, clipping->Bottom())));
-		Vec2 orig_size = orig_pos.Size();
-		Vec2 clip_size = clip_pos.Size();
-		Vec2 s(clip_size.x / orig_size.x, clip_size.y / orig_size.y);
-		Vec2 shift = clip_pos.v1 - orig_pos.v1;
-		shift.x /= orig_size.x;
-		shift.y /= orig_size.y;
-		Box2d clip_uv(Vec2(shift.x, shift.y));
-		clip_uv.v2 += Vec2(s.x, s.y);
+		Vec2 origSize = origPos.Size();
+		Vec2 clipSize = clipPos.Size();
+		Vec2 s(clipSize.x / origSize.x, clipSize.y / origSize.y);
+		Vec2 shift = clipPos.v1 - origPos.v1;
+		shift.x /= origSize.x;
+		shift.y /= origSize.y;
+		Box2d clipUv(Vec2(shift.x, shift.y));
+		clipUv.v2 += Vec2(s.x, s.y);
 
-		v->pos = clip_pos.LeftTop();
+		v->pos = clipPos.LeftTop();
 		v->color = col;
-		v->tex = clip_uv.LeftTop();
+		v->tex = clipUv.LeftTop();
 		++v;
 
-		v->pos = clip_pos.RightTop();
+		v->pos = clipPos.RightTop();
 		v->color = col;
-		v->tex = clip_uv.RightTop();
+		v->tex = clipUv.RightTop();
 		++v;
 
-		v->pos = clip_pos.LeftBottom();
+		v->pos = clipPos.LeftBottom();
 		v->color = col;
-		v->tex = clip_uv.LeftBottom();
+		v->tex = clipUv.LeftBottom();
 		++v;
 
-		v->pos = clip_pos.LeftBottom();
+		v->pos = clipPos.LeftBottom();
 		v->color = col;
-		v->tex = clip_uv.LeftBottom();
+		v->tex = clipUv.LeftBottom();
 		++v;
 
-		v->pos = clip_pos.RightTop();
+		v->pos = clipPos.RightTop();
 		v->color = col;
-		v->tex = clip_uv.RightTop();
+		v->tex = clipUv.RightTop();
 		++v;
 
-		v->pos = clip_pos.RightBottom();
+		v->pos = clipPos.RightBottom();
 		v->color = col;
-		v->tex = clip_uv.RightBottom();
+		v->tex = clipUv.RightBottom();
 		++v;
 	}
 
@@ -1126,9 +1132,9 @@ int Gui::Clip(int x, int y, int w, int h, const Rect* clipping)
 }
 
 //=================================================================================================
-void Gui::SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc)
+void Gui::SkipLine(cstring text, uint lineBegin, uint lineEnd, HitboxContext* hc)
 {
-	for(uint i = line_begin; i < line_end; ++i)
+	for(uint i = lineBegin; i < lineEnd; ++i)
 	{
 		char c = text[i];
 		if(c == '$')
@@ -1163,7 +1169,7 @@ void Gui::SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* 
 					hc->open = HitboxOpen::Group;
 					int tmp;
 					++i;
-					Font::ParseGroupIndex(text, line_end, i, tmp, tmp);
+					Font::ParseGroupIndex(text, lineEnd, i, tmp, tmp);
 				}
 				else if(c == '-')
 				{
@@ -1180,21 +1186,21 @@ void Gui::SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* 
 //=================================================================================================
 DialogBox* Gui::ShowDialog(const DialogInfo& info)
 {
-	assert(!(info.have_tick && info.img)); // not allowed together
+	assert(!(info.haveTick && info.img)); // TODO
 
 	DialogBox* d;
-	int extra_limit = 0;
-	Int2 min_size(0, 0);
+	int extraLimit = 0;
+	Int2 minSize(0, 0);
 
 	// create dialog
-	if(info.have_tick)
+	if(info.haveTick)
 		d = new DialogWithCheckbox(info);
 	else if(info.img)
 	{
 		DialogWithImage* dwi = new DialogWithImage(info);
 		Int2 size = dwi->GetImageSize();
-		extra_limit = size.x + 8;
-		min_size.y = size.y;
+		extraLimit = size.x + 8;
+		minSize.y = size.y;
 		d = dwi;
 	}
 	else
@@ -1203,12 +1209,12 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 
 	// calculate size
 	Font* font = d->layout->font;
-	Int2 text_size;
-	if(!info.auto_wrap)
-		text_size = font->CalculateSize(info.text);
+	Int2 textSize;
+	if(!info.autoWrap)
+		textSize = font->CalculateSize(info.text);
 	else
-		text_size = font->CalculateSizeWrap(info.text, wndSize, 24 + 32 + extra_limit);
-	d->size = text_size + Int2(24 + extra_limit, 24 + max(0, min_size.y - text_size.y));
+		textSize = font->CalculateSizeWrap(info.text, wndSize, 24 + 32 + extraLimit);
+	d->size = textSize + Int2(24 + extraLimit, 24 + max(0, minSize.y - textSize.y));
 
 	// set buttons
 	if(info.type == DialogType::Ok)
@@ -1219,7 +1225,7 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 		bt.size = font->CalculateSize(bt.text) + Int2(24, 24);
 		bt.parent = d;
 
-		min_size.x = bt.size.x + 24;
+		minSize.x = bt.size.x + 24;
 	}
 	else if(info.type == DialogType::YesNo)
 	{
@@ -1227,10 +1233,10 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 		Button& bt1 = d->bts[0],
 			& bt2 = d->bts[1];
 
-		if(info.custom_names)
+		if(info.customNames)
 		{
-			bt1.text = (info.custom_names[0] ? info.custom_names[0] : txYes);
-			bt2.text = (info.custom_names[1] ? info.custom_names[1] : txNo);
+			bt1.text = (info.customNames[0] ? info.customNames[0] : txYes);
+			bt2.text = (info.customNames[1] ? info.customNames[1] : txNo);
 		}
 		else
 		{
@@ -1247,7 +1253,7 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 		bt2.parent = d;
 
 		bt1.size = bt2.size = Int2::Max(bt1.size, bt2.size);
-		min_size.x = bt1.size.x * 2 + 24 + 16;
+		minSize.x = bt1.size.x * 2 + 24 + 16;
 	}
 	else
 	{
@@ -1286,20 +1292,20 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 	}
 
 	// resize dialog size for buttons
-	if(d->size.x < min_size.x)
-		d->size.x = min_size.x;
+	if(d->size.x < minSize.x)
+		d->size.x = minSize.x;
 	d->size.y += d->bts[0].size.y + 8;
 
 	// checkbox
-	if(info.have_tick)
+	if(info.haveTick)
 	{
 		d->size.y += 32;
 		DialogWithCheckbox* dwc = static_cast<DialogWithCheckbox*>(d);
-		dwc->checkbox.bt_size = Int2(32, 32);
+		dwc->checkbox.btSize = Int2(32, 32);
 		dwc->checkbox.checked = info.ticked;
 		dwc->checkbox.id = GuiEvent_Custom + BUTTON_CHECKED;
 		dwc->checkbox.parent = dwc;
-		dwc->checkbox.text = info.tick_text;
+		dwc->checkbox.text = info.tickText;
 		dwc->checkbox.pos = Int2(12, 40);
 		dwc->checkbox.size = Int2(d->size.x - 24, 32);
 	}
@@ -1331,121 +1337,122 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 	}
 
 	// add
-	d->need_delete = true;
-	d->Setup(text_size);
+	d->needDelete = true;
+	d->Setup(textSize);
 	ShowDialog(d);
 
 	return d;
 }
 
 //=================================================================================================
-void Gui::ShowDialog(DialogBox* d)
+void Gui::ShowDialog(DialogBox* dialog)
 {
-	d->visible = true;
-	d->Event(GuiEvent_Show);
+	dialog->visible = true;
+	dialog->Event(GuiEvent_Show);
 
 	if(dialogLayer->Empty())
 	{
 		// nie ma ¿adnych innych dialogów, aktywuj
-		dialogLayer->Add(d);
-		d->focus = true;
-		d->Event(GuiEvent_GainFocus);
+		dialogLayer->Add(dialog);
+		dialog->focus = true;
+		dialog->Event(GuiEvent_GainFocus);
 	}
-	else if(d->order == DialogOrder::TopMost)
+	else if(dialog->order == DialogOrder::TopMost)
 	{
 		// dezaktywuj aktualny i aktywuj nowy
-		Control* prev_d = dialogLayer->Top();
-		prev_d->focus = false;
-		prev_d->Event(GuiEvent_LostFocus);
-		dialogLayer->Add(d);
-		d->focus = true;
-		d->Event(GuiEvent_GainFocus);
+		Control* prevDialog = dialogLayer->Top();
+		prevDialog->focus = false;
+		prevDialog->Event(GuiEvent_LostFocus);
+		dialogLayer->Add(dialog);
+		dialog->focus = true;
+		dialog->Event(GuiEvent_GainFocus);
 	}
 	else
 	{
 		// szukaj pierwszego dialogu który jest wy¿ej ni¿ ten
-		DialogOrder above_order = DialogOrder((int)d->order + 1);
+		DialogOrder aboveOrder = DialogOrder((int)dialog->order + 1);
 		vector<DialogBox*>& ctrls = (vector<DialogBox*>&)dialogLayer->GetControls();
-		vector<DialogBox*>::iterator first_above = ctrls.end();
+		vector<DialogBox*>::iterator firstAbove = ctrls.end();
 		for(vector<DialogBox*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
 		{
-			if((*it)->order >= above_order)
+			if((*it)->order >= aboveOrder)
 			{
-				first_above = it;
+				firstAbove = it;
 				break;
 			}
 		}
 
-		if(first_above == ctrls.end())
+		if(firstAbove == ctrls.end())
 		{
 			// brak nadrzêdnego dialogu, dezaktywuj aktualny i aktywuj nowy
-			Control* prev_d = dialogLayer->Top();
-			prev_d->focus = false;
-			prev_d->Event(GuiEvent_LostFocus);
-			dialogLayer->Add(d);
-			d->focus = true;
-			d->Event(GuiEvent_GainFocus);
+			Control* prevDialog = dialogLayer->Top();
+			prevDialog->focus = false;
+			prevDialog->Event(GuiEvent_LostFocus);
+			dialogLayer->Add(dialog);
+			dialog->focus = true;
+			dialog->Event(GuiEvent_GainFocus);
 		}
 		else
 		{
 			// jest nadrzêdny dialog, dodaj przed nim i nie aktywuj
-			ctrls.insert(first_above, d);
+			ctrls.insert(firstAbove, dialog);
 		}
 	}
 
-	dialogLayer->inside_loop = false;
+	dialogLayer->insideLoop = false;
 }
 
 //=================================================================================================
-bool Gui::CloseDialog(DialogBox* d)
+bool Gui::CloseDialog(DialogBox* dialog)
 {
-	assert(d);
+	assert(dialog);
 
-	if(dialogLayer->Empty() || !HaveDialog(d))
+	if(dialogLayer->Empty() || !HaveDialog(dialog))
 		return false;
 
-	Control* prev_top = dialogLayer->Top();
-	CloseDialogInternal(d);
-	if(!dialogLayer->Empty() && prev_top != dialogLayer->Top())
+	Control* prevTop = dialogLayer->Top();
+	CloseDialogInternal(dialog);
+	if(!dialogLayer->Empty() && prevTop != dialogLayer->Top())
 	{
-		Control* next_d = dialogLayer->Top();
-		next_d->focus = true;
-		next_d->Event(GuiEvent_GainFocus);
+		Control* nextDialog = dialogLayer->Top();
+		nextDialog->focus = true;
+		nextDialog->Event(GuiEvent_GainFocus);
 	}
 
 	return true;
 }
 
 //=================================================================================================
-void Gui::CloseDialogInternal(DialogBox* d)
+void Gui::CloseDialogInternal(DialogBox* dialog)
 {
-	assert(d);
+	assert(dialog);
 
-	d->Event(GuiEvent_Close);
-	d->visible = false;
-	dialogLayer->Remove(d);
+	dialog->Event(GuiEvent_Close);
+	dialog->visible = false;
+	dialogLayer->Remove(dialog);
 
 	if(!dialogLayer->Empty())
 	{
 		vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialogLayer->GetControls();
-		static vector<DialogBox*> to_remove;
+		LocalVector<DialogBox*> toRemove;
 		for(vector<DialogBox*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
 		{
-			if((*it)->parent == d)
-				to_remove.push_back(*it);
+			if((*it)->parent == dialog)
+				toRemove.push_back(*it);
 		}
-		if(!to_remove.empty())
+
+		if(!toRemove.empty())
 		{
-			for(vector<DialogBox*>::iterator it = to_remove.begin(), end = to_remove.end(); it != end; ++it)
+			for(vector<DialogBox*>::iterator it = toRemove.begin(), end = toRemove.end(); it != end; ++it)
 				CloseDialogInternal(*it);
-			to_remove.clear();
+			toRemove.clear();
 		}
 	}
 
-	if(d->need_delete)
+	if(dialog->needDelete)
 	{
-		RemoveElement(createdDialogs, d);
-		delete d;
+		RemoveElement(createdDialogs, dialog);
+		delete dialog;
 	}
 }
 
@@ -1457,8 +1464,8 @@ bool Gui::HaveTopDialog(cstring name) const
 	if(dialogLayer->Empty())
 		return false;
 
-	DialogBox* d = static_cast<DialogBox*>(dialogLayer->Top());
-	return d->name == name;
+	DialogBox* dialog = static_cast<DialogBox*>(dialogLayer->Top());
+	return dialog->name == name;
 }
 
 //=================================================================================================
@@ -1602,13 +1609,25 @@ bool Gui::HaveDialog(cstring name)
 }
 
 //=================================================================================================
-bool Gui::HaveDialog(DialogBox* dialog)
+bool Gui::HaveDialog(DialogBox* dialogToSearch)
 {
-	assert(dialog);
+	assert(dialogToSearch);
 	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialogLayer->GetControls();
-	for(auto d : dialogs)
+	for(DialogBox* dialog : dialogs)
 	{
-		if(d == dialog)
+		if(dialog == dialogToSearch)
+			return true;
+	}
+	return false;
+}
+
+//=================================================================================================
+bool Gui::HaveDialog(delegate<bool(DialogBox*)>& pred)
+{
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialogLayer->GetControls();
+	for(DialogBox* dialog : dialogs)
+	{
+		if(pred(dialog))
 			return true;
 	}
 	return false;
@@ -1821,7 +1840,7 @@ bool Gui::NeedCursor()
 }
 
 //=================================================================================================
-bool Gui::DrawText3D(Font* font, Cstring text, uint flags, Color color, const Vec3& pos, Rect* text_rect)
+bool Gui::DrawText3D(Font* font, Cstring text, uint flags, Color color, const Vec3& pos, Rect* textRect)
 {
 	assert(font);
 
@@ -1834,8 +1853,8 @@ bool Gui::DrawText3D(Font* font, Cstring text, uint flags, Color color, const Ve
 	if(!IsSet(flags, DTF_DONT_DRAW))
 		DrawText(font, text, flags, color, r);
 
-	if(text_rect)
-		*text_rect = r;
+	if(textRect)
+		*textRect = r;
 
 	return true;
 }
@@ -1948,7 +1967,7 @@ void Gui::CloseDialogs()
 	{
 		if(dialog->type != DialogType::Custom)
 			dialog->Event(GuiEvent_Close);
-		if(dialog->need_delete)
+		if(dialog->needDelete)
 		{
 			if(IsDebug())
 				RemoveElementTry(createdDialogs, dialog);
@@ -1956,7 +1975,7 @@ void Gui::CloseDialogs()
 		}
 	}
 	dialogs.clear();
-	dialogLayer->inside_loop = false;
+	dialogLayer->insideLoop = false;
 	assert(createdDialogs.empty());
 	createdDialogs.clear();
 }
@@ -2041,16 +2060,80 @@ Rect Gui::GetSpriteRect(Texture* t, const Matrix& mat, const Rect* part, const R
 }
 
 //=================================================================================================
-void Gui::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* clip_rect)
+void Gui::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* clipRect)
 {
-	GuiRect gui_rect;
-	gui_rect.Set(pos, size);
-	if(!clip_rect || gui_rect.Clip(*clip_rect))
+	GuiRect guiRect;
+	guiRect.Set(pos, size);
+	if(!clipRect || guiRect.Clip(*clipRect))
 	{
 		const Vec4 col = color;
 		VGui* v = vBuf;
-		gui_rect.Populate(v, col);
+		guiRect.Populate(v, col);
 		shader->Draw(nullptr, vBuf, 1);
+	}
+}
+
+//=================================================================================================
+void Gui::DrawArea(const Box2d& rect, const AreaLayout& areaLayout, const Box2d* clipRect, Color* tint)
+{
+	if(areaLayout.mode == AreaLayout::Mode::None)
+		return;
+
+	Color color = areaLayout.color;
+	if(tint)
+		color *= *tint;
+
+	if(areaLayout.mode == AreaLayout::Mode::Item)
+	{
+		DrawItem(areaLayout.tex, Int2(rect.LeftTop()), Int2(rect.Size()), color, areaLayout.size.x, areaLayout.size.y, clipRect);
+	}
+	else
+	{
+		// background
+		if(areaLayout.mode == AreaLayout::Mode::Image && areaLayout.backgroundColor != Color::None)
+		{
+			assert(!clipRect);
+			VGui* v = vBuf;
+			AddRect(v, rect.LeftTop(), rect.RightBottom(), Color(areaLayout.backgroundColor));
+			shader->Draw(nullptr, vBuf, 1);
+		}
+
+		// image/color
+		GuiRect guiRect;
+		TEX tex;
+		if(areaLayout.mode >= AreaLayout::Mode::Image)
+		{
+			tex = areaLayout.tex->tex;
+			guiRect.Set(rect, &areaLayout.region);
+		}
+		else
+		{
+			tex = nullptr;
+			guiRect.Set(rect, nullptr);
+		}
+		if(clipRect)
+		{
+			if(!guiRect.Clip(*clipRect))
+				return;
+		}
+
+		VGui* v = vBuf;
+		guiRect.Populate(v, color);
+		shader->Draw(tex, vBuf, 1);
+
+		if(areaLayout.mode != AreaLayout::Mode::BorderColor)
+			return;
+
+		// border
+		assert(!clipRect);
+		v = vBuf;
+		Vec4 col = areaLayout.borderColor;
+		float s = (float)areaLayout.width;
+		AddRect(v, rect.LeftTop(), rect.RightTop() + Vec2(-s, s), col);
+		AddRect(v, rect.LeftTop(), rect.LeftBottom() + Vec2(s, 0), col);
+		AddRect(v, rect.RightTop() + Vec2(-s, 0), rect.RightBottom(), col);
+		AddRect(v, rect.LeftBottom() + Vec2(0, -s), rect.RightBottom(), col);
+		shader->Draw(nullptr, vBuf, 4);
 	}
 }
 
@@ -2068,98 +2151,34 @@ void Gui::DrawRect(Color color, const Rect& rect, int width)
 }
 
 //=================================================================================================
-void Gui::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2d* clip_rect, const Color* tint)
+void Gui::AddRect(VGui*& v, const Vec2& leftTop, const Vec2& rightBottom, const Vec4& color)
 {
-	if(area_layout.mode == AreaLayout::Mode::None)
-		return;
-
-	Color color = area_layout.color;
-	if(tint)
-		color *= *tint;
-
-	if(area_layout.mode == AreaLayout::Mode::Item)
-	{
-		DrawItem(area_layout.tex, Int2(rect.LeftTop()), Int2(rect.Size()), color, area_layout.size.x, area_layout.size.y, clip_rect);
-	}
-	else
-	{
-		// background
-		if(area_layout.mode == AreaLayout::Mode::Image && area_layout.background_color != Color::None)
-		{
-			assert(!clip_rect);
-			VGui* v = vBuf;
-			AddRect(v, rect.LeftTop(), rect.RightBottom(), Color(area_layout.background_color));
-			shader->Draw(nullptr, vBuf, 1);
-		}
-
-		// image/color
-		GuiRect gui_rect;
-		TEX tex;
-		if(area_layout.mode >= AreaLayout::Mode::Image)
-		{
-			tex = area_layout.tex->tex;
-			gui_rect.Set(rect, &area_layout.region);
-		}
-		else
-		{
-			tex = nullptr;
-			gui_rect.Set(rect, nullptr);
-		}
-		if(clip_rect)
-		{
-			if(!gui_rect.Clip(*clip_rect))
-				return;
-		}
-
-		VGui* v = vBuf;
-		gui_rect.Populate(v, color);
-		shader->Draw(tex, vBuf, 1);
-
-		if(area_layout.mode != AreaLayout::Mode::BorderColor)
-			return;
-
-		// border
-		assert(!clip_rect);
-		v = vBuf;
-		Vec4 col = area_layout.border_color;
-		float s = (float)area_layout.width;
-		AddRect(v, rect.LeftTop(), rect.RightTop() + Vec2(-s, s), col);
-		AddRect(v, rect.LeftTop(), rect.LeftBottom() + Vec2(s, 0), col);
-		AddRect(v, rect.RightTop() + Vec2(-s, 0), rect.RightBottom(), col);
-		AddRect(v, rect.LeftBottom() + Vec2(0, -s), rect.RightBottom(), col);
-		shader->Draw(nullptr, vBuf, 4);
-	}
-}
-
-//=================================================================================================
-void Gui::AddRect(VGui*& v, const Vec2& left_top, const Vec2& right_bottom, const Vec4& color)
-{
-	v->pos = Vec2(left_top.x, left_top.y);
+	v->pos = Vec2(leftTop.x, leftTop.y);
 	v->tex = Vec2(0, 0);
 	v->color = color;
 	++v;
 
-	v->pos = Vec2(right_bottom.x, left_top.y);
+	v->pos = Vec2(rightBottom.x, leftTop.y);
 	v->tex = Vec2(1, 0);
 	v->color = color;
 	++v;
 
-	v->pos = Vec2(right_bottom.x, right_bottom.y);
+	v->pos = Vec2(rightBottom.x, rightBottom.y);
 	v->tex = Vec2(1, 1);
 	v->color = color;
 	++v;
 
-	v->pos = Vec2(right_bottom.x, right_bottom.y);
+	v->pos = Vec2(rightBottom.x, rightBottom.y);
 	v->tex = Vec2(1, 1);
 	v->color = color;
 	++v;
 
-	v->pos = Vec2(left_top.x, right_bottom.y);
+	v->pos = Vec2(leftTop.x, rightBottom.y);
 	v->tex = Vec2(0, 1);
 	v->color = color;
 	++v;
 
-	v->pos = Vec2(left_top.x, left_top.y);
+	v->pos = Vec2(leftTop.x, leftTop.y);
 	v->tex = Vec2(0, 0);
 	v->color = color;
 	++v;
@@ -2215,13 +2234,13 @@ void Gui::UseGrayscale(bool grayscale)
 bool Gui::DrawText2(DrawTextOptions& options)
 {
 	const int width = options.rect.SizeX();
-	bool bottom_clip = false;
+	bool bottomClip = false;
 
 	DrawLineContext ctx;
 	ctx.font = options.font;
 	ctx.text = options.str;
 	ctx.v = vBuf;
-	ctx.v2 = (IsSet(options.flags, DTF_OUTLINE) && options.font->tex_outline) ? vBuf2 : nullptr;
+	ctx.v2 = (IsSet(options.flags, DTF_OUTLINE) && options.font->texOutline) ? vBuf2 : nullptr;
 	ctx.inBuffer = 0;
 	ctx.inBuffer2 = 0;
 	ctx.parseSpecial = IsSet(options.flags, DTF_PARSE_SPECIAL);
@@ -2232,7 +2251,7 @@ bool Gui::DrawText2(DrawTextOptions& options)
 	{
 		ctx.hc = &tmpHitboxContext;
 		ctx.hc->hitbox = options.hitboxes;
-		ctx.hc->counter = (options.hitbox_counter ? *options.hitbox_counter : 0);
+		ctx.hc->counter = (options.hitboxCounter ? *options.hitboxCounter : 0);
 		ctx.hc->open = HitboxOpen::No;
 	}
 	else
@@ -2245,38 +2264,38 @@ bool Gui::DrawText2(DrawTextOptions& options)
 		if(!options.lines)
 		{
 			// tekst pionowo po œrodku lub na dole
-			uint line_begin, line_end, line_index = 0;
-			int line_width;
-			while(options.font->SplitLine(line_begin, line_end, line_width, line_index, options.str, options.str_length, options.flags, width))
+			uint lineBegin, lineEnd, lineIndex = 0;
+			int lineWidth;
+			while(options.font->SplitLine(lineBegin, lineEnd, lineWidth, lineIndex, options.str, options.strLength, options.flags, width))
 			{
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
 				if(IsSet(options.flags, DTF_CENTER))
-					x = options.rect.Left() + (width - line_width) / 2;
+					x = options.rect.Left() + (width - lineWidth) / 2;
 				else if(IsSet(options.flags, DTF_RIGHT))
-					x = options.rect.Right() - line_width;
+					x = options.rect.Right() - lineWidth;
 				else
 					x = options.rect.Left();
 
-				int clip_result = (options.clipping ? Clip(x, y, line_width, options.font->height, options.clipping) : 0);
-				Int2 scaled_pos(int(options.scale.x * (x - options.rect.Left())) + options.rect.Left(),
+				int clipResult = (options.clipping ? Clip(x, y, lineWidth, options.font->height, options.clipping) : 0);
+				Int2 scaledPos(int(options.scale.x * (x - options.rect.Left())) + options.rect.Left(),
 					int(options.scale.y * (y - options.rect.Top())) + options.rect.Top());
 
 				// znaki w tej linijce
-				if(clip_result == 0)
-					DrawTextLine(ctx, line_begin, line_end, scaled_pos.x, scaled_pos.y, nullptr);
-				else if(clip_result == 5)
-					DrawTextLine(ctx, line_begin, line_end, scaled_pos.x, scaled_pos.y, options.clipping);
-				else if(clip_result == 2)
+				if(clipResult == 0)
+					DrawTextLine(ctx, lineBegin, lineEnd, scaledPos.x, scaledPos.y, nullptr);
+				else if(clipResult == 5)
+					DrawTextLine(ctx, lineBegin, lineEnd, scaledPos.x, scaledPos.y, options.clipping);
+				else if(clipResult == 2)
 				{
 					// tekst jest pod widocznym regionem, przerwij rysowanie
-					bottom_clip = true;
+					bottomClip = true;
 					break;
 				}
 				else
 				{
 					// pomiñ hitbox
-					SkipLine(options.str, line_begin, line_end, ctx.hc);
+					SkipLine(options.str, lineBegin, lineEnd, ctx.hc);
 				}
 
 				// zmieñ y na kolejn¹ linijkê
@@ -2285,9 +2304,9 @@ bool Gui::DrawText2(DrawTextOptions& options)
 		}
 		else
 		{
-			for(uint line_index = options.lines_start, lines_max = min(options.lines_end, options.lines->size()); line_index < lines_max; ++line_index)
+			for(uint lineIndex = options.linesStart, linesMax = min(options.linesEnd, options.lines->size()); lineIndex < linesMax; ++lineIndex)
 			{
-				auto& line = options.lines->at(line_index);
+				auto& line = options.lines->at(lineIndex);
 
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
@@ -2298,19 +2317,19 @@ bool Gui::DrawText2(DrawTextOptions& options)
 				else
 					x = options.rect.Left();
 
-				int clip_result = (options.clipping ? Clip(x, y, line.width, options.font->height, options.clipping) : 0);
-				Int2 scaled_pos(int(options.scale.x * (x - options.rect.Left())) + options.rect.Left(),
+				int clipResult = (options.clipping ? Clip(x, y, line.width, options.font->height, options.clipping) : 0);
+				Int2 scaledPos(int(options.scale.x * (x - options.rect.Left())) + options.rect.Left(),
 					int(options.scale.y * (y - options.rect.Top())) + options.rect.Top());
 
 				// znaki w tej linijce
-				if(clip_result == 0)
-					DrawTextLine(ctx, line.begin, line.end, scaled_pos.x, scaled_pos.y, nullptr);
-				else if(clip_result == 5)
-					DrawTextLine(ctx, line.begin, line.end, scaled_pos.x, scaled_pos.y, options.clipping);
-				else if(clip_result == 2)
+				if(clipResult == 0)
+					DrawTextLine(ctx, line.begin, line.end, scaledPos.x, scaledPos.y, nullptr);
+				else if(clipResult == 5)
+					DrawTextLine(ctx, line.begin, line.end, scaledPos.x, scaledPos.y, options.clipping);
+				else if(clipResult == 2)
 				{
 					// tekst jest pod widocznym regionem, przerwij rysowanie
-					bottom_clip = true;
+					bottomClip = true;
 					break;
 				}
 				else
@@ -2329,16 +2348,16 @@ bool Gui::DrawText2(DrawTextOptions& options)
 		// tekst u góry
 		if(!options.lines)
 		{
-			static vector<TextLine> lines_data;
-			lines_data.clear();
+			static vector<TextLine> linesData;
+			linesData.clear();
 
 			// oblicz wszystkie linijki
-			uint line_begin, line_end, line_index = 0;
-			int line_width;
-			while(options.font->SplitLine(line_begin, line_end, line_width, line_index, options.str, options.str_length, options.flags, width))
-				lines_data.push_back(TextLine(line_begin, line_end, line_width));
+			uint lineBegin, lineEnd, lineIndex = 0;
+			int lineWidth;
+			while(options.font->SplitLine(lineBegin, lineEnd, lineWidth, lineIndex, options.str, options.strLength, options.flags, width))
+				linesData.push_back(TextLine(lineBegin, lineEnd, lineWidth));
 
-			options.lines = &lines_data;
+			options.lines = &linesData;
 		}
 
 		// pocz¹tkowa pozycja y
@@ -2348,9 +2367,9 @@ bool Gui::DrawText2(DrawTextOptions& options)
 		else
 			y = options.rect.Top() + (options.rect.SizeY() - int(options.lines->size()) * options.font->height) / 2;
 
-		for(uint line_index = options.lines_start, lines_max = min(options.lines_end, options.lines->size()); line_index < lines_max; ++line_index)
+		for(uint lineIndex = options.linesStart, linesMax = min(options.linesEnd, options.lines->size()); lineIndex < linesMax; ++lineIndex)
 		{
-			auto& line = options.lines->at(line_index);
+			auto& line = options.lines->at(lineIndex);
 
 			// pocz¹tkowa pozycja x w tej linijce
 			int x;
@@ -2361,19 +2380,19 @@ bool Gui::DrawText2(DrawTextOptions& options)
 			else
 				x = options.rect.Left();
 
-			int clip_result = (options.clipping ? Clip(x, y, line.width, options.font->height, options.clipping) : 0);
-			Int2 scaled_pos(int(options.scale.x * (x - options.rect.Left())) + options.rect.Left(),
+			int clipResult = (options.clipping ? Clip(x, y, line.width, options.font->height, options.clipping) : 0);
+			Int2 scaledPos(int(options.scale.x * (x - options.rect.Left())) + options.rect.Left(),
 				int(options.scale.y * (y - options.rect.Top())) + options.rect.Top());
 
 			// znaki w tej linijce
-			if(clip_result == 0)
-				DrawTextLine(ctx, line.begin, line.end, scaled_pos.x, scaled_pos.y, nullptr);
-			else if(clip_result == 5)
-				DrawTextLine(ctx, line.begin, line.end, scaled_pos.x, scaled_pos.y, options.clipping);
-			else if(clip_result == 2)
+			if(clipResult == 0)
+				DrawTextLine(ctx, line.begin, line.end, scaledPos.x, scaledPos.y, nullptr);
+			else if(clipResult == 5)
+				DrawTextLine(ctx, line.begin, line.end, scaledPos.x, scaledPos.y, options.clipping);
+			else if(clipResult == 2)
 			{
 				// tekst jest pod widocznym regionem, przerwij rysowanie
-				bottom_clip = true;
+				bottomClip = true;
 				break;
 			}
 			else if(options.hitboxes)
@@ -2388,14 +2407,14 @@ bool Gui::DrawText2(DrawTextOptions& options)
 	}
 
 	if(ctx.inBuffer2 > 0)
-		shader->Draw(ctx.font->tex_outline, vBuf2, ctx.inBuffer2);
+		shader->Draw(ctx.font->texOutline, vBuf2, ctx.inBuffer2);
 	if(ctx.inBuffer > 0)
 		shader->Draw(ctx.font->tex, vBuf, ctx.inBuffer);
 
-	if(options.hitbox_counter)
-		*options.hitbox_counter = ctx.hc->counter;
+	if(options.hitboxCounter)
+		*options.hitboxCounter = ctx.hc->counter;
 
-	return !bottom_clip;
+	return !bottomClip;
 }
 
 //=================================================================================================
@@ -2405,6 +2424,21 @@ void Gui::SetLayout(Layout* masterLayout)
 	this->masterLayout = masterLayout;
 	if(!layout)
 		layout = masterLayout->Get<layout::Gui>();
+}
+
+//=================================================================================================
+void Gui::RegisterControl(Control* control)
+{
+	assert(control);
+	registeredControls.push_back(control);
+}
+
+//=================================================================================================
+Box2d* Gui::SetClipRect(Box2d* clipRect)
+{
+	Box2d* prevClipRect = this->clipRect;
+	this->clipRect = clipRect;
+	return prevClipRect;
 }
 
 //=================================================================================================

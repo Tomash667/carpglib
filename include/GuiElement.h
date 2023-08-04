@@ -9,6 +9,8 @@ public:
 	}
 	virtual ~GuiElement() {}
 	virtual cstring ToString() = 0;
+	template<typename T>
+	inline T* Cast() { return static_cast<T*>(this); }
 
 	int value, height;
 	Texture* tex;

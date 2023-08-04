@@ -40,6 +40,8 @@
     <ClInclude Include="..\src\LinearMath\btTransformUtil.h" />
     <ClInclude Include="..\src\LinearMath\btVector3.h" />
     <ClInclude Include="..\src\LinearMath\btImplicitQRSVD.h" />
+    <ClInclude Include="..\src\LinearMath\btModifiedGramSchmidt.h" />
+    <ClInclude Include="..\src\LinearMath\btReducedVector.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\LinearMath\TaskScheduler\btTaskScheduler.cpp">
@@ -61,5 +63,6 @@
     <ClCompile Include="..\src\LinearMath\btSerializer64.cpp" />
     <ClCompile Include="..\src\LinearMath\btThreads.cpp" />
     <ClCompile Include="..\src\LinearMath\btVector3.cpp" />
+    <ClCompile Include="..\src\LinearMath\btReducedVector.cpp" />
   </ItemGroup>
 </Project>

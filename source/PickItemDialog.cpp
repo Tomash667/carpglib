@@ -33,8 +33,9 @@ PickItemDialog::PickItemDialog(const DialogInfo&  info) : DialogBox(info)
 {
 	DialogBox::layout = layout;
 
-	flow.allow_select = true;
-	flow.on_select = VoidF(this, &PickItemDialog::OnSelect);
+	flow.allowSelect = true;
+	flow.fill = true;
+	flow.onSelect = VoidF(this, &PickItemDialog::OnSelect);
 
 	btClose.custom = &layout->close;
 	btClose.id = Cancel;
@@ -83,28 +84,26 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 	flow.pos = Int2(16, 64);
 	flow.size = Int2(size.x - 32, 10000);
 	flow.SetItems(params.items);
-	int flowHeight = flow.GetHeight();
-	flowHeight += 64;
-	if(flowHeight < params.sizeMin.y)
-		flowHeight = params.sizeMin.y;
-	else if(flowHeight > params.sizeMax.y)
-		flowHeight = params.sizeMax.y;
-	size.y = flowHeight;
-	pos = global_pos = (gui->wndSize - size) / 2;
+	size.y = flow.GetHeight() + 80;
+	if(size.y < params.sizeMin.y)
+		size.y = params.sizeMin.y;
+	else if(size.y > params.sizeMax.y)
+		size.y = params.sizeMax.y;
+	pos = globalPos = (gui->wndSize - size) / 2;
 	flow.UpdateSize(Int2(16, 64), Int2(size.x - 32, size.y - 80), true);
 	btClose.pos = Int2(size.x - 48, 16);
-	btClose.global_pos = global_pos + btClose.pos;
+	btClose.globalPos = globalPos + btClose.pos;
 	selected.clear();
 }
 
 //=================================================================================================
-void PickItemDialog::Draw(ControlDrawData*)
+void PickItemDialog::Draw()
 {
 	DrawPanel();
 
 	btClose.Draw();
 
-	Rect r = { global_pos.x + 16, global_pos.y + 16, global_pos.x + size.x - 56, global_pos.y + size.y };
+	Rect r = { globalPos.x + 16, globalPos.y + 16, globalPos.x + size.x - 56, globalPos.y + size.y };
 	gui->DrawText(layout->font, text, DTF_CENTER, Color::Black, r);
 
 	flow.Draw();
@@ -115,10 +114,10 @@ void PickItemDialog::Draw(ControlDrawData*)
 //=================================================================================================
 void PickItemDialog::Update(float dt)
 {
-	btClose.mouse_focus = focus;
+	btClose.mouseFocus = focus;
 	btClose.Update(dt);
 
-	flow.mouse_focus = focus;
+	flow.mouseFocus = focus;
 	flow.Update(dt);
 
 	if(getTooltip)
@@ -146,9 +145,9 @@ void PickItemDialog::Event(GuiEvent e)
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
 		// recenter
-		pos = global_pos = (gui->wndSize - size) / 2;
+		pos = globalPos = (gui->wndSize - size) / 2;
 		flow.UpdatePos(pos);
-		btClose.global_pos = global_pos + btClose.pos;
+		btClose.globalPos = globalPos + btClose.pos;
 	}
 	else if(e == Cancel)
 	{

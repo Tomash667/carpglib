@@ -52,15 +52,15 @@ void Engine::LoadConfiguration(Config& cfg)
 
 	if(cfg.GetBool("log", true))
 	{
-		textLogger = new TextLogger(cfg.GetString("log_filename", "log.txt").c_str());
+		textLogger = new TextLogger(cfg.GetString("logFilename", "log.txt").c_str());
 		++count;
 	}
 
 	if(cfg.GetBool("console"))
 	{
 		consoleLogger = new ConsoleLogger;
-		const Int2 consolePos = cfg.GetInt2("con_pos", Int2(-1, -1));
-		const Int2 consoleSize = cfg.GetInt2("con_size", Int2(-1, -1));
+		const Int2 consolePos = cfg.GetInt2("conPos", Int2(-1, -1));
+		const Int2 consoleSize = cfg.GetInt2("conSize", Int2(-1, -1));
 		if(consolePos != Int2(-1, -1) || consoleSize != Int2(-1, -1))
 			consoleLogger->Move(consolePos, consoleSize);
 		++count;
@@ -85,31 +85,31 @@ void Engine::LoadConfiguration(Config& cfg)
 	SetFullscreen(isFullscreen);
 	if(wndSize != Int2::Zero)
 		SetWindowSize(wndSize);
-	SetWindowInitialPos(cfg.GetInt2("wnd_pos", Int2(-1, -1)), cfg.GetInt2("wnd_size", Int2(-1, -1)));
-	HideWindow(cfg.GetBool("hidden_window"));
+	SetWindowInitialPos(cfg.GetInt2("wndPos", Int2(-1, -1)), cfg.GetInt2("wndSize", Int2(-1, -1)));
+	HideWindow(cfg.GetBool("hiddenWindow"));
 
 	// render settings
 	int adapter = cfg.GetInt("adapter");
 	Info("Settings: Adapter %d.", adapter);
 	app::render->SetAdapter(adapter);
-	const string& featureLevel = cfg.GetString("feature_level");
+	const string& featureLevel = cfg.GetString("featureLevel");
 	if(!featureLevel.empty())
 	{
 		if(!app::render->SetFeatureLevel(featureLevel))
 			Warn("Settings: Invalid feature level '%s'.", featureLevel.c_str());
 	}
 	app::render->SetVsync(cfg.GetBool("vsync", true));
-	app::render->SetMultisampling(cfg.GetInt("multisampling"), cfg.GetInt("multisampling_quality"));
-	app::sceneMgr->useNormalmap = cfg.GetBool("use_normalmap", true);
-	app::sceneMgr->useSpecularmap = cfg.GetBool("use_specularmap", true);
+	app::render->SetMultisampling(cfg.GetInt("multisampling"), cfg.GetInt("multisamplingQuality"));
+	app::sceneMgr->useNormalmap = cfg.GetBool("useNormalmap", true);
+	app::sceneMgr->useSpecularmap = cfg.GetBool("useSpecularmap", true);
 
 	// sound/music settings
 	if(cfg.GetBool("nosound"))
 		app::soundMgr->Disable();
-	app::soundMgr->SetSoundVolume(Clamp(cfg.GetInt("sound_volume", 100), 0, 100));
-	app::soundMgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
+	app::soundMgr->SetSoundVolume(Clamp(cfg.GetInt("soundVolume", 100), 0, 100));
+	app::soundMgr->SetMusicVolume(Clamp(cfg.GetInt("musicVolume", 50), 0, 100));
 	Guid soundDevice;
-	if(soundDevice.TryParse(cfg.GetString("sound_device", Guid::EmptyString)))
+	if(soundDevice.TryParse(cfg.GetString("soundDevice", Guid::EmptyString)))
 		app::soundMgr->SetDevice(soundDevice);
 }
 
@@ -146,7 +146,7 @@ void Engine::Cleanup()
 
 //=================================================================================================
 // Do pseudo update tick, used to render in update loop
-void Engine::DoPseudotick(bool msg_only)
+void Engine::DoPseudotick(bool msgOnly)
 {
 	MSG msg = { 0 };
 	if(!timer.IsStarted())
@@ -158,7 +158,7 @@ void Engine::DoPseudotick(bool msg_only)
 		DispatchMessage(&msg);
 	}
 
-	if(msg_only)
+	if(msgOnly)
 		timer.Tick();
 	else
 		DoTick(false);
@@ -175,7 +175,7 @@ void Engine::RestoreFocus()
 
 //=================================================================================================
 // Common part for WindowLoop and DoPseudotick
-void Engine::DoTick(bool update_game)
+void Engine::DoTick(bool updateGame)
 {
 	const float dt = timer.Tick();
 	assert(dt >= 0.f);
@@ -191,37 +191,37 @@ void Engine::DoTick(bool update_game)
 	}
 
 	// update activity state
-	bool is_active = IsWindowActive();
-	bool was_active = active;
-	UpdateActivity(is_active);
+	bool isActive = IsWindowActive();
+	bool wasActive = active;
+	UpdateActivity(isActive);
 
 	// handle cursor movement
-	Int2 mouse_dif = Int2::Zero;
+	Int2 mouseDif = Int2::Zero;
 	if(active)
 	{
 		if(lockedCursor)
 		{
 			if(replaceCursor)
 				replaceCursor = false;
-			else if(was_active)
+			else if(wasActive)
 			{
 				POINT pt;
 				GetCursorPos(&pt);
 				ScreenToClient(hwnd, &pt);
-				mouse_dif = Int2(pt.x, pt.y) - clientSize / 2;
+				mouseDif = Int2(pt.x, pt.y) - clientSize / 2;
 			}
 			PlaceCursor();
 		}
 	}
 	else if(!lockedCursor && lockOnFocus)
 		lockedCursor = true;
-	app::input->UpdateMouseDif(mouse_dif);
+	app::input->UpdateMouseDif(mouseDif);
 
 	// update keyboard shortcuts info
 	app::input->UpdateShortcuts();
 
 	// update game
-	if(update_game)
+	if(updateGame)
 		app::app->OnUpdate(dt);
 	if(shutdown)
 	{
@@ -278,7 +278,7 @@ void Engine::FatalError(cstring err)
 
 //=================================================================================================
 // Handle windows events
-long Engine::HandleEvent(HWND in_hwnd, uint msg, uint wParam, long lParam)
+long Engine::HandleEvent(HWND inHwnd, uint msg, uint wParam, long lParam)
 {
 	switch(msg)
 	{
@@ -377,7 +377,7 @@ long Engine::HandleEvent(HWND in_hwnd, uint msg, uint wParam, long lParam)
 	}
 
 	// return default message
-	return DefWindowProc(in_hwnd, msg, wParam, lParam);
+	return DefWindowProc(inHwnd, msg, wParam, lParam);
 }
 
 //=================================================================================================
@@ -498,9 +498,9 @@ void Engine::InitWindow()
 // Place cursor on window center
 void Engine::PlaceCursor()
 {
-	POINT dest_pt = { clientSize.x / 2, clientSize.y / 2 };
-	ClientToScreen(hwnd, &dest_pt);
-	SetCursorPos(dest_pt.x, dest_pt.y);
+	POINT destPt = { clientSize.x / 2, clientSize.y / 2 };
+	ClientToScreen(hwnd, &destPt);
+	SetCursorPos(destPt.x, destPt.y);
 }
 
 //=================================================================================================
@@ -515,12 +515,12 @@ void Engine::SetTitle(cstring title)
 
 //=================================================================================================
 // Show/hide cursor
-void Engine::ShowCursor(bool _show)
+void Engine::ShowCursor(bool show)
 {
-	if(IsCursorVisible() != _show)
+	if(IsCursorVisible() != show)
 	{
-		::ShowCursor(_show);
-		cursorVisible = _show;
+		::ShowCursor(show);
+		cursorVisible = show;
 	}
 }
 
@@ -655,11 +655,11 @@ void Engine::HideWindow(bool hide)
 
 //=================================================================================================
 // Update window activity
-void Engine::UpdateActivity(bool is_active)
+void Engine::UpdateActivity(bool isActive)
 {
-	if(is_active == active)
+	if(isActive == active)
 		return;
-	active = is_active;
+	active = isActive;
 	if(active)
 	{
 		if(lockedCursor)

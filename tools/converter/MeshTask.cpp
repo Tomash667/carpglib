@@ -166,7 +166,7 @@ void MeshInfoDir(const char* path, bool subdir, std::map<int, int>& files)
 	io::FindFiles(Format("%s/*", path), [&](const io::FileInfo& info)
 	{
 		string dir = Format("%s/%s", path, info.filename);
-		if(info.is_dir && subdir)
+		if(info.isDir && subdir)
 			MeshInfoDir(dir.c_str(), subdir, files);
 		else
 		{

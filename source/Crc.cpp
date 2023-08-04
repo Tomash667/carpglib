@@ -2,7 +2,7 @@
 #include "Crc.h"
 #include "File.h"
 
-const uint Crc::m_tab[] = {
+const uint Crc::mTab[] = {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
 	0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
 	0x09b64c2b, 0x7eb17cbd, 0xe7b82d07, 0x90bf1d91, 0x1db71064, 0x6ab020f2,
@@ -51,7 +51,7 @@ const uint Crc::m_tab[] = {
 void Crc::Update(const byte *s, size_t n)
 {
 	for(; n; --n, ++s)
-		m_crc = m_tab[((m_crc) ^ (*s)) & 0xff] ^ ((m_crc) >> 8);
+		mCrc = mTab[((mCrc) ^ (*s)) & 0xff] ^ ((mCrc) >> 8);
 }
 
 uint Crc::Calculate(Cstring filename)
@@ -71,15 +71,15 @@ uint Crc::Calculate(FileReader& file)
 	Buffer* buf = Buffer::Get();
 	buf->Resize(chunk);
 
-	uint size_left = file.GetSize();
+	uint sizeLeft = file.GetSize();
 	Crc crc;
 
-	while(size_left > 0)
+	while(sizeLeft > 0)
 	{
-		uint count = min(chunk, size_left);
+		uint count = min(chunk, sizeLeft);
 		file.Read(buf->Data(), count);
 		crc.Update((const byte*)buf->Data(), count);
-		size_left -= count;
+		sizeLeft -= count;
 	}
 
 	buf->Free();

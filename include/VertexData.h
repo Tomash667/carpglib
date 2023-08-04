@@ -25,5 +25,5 @@ struct VertexData : Resource
 	VertexDeclarationId vertex_decl;
 	uint vertex_size;
 
-	bool RayToMesh(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& obj_pos, float obj_rot, float& out_dist) const;
+	bool RayToMesh(const Vec3& rayPos, const Vec3& rayDir, const Vec3& objPos, float objRot, float& outDist) const;
 };

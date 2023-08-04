@@ -503,12 +503,17 @@ inline bool Rect::Intersect(const Rect& r1, const Rect& r2, Rect& result)
 		return false;
 }
 
-inline bool Rect::IsInside(const Int2& pos, const Int2& size, const Int2& pt)
+inline bool Rect::IsInside(const Int2& pt, const Int2& pos, const Int2& size)
 {
 	return pt.x >= pos.x
 		&& pt.y >= pos.y
 		&& pt.x <= pos.x + size.x
 		&& pt.y <= pos.y + size.y;
+}
+
+inline bool Rect::IsInside(const Int2& pt, int left, int top, int right, int bottom)
+{
+	return pt.x >= left && pt.y >= top && pt.x < right && pt.y < bottom;
 }
 
 //------------------------------------------------------------------------------
@@ -3815,13 +3820,13 @@ inline Matrix Matrix::Transform(const Vec3& pos, const Vec3& rot, float scale)
 	return Transform(pos, rot, Vec3(scale, scale, scale));
 }
 
-inline Matrix Matrix::Transform2D(const Vec2* scaling_center, float scaling_rotation, const Vec2* scaling, const Vec2* rotation_center, float rotation, const Vec2* translation)
+inline Matrix Matrix::Transform2D(const Vec2* scalingCenter, float scalingRotation, const Vec2* scaling, const Vec2* rotationCenter, float rotation, const Vec2* translation)
 {
-	XMVECTOR m_scaling_center = scaling_center ? *scaling_center : Vec2(0, 0),
-		m_scaling = scaling ? *scaling : Vec2(1, 1),
-		m_rotation_center = rotation_center ? *rotation_center : Vec2(0, 0),
-		m_translation = translation ? *translation : Vec2(0, 0);
-	return XMMatrixTransformation2D(m_scaling_center, scaling_rotation, m_scaling, m_rotation_center, rotation, m_translation);
+	XMVECTOR vScalingCenter = scalingCenter ? *scalingCenter : Vec2(0, 0),
+		vScaling = scaling ? *scaling : Vec2(1, 1),
+		vRotationCenter = rotationCenter ? *rotationCenter : Vec2(0, 0),
+		vTranslation = translation ? *translation : Vec2(0, 0);
+	return XMMatrixTransformation2D(vScalingCenter, scalingRotation, vScaling, vRotationCenter, rotation, vTranslation);
 }
 
 inline Matrix Matrix::Translation(const Vec3& position)
@@ -4085,6 +4090,12 @@ inline void Quat::Normalize(Quat& result) const
 	XMVECTOR q = XMLoadFloat4(this);
 	XMStoreFloat4(&result, XMQuaternionNormalize(q));
 }
+
+//------------------------------------------------------------------------------
+// Consts
+//------------------------------------------------------------------------------
+
+inline constexpr const Quat Quat::Identity = Quat(0.f, 0.f, 0.f, 1.f);
 
 //------------------------------------------------------------------------------
 // Static functions

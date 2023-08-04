@@ -129,6 +129,10 @@ namespace internal
 
 //-----------------------------------------------------------------------------
 template<typename T>
+using Ptr = T*;
+
+//-----------------------------------------------------------------------------
+template<typename T>
 class SmartPtr
 {
 public:
@@ -221,16 +225,16 @@ struct Optional
 	{
 		if(ptr)
 		{
-			has_value = true;
+			hasValue = true;
 			value = *ptr;
 		}
 		else
-			has_value = false;
+			hasValue = false;
 	}
 
 	operator const T* () const
 	{
-		if(has_value)
+		if(hasValue)
 			return &value;
 		else
 			return nullptr;
@@ -238,20 +242,20 @@ struct Optional
 
 private:
 	T value;
-	bool has_value;
+	bool hasValue;
 };
 
 //-----------------------------------------------------------------------------
 // RAII for simple pointer
 template<typename T, typename Allocator = internal::StandardAllocator<T>>
-class Ptr
+class Scoped
 {
 	static_assert(std::is_base_of<IAllocator<T>, Allocator>::value, "Allocator must inherit from IAllocator.");
 public:
-	Ptr(nullptr_t) : ptr(nullptr), owned(false)
+	Scoped(nullptr_t) : ptr(nullptr), owned(false)
 	{
 	}
-	Ptr(T* ptr, bool owned = true) : ptr(ptr), owned(owned)
+	Scoped(T* ptr, bool owned = true) : ptr(ptr), owned(owned)
 	{
 		if(!ptr)
 		{
@@ -260,20 +264,20 @@ public:
 		}
 	}
 	template<typename U = T>
-	Ptr(typename std::enable_if<!std::is_abstract<U>::value && std::is_default_constructible<U>::value>::type* = nullptr) : owned(true)
+	Scoped(typename std::enable_if<!std::is_abstract<U>::value && std::is_default_constructible<U>::value>::type* = nullptr) : owned(true)
 	{
 		ptr = allocator.Create();
 	}
-	~Ptr()
+	~Scoped()
 	{
 		if(ptr && owned)
 			allocator.Destroy(ptr);
 	}
-	void operator = (T* new_ptr)
+	void operator = (T* newPtr)
 	{
 		if(ptr)
 			allocator.Destroy(ptr);
-		ptr = new_ptr;
+		ptr = newPtr;
 	}
 	operator T* ()
 	{

@@ -4,26 +4,26 @@
 #include "Input.h"
 
 //=================================================================================================
-Button::Button() : state(NONE), img(nullptr), hold(false), force_img_size(0, 0), custom(nullptr)
+Button::Button() : state(NONE), img(nullptr), hold(false), forceImgSize(0, 0), custom(nullptr)
 {
 }
 
 //=================================================================================================
-void Button::Draw(ControlDrawData*)
+void Button::Draw()
 {
-	State real_state = state;
+	State realState = state;
 	if(disabled)
-		real_state = DISABLED;
+		realState = DISABLED;
 
 	if(!custom)
 	{
-		gui->DrawArea(Box2d::Create(global_pos, size), layout->tex[real_state]);
+		gui->DrawArea(Box2d::Create(globalPos, size), layout->tex[realState]);
 
 		Rect r = {
-			global_pos.x + layout->padding,
-			global_pos.y + layout->padding,
-			global_pos.x + size.x - layout->padding * 2,
-			global_pos.y + size.y - layout->padding * 2
+			globalPos.x + layout->padding,
+			globalPos.y + layout->padding,
+			globalPos.x + size.x - layout->padding,
+			globalPos.y + size.y - layout->padding
 		};
 
 		if(state == DOWN)
@@ -39,33 +39,36 @@ void Button::Draw(ControlDrawData*)
 			}
 
 			Matrix mat;
-			Int2 required_size = force_img_size, img_size;
+			Int2 requiredSize = forceImgSize, imgSize;
 			Vec2 scale;
-			img->ResizeImage(required_size, img_size, scale);
+			img->ResizeImage(requiredSize, imgSize, scale);
 
 			// position image
-			Vec2 img_pos;
+			Vec2 imgPos;
 			if(text.empty())
 			{
 				// when no text put at center
-				img_pos = Vec2((float)(size.x - required_size.x) / 2 + r.Left(),
-					(float)(size.y - required_size.y) / 2 + r.Top());
+				imgPos = Vec2((float)(size.x - requiredSize.x) / 2 + r.Left(),
+					(float)(size.y - requiredSize.y) / 2 + r.Top());
 			}
 			else
 			{
 				// put at left
-				img_pos = Vec2((float)r.Left(), float(r.Top() + (size.y - required_size.y) / 2));
+				imgPos = Vec2((float)r.Left(), float(r.Top() + (size.y - requiredSize.y) / 2));
 			}
 
-			mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &img_pos);
+			mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &imgPos);
 			gui->DrawSprite2(img, mat, nullptr, &r, Color::White);
-			r.Left() += img_size.x;
+			r.Left() += imgSize.x;
 		}
 
-		gui->DrawText(layout->font, text, DTF_CENTER | DTF_VCENTER, layout->font_color[real_state], r, &r);
+		int flags = DTF_CENTER | DTF_VCENTER;
+		if(layout->outline)
+			flags |= DTF_OUTLINE;
+		gui->DrawText(layout->font, text, flags, layout->fontColor[state], r, &r);
 	}
 	else
-		gui->DrawArea(Box2d::Create(global_pos, size), custom->tex[real_state]);
+		gui->DrawArea(Box2d::Create(globalPos, size), custom->tex[realState]);
 }
 
 //=================================================================================================
@@ -74,9 +77,9 @@ void Button::Update(float dt)
 	if(state == DISABLED || disabled)
 		return;
 
-	if(input->Focus() && mouse_focus && IsInside(gui->cursorPos))
+	if(input->Focus() && mouseFocus && IsInside(gui->cursorPos))
 	{
-		gui->cursorMode = CURSOR_HOVER;
+		gui->SetCursorMode(CURSOR_HOVER);
 		if(state == DOWN)
 		{
 			bool apply = false;
