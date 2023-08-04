@@ -38,12 +38,14 @@ class LayoutLoader
 			entry.name = name;
 			entry.offset = offset;
 		}
-		Entry* FindEntry(const string& name)
+		Entry* FindEntry(const string& name, int& index)
 		{
+			index = 0;
 			for(Entry& e : entries)
 			{
 				if(e.name == name)
 					return &e;
+				++index;
 			}
 			return nullptr;
 		}

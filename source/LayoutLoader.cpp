@@ -189,6 +189,7 @@ void LayoutLoader::ParseControl(const string& name)
 		t.Throw("Control '%s' is already declared.", name.c_str());
 	c->used = true;
 
+	int used = 0;
 	byte* data = new byte[c->size];
 	layout->types[c->type] = reinterpret_cast<layout::Control*>(data);
 
@@ -198,10 +199,13 @@ void LayoutLoader::ParseControl(const string& name)
 	while(!t.IsSymbol('}'))
 	{
 		const string& entryName = t.MustGetItemKeyword();
-		Entry* entry = c->FindEntry(entryName);
+		int index;
+		Entry* entry = c->FindEntry(entryName, index);
 		if(!entry)
 			t.Throw("Missing control '%s' entry '%s'.", c->name.c_str(), entryName.c_str());
 		t.Next();
+
+		used |= (1 << index);
 
 		switch(entry->type)
 		{
@@ -339,6 +343,9 @@ void LayoutLoader::ParseControl(const string& name)
 			break;
 		}
 	}
+
+	if(IsDebug() && CountBits(used) != c->entries.size())
+		Warn("Control '%s' not all field set.", c->name.c_str());
 }
 
 //=================================================================================================
