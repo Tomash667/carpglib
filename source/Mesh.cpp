@@ -590,12 +590,12 @@ void Mesh::LoadVertexData(VertexData* vd, StreamReader& stream)
 	LoadHeader(stream);
 	SetVertexSizeDecl();
 	vd->radius = head.radius;
-	vd->vertex_decl = vertex_decl;
-	vd->vertex_size = vertex_size;
+	vd->vertexDecl = vertexDecl;
+	vd->vertexSize = vertexSize;
 
 	// ------ vertices
 	// ensure size
-	uint size = vertex_size * head.n_verts;
+	uint size = vertexSize * head.nVerts;
 	if(!stream.Ensure(size))
 		throw "Failed to read vertex buffer.";
 

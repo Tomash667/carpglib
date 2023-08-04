@@ -1262,11 +1262,11 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 			& bt2 = d->bts[1],
 			& bt3 = d->bts[2];
 
-		if(info.custom_names)
+		if(info.customNames)
 		{
-			bt1.text = (info.custom_names[0] ? info.custom_names[0] : txYes);
-			bt2.text = (info.custom_names[1] ? info.custom_names[1] : txNo);
-			bt3.text = (info.custom_names[2] ? info.custom_names[2] : txCancel);
+			bt1.text = (info.customNames[0] ? info.customNames[0] : txYes);
+			bt2.text = (info.customNames[1] ? info.customNames[1] : txNo);
+			bt3.text = (info.customNames[2] ? info.customNames[2] : txCancel);
 		}
 		else
 		{
@@ -1288,7 +1288,7 @@ DialogBox* Gui::ShowDialog(const DialogInfo& info)
 		bt3.parent = d;
 
 		bt1.size = bt2.size = bt3.size = Int2::Max(bt1.size, Int2::Max(bt2.size, bt3.size));
-		min_size.x = bt1.size.x * 3 + 24 + 32;
+		minSize.x = bt1.size.x * 3 + 24 + 32;
 	}
 
 	// resize dialog size for buttons
@@ -1546,7 +1546,7 @@ void Gui::SimpleDialog(cstring text, Control* parent, cstring name)
 	di.name = name;
 	di.parent = parent;
 	di.pause = false;
-	di.auto_wrap = true;
+	di.autoWrap = true;
 	di.text = text;
 	di.order = DialogBox::GetOrder(parent);
 	di.type = DialogType::Ok;
@@ -2074,7 +2074,7 @@ void Gui::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* 
 }
 
 //=================================================================================================
-void Gui::DrawArea(const Box2d& rect, const AreaLayout& areaLayout, const Box2d* clipRect, Color* tint)
+void Gui::DrawArea(const Box2d& rect, const AreaLayout& areaLayout, const Box2d* clipRect, const Color* tint)
 {
 	if(areaLayout.mode == AreaLayout::Mode::None)
 		return;
@@ -2448,11 +2448,4 @@ void Gui::SetOverlay(Overlay* newOverlay)
 	assert(!overlay); // TODO
 	overlay = newOverlay;
 	Add(overlay);
-}
-
-//=================================================================================================
-void Gui::RegisterControl(Control* control)
-{
-	assert(control);
-	registeredControls.push_back(control);
 }

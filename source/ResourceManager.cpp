@@ -47,10 +47,10 @@ void ResourceManager::Init()
 {
 	RegisterExtensions();
 
-	LoadBuiltinMesh("box", box_qmsh, box_qmsh_len);
-	LoadBuiltinMesh("sphere", sphere_qmsh, sphere_qmsh_len);
-	LoadBuiltinMesh("capsule", capsule_qmsh, capsule_qmsh_len);
-	LoadBuiltinMesh("cylinder", cylinder_qmsh, cylinder_qmsh_len);
+	LoadBuiltinMesh("box", boxQmsh, boxQmshLen);
+	LoadBuiltinMesh("sphere", sphereQmsh, sphereQmshLen);
+	LoadBuiltinMesh("capsule", capsuleQmsh, capsuleQmshLen);
+	LoadBuiltinMesh("cylinder", cylinderQmsh, cylinderQmshLen);
 }
 
 //=================================================================================================

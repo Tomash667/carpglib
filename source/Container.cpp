@@ -13,7 +13,7 @@ void Container::Add(Control* ctrl)
 {
 	assert(ctrl && ctrl != this);
 	ctrl->parent = this;
-	ctrl->global_pos = global_pos + ctrl->pos;
+	ctrl->globalPos = globalPos + ctrl->pos;
 	if(disabled)
 		ctrl->SetDisabled(true);
 	ctrls.push_back(ctrl);

@@ -65,7 +65,7 @@ void Button::Draw()
 		int flags = DTF_CENTER | DTF_VCENTER;
 		if(layout->outline)
 			flags |= DTF_OUTLINE;
-		gui->DrawText(layout->font, text, flags, layout->fontColor[state], r, &r);
+		gui->DrawText(layout->font, text, flags, layout->fontColor[realState], r, &r);
 	}
 	else
 		gui->DrawArea(Box2d::Create(globalPos, size), custom->tex[realState]);

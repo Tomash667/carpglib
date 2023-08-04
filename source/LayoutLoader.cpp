@@ -539,11 +539,11 @@ void LayoutLoader::RegisterControls()
 
 	c = AddControl<layout::TextBox>("TextBox");
 	c->AddEntry("background", Entry::AreaLayout, offsetof(layout::TextBox, background));
-	c->AddEntry("background_error", Entry::AreaLayout, offsetof(layout::TextBox, background_error));
+	c->AddEntry("backgroundError", Entry::AreaLayout, offsetof(layout::TextBox, backgroundError));
 	c->AddEntry("font", Entry::Font, offsetof(layout::TextBox, font));
-	c->AddEntry("font_color", Entry::Color, offsetof(layout::TextBox, font_color));
-	c->AddEntry("selection_color", Entry::Color, offsetof(layout::TextBox, selection_color));
-	c->AddEntry("selection_color_disabled", Entry::Color, offsetof(layout::TextBox, selection_color_disabled));
+	c->AddEntry("fontColor", Entry::Color, offsetof(layout::TextBox, fontColor));
+	c->AddEntry("selectionColor", Entry::Color, offsetof(layout::TextBox, selectionColor));
+	c->AddEntry("selectionColorDisabled", Entry::Color, offsetof(layout::TextBox, selectionColorDisabled));
 
 	c = AddControl<layout::TooltipController>("TooltipController");
 	c->AddEntry("box", Entry::AreaLayout, offsetof(layout::TooltipController, box));

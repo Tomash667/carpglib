@@ -1,9 +1,11 @@
 #include "Pch.h"
 #include "VertexData.h"
 
+#include "VertexDeclaration.h"
+
 bool VertexData::RayToMesh(const Vec3& rayPos, const Vec3& rayDir, const Vec3& objPos, float objRot, float& outDist) const
 {
-	assert(vertex_size == sizeof(Vec3));
+	assert(vertexDecl == VDI_POS);
 
 	// najpierw sprawdü kolizje promienia ze sferπ otaczajπcπ model
 	if(!RayToSphere(rayPos, rayDir, objPos, radius, outDist))

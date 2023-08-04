@@ -1,8 +1,9 @@
 #include "Pch.h"
 #include "SimpleMesh.h"
 
-#include "VertexData.h"
 #include "DirectX.h"
+#include "VertexData.h"
+#include "VertexDeclaration.h"
 
 //=================================================================================================
 SimpleMesh::~SimpleMesh()
@@ -23,7 +24,8 @@ void SimpleMesh::Build()
 	uint verticesCount, indicesCount;
 	if(vd)
 	{
-		verticesData = vd->verts.data();
+		assert(vd->vertexDecl == VDI_POS);
+		verticesData = reinterpret_cast<Vec3*>(vd->verts.data());
 		indicesData = reinterpret_cast<word*>(vd->faces.data());
 		verticesCount = vd->verts.size();
 		indicesCount = vd->faces.size() * 3;

@@ -188,7 +188,7 @@ GetNumberDialog* GetNumberDialog::Show(const GetNumberDialogParams& params)
 		info.parent = nullptr;
 		info.pause = false;
 		info.order = DialogOrder::Normal;
-		info.type = DIALOG_CUSTOM;
+		info.type = DialogType::Custom;
 
 		self = new GetNumberDialog(info);
 		self->size = Int2(300, 200);

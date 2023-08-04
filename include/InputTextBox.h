@@ -34,21 +34,21 @@ public:
 	void Reset(bool resetCache = false);
 	void Add(Cstring str);
 	void CheckLines();
-	const string& GetInput() const { return input_str; }
-	void SetInput(const string& str) { input_str = str; }
+	const string& GetInput() const { return inputStr; }
+	void SetInput(const string& str) { inputStr = str; }
 
-	int max_lines, max_cache;
+	int maxLines, maxCache;
 	InputEvent event;
-	Color background_color;
-	bool lose_focus, esc_clear;
+	Color backgroundColor;
+	bool loseFocus, escClear;
 
 private:
 	Scrollbar scrollbar;
 	vector<TextLine> lines;
 	vector<string> cache;
-	string text, input_str;
-	Int2 textbox_size, inputbox_size, inputbox_pos;
-	float caret_blink;
-	int input_counter, last_input_counter;
+	string text, inputStr;
+	Int2 textboxSize, inputboxSize, inputboxPos;
+	float caretBlink;
+	int inputCounter, lastInputCounter;
 	bool added;
 };

@@ -302,16 +302,16 @@ void BasicShader::DrawLine(const Vec3& from, const Vec3& to, float width, Color 
 {
 	width /= 2;
 
-	Vec3 line_dir = from - to;
-	Vec3 quad_normal = camPos - (to + from) / 2;
-	Vec3 extrude_dir = line_dir.Cross(quad_normal).Normalize();
-	Vec3 line_normal = line_dir.Normalized() * width;
+	Vec3 lineDir = from - to;
+	Vec3 quadNormal = camPos - (to + from) / 2;
+	Vec3 extrudeDir = lineDir.Cross(quadNormal).Normalize();
+	Vec3 lineNormal = lineDir.Normalized() * width;
 
 	const array<Vec3, 4> pts = {
-		from + extrude_dir * width + line_normal,
-		from - extrude_dir * width + line_normal,
-		to + extrude_dir * width - line_normal,
-		to - extrude_dir * width - line_normal
+		from + extrudeDir * width + lineNormal,
+		from - extrudeDir * width + lineNormal,
+		to + extrudeDir * width - lineNormal,
+		to - extrudeDir * width - lineNormal
 	};
 
 	DrawQuad(pts, color);

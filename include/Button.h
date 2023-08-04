@@ -38,17 +38,14 @@ public:
 
 	void Draw() override;
 	DialogEvent GetHandler() const { return handler; }
+	void SetDisabled(bool newDisabled) override
+	{
+		state = newDisabled ? DISABLED : NONE;
+		Control::SetDisabled(newDisabled);
+	}
 	void SetHandler(DialogEvent handler) { this->handler = handler; }
 	void Update(float dt) override;
 
-	DialogEvent GetHandler() const { return handler; }
-
-	void SetHandler(DialogEvent new_handler) { handler = new_handler; }
-	void SetDisabled(bool new_disabled) override
-	{
-		state = new_disabled ? DISABLED : NONE;
-		Control::SetDisabled(new_disabled);
-	}
 
 	string text;
 	State state;

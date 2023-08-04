@@ -35,12 +35,12 @@ void ListBox::Draw()
 		{
 			Rect rc = { globalPos.x + layout->border + layout->padding, globalPos.y + layout->border,
 				globalPos.x + size.x - layout->border - layout->padding - imageSize, globalPos.y + size.y - layout->border };
-			gui->DrawText(layout->font, items[selected]->ToString(), DTF_SINGLELINE, layout->font_color[0], rc, &rc);
+			gui->DrawText(layout->font, items[selected]->ToString(), DTF_SINGLELINE, layout->fontColor[0], rc, &rc);
 		}
 
 		// image
-		int width = layout->down_arrow->GetSize().x;
-		gui->DrawSpriteRect(layout->down_arrow, Rect(global_pos.x + size.x - width, global_pos.y, global_pos.x + size.x, global_pos.y + size.y));
+		int width = layout->downArrow->GetSize().x;
+		gui->DrawSpriteRect(layout->downArrow, Rect(globalPos.x + size.x - width, globalPos.y, globalPos.x + size.x, globalPos.y + size.y));
 	}
 	else
 	{
@@ -113,7 +113,7 @@ void ListBox::Draw()
 			}
 			else
 				r.Left() = origX;
-			if(!gui->DrawText(layout->font, e->ToString(), textFlags, layout->font_color[e == selectedItem ? 1 : 0], r, &rc))
+			if(!gui->DrawText(layout->font, e->ToString(), textFlags, layout->fontColor[e == selectedItem ? 1 : 0], r, &rc))
 				break;
 			r.Top() += e->height;
 		}
@@ -516,7 +516,7 @@ void ListBox::SelectByValue(int value, bool sendEvent)
 	{
 		if(item->value == value)
 		{
-			Select(index, send_event);
+			Select(index, sendEvent);
 			break;
 		}
 		++index;
@@ -558,10 +558,10 @@ void ListBox::Remove(int index)
 		--selected;
 	if(sendEvent)
 	{
-		if(event_handler)
-			event_handler(selected);
-		if(event_handler2)
-			event_handler2(A_INDEX_CHANGED, selected);
+		if(eventHandler)
+			eventHandler(selected);
+		if(eventHandler2)
+			eventHandler2(A_INDEX_CHANGED, selected);
 	}
 	UpdateScrollbarVisibility();
 }
@@ -609,10 +609,10 @@ bool ListBox::ChangeIndexEvent(int index, bool force, bool scrollTo)
 	if(scrollTo && !collapsed)
 		ScrollTo(index);
 
-	if(event_handler)
-		event_handler(selected);
-	if(event_handler2)
-		event_handler2(A_INDEX_CHANGED, selected);
+	if(eventHandler)
+		eventHandler(selected);
+	if(eventHandler2)
+		eventHandler2(A_INDEX_CHANGED, selected);
 
 	return true;
 }

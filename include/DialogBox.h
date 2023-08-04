@@ -42,8 +42,6 @@ public:
 
 	static DialogOrder GetOrder(Control* control);
 
-	static DialogOrder GetOrder(Control* control);
-
 	string name, text;
 	DialogType type;
 	DialogEvent event;

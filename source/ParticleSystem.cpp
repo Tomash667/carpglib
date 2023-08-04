@@ -62,8 +62,6 @@ void ParticleEmitter::Init()
 	if(r > radius)
 		radius = r;
 	radius = sqrt(2 * radius * radius);
-
-	Register();
 }
 
 //=================================================================================================
@@ -86,20 +84,20 @@ bool ParticleEmitter::Update(float dt)
 	{
 		for(Particle& p : particles)
 		{
-		if(!p.exists)
-			continue;
+			if(!p.exists)
+				continue;
 
-		if((p.life -= dt) <= 0.f)
-		{
-			p.exists = false;
-			--alive;
-		}
-		else
-		{
-			p.pos += p.speed * dt;
+			if((p.life -= dt) <= 0.f)
+			{
+				p.exists = false;
+				--alive;
+			}
+			else
+			{
+				p.pos += p.speed * dt;
 				p.speed.y -= G * dt;
+			}
 		}
-	}
 	}
 	else
 	{
@@ -109,7 +107,7 @@ bool ParticleEmitter::Update(float dt)
 				continue;
 
 			if((p.life -= dt) <= 0.f)
-	{
+			{
 				p.exists = false;
 				--alive;
 			}
@@ -183,69 +181,21 @@ void ParticleEmitter::Load(FileReader& f)
 	f >> alpha;
 	f >> size;
 	f >> emissions;
-		f >> spawn;
-		f >> maxParticles;
+	f >> spawn;
+	f >> maxParticles;
 	f >> mode;
 	f >> pos;
-		f >> speedMin;
-		f >> speedMax;
-		f >> posMin;
-		f >> posMax;
-		f >> manualDelete;
+	f >> speedMin;
+	f >> speedMax;
+	f >> posMin;
+	f >> posMax;
+	f >> manualDelete;
 	f >> time;
 	f >> radius;
 	f >> particles;
 	f >> alive;
 	f >> destroy;
-		f >> gravity;
-}
-	else
-	{
-		float oldAlpha, oldSize;
-		int opSize, opAlpha;
-		tex = app::resMgr->Load<Texture>(f.ReadString1());
-		f >> emissionInterval;
-		f >> life;
-		f >> particleLife;
-		f >> oldAlpha;
-		f >> oldSize;
-		f >> emissions;
-		f >> spawn;
-		f >> maxParticles;
-		f >> mode;
-		f >> pos;
-		f >> speedMin;
-		f >> speedMax;
-		f >> posMin;
-		f >> posMax;
-		f >> opSize;
-		f >> opAlpha;
-		f >> manualDelete;
-		f >> time;
-		f >> radius;
-		particles.resize(f.Read<uint>());
-		for(Particle& p : particles)
-		{
-			f >> p.pos;
-			f >> p.speed;
-			f >> p.life;
-			f.Skip<float>(); // gravity
-			f >> p.exists;
-			f.Skip(3); // padding
-		}
-		f >> alive;
-		f >> destroy;
-
-		if(opSize == 0)
-			size = Vec2(oldSize);
-		else
-			size = Vec2(oldSize, 0.f);
-
-		if(opAlpha == 0)
-			alpha = Vec2(oldAlpha);
-		else
-			alpha = Vec2(oldAlpha, 0.f);
-	}dupa
+	f >> gravity;
 }
 
 //=================================================================================================
@@ -380,9 +330,9 @@ void TrailParticleEmitter::Load(FileReader& f)
 	f >> alive;
 	f >> timer;
 	f >> width;
-		const string& texId = f.ReadString1();
-		if(!texId.empty())
-			tex = app::resMgr->Load<Texture>(texId);
+	const string& texId = f.ReadString1();
+	if(!texId.empty())
+		tex = app::resMgr->Load<Texture>(texId);
 	else
 		tex = nullptr;
 	f >> manual;

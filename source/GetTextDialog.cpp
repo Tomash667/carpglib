@@ -67,7 +67,7 @@ void GetTextDialog::Update(float dt)
 			if(result == BUTTON_OK)
 			{
 				*inputStr = textBox.GetText();
-				if(validate && !validate())
+				if(validate && !validate(*inputStr))
 				{
 					textBox.SetText(*inputStr);
 					textBox.SetErrorMode(true);
@@ -100,10 +100,10 @@ void GetTextDialog::Event(GuiEvent e)
 		textBox.Event(GuiEvent_LostFocus);
 		break;
 	case GuiEvent_WindowResize:
-		self->pos = self->global_pos = (gui->wndSize - self->size) / 2;
-		self->bts[0].global_pos = self->bts[0].pos + self->global_pos;
-		self->bts[1].global_pos = self->bts[1].pos + self->global_pos;
-		self->textBox.global_pos = self->textBox.pos + self->global_pos;
+		self->pos = self->globalPos = (gui->wndSize - self->size) / 2;
+		self->bts[0].globalPos = self->bts[0].pos + self->globalPos;
+		self->bts[1].globalPos = self->bts[1].pos + self->globalPos;
+		self->textBox.globalPos = self->textBox.pos + self->globalPos;
 		break;
 	default:
 		if(e >= GuiEvent_Custom)

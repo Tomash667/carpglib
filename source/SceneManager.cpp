@@ -124,8 +124,6 @@ void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 {
 	const bool useFog = this->useFog && useLighting;
 
-	const bool useFog = this->useFog && useLighting;
-
 	uint last_id = -1;
 	for(SceneNode* node : nodes)
 	{

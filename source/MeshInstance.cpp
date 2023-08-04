@@ -6,7 +6,7 @@
 //---------------------------
 constexpr float DEFAULT_BLENDING = 0.33f;
 constexpr int BLEND_TO_BIND_POSE = -1;
-constexpr Mesh::KeyframeBone blendb_zero(Vec3::Zero, Quat::Identity, Vec3::One);
+constexpr Mesh::KeyframeBone blendbZero(Vec3::Zero, Quat::Identity, Vec3::One);
 
 typedef vector<byte>::const_iterator BoneIter;
 
@@ -296,7 +296,7 @@ void MeshInstance::SetupBones()
 	}
 
 	if(predraw)
-		predraw(ptr, BoneToParentPoseMat, 0);
+		predraw(ptr, boneToParentPoseMat, 0);
 
 	// Macierze przekszta³caj¹ce ze wsp. danej koœci do wsp. modelu w ustalonej pozycji
 	// (To obliczenie nale¿a³oby po³¹czyæ z poprzednim)

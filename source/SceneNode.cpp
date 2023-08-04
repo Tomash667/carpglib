@@ -88,7 +88,7 @@ void SceneBatch::Add(SceneNode* node)
 	else
 	{
 		int sub = node->subs & SceneNode::SPLIT_MASK;
-		if(app::sceneMgr->useNormalmap && mesh.subs[sub].tex_normal)
+		if(app::sceneMgr->useNormalmap && mesh.subs[sub].texNormal)
 			node->flags |= SceneNode::F_NORMAL_MAP;
 		if(app::sceneMgr->useSpecularmap && mesh.subs[sub].texSpecular)
 			node->flags |= SceneNode::F_SPECULAR_MAP;

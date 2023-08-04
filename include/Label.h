@@ -19,7 +19,7 @@ class Label : public Control, public LayoutControl<layout::Label>
 public:
 	explicit Label(bool autoSize = true);
 	explicit Label(cstring text, bool autoSize = true);
-	void Draw(ControlDrawData*) override;
+	void Draw() override;
 	const string& GetText() const { return text; }
 	bool IsAutoSize() const { return autoSize; }
 	void SetText(Cstring s);

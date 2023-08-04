@@ -22,8 +22,8 @@ struct VertexData : Resource
 	vector<byte> verts;
 	vector<Face> faces;
 	float radius;
-	VertexDeclarationId vertex_decl;
-	uint vertex_size;
+	VertexDeclarationId vertexDecl;
+	uint vertexSize;
 
 	bool RayToMesh(const Vec3& rayPos, const Vec3& rayDir, const Vec3& objPos, float objRot, float& outDist) const;
 };

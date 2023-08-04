@@ -225,7 +225,7 @@ Int2 Font::CalculateSizeWrap(Cstring str, const Int2& maxSize, int border) const
 	int linePts = size.x / height;
 	int totalPts = linePts * lines;
 
-	while(line_pts > 15 + lines)
+	while(linePts > 15 + lines)
 	{
 		++lines;
 		linePts = totalPts / lines;
@@ -342,7 +342,7 @@ bool Font::HitTest(Cstring str, int limitWidth, int flags, const Int2& pos, uint
 	int width = 0, prevWidth = 0;
 	index = 0;
 
-	if(text_end == 0u)
+	if(textEnd == 0u)
 	{
 		index = 0;
 		index2 = Int2::Zero;

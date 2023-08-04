@@ -24,7 +24,7 @@ typedef delegate<void(int, int)> DialogEvent2;
 //-----------------------------------------------------------------------------
 struct DialogInfo
 {
-	DialogInfo() : custom_names(nullptr), img(nullptr), have_tick(false), ticked(false), auto_wrap(false), type(DialogType::Ok), parent(nullptr),
+	DialogInfo() : customNames(nullptr), img(nullptr), haveTick(false), ticked(false), autoWrap(false), type(DialogType::Ok), parent(nullptr),
 		order(DialogOrder::Normal), pause(true)
 	{
 	}
@@ -34,7 +34,7 @@ struct DialogInfo
 	Control* parent;
 	DialogEvent event;
 	DialogOrder order;
-	cstring* custom_names, tick_text;
+	cstring* customNames, tickText;
 	Texture* img;
-	bool pause, have_tick, ticked, auto_wrap;
+	bool pause, haveTick, ticked, autoWrap;
 };

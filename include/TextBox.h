@@ -11,9 +11,9 @@ namespace layout
 {
 	struct TextBox : public Control
 	{
-		AreaLayout background, background_error;
+		AreaLayout background, backgroundError;
 		Font* font;
-		Color font_color, selection_color, selection_color_disabled;
+		Color fontColor, selectionColor, selectionColorDisabled;
 	};
 }
 

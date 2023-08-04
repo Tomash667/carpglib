@@ -108,15 +108,15 @@ void TooltipController::Draw()
 	// big text
 	if(!bigText.empty())
 	{
-		Rect r = r_big_text;
+		Rect r = rBigText;
 		r += pos;
-		gui->DrawText(layout->font_big, big_text, DTF_PARSE_SPECIAL, textColor, r);
+		gui->DrawText(layout->fontBig, bigText, DTF_PARSE_SPECIAL, textColor, r);
 	}
 
 	// text
 	if(!text.empty())
 	{
-		Rect r = r_text;
+		Rect r = rText;
 		r += pos;
 		gui->DrawText(layout->font, text, DTF_PARSE_SPECIAL, textColor, r);
 	}
@@ -124,9 +124,9 @@ void TooltipController::Draw()
 	// small text
 	if(!smallText.empty())
 	{
-		Rect r = r_small_text;
+		Rect r = rSmallText;
 		r += pos;
-		gui->DrawText(layout->font_small, small_text, DTF_PARSE_SPECIAL, textColor, r);
+		gui->DrawText(layout->fontSmall, smallText, DTF_PARSE_SPECIAL, textColor, r);
 	}
 }
 

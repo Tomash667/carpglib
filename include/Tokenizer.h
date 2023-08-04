@@ -768,7 +768,7 @@ namespace tokenizer
 		const string& MustGetItemOrString() const
 		{
 			AssertItemOrString();
-			return normal_seek.item;
+			return normalSeek.item;
 		}
 
 		//===========================================================================================================================

@@ -32,18 +32,18 @@ void TextBox::Draw()
 		Rect r = { globalPos.x + padding, globalPos.y + padding, globalPos.x + size.x - padding, globalPos.y + size.y - padding };
 
 		if(!scrollbar)
-			gui->DrawText(layout->font, txt, multiline ? DTF_TOP : DTF_VCENTER, layout->font_color, r);
+			gui->DrawText(layout->font, txt, multiline ? DTF_TOP : DTF_VCENTER, layout->fontColor, r);
 		else
 		{
 			Rect r2 = Rect(r) - Int2(0, int(scrollbar->offset));
-			gui->DrawText(layout->font, txt, DTF_TOP, layout->font_color, r2, &r);
+			gui->DrawText(layout->font, txt, DTF_TOP, layout->fontColor, r2, &r);
 			scrollbar->Draw();
 		}
 
 		if(label)
 		{
 			Rect r = { globalPos.x, globalPos.y - 20, globalPos.x + size.x, globalPos.y };
-			gui->DrawText(layout->font, label, 0, layout->font_color, r);
+			gui->DrawText(layout->font, label, 0, layout->fontColor, r);
 		}
 	}
 	else
@@ -68,7 +68,7 @@ void TextBox::Draw()
 		// selected
 		if(selectStartIndex != NOT_SELECTED && selectStartIndex != selectEndIndex)
 		{
-			Color color = ((readonly || disabled) ? layout->selection_color_disabled : layout->selection_color);
+			Color color = ((readonly || disabled) ? layout->selectionColorDisabled : layout->selectionColor);
 			int selectStartLine = selectStartPos.y / lineHeight;
 			int selectEndLine = selectEndPos.y / lineHeight;
 			int lines = selectEndLine - selectStartLine + 1;

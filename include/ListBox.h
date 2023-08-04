@@ -51,7 +51,7 @@ public:
 	int FindIndex(int value) const;
 	int FindIndex(GuiElement* e) const;
 	void Select(int index, bool sendEvent = false);
-	void Select(delegate<bool(GuiElement*)> pred);
+	void Select(delegate<bool(GuiElement*)> pred, bool sendEvent = false);
 	void SelectByValue(int value, bool send_event = false);
 	void ForceSelect(int index);
 	void Insert(GuiElement* e, int index);

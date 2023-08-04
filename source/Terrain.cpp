@@ -64,7 +64,7 @@ void Terrain::Init(const Options& o)
 	partVerts = tilesPerPart * tilesPerPart * 6;
 	texSize = o.texSize;
 	box.v1 = pos;
-	box.v2 = pos + Vec3(tiles_size, 0, tiles_size);
+	box.v2 = pos + Vec3(tilesSize, 0, tilesSize);
 
 	h = new float[width2];
 	parts = new Part[nParts2];
@@ -622,8 +622,8 @@ float Terrain::GetH(float x, float z) const
 
 	// oblicz które to kafle
 	uint tx, tz;
-	tx = (uint)floor((x - pos.x) / tile_size);
-	tz = (uint)floor((z - pos.z) / tile_size);
+	tx = (uint)floor((x - pos.x) / tileSize);
+	tz = (uint)floor((z - pos.z) / tileSize);
 
 	// sprawdŸ czy nie jest to poza terenem
 	// teren na samej krawêdzi wykrywa jako b³¹d
@@ -634,8 +634,8 @@ float Terrain::GetH(float x, float z) const
 
 	// oblicz offset od kafla do punktu
 	float offsetx, offsetz;
-	offsetx = ((x - pos.x) - tile_size * tx) / tile_size;
-	offsetz = ((z - pos.z) - tile_size * tz) / tile_size;
+	offsetx = ((x - pos.x) - tileSize * tx) / tileSize;
+	offsetz = ((z - pos.z) - tileSize * tz) / tileSize;
 
 	// pobierz wysokoœci na krawêdziach
 	float hTopLeft = h[tx + (tz + 1) * width];
@@ -667,8 +667,8 @@ void Terrain::GetAngle(float x, float z, Vec3& angle) const
 
 	// oblicz które to kafle
 	uint tx, tz;
-	tx = (uint)floor((x - pos.x) / tile_size);
-	tz = (uint)floor((z - pos.z) / tile_size);
+	tx = (uint)floor((x - pos.x) / tileSize);
+	tz = (uint)floor((z - pos.z) / tileSize);
 
 	// sprawdŸ czy nie jest to poza terenem
 	// teren na samej krawêdzi wykrywa jako b³¹d
@@ -679,8 +679,8 @@ void Terrain::GetAngle(float x, float z, Vec3& angle) const
 
 	// oblicz offset od kafla do punktu
 	float offsetx, offsetz;
-	offsetx = ((x - pos.x) - tile_size * tx) / tile_size;
-	offsetz = ((z - pos.z) - tile_size * tz) / tile_size;
+	offsetx = ((x - pos.x) - tileSize * tx) / tileSize;
+	offsetz = ((z - pos.z) - tileSize * tz) / tileSize;
 
 	// pobierz wysokoœci na krawêdziach
 	float hTopLeft = h[tx + (tz + 1) * width];
@@ -803,9 +803,9 @@ void Terrain::SetHeightMap(float* _h)
 bool Terrain::IsInside(float x, float z) const
 {
 	return x >= pos.x
-		&& x <= pos.x + tiles_size
+		&& x <= pos.x + tilesSize
 		&& z >= pos.z
-		&& z <= pos.z + tiles_size;
+		&& z <= pos.z + tilesSize;
 }
 
 //=================================================================================================
@@ -813,7 +813,7 @@ void Terrain::ListVisibleParts(vector<uint>& outParts, const FrustumPlanes& frus
 {
 	if(frustum.BoxToFrustum(box))
 	{
-		for(uint i = 0; i < n_parts2; ++i)
+		for(uint i = 0; i < nParts2; ++i)
 		{
 			if(frustum.BoxToFrustum(parts[i].box))
 				outParts.push_back(i);
