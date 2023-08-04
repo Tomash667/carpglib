@@ -815,7 +815,6 @@ namespace tokenizer
 		void Parse(Box2d& box);
 		void Parse(Box& box);
 		void Parse(Color& c);
-		const string& ParseBlock(char open = '{', char close = '}', bool include_symbol = true);
 		void ParseFlags(int group, int& flags);
 		void ParseFlags(std::initializer_list<FlagGroup> const& flags);
 		int ParseTop(int group, delegate<bool(int)> action);

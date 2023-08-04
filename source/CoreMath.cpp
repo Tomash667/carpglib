@@ -580,6 +580,100 @@ bool RayToPlane(const Vec3& rayPos, const Vec3& rayDir, const Plane& plane, floa
 	return true;
 }
 
+// https://www.shadertoy.com/view/XtlBDs
+// 0-b-3
+// |\
+// a c
+// |  \
+// 1   2
+// result: 0 - no intersection, 1 - intersection, -1 - backface intersection
+int RayToQuad(const Vec3& rayPos, const Vec3& rayDir, const Vec3& v0, const Vec3& v1, const Vec3& v2, const Vec3& v3, float* outT)
+{
+	// lets make v0 the origin
+	Vec3 a = v1 - v0;
+	Vec3 b = v3 - v0;
+	Vec3 c = v2 - v0;
+	Vec3 p = rayPos - v0;
+
+	// intersect plane
+	Vec3 nor = a.Cross(b);
+	float t = -p.Dot(nor) / rayDir.Dot(nor);
+	if(t < 0.0f)
+		return 0;
+
+	// intersection point
+	Vec3 pos = p + t * rayDir;
+
+	// select projection plane
+	Vec3 mor = Vec3(abs(nor.x), abs(nor.y), abs(nor.z));
+	int id = (mor.x > mor.y && mor.x > mor.z) ? 0 :
+		(mor.y > mor.z) ? 1 :
+		2;
+
+	const int lut[4]{ 1, 2, 0, 1 };
+	int idu = lut[id];
+	int idv = lut[id + 1];
+
+	// project to 2D
+	Vec2 kp = Vec2(pos[idu], pos[idv]);
+	Vec2 ka = Vec2(a[idu], a[idv]);
+	Vec2 kb = Vec2(b[idu], b[idv]);
+	Vec2 kc = Vec2(c[idu], c[idv]);
+
+	// find barycentric coords of the quadrilateral
+	Vec2 kg = kc - kb - ka;
+
+	float k0 = kp.Cross2d(kb);
+	float k2 = (kc - kb).Cross2d(ka);        // float k2 = cross2d( kg, ka );
+	float k1 = kp.Cross2d(kg) - nor[id]; // float k1 = cross2d( kb, ka ) + cross2d( kp, kg );
+
+	// if edges are parallel, this is a linear equation
+	float u, v;
+	if(abs(k2) < 0.00001f)
+	{
+		v = -k0 / k1;
+		u = kp.Cross2d(ka) / k1;
+	}
+	else
+	{
+		// otherwise, it's a quadratic
+		float w = k1 * k1 - 4.0f * k0 * k2;
+		if(w < 0.0f)
+			return 0;
+		w = sqrt(w);
+
+		float ik2 = 1.0f / (2.0f * k2);
+
+		v = (-k1 - w) * ik2;
+		if(v < 0.0f || v>1.0f)
+			v = (-k1 + w) * ik2;
+
+		u = (kp.x - ka.x * v) / (kb.x + kg.x * v);
+	}
+
+	if(u < 0.0f || u>1.0f || v < 0.0f || v>1.0f)
+		return 0;
+
+	if(outT)
+		*outT = t;
+
+	const float hitNormal = rayDir.Dot(nor);
+	return hitNormal >= 0 ? -1 : 1;
+}
+
+bool RayToElipsis(const Vec3& from, const Vec3& dir, const Vec3& pos, float sizeX, float sizeZ, float& t)
+{
+	const Plane plane(pos, Vec3::Up);
+	if(!RayToPlane(from, dir, plane, &t))
+		return false;
+
+	const Vec3 hitpoint = from + dir * t;
+	const float dx = hitpoint.x - pos.x;
+	const float dz = hitpoint.z - pos.z;
+	const float p = (dx * dx) / (sizeX * sizeX) + (dz * dz) / (sizeZ * sizeZ);
+	return p <= 1.f;
+}
+
 bool RayToSphere(const Vec3& rayPos, const Vec3& rayDir, const Vec3& center, float radius, float& dist)
 {
 	Vec3 rayPosMinusCenter = rayPos - center;
