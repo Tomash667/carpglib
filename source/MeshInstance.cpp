@@ -65,13 +65,15 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, uint group)
 		SetBit(gr.state, FLAG_STOP_AT_END);
 	gr.frameEnd = false;
 
-	// anuluj blending w innych grupach
-	if(IsSet(flags, PLAY_NO_BLEND))
+	// set blending on child groups
+	for(int g = 0; g < mesh->head.nGroups; ++g)
 	{
-		for(int g = 0; g < mesh->head.nGroups; ++g)
+		if(g != group && (!groups[g].IsActive() || groups[g].prio < gr.prio))
 		{
-			if(g != group && (!groups[g].IsActive() || groups[g].prio < gr.prio))
+			if(IsSet(flags, PLAY_NO_BLEND))
 				ClearBit(groups[g].state, FLAG_BLENDING);
+			else
+				groups[g].blendMax = DEFAULT_BLENDING;
 		}
 	}
 }
@@ -859,4 +861,22 @@ void MeshInstance::SetAnimation(Mesh::Animation* anim, float p)
 	needUpdate = true;
 
 	SetupBones();
+}
+
+//=================================================================================================
+void MeshInstance::SetBlendMax(float value, uint group)
+{
+	assert(value >= 0.f && group < groups.size());
+
+	int usedGroup = GetUsableGroup(group);
+	if(usedGroup == group)
+	{
+		Group& gr = groups[group];
+		gr.blendMax = value;
+		for(uint i = 0; i < groups.size(); ++i)
+		{
+			if(i != group && (!groups[i].IsActive() || groups[i].prio < gr.prio))
+				groups[i].blendMax = value;
+		}
+	}
 }

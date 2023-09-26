@@ -52,7 +52,12 @@ float Angle(float x1, float y1, float x2, float y2)
 		if(x < 0)
 			return atan(y / x) + PI;
 		else if(y < 0)
-			return atan(y / x) + (2 * PI);
+		{
+			float result = atan(y / x) + (2 * PI);
+			if(result >= 2 * PI)
+				return 0;
+			return result;
+		}
 		else
 			return atan(y / x);
 	}

@@ -131,6 +131,7 @@ struct MeshInstance
 	bool IsEnded(uint group = 0) const { return GetGroup(group).frameEnd; }
 
 	void SetAnimation(Mesh::Animation* anim, float p);
+	void SetBlendMax(float value, uint group = 0);
 	void SetMesh(Mesh* mesh);
 	void SetPredraw(PredrawFunc predraw) { this->predraw = predraw; }
 	void SetProgress(float progress, uint group = 0) { GetGroup(group).SetProgress(progress); }
