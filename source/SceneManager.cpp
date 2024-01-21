@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "DirectX.h"
 #include "Gui.h"
+#include "ParticleShader.h"
 #include "Render.h"
 #include "Scene.h"
 #include "SceneNode.h"
@@ -12,7 +13,7 @@
 SceneManager* app::sceneMgr;
 
 //=================================================================================================
-SceneManager::SceneManager() : useLighting(true), useFog(true), useNormalmap(true), useSpecularmap(true)
+SceneManager::SceneManager() : scene(nullptr), camera(nullptr), useLighting(true), useFog(true), useNormalmap(true), useSpecularmap(true)
 {
 }
 
@@ -20,6 +21,7 @@ SceneManager::SceneManager() : useLighting(true), useFog(true), useNormalmap(tru
 void SceneManager::Init()
 {
 	superShader = app::render->GetShader<SuperShader>();
+	particleShader = app::render->GetShader<ParticleShader>();
 }
 
 //=================================================================================================
@@ -44,17 +46,36 @@ void SceneManager::ListNodes()
 //=================================================================================================
 void SceneManager::Draw()
 {
-	if(batch.nodeGroups.empty() && batch.alphaNodes.empty())
+	if(!scene || !camera)
+	{
+		app::render->Clear(Color::Black);
+		app::render->Present();
 		return;
+	}
 
-	superShader->Prepare();
-	superShader->SetScene(scene, camera);
+	app::render->Clear(scene->clearColor);
 
-	if(!batch.nodeGroups.empty())
-		DrawSceneNodes(batch.nodes, batch.nodeGroups);
+	ListNodes();
 
-	if(!batch.alphaNodes.empty())
-		DrawAlphaSceneNodes(batch.alphaNodes);
+	if(!batch.nodeGroups.empty() || !batch.alphaNodes.empty())
+	{
+		superShader->Prepare();
+		superShader->SetScene(scene, camera);
+
+		if(!batch.nodeGroups.empty())
+			DrawSceneNodes(batch.nodes, batch.nodeGroups);
+
+		if(!batch.alphaNodes.empty())
+			DrawAlphaSceneNodes(batch.alphaNodes);
+	}
+
+	if(!batch.particleEmitters.empty())
+	{
+		particleShader->Prepare(*camera);
+		particleShader->DrawParticles(batch.particleEmitters);
+	}
+
+	app::render->Present();
 }
 
 //=================================================================================================

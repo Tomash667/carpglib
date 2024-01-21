@@ -69,6 +69,7 @@ void SceneBatch::Clear()
 	nodes.clear();
 	alphaNodes.clear();
 	nodeGroups.clear();
+	particleEmitters.clear();
 }
 
 //=================================================================================================

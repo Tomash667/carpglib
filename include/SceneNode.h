@@ -56,6 +56,7 @@ struct SceneBatch
 	vector<SceneNode*> nodes;
 	vector<SceneNode*> alphaNodes;
 	vector<SceneNodeGroup> nodeGroups;
+	vector<ParticleEmitter*> particleEmitters;
 	Scene* scene;
 	Camera* camera;
 	bool gatherLights;

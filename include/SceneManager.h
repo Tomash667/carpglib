@@ -29,4 +29,5 @@ private:
 	Scene* scene;
 	Camera* camera;
 	SuperShader* superShader;
+	ParticleShader* particleShader;
 };

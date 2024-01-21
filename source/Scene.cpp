@@ -3,6 +3,7 @@
 
 #include "Algorithm.h"
 #include "Camera.h"
+#include "ParticleSystem.h"
 #include "SceneManager.h"
 #include "SceneNode.h"
 
@@ -34,10 +35,17 @@ void Scene::Detach(SceneNode* node)
 }
 
 //=================================================================================================
+void Scene::Update(float dt)
+{
+	LoopAndRemove(particleEmitters, [=](ParticleEmitter* particleEmitter) { return particleEmitter->Update(dt); });
+}
+
+//=================================================================================================
 void Scene::Clear()
 {
 	SceneNode::Free(nodes);
 	DeleteElements(lights);
+	DeleteElements(particleEmitters);
 }
 
 //=================================================================================================
@@ -63,6 +71,12 @@ void Scene::ListNodes(SceneBatch& batch)
 				GatherLights(batch, node);
 			batch.Add(node);
 		}
+	}
+
+	for(ParticleEmitter* particleEmitter : particleEmitters)
+	{
+		if(frustum.SphereToFrustum(particleEmitter->pos, particleEmitter->radius))
+			batch.particleEmitters.push_back(particleEmitter);
 	}
 }
 
