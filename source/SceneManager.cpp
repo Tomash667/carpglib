@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "SceneManager.h"
 
+#include "App.h"
 #include "Camera.h"
 #include "DirectX.h"
 #include "Gui.h"
@@ -75,6 +76,8 @@ void SceneManager::Draw()
 		particleShader->DrawParticles(batch.particleEmitters);
 	}
 
+	app::app->OnCustomDraw();
+	app::gui->Draw();
 	app::render->Present();
 }
 

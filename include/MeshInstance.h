@@ -17,7 +17,7 @@ enum PLAY_FLAGS
 	PLAY_NO_BLEND = 0x04,
 	// ignoruje wywo³anie Play() je¿eli jest ju¿ ta animacja
 	PLAY_IGNORE = 0x08,
-	PLAY_STOP_AT_END = 0x10,
+	PLAY_STOP_AT_END = 0x10 | PLAY_ONCE,
 	// priorytet animacji
 	PLAY_PRIO0 = 0,
 	PLAY_PRIO1 = 0x20,
