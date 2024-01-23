@@ -29,4 +29,5 @@ private:
 	Camera* camera;
 	SuperShader* superShader;
 	ParticleShader* particleShader;
+	SkyboxShader* skyboxShader;
 };

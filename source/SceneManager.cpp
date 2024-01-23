@@ -9,6 +9,7 @@
 #include "Render.h"
 #include "Scene.h"
 #include "SceneNode.h"
+#include "SkyboxShader.h"
 #include "SuperShader.h"
 
 SceneManager* app::sceneMgr;
@@ -23,6 +24,7 @@ void SceneManager::Init()
 {
 	superShader = app::render->GetShader<SuperShader>();
 	particleShader = app::render->GetShader<ParticleShader>();
+	skyboxShader = app::render->GetShader<SkyboxShader>();
 }
 
 //=================================================================================================
@@ -56,6 +58,9 @@ void SceneManager::Draw()
 
 	app::render->Clear(scene->clearColor);
 
+	if(scene->skybox)
+		skyboxShader->Draw(*scene->skybox, *camera);
+
 	ListNodes();
 
 	if(!batch.nodeGroups.empty() || !batch.alphaNodes.empty())
@@ -77,7 +82,10 @@ void SceneManager::Draw()
 	}
 
 	app::app->OnCustomDraw();
+
+	app::gui->mViewProj = camera->matViewProj;
 	app::gui->Draw();
+
 	app::render->Present();
 }
 

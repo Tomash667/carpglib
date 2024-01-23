@@ -33,6 +33,7 @@ struct Scene
 	vector<SceneNode*> nodes;
 	vector<ParticleEmitter*> particleEmitters;
 	vector<Light*> lights, activeLights;
+	Mesh* skybox;
 	Vec3 lightDir;
 	Vec2 fogRange;
 	Color clearColor, ambientColor, lightColor, fogColor;
