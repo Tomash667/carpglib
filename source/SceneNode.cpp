@@ -70,6 +70,7 @@ void SceneBatch::Clear()
 	alphaNodes.clear();
 	nodeGroups.clear();
 	particleEmitters.clear();
+	terrainParts.clear();
 }
 
 //=================================================================================================

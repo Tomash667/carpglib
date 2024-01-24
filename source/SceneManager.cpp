@@ -11,6 +11,7 @@
 #include "SceneNode.h"
 #include "SkyboxShader.h"
 #include "SuperShader.h"
+#include "TerrainShader.h"
 
 SceneManager* app::sceneMgr;
 
@@ -24,6 +25,7 @@ void SceneManager::Init()
 {
 	superShader = app::render->GetShader<SuperShader>();
 	particleShader = app::render->GetShader<ParticleShader>();
+	terrainShader = app::render->GetShader<TerrainShader>();
 	skyboxShader = app::render->GetShader<SkyboxShader>();
 }
 
@@ -62,6 +64,12 @@ void SceneManager::Draw()
 		skyboxShader->Draw(*scene->skybox, *camera);
 
 	ListNodes();
+
+	if(!batch.terrainParts.empty())
+	{
+		terrainShader->Prepare(scene, camera);
+		terrainShader->Draw(scene->terrain, batch.terrainParts);
+	}
 
 	if(!batch.nodeGroups.empty() || !batch.alphaNodes.empty())
 	{

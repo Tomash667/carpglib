@@ -6,9 +6,10 @@
 #include "ParticleSystem.h"
 #include "SceneManager.h"
 #include "SceneNode.h"
+#include "Terrain.h"
 
 //=================================================================================================
-Scene::Scene() : skybox(nullptr), clearColor(Color::Black), ambientColor(0.4f, 0.4f, 0.4f), lightColor(Color::White), fogColor(Color::Gray),
+Scene::Scene() : terrain(nullptr), skybox(nullptr), clearColor(Color::Black), ambientColor(0.4f, 0.4f, 0.4f), lightColor(Color::White), fogColor(Color::Gray),
 useLightDir(false), fogRange(50, 100)
 {
 }
@@ -46,6 +47,7 @@ void Scene::Clear()
 	SceneNode::Free(nodes);
 	DeleteElements(lights);
 	DeleteElements(particleEmitters);
+	delete terrain;
 }
 
 //=================================================================================================
@@ -78,6 +80,9 @@ void Scene::ListNodes(SceneBatch& batch)
 		if(frustum.SphereToFrustum(particleEmitter->pos, particleEmitter->radius))
 			batch.particleEmitters.push_back(particleEmitter);
 	}
+
+	if(terrain)
+		terrain->ListVisibleParts(batch.terrainParts, frustum);
 }
 
 //=================================================================================================
