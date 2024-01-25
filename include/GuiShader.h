@@ -5,7 +5,7 @@
 #include "VertexDeclaration.h"
 
 //-----------------------------------------------------------------------------
-class GuiShader : public ShaderHandler
+class GuiShader final : public ShaderHandler
 {
 public:
 	GuiShader();

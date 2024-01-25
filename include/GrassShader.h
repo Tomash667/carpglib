@@ -4,7 +4,7 @@
 #include "ShaderHandler.h"
 
 //-----------------------------------------------------------------------------
-class GrassShader : public ShaderHandler
+class GrassShader final : public ShaderHandler
 {
 public:
 	GrassShader();

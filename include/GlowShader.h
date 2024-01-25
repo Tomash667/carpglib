@@ -4,7 +4,7 @@
 #include "ShaderHandler.h"
 
 //-----------------------------------------------------------------------------
-class GlowShader : public ShaderHandler
+class GlowShader final : public ShaderHandler
 {
 public:
 	GlowShader(PostfxShader* postfx);

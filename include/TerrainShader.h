@@ -4,7 +4,7 @@
 #include "ShaderHandler.h"
 
 //-----------------------------------------------------------------------------
-class TerrainShader : public ShaderHandler
+class TerrainShader final : public ShaderHandler
 {
 public:
 	TerrainShader();

@@ -4,7 +4,7 @@
 #include "ShaderHandler.h"
 
 //-----------------------------------------------------------------------------
-class SkyboxShader : public ShaderHandler
+class SkyboxShader final : public ShaderHandler
 {
 public:
 	SkyboxShader();

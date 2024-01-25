@@ -5,7 +5,7 @@
 #include "VertexDeclaration.h"
 
 //-----------------------------------------------------------------------------
-class ParticleShader : public ShaderHandler
+class ParticleShader final : public ShaderHandler
 {
 public:
 	ParticleShader();
