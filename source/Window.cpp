@@ -43,7 +43,7 @@ void Window::Event(GuiEvent e)
 	case GuiEvent_Initialize:
 		{
 			if(fullscreen)
-				size = gui->wndSize;
+				size = wndSize;
 			if(menu)
 				menu->Initialize();
 			CalculateArea();
@@ -65,7 +65,7 @@ void Window::Event(GuiEvent e)
 	case GuiEvent_WindowResize:
 		{
 			if(fullscreen)
-				size = gui->wndSize;
+				size = wndSize;
 			CalculateArea();
 			if(menu)
 				menu->Event(GuiEvent_Resize);

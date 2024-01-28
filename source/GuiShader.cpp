@@ -68,7 +68,7 @@ void GuiShader::OnRelease()
 }
 
 //=================================================================================================
-void GuiShader::Prepare()
+void GuiShader::Prepare(const Int2& size)
 {
 	app::render->SetBlendState(Render::BLEND_ADD);
 	app::render->SetDepthState(Render::DEPTH_NO);
@@ -88,7 +88,7 @@ void GuiShader::Prepare()
 
 	// vertex shader constants
 	ResourceLock lock(vsGlobals);
-	lock.Get<VsGlobals>()->size = Vec2(app::engine->GetClientSize());
+	lock.Get<VsGlobals>()->size = Vec2(size);
 
 	SetGrayscale(0.f);
 	texCurrent = nullptr;

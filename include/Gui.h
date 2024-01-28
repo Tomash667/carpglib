@@ -185,9 +185,10 @@ public:
 	void SetCursorMode(CursorMode cursorMode) { this->cursorMode = cursorMode; }
 	Box2d* SetClipRect(Box2d* clipRect);
 	Box2d* GetClipRect() const { return clipRect; }
+	void SetVirtualSize(const Int2& size);
 
 	Matrix mViewProj;
-	Int2 cursorPos, wndSize;
+	Int2 cursorPos;
 	cstring txOk, txYes, txNo, txCancel;
 
 private:
@@ -228,6 +229,6 @@ private:
 	Key lastClick;
 	CursorMode cursorMode;
 	float lastClickTimer;
-	Int2 lastClickPos, prevCursorPos;
+	Int2 wndSize, virtualSize, lastClickPos, prevCursorPos;
 	bool drawLayers, drawDialogs, grayscale, doubleclk[5];
 };

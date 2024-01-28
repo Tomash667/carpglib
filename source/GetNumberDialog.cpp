@@ -14,7 +14,7 @@ GetNumberDialog::GetNumberDialog(const DialogInfo& info) : DialogBox(info), scro
 //=================================================================================================
 void GetNumberDialog::Draw()
 {
-	gui->DrawArea(Box2d::Create(Int2::Zero, gui->wndSize), layout->background);
+	gui->DrawArea(Box2d::Create(Int2::Zero, wndSize), layout->background);
 	gui->DrawArea(Box2d::Create(globalPos, size), layout->box);
 
 	for(int i = 0; i < 2; ++i)
@@ -160,7 +160,7 @@ void GetNumberDialog::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_WindowResize)
 	{
-		self->pos = self->globalPos = (gui->wndSize - self->size) / 2;
+		self->pos = self->globalPos = (wndSize - self->size) / 2;
 		self->bts[0].globalPos = self->bts[0].pos + self->globalPos;
 		self->bts[1].globalPos = self->bts[1].pos + self->globalPos;
 		self->textBox.globalPos = self->textBox.pos + self->globalPos;
@@ -235,7 +235,7 @@ GetNumberDialog* GetNumberDialog::Show(const GetNumberDialogParams& params)
 	self->minValue = params.minValue;
 	self->maxValue = params.maxValue;
 	self->value = params.value;
-	self->pos = self->globalPos = (gui->wndSize - self->size) / 2;
+	self->pos = self->globalPos = (wndSize - self->size) / 2;
 	self->bts[0].globalPos = self->bts[0].pos + self->globalPos;
 	self->bts[1].globalPos = self->bts[1].pos + self->globalPos;
 	self->textBox.globalPos = self->textBox.pos + self->globalPos;

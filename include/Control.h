@@ -13,13 +13,15 @@ class Control
 		F_ON_CHAR_HANDLER = 1 << 1
 	};
 
+	friend class Gui;
+
 public:
 	explicit Control(bool isNew = false) : pos(0, 0), globalPos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouseFocus(false),
 		focusable(false), initialized(false), isNew(isNew), disabled(false), flags(0) {}
 	virtual ~Control() {}
 
-	static Int2 Center(const Int2& inSize) { return Int2((gui->wndSize.x - inSize.x) / 2, (gui->wndSize.y - inSize.y) / 2); }
-	static Int2 Center(int w, int h) { return Int2((gui->wndSize.x - w) / 2, (gui->wndSize.y - h) / 2); }
+	static Int2 Center(const Int2& inSize) { return Int2((wndSize.x - inSize.x) / 2, (wndSize.y - inSize.y) / 2); }
+	static Int2 Center(int w, int h) { return Int2((wndSize.x - w) / 2, (wndSize.y - h) / 2); }
 
 	virtual void CalculateSize(int limitWidth) {}
 	void Disable() { SetDisabled(true); }
@@ -55,6 +57,7 @@ public:
 
 	static Gui* gui;
 	static Input* input;
+	static const Int2& wndSize;
 	Int2 pos, globalPos, size;
 	Control* parent;
 	bool visible, focus,
@@ -65,5 +68,6 @@ protected:
 	bool initialized, isNew, disabled;
 
 private:
+	static Int2 wndSizeInternal;
 	int flags;
 };

@@ -12,7 +12,7 @@ public:
 	cstring GetName() const override { return "gui"; }
 	void OnInit() override;
 	void OnRelease() override;
-	void Prepare();
+	void Prepare(const Int2& size);
 	void SetGrayscale(float value);
 	void SetWrap(bool useWrap);
 	void Draw(TEX tex, VGui* v, uint quads);

@@ -31,7 +31,7 @@ void Overlay::Draw()
 
 	for(GuiDialog* dialog : dialogs)
 	{
-		gui->DrawArea(Box2d::Create(Int2::Zero, gui->wndSize), layout->background);
+		gui->DrawArea(Box2d::Create(Int2::Zero, wndSize), layout->background);
 		dialog->Draw();
 	}
 
@@ -113,7 +113,7 @@ void Overlay::ShowDialog(GuiDialog* dialog)
 	CloseMenus();
 	dialogs.push_back(dialog);
 	dialog->Initialize();
-	dialog->SetPosition((gui->wndSize - dialog->GetSize()) / 2);
+	dialog->SetPosition((wndSize - dialog->GetSize()) / 2);
 }
 
 void Overlay::CloseDialog(GuiDialog* dialog)

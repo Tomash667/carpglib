@@ -77,7 +77,7 @@ void Notifications::Draw()
 			realBoxSize.y += 40;
 
 		const int alpha = int(255 * n->t2);
-		Int2 offset(gui->wndSize.x - realBoxSize.x - 8, offetY);
+		Int2 offset(wndSize.x - realBoxSize.x - 8, offetY);
 		Color tint(255, 255, 255, alpha);
 
 		gui->DrawArea(Box2d::Create(offset, realBoxSize), layout->box, nullptr, &tint);
@@ -179,7 +179,7 @@ void Notifications::Update(float dt)
 			{
 				realBoxSize.y += 40;
 
-				Int2 offset(gui->wndSize.x - realBoxSize.x - 8, offetY);
+				Int2 offset(wndSize.x - realBoxSize.x - 8, offetY);
 				Rect rect = { offset.x + 8 + 64, offset.y + 8, offset.x + boxSize.x - 8, offset.y + boxSize.y - 8 };
 
 				int textSize2 = rect.SizeX();

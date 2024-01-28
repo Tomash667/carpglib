@@ -521,6 +521,8 @@ struct Int2
 	bool operator == (const Int2& i) const;
 	bool operator != (const Int2& i) const;
 	bool operator > (const Int2& i) const;
+	bool operator >= (const Int2& i) const;
+	bool operator < (const Int2& i) const;
 	bool operator <= (const Int2& i) const;
 
 	// Assignment operators
