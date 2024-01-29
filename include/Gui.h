@@ -145,6 +145,7 @@ public:
 	void DrawArea(const Box2d& rect, const AreaLayout& areaLayout, const Box2d* clipRect = nullptr, const Color* tint = nullptr);
 	void DrawRect(Color color, const Rect& rect, int width = 1);
 	void SetLayout(Layout* layout);
+	void SetLayout(cstring filename);
 	Layout* GetLayout() const { return masterLayout; }
 	void SetOverlay(Overlay* overlay);
 	Overlay* GetOverlay() const { return overlay; }

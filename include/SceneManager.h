@@ -12,6 +12,7 @@ public:
 	void SetScene(Scene* scene, Camera* camera);
 	void ListNodes();
 	void Draw();
+	void DrawScene();
 	void DrawSceneNodes(SceneBatch& batch);
 	void DrawAlphaSceneNodes(SceneBatch& batch);
 

@@ -9,6 +9,7 @@
 #include "GuiShader.h"
 #include "Input.h"
 #include "Layout.h"
+#include "LayoutLoader.h"
 #include "Overlay.h"
 #include "Render.h"
 #include "ResourceManager.h"
@@ -2428,6 +2429,14 @@ void Gui::SetLayout(Layout* masterLayout)
 	this->masterLayout = masterLayout;
 	if(!layout)
 		layout = masterLayout->Get<layout::Gui>();
+}
+
+//=================================================================================================
+void Gui::SetLayout(cstring filename)
+{
+	assert(filename);
+	Scoped<LayoutLoader> loader(new LayoutLoader(this));
+	SetLayout(loader->LoadFromFile(filename));
 }
 
 //=================================================================================================

@@ -58,6 +58,19 @@ void SceneManager::Draw()
 		return;
 	}
 
+	DrawScene();
+
+	app::app->OnCustomDraw();
+
+	app::gui->mViewProj = camera->matViewProj;
+	app::gui->Draw();
+
+	app::render->Present();
+}
+
+//=================================================================================================
+void SceneManager::DrawScene()
+{
 	app::render->Clear(scene->clearColor);
 
 	if(scene->skybox)
@@ -88,13 +101,6 @@ void SceneManager::Draw()
 		particleShader->Prepare(*camera);
 		particleShader->DrawParticles(batch.particleEmitters);
 	}
-
-	app::app->OnCustomDraw();
-
-	app::gui->mViewProj = camera->matViewProj;
-	app::gui->Draw();
-
-	app::render->Present();
 }
 
 //=================================================================================================
