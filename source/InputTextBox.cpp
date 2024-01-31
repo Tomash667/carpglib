@@ -46,17 +46,17 @@ void InputTextBox::Update(float dt)
 {
 	if(mouseFocus)
 	{
-		if(input->Focus() && IsInside(gui->cursorPos))
+		if(IsInside(gui->cursorPos))
 			scrollbar.ApplyMouseWheel();
 
 		bool releaseKey = false;
 		if(Rect::IsInside(gui->cursorPos, inputboxPos, inputboxSize))
 		{
 			gui->SetCursorMode(CURSOR_TEXT);
-			if(!focus && input->Focus() && input->PressedRelease(Key::LeftButton))
+			if(!focus && input->PressedRelease(Key::LeftButton))
 				focus = true;
 		}
-		else if(focus && input->Focus() && input->Pressed(Key::LeftButton))
+		else if(focus && input->Pressed(Key::LeftButton))
 		{
 			focus = false;
 			releaseKey = true;
@@ -73,79 +73,77 @@ void InputTextBox::Update(float dt)
 		caretBlink += dt * 2;
 		if(caretBlink >= 1.f)
 			caretBlink = -1.f;
-		if(input->Focus())
+
+		if(input->PressedRelease(Key::Up))
 		{
-			if(input->PressedRelease(Key::Up))
+			// poprzednia komenda
+			if(inputCounter == -1)
 			{
-				// poprzednia komenda
-				if(inputCounter == -1)
-				{
-					inputCounter = lastInputCounter - 1;
-					if(inputCounter != -1)
-						inputStr = cache[inputCounter];
-				}
-				else
-				{
-					--inputCounter;
-					if(inputCounter == -1)
-						inputCounter = lastInputCounter - 1;
-					inputStr = cache[inputCounter];
-				}
-			}
-			else if(input->PressedRelease(Key::Down))
-			{
-				// nastêpna komenda
-				++inputCounter;
-				if(inputCounter == lastInputCounter)
-				{
-					if(lastInputCounter == 0)
-						inputCounter = -1;
-					else
-						inputCounter = 0;
-				}
+				inputCounter = lastInputCounter - 1;
 				if(inputCounter != -1)
 					inputStr = cache[inputCounter];
 			}
-			if(input->PressedRelease(Key::Enter))
+			else
 			{
-				if(!inputStr.empty())
-				{
-					// dodaj ostatni¹ komendê
-					if(lastInputCounter == 0 || cache[lastInputCounter - 1] != inputStr)
-					{
-						if(lastInputCounter == maxCache)
-						{
-							for(int i = 0; i < maxCache - 1; ++i)
-								cache[i] = cache[i + 1];
-							cache[maxCache - 1] = inputStr;
-						}
-						else
-						{
-							cache[lastInputCounter] = inputStr;
-							++lastInputCounter;
-						}
-					}
-					// wykonaj
-					event(inputStr);
-					// wyczyœæ
-					inputStr.clear();
-					inputCounter = -1;
-				}
-				if(loseFocus)
-				{
-					focus = false;
-					Event(GuiEvent_LostFocus);
-				}
+				--inputCounter;
+				if(inputCounter == -1)
+					inputCounter = lastInputCounter - 1;
+				inputStr = cache[inputCounter];
 			}
-			else if(escClear && input->PressedRelease(Key::Escape))
+		}
+		else if(input->PressedRelease(Key::Down))
+		{
+			// nastêpna komenda
+			++inputCounter;
+			if(inputCounter == lastInputCounter)
 			{
+				if(lastInputCounter == 0)
+					inputCounter = -1;
+				else
+					inputCounter = 0;
+			}
+			if(inputCounter != -1)
+				inputStr = cache[inputCounter];
+		}
+		if(input->PressedRelease(Key::Enter))
+		{
+			if(!inputStr.empty())
+			{
+				// dodaj ostatni¹ komendê
+				if(lastInputCounter == 0 || cache[lastInputCounter - 1] != inputStr)
+				{
+					if(lastInputCounter == maxCache)
+					{
+						for(int i = 0; i < maxCache - 1; ++i)
+							cache[i] = cache[i + 1];
+						cache[maxCache - 1] = inputStr;
+					}
+					else
+					{
+						cache[lastInputCounter] = inputStr;
+						++lastInputCounter;
+					}
+				}
+				// wykonaj
+				event(inputStr);
+				// wyczyœæ
 				inputStr.clear();
 				inputCounter = -1;
-				if(loseFocus)
-				{
-					focus = false;
-					Event(GuiEvent_LostFocus);
-				}
+			}
+			if(loseFocus)
+			{
+				focus = false;
+				Event(GuiEvent_LostFocus);
+			}
+		}
+		else if(escClear && input->PressedRelease(Key::Escape))
+		{
+			inputStr.clear();
+			inputCounter = -1;
+			if(loseFocus)
+			{
+				focus = false;
+				Event(GuiEvent_LostFocus);
 			}
 		}
 	}

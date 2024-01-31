@@ -47,9 +47,6 @@ void Scrollbar::Draw()
 //=================================================================================================
 void Scrollbar::Update(float dt)
 {
-	if(!input->Focus())
-		return;
-
 	change = 0;
 
 	Int2 cpos = gui->cursorPos - globalPos;

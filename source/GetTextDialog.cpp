@@ -31,7 +31,7 @@ void GetTextDialog::Update(float dt)
 {
 	textBox.mouseFocus = focus;
 
-	if(input->Focus() && focus)
+	if(focus)
 	{
 		for(int i = 0; i < 2; ++i)
 		{

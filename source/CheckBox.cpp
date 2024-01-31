@@ -26,7 +26,7 @@ void CheckBox::Update(float dt)
 	if(state == DISABLED)
 		return;
 
-	if(input->Focus() && mouseFocus && Rect::IsInside(gui->cursorPos, globalPos, btSize))
+	if(mouseFocus && Rect::IsInside(gui->cursorPos, globalPos, btSize))
 	{
 		gui->SetCursorMode(CURSOR_HOVER);
 		if(state == DOWN)

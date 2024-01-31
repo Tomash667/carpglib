@@ -43,7 +43,7 @@ void DialogBox::Update(float dt)
 		button.Update(dt);
 	}
 
-	if(input->Focus() && focus && result == -1)
+	if(focus && result == -1)
 	{
 		if(bts[0].state != Button::DISABLED)
 		{

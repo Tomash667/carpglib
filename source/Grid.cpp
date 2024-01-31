@@ -137,7 +137,7 @@ void Grid::Draw()
 //=================================================================================================
 void Grid::Update(float dt)
 {
-	if(input->Focus() && focus)
+	if(focus)
 	{
 		const int headerHeight = height + layout->border * 2;
 		if(gui->cursorPos.x >= globalPos.x && gui->cursorPos.x < globalPos.x + totalWidth
