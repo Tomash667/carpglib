@@ -54,17 +54,16 @@ void SceneManager::Draw()
 	if(!scene || !camera)
 	{
 		app::render->Clear(Color::Black);
-		app::render->Present();
-		return;
+		app::gui->mViewProj = Matrix::IdentityMatrix;
 	}
+	else
+	{
+		DrawScene();
+		app::app->OnCustomDraw();
+		app::gui->mViewProj = camera->matViewProj;
 
-	DrawScene();
-
-	app::app->OnCustomDraw();
-
-	app::gui->mViewProj = camera->matViewProj;
+	}
 	app::gui->Draw();
-
 	app::render->Present();
 }
 
