@@ -7,6 +7,7 @@ enum class ImageFormat;
 // Engine types
 struct Billboard;
 struct Camera;
+struct CustomMesh;
 struct Decal;
 struct DebugNode;
 struct DynamicTexture;

@@ -313,6 +313,9 @@
     <ClInclude Include="include\DialogInfo.h">
       <Filter>gui dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="include\CustomMesh.h">
+      <Filter>entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoxToBox.cpp">

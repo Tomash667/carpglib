@@ -3,6 +3,7 @@
 
 #include "App.h"
 #include "Camera.h"
+#include "CustomMesh.h"
 #include "DirectX.h"
 #include "Gui.h"
 #include "ParticleShader.h"
@@ -82,6 +83,9 @@ void SceneManager::DrawScene()
 		terrainShader->Prepare(scene, camera);
 		terrainShader->Draw(scene->terrain, batch.terrainParts);
 	}
+
+	if(scene->customMesh)
+		scene->customMesh->Draw(*scene, *camera);
 
 	if(!batch.nodeGroups.empty() || !batch.alphaNodes.empty())
 	{

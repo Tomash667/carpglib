@@ -35,6 +35,7 @@ struct Scene
 	vector<Light*> lights, activeLights;
 	Terrain* terrain;
 	Mesh* skybox;
+	CustomMesh* customMesh;
 	Vec3 lightDir;
 	Vec2 fogRange;
 	Color clearColor, ambientColor, lightColor, fogColor;
