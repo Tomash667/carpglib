@@ -9,7 +9,7 @@
 #include "Terrain.h"
 
 //=================================================================================================
-Scene::Scene() : terrain(nullptr), skybox(nullptr), customMesh(customMesh), clearColor(Color::Black), ambientColor(0.4f, 0.4f, 0.4f), lightColor(Color::White),
+Scene::Scene() : terrain(nullptr), skybox(nullptr), customMesh(nullptr), clearColor(Color::Black), ambientColor(0.4f, 0.4f, 0.4f), lightColor(Color::White),
 fogColor(Color::Gray), useLightDir(false), fogRange(50, 100)
 {
 }
