@@ -85,13 +85,22 @@ void BasicShader::OnRelease()
 }
 
 //=================================================================================================
-void BasicShader::PrepareForShapes(const Camera& camera)
+void BasicShader::PrepareForShapes(const Camera& camera, bool wireframe)
 {
 	matViewProj = camera.matViewProj;
 
-	app::render->SetBlendState(Render::BLEND_NO);
-	app::render->SetDepthState(Render::DEPTH_NO);
-	app::render->SetRasterState(Render::RASTER_WIREFRAME);
+	if(wireframe)
+	{
+		app::render->SetBlendState(Render::BLEND_NO);
+		app::render->SetDepthState(Render::DEPTH_NO);
+		app::render->SetRasterState(Render::RASTER_WIREFRAME);
+	}
+	else
+	{
+		app::render->SetBlendState(Render::BLEND_NO);
+		app::render->SetDepthState(Render::DEPTH_YES);
+		app::render->SetRasterState(Render::RASTER_NORMAL);
+	}
 
 	// setup shader
 	deviceContext->VSSetShader(shaderMesh.vertexShader, nullptr, 0);

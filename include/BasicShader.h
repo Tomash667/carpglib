@@ -24,7 +24,7 @@ public:
 	void OnRelease() override;
 
 	// drawing mesh debug nodes
-	void PrepareForShapes(const Camera& camera);
+	void PrepareForShapes(const Camera& camera, bool wireframe = true);
 	void DrawDebugNodes(const vector<DebugNode*>& nodes);
 	void DrawShape(MeshShape shape, const Matrix& m, Color color);
 
