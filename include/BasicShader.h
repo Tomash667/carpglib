@@ -6,7 +6,7 @@
 #include "VertexDeclaration.h"
 
 //-----------------------------------------------------------------------------
-class BasicShader : public ShaderHandler
+class BasicShader final : public ShaderHandler
 {
 	struct Shader
 	{

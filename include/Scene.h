@@ -13,8 +13,14 @@ struct Scene
 		assert(node);
 		nodes.push_back(node);
 	}
+	void Add(ParticleEmitter* particleEmitter)
+	{
+		assert(particleEmitter);
+		particleEmitters.push_back(particleEmitter);
+	}
 	void Remove(SceneNode* node);
 	void Detach(SceneNode* node);
+	void Update(float dt);
 	void Clear();
 	void ListNodes(SceneBatch& batch);
 	void GatherLights(SceneBatch& batch, SceneNode* node);
@@ -25,7 +31,11 @@ struct Scene
 	Vec4 GetLightDir() const { return Vec4(lightDir, 1); }
 
 	vector<SceneNode*> nodes;
+	vector<ParticleEmitter*> particleEmitters;
 	vector<Light*> lights, activeLights;
+	Terrain* terrain;
+	Mesh* skybox;
+	CustomMesh* customMesh;
 	Vec3 lightDir;
 	Vec2 fogRange;
 	Color clearColor, ambientColor, lightColor, fogColor;

@@ -5,6 +5,8 @@
 
 Gui* Control::gui;
 Input* Control::input;
+Int2 Control::wndSizeInternal;
+const Int2& Control::wndSize = Control::wndSizeInternal;
 
 void Control::Dock(Control* c)
 {

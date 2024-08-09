@@ -152,14 +152,14 @@ void ListBox::Update(float dt)
 				if(!menu->focus)
 					menu->visible = false;
 			}
-			else if(mouseFocus && input->Focus() && Rect::IsInside(gui->cursorPos, globalPos, size) && input->PressedRelease(Key::LeftButton))
+			else if(mouseFocus && Rect::IsInside(gui->cursorPos, globalPos, size) && input->PressedRelease(Key::LeftButton))
 			{
 				menu->globalPos = globalPos + Int2(0, size.y);
-				if(menu->globalPos.y + menu->size.y >= gui->wndSize.y)
+				if(menu->globalPos.y + menu->size.y >= wndSize.y)
 				{
 					menu->globalPos.y = globalPos.y - menu->size.y;
 					if(menu->globalPos.y < 0)
-						menu->globalPos.y = gui->wndSize.y - menu->size.y;
+						menu->globalPos.y = wndSize.y - menu->size.y;
 				}
 				menu->Show();
 			}
@@ -192,7 +192,7 @@ void ListBox::Update(float dt)
 			UpdateControl(&scrollbar, dt);
 		}
 
-		if(mouseFocus && input->Focus() && Rect::IsInside(gui->cursorPos, globalPos, realSize))
+		if(mouseFocus && Rect::IsInside(gui->cursorPos, globalPos, realSize))
 		{
 			int bt = 0;
 			hover = PosToIndex(gui->cursorPos.y);

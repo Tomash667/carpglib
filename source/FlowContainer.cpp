@@ -59,8 +59,7 @@ void FlowContainer::Update(float dt)
 		{
 			ok = true;
 
-			if(input->Focus())
-				scroll.ApplyMouseWheel();
+			scroll.ApplyMouseWheel();
 
 			Int2 off(0, (int)scroll.offset);
 			bool haveButton = false;

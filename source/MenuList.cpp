@@ -48,17 +48,14 @@ void MenuList::Update(float dt)
 			selected = -1;
 	}
 
-	if(input->Focus())
+	if(input->PressedRelease(Key::LeftButton))
 	{
-		if(input->PressedRelease(Key::LeftButton))
-		{
-			if(selected != -1 && eventHandler)
-				eventHandler(selected);
-			LostFocus();
-		}
-		else if(input->PressedRelease(Key::RightButton) || input->PressedRelease(Key::Escape))
-			LostFocus();
+		if(selected != -1 && eventHandler)
+			eventHandler(selected);
+		LostFocus();
 	}
+	else if(input->PressedRelease(Key::RightButton) || input->PressedRelease(Key::Escape))
+		LostFocus();
 }
 
 //=================================================================================================

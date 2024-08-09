@@ -100,9 +100,6 @@ public:
 		return keystate;
 	}
 
-	void SetFocus(bool f) { focus = f; }
-	bool Focus() const { return focus; }
-
 	bool IsModifier(int modifier) const
 	{
 		return shortcutState == modifier;
@@ -152,5 +149,4 @@ private:
 	Int2 mouseDif;
 	float mouseWheel;
 	int shortcutState;
-	bool focus;
 };

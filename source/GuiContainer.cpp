@@ -53,7 +53,7 @@ void GuiContainer::Update(float dt)
 	}
 
 	// prze³¹czanie
-	if(focus && input->Focus() && input->PressedRelease(Key::Tab))
+	if(focus && input->PressedRelease(Key::Tab))
 	{
 		// znajdŸ aktualny element
 		Iter begin = items.begin(), end = items.end(), start;

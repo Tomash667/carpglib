@@ -28,7 +28,7 @@ struct PostEffect
 };
 
 //-----------------------------------------------------------------------------
-class PostfxShader : public ShaderHandler
+class PostfxShader final : public ShaderHandler
 {
 public:
 	PostfxShader();

@@ -60,10 +60,10 @@ void TooltipController::UpdateTooltip(float dt, int newGroup, int newId)
 		if(state == State::VISIBLE)
 		{
 			pos = gui->cursorPos + Int2(24, 24);
-			if(pos.x + size.x >= gui->wndSize.x)
-				pos.x = gui->wndSize.x - size.x - 1;
-			if(pos.y + size.y >= gui->wndSize.y)
-				pos.y = gui->wndSize.y - size.y - 1;
+			if(pos.x + size.x >= wndSize.x)
+				pos.x = wndSize.x - size.x - 1;
+			if(pos.y + size.y >= wndSize.y)
+				pos.y = wndSize.y - size.y - 1;
 			timer -= dt;
 			if(timer <= 0.f)
 			{

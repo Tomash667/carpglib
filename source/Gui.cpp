@@ -9,6 +9,7 @@
 #include "GuiShader.h"
 #include "Input.h"
 #include "Layout.h"
+#include "LayoutLoader.h"
 #include "Overlay.h"
 #include "Render.h"
 #include "ResourceManager.h"
@@ -18,7 +19,7 @@ Gui* app::gui;
 
 //=================================================================================================
 Gui::Gui() : cursorMode(CURSOR_NORMAL), focusedCtrl(nullptr), masterLayout(nullptr), layout(nullptr), overlay(nullptr), drawLayers(true), drawDialogs(true),
-grayscale(false), shader(nullptr), fontLoader(nullptr), lastClick(Key::LeftButton), lastClickTimer(1.f), clipRect(nullptr)
+grayscale(false), shader(nullptr), fontLoader(nullptr), lastClick(Key::LeftButton), lastClickTimer(1.f), clipRect(nullptr), virtualSize(Int2::Zero)
 {
 }
 
@@ -37,10 +38,12 @@ Gui::~Gui()
 //=================================================================================================
 void Gui::Init()
 {
-	Control::input = app::input;
-	Control::gui = this;
 	wndSize = app::engine->GetClientSize();
 	cursorPos = wndSize / 2;
+
+	Control::input = app::input;
+	Control::gui = this;
+	Control::wndSizeInternal = wndSize;
 
 	layer = new Container;
 	layer->autoFocus = true;
@@ -750,12 +753,10 @@ void Gui::DrawTextOutline(DrawLineContext& ctx, uint lineBegin, uint lineEnd, in
 //=================================================================================================
 void Gui::Draw()
 {
-	wndSize = app::engine->GetClientSize();
-
 	if(!drawLayers && !drawDialogs)
 		return;
 
-	shader->Prepare();
+	shader->Prepare(wndSize);
 
 	// rysowanie
 	if(drawLayers)
@@ -1642,7 +1643,11 @@ bool Gui::AnythingVisible() const
 //=================================================================================================
 void Gui::OnResize()
 {
-	wndSize = app::engine->GetClientSize();
+	if(virtualSize == Int2::Zero)
+	{
+		wndSize = app::engine->GetClientSize();
+		Control::wndSizeInternal = wndSize;
+	}
 	cursorPos = wndSize / 2;
 	app::engine->SetUnlockPoint(cursorPos);
 	layer->Event(GuiEvent_WindowResize);
@@ -2427,6 +2432,14 @@ void Gui::SetLayout(Layout* masterLayout)
 }
 
 //=================================================================================================
+void Gui::SetLayout(cstring filename)
+{
+	assert(filename);
+	Scoped<LayoutLoader> loader(new LayoutLoader(this));
+	SetLayout(loader->LoadFromFile(filename));
+}
+
+//=================================================================================================
 void Gui::RegisterControl(Control* control)
 {
 	assert(control);
@@ -2448,4 +2461,16 @@ void Gui::SetOverlay(Overlay* newOverlay)
 	assert(!overlay); // TODO
 	overlay = newOverlay;
 	Add(overlay);
+}
+
+//=================================================================================================
+void Gui::SetVirtualSize(const Int2& size)
+{
+	assert(size == Int2::Zero || size >= Engine::MIN_WINDOW_SIZE);
+	virtualSize = size;
+	if(virtualSize == Int2::Zero)
+		wndSize = app::engine->GetClientSize();
+	else
+		wndSize = virtualSize;
+	Control::wndSizeInternal = wndSize;
 }

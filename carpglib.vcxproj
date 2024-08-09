@@ -32,6 +32,7 @@
     <ClInclude Include="include\Crc.h" />
     <ClInclude Include="include\CriticalSection.h" />
     <ClInclude Include="include\BasicShader.h" />
+    <ClInclude Include="include\CustomMesh.h" />
     <ClInclude Include="include\DebugNode.h" />
     <ClInclude Include="include\DialogBox.h" />
     <ClInclude Include="include\DialogInfo.h" />

@@ -12,7 +12,7 @@ public:
 	void SetScene(Scene* scene, Camera* camera);
 	void ListNodes();
 	void Draw();
-	void DrawSceneNodes();
+	void DrawScene();
 	void DrawSceneNodes(SceneBatch& batch);
 	void DrawAlphaSceneNodes(SceneBatch& batch);
 
@@ -29,4 +29,7 @@ private:
 	Scene* scene;
 	Camera* camera;
 	SuperShader* superShader;
+	ParticleShader* particleShader;
+	TerrainShader* terrainShader;
+	SkyboxShader* skyboxShader;
 };

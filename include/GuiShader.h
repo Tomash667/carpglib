@@ -5,14 +5,14 @@
 #include "VertexDeclaration.h"
 
 //-----------------------------------------------------------------------------
-class GuiShader : public ShaderHandler
+class GuiShader final : public ShaderHandler
 {
 public:
 	GuiShader();
 	cstring GetName() const override { return "gui"; }
 	void OnInit() override;
 	void OnRelease() override;
-	void Prepare();
+	void Prepare(const Int2& size);
 	void SetGrayscale(float value);
 	void SetWrap(bool useWrap);
 	void Draw(TEX tex, VGui* v, uint quads);

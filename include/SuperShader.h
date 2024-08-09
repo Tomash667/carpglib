@@ -5,7 +5,7 @@
 #include "Mesh.h"
 
 //-----------------------------------------------------------------------------
-class SuperShader : public ShaderHandler
+class SuperShader final : public ShaderHandler
 {
 	enum Switches
 	{

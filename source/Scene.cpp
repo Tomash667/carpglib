@@ -3,12 +3,14 @@
 
 #include "Algorithm.h"
 #include "Camera.h"
+#include "ParticleSystem.h"
 #include "SceneManager.h"
 #include "SceneNode.h"
+#include "Terrain.h"
 
 //=================================================================================================
-Scene::Scene() : clearColor(Color::Black), ambientColor(0.4f, 0.4f, 0.4f), lightColor(Color::White), fogColor(Color::Gray), useLightDir(false),
-fogRange(50, 100)
+Scene::Scene() : terrain(nullptr), skybox(nullptr), customMesh(nullptr), clearColor(Color::Black), ambientColor(0.4f, 0.4f, 0.4f), lightColor(Color::White),
+fogColor(Color::Gray), useLightDir(false), fogRange(50, 100)
 {
 }
 
@@ -34,10 +36,18 @@ void Scene::Detach(SceneNode* node)
 }
 
 //=================================================================================================
+void Scene::Update(float dt)
+{
+	LoopAndRemove(particleEmitters, [=](ParticleEmitter* particleEmitter) { return particleEmitter->Update(dt); });
+}
+
+//=================================================================================================
 void Scene::Clear()
 {
 	SceneNode::Free(nodes);
 	DeleteElements(lights);
+	DeleteElements(particleEmitters);
+	delete terrain;
 }
 
 //=================================================================================================
@@ -64,6 +74,15 @@ void Scene::ListNodes(SceneBatch& batch)
 			batch.Add(node);
 		}
 	}
+
+	for(ParticleEmitter* particleEmitter : particleEmitters)
+	{
+		if(frustum.SphereToFrustum(particleEmitter->pos, particleEmitter->radius))
+			batch.particleEmitters.push_back(particleEmitter);
+	}
+
+	if(terrain)
+		terrain->ListVisibleParts(batch.terrainParts, frustum);
 }
 
 //=================================================================================================

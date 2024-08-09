@@ -1,18 +1,23 @@
 #include "Pch.h"
 #include "SceneManager.h"
 
+#include "App.h"
 #include "Camera.h"
+#include "CustomMesh.h"
 #include "DirectX.h"
 #include "Gui.h"
+#include "ParticleShader.h"
 #include "Render.h"
 #include "Scene.h"
 #include "SceneNode.h"
+#include "SkyboxShader.h"
 #include "SuperShader.h"
+#include "TerrainShader.h"
 
 SceneManager* app::sceneMgr;
 
 //=================================================================================================
-SceneManager::SceneManager() : useLighting(true), useFog(true), useNormalmap(true), useSpecularmap(true)
+SceneManager::SceneManager() : scene(nullptr), camera(nullptr), useLighting(true), useFog(true), useNormalmap(true), useSpecularmap(true)
 {
 }
 
@@ -20,6 +25,9 @@ SceneManager::SceneManager() : useLighting(true), useFog(true), useNormalmap(tru
 void SceneManager::Init()
 {
 	superShader = app::render->GetShader<SuperShader>();
+	particleShader = app::render->GetShader<ParticleShader>();
+	terrainShader = app::render->GetShader<TerrainShader>();
+	skyboxShader = app::render->GetShader<SkyboxShader>();
 }
 
 //=================================================================================================
@@ -44,17 +52,58 @@ void SceneManager::ListNodes()
 //=================================================================================================
 void SceneManager::Draw()
 {
-	if(batch.nodeGroups.empty() && batch.alphaNodes.empty())
-		return;
+	if(!scene || !camera)
+	{
+		app::render->Clear(Color::Black);
+		app::gui->mViewProj = Matrix::IdentityMatrix;
+	}
+	else
+	{
+		DrawScene();
+		app::app->OnCustomDraw();
+		app::gui->mViewProj = camera->matViewProj;
 
-	superShader->Prepare();
-	superShader->SetScene(scene, camera);
+	}
+	app::gui->Draw();
+	app::render->Present();
+}
 
-	if(!batch.nodeGroups.empty())
-		DrawSceneNodes(batch.nodes, batch.nodeGroups);
+//=================================================================================================
+void SceneManager::DrawScene()
+{
+	app::render->Clear(scene->clearColor);
 
-	if(!batch.alphaNodes.empty())
-		DrawAlphaSceneNodes(batch.alphaNodes);
+	if(scene->skybox)
+		skyboxShader->Draw(*scene->skybox, *camera);
+
+	ListNodes();
+
+	if(!batch.terrainParts.empty())
+	{
+		terrainShader->Prepare(scene, camera);
+		terrainShader->Draw(scene->terrain, batch.terrainParts);
+	}
+
+	if(scene->customMesh)
+		scene->customMesh->Draw(*scene, *camera);
+
+	if(!batch.nodeGroups.empty() || !batch.alphaNodes.empty())
+	{
+		superShader->Prepare();
+		superShader->SetScene(scene, camera);
+
+		if(!batch.nodeGroups.empty())
+			DrawSceneNodes(batch.nodes, batch.nodeGroups);
+
+		if(!batch.alphaNodes.empty())
+			DrawAlphaSceneNodes(batch.alphaNodes);
+	}
+
+	if(!batch.particleEmitters.empty())
+	{
+		particleShader->Prepare(*camera);
+		particleShader->DrawParticles(batch.particleEmitters);
+	}
 }
 
 //=================================================================================================

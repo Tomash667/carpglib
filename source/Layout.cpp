@@ -14,6 +14,7 @@ Layout::~Layout()
 
 layout::Control* Layout::Get(const type_info& type)
 {
+	assert(this);
 	layout::Control* c = types[type];
 	assert(c);
 	return c;

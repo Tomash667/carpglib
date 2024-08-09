@@ -105,6 +105,11 @@ inline float Random(float a, float b)
 	return ((float)Rand() / internal::rng.max()) * (b - a) + a;
 }
 
+inline float RandomAngle()
+{
+	return Random(0.f, PI * 2);
+}
+
 inline float RandomPart(int parts)
 {
 	return 1.f / parts * (Rand() % parts);
@@ -521,6 +526,8 @@ struct Int2
 	bool operator == (const Int2& i) const;
 	bool operator != (const Int2& i) const;
 	bool operator > (const Int2& i) const;
+	bool operator >= (const Int2& i) const;
+	bool operator < (const Int2& i) const;
 	bool operator <= (const Int2& i) const;
 
 	// Assignment operators

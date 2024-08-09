@@ -89,7 +89,7 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 		size.y = params.sizeMin.y;
 	else if(size.y > params.sizeMax.y)
 		size.y = params.sizeMax.y;
-	pos = globalPos = (gui->wndSize - size) / 2;
+	pos = globalPos = (wndSize - size) / 2;
 	flow.UpdateSize(Int2(16, 64), Int2(size.x - 32, size.y - 80), true);
 	btClose.pos = Int2(size.x - 48, 16);
 	btClose.globalPos = globalPos + btClose.pos;
@@ -145,7 +145,7 @@ void PickItemDialog::Event(GuiEvent e)
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
 		// recenter
-		pos = globalPos = (gui->wndSize - size) / 2;
+		pos = globalPos = (wndSize - size) / 2;
 		flow.UpdatePos(pos);
 		btClose.globalPos = globalPos + btClose.pos;
 	}
