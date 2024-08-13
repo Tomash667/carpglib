@@ -20,10 +20,10 @@ struct Guid;
 
 //-----------------------------------------------------------------------------
 // Global constants
-const float PI = 3.14159265358979323846f;
-const float SQRT_2 = 1.41421356237f;
-const float G = 9.8105f;
-const float MAX_ANGLE = PI * 2 - FLT_EPSILON;
+constexpr float PI = 3.14159265358979323846f;
+constexpr float SQRT_2 = 1.41421356237f;
+constexpr float G = 9.8105f;
+constexpr float MAX_ANGLE = PI * 2 - FLT_EPSILON;
 
 //-----------------------------------------------------------------------------
 // Random numbers
