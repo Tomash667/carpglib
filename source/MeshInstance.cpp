@@ -61,7 +61,7 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, uint group)
 	}
 	else
 		gr.time = 0.f;
-	if(IsSet(flags, PLAY_STOP_AT_END))
+	if(IsAllSet(flags, PLAY_STOP_AT_END))
 		SetBit(gr.state, FLAG_STOP_AT_END);
 	gr.frameEnd = false;
 
