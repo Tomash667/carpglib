@@ -89,6 +89,7 @@ public:
 
 	bool CheckDisplay(const Int2& size) const;
 	void Clear(const Vec4& color);
+	void ClearDepth();
 	Texture* CopyToTexture(RenderTarget* target);
 	TEX CopyToTextureRaw(RenderTarget* target);
 	ID3D11Buffer* CreateConstantBuffer(uint size, cstring name = nullptr);

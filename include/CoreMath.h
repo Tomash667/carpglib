@@ -1269,6 +1269,9 @@ struct Matrix : XMFLOAT4X4
 	// Methods
 	bool Decompose(Vec3& scale, Quat& rotation, Vec3& translation);
 	float Determinant() const;
+	Vec3 GetForward() const { return { _31, _32, _33 }; }
+	Vec3 GetRight() const { return { _11, _12, _13 }; }
+	Vec3 GetUp() const { return { _21, _22, _23 }; }
 	float GetYaw() const;
 	void Identity();
 	Matrix Inverse() const;

@@ -158,7 +158,7 @@ void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 {
 	const bool useFog = this->useFog && useLighting;
 
-	uint last_id = -1;
+	uint lastId = -1;
 	for(SceneNode* node : nodes)
 	{
 		const bool useLighting = this->useLighting && !IsSet(node->flags, SceneNode::F_NO_LIGHTING);
@@ -172,16 +172,45 @@ void SceneManager::DrawAlphaSceneNodes(const vector<SceneNode*>& nodes)
 			IsSet(node->flags, SceneNode::F_NORMAL_MAP),
 			useLighting && !scene->useLightDir,
 			useLighting && scene->useLightDir);
-		if(id != last_id)
+		if(id != lastId)
 		{
 			app::render->SetDepthState(IsSet(node->flags, SceneNode::F_NO_ZWRITE) ? Render::DEPTH_READ : Render::DEPTH_YES);
 			app::render->SetRasterState(IsSet(node->flags, SceneNode::F_NO_CULLING) ? Render::RASTER_NO_CULLING : Render::RASTER_NORMAL);
 
 			superShader->SetShader(id);
-			last_id = id;
+			lastId = id;
 		}
 
 		app::render->SetBlendState(node->addBlend ? Render::BLEND_ADD : Render::BLEND_ADD_ONE);
+
+		superShader->Draw(node);
+	}
+}
+
+//=================================================================================================
+void SceneManager::DrawSceneNodesCustom(const vector<SceneNode*>& nodes)
+{
+	const bool useFog = this->useFog && useLighting;
+
+	uint lastId = -1;
+	for(SceneNode* node : nodes)
+	{
+		const bool useLighting = this->useLighting && !IsSet(node->flags, SceneNode::F_NO_LIGHTING);
+
+		uint id = superShader->GetShaderId(
+			IsSet(node->flags, SceneNode::F_HAVE_WEIGHTS),
+			IsSet(node->flags, SceneNode::F_HAVE_TANGENTS),
+			IsSet(node->flags, SceneNode::F_ANIMATED),
+			useFog,
+			IsSet(node->flags, SceneNode::F_SPECULAR_MAP),
+			IsSet(node->flags, SceneNode::F_NORMAL_MAP),
+			useLighting && !scene->useLightDir,
+			useLighting && scene->useLightDir);
+		if(id != lastId)
+		{
+			superShader->SetShader(id);
+			lastId = id;
+		}
 
 		superShader->Draw(node);
 	}

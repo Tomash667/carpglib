@@ -15,6 +15,7 @@ public:
 	void DrawScene();
 	void DrawSceneNodes(SceneBatch& batch);
 	void DrawAlphaSceneNodes(SceneBatch& batch);
+	void DrawSceneNodesCustom(const vector<SceneNode*>& nodes);
 
 	Scene* GetScene() { return scene; }
 	SceneBatch& GetBatch();

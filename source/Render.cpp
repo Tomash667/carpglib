@@ -491,6 +491,15 @@ void Render::Clear(const Vec4& color)
 }
 
 //=================================================================================================
+void Render::ClearDepth()
+{
+	ID3D11DepthStencilView* depthStencilView;
+	deviceContext->OMGetRenderTargets(1, nullptr, &depthStencilView);
+	deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.f, 0);
+	depthStencilView->Release();
+}
+
+//=================================================================================================
 void Render::Present()
 {
 	assert(!currentTarget);
