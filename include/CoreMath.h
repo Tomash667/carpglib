@@ -281,19 +281,25 @@ inline float DistanceSqrt(float x1, float y1, float x2, float y2)
 	return x * x + y * y;
 }
 
-// Clip value to range
-inline float Clip(float f, float range = PI * 2)
-{
-	int n = (int)floor(f / range);
-	return f - range * n;
-}
-
 inline constexpr bool IsNormalizedAngle(float angle)
 {
 	return angle >= 0.f && angle < PI * 2;
 }
 
-// Convert angle between math and engine rotation
+// Clip value to range
+inline float Clip(float f, float range = PI * 2)	
+{
+	float angle = fmod(f, range);
+	if(std::signbit(angle))
+	{
+		angle += range;
+		if(angle >= range)
+			angle = 0;
+	}
+	return angle;
+}
+
+// Convert angle between math angle and directx rotation
 inline float ConvertAngle(float angle)
 {
 	assert(IsNormalizedAngle(angle));
