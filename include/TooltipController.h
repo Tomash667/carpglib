@@ -27,7 +27,7 @@ public:
 	void Init(Callback getText);
 	void Clear();
 	void Refresh() { FormatBox(true); }
-	void UpdateTooltip(float dt, int group, int id);
+	void UpdateTooltip(float dt, int group, int index);
 
 	string bigText, text, smallText;
 	Texture* img;
@@ -45,7 +45,7 @@ private:
 	void FormatBox(bool refresh);
 
 	State state;
-	int group, id;
+	int group, index;
 	Callback getText;
 	float timer, alpha;
 	Rect rBigText, rText, rSmallText;

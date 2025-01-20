@@ -18,7 +18,7 @@ void TooltipController::Init(Callback getText)
 void TooltipController::Clear()
 {
 	group = INVALID_INDEX;
-	id = INVALID_INDEX;
+	index = INVALID_INDEX;
 	anything = false;
 	state = State::NOT_VISIBLE;
 	alpha = 0.f;
@@ -26,15 +26,15 @@ void TooltipController::Clear()
 }
 
 //=================================================================================================
-void TooltipController::UpdateTooltip(float dt, int newGroup, int newId)
+void TooltipController::UpdateTooltip(float dt, int newGroup, int newIndex)
 {
 	if(newGroup != INVALID_INDEX)
 	{
-		if(newGroup != group || newId != id)
+		if(newGroup != group || newIndex != index)
 		{
 			state = State::COUNTING;
 			group = newGroup;
-			id = newId;
+			index = newIndex;
 			timer = TIMER;
 		}
 		else
@@ -76,7 +76,7 @@ void TooltipController::UpdateTooltip(float dt, int newGroup, int newId)
 	{
 		state = State::NOT_VISIBLE;
 		group = INVALID_INDEX;
-		id = INVALID_INDEX;
+		index = INVALID_INDEX;
 	}
 }
 
@@ -133,7 +133,7 @@ void TooltipController::Draw()
 //=================================================================================================
 void TooltipController::FormatBox(bool refresh)
 {
-	getText(this, group, id, refresh);
+	getText(this, group, index, refresh);
 
 	if(!anything)
 		return;
