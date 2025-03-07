@@ -389,12 +389,12 @@ inline constexpr To union_cast(const From& f)
 //-----------------------------------------------------------------------------
 // Absolute cast
 template <typename destT, typename srcT>
-destT &absolute_cast(srcT &v)
+destT& absolute_cast(srcT& v)
 {
 	return reinterpret_cast<destT&>(v);
 }
 template <typename destT, typename srcT>
-const destT &absolute_cast(const srcT &v)
+const destT& absolute_cast(const srcT& v)
 {
 	return reinterpret_cast<const destT&>(v);
 }

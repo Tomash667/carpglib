@@ -56,7 +56,7 @@ private:
 	void ShowCursor(bool show);
 	void UpdateActivity(bool isActive);
 	void WindowLoop();
-	bool IsWindowActive();
+	bool IsWindowActive() const;
 	void SetWindowSizeInternal(const Int2& size);
 
 	HWND hwnd;

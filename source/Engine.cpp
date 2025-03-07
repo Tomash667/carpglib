@@ -248,7 +248,7 @@ void Engine::DoTick(bool updateGame)
 }
 
 //=================================================================================================
-bool Engine::IsWindowActive()
+bool Engine::IsWindowActive() const
 {
 	HWND foreground = GetForegroundWindow();
 	if(foreground != hwnd)

@@ -466,6 +466,11 @@ inline float RoundTo(float value, int n)
 	return round(value * n) / n + 0.0f;
 }
 
+inline float RoundToAngle(float value, float angle)
+{
+	return std::round(value / angle) * angle;
+}
+
 // Return module
 inline constexpr int Modulo(int a, int mod)
 {
@@ -1213,6 +1218,7 @@ struct Box
 
 	// Methods
 	void AddPoint(const Vec3& v);
+	Vec3 Bottom() const;
 	Vec3 GetRandomPoint() const;
 	bool IsInside(const Vec3& v) const;
 	bool IsValid() const;
@@ -1273,7 +1279,7 @@ struct Matrix : XMFLOAT4X4
 	friend Matrix operator * (float s, const Matrix& m);
 
 	// Methods
-	bool Decompose(Vec3& scale, Quat& rotation, Vec3& translation);
+	bool Decompose(Vec3& scale, Quat& rotation, Vec3& translation) const;
 	float Determinant() const;
 	Vec3 GetForward() const { return { _31, _32, _33 }; }
 	Vec3 GetRight() const { return { _11, _12, _13 }; }

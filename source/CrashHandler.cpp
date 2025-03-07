@@ -6,7 +6,7 @@
 static delegate<void()> callback;
 
 //=================================================================================================
-cstring ExceptionTypeToString(int exctype)
+static cstring ExceptionTypeToString(int exctype)
 {
 	switch(exctype)
 	{
@@ -42,7 +42,7 @@ cstring ExceptionTypeToString(int exctype)
 }
 
 //=================================================================================================
-cstring CodeToString(DWORD err)
+static cstring CodeToString(DWORD err)
 {
 	switch(err)
 	{
@@ -71,7 +71,7 @@ cstring CodeToString(DWORD err)
 }
 
 //=================================================================================================
-int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crashInfo)
+static int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crashInfo)
 {
 	cstring type = ExceptionTypeToString(crashInfo->pExceptionInfo->exctype);
 	if(crashInfo->pExceptionInfo->pexcptrs && crashInfo->pExceptionInfo->pexcptrs->ExceptionRecord)
@@ -83,8 +83,7 @@ int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crashInfo)
 	else
 		Error("Engine: Unhandled exception caught!\nType: %s", type);
 
-	TextLogger* textLogger = TextLogger::GetInstance();
-	if(textLogger)
+	if(TextLogger* textLogger = TextLogger::GetInstance())
 		textLogger->Flush();
 
 	if(callback)
@@ -132,8 +131,7 @@ void CrashHandler::Register(cstring title, cstring version, cstring url, int min
 	r = crSetCrashCallback(OnCrash, nullptr);
 	assert(r == 0);
 
-	TextLogger* textLogger = TextLogger::GetInstance();
-	if(textLogger)
+	if(const TextLogger* textLogger = TextLogger::GetInstance())
 	{
 		r = crAddFile2(textLogger->GetPath().c_str(), nullptr, "Log file", CR_AF_MAKE_FILE_COPY | CR_AF_MISSING_FILE_OK | CR_AF_ALLOW_DELETE);
 		assert(r == 0);

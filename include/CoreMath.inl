@@ -583,12 +583,12 @@ inline Vec2::operator const float*() const
 
 inline float& Vec2::operator [](int index)
 {
-	return ((float*)* this)[index];
+	return ((float*)*this)[index];
 }
 
 inline const float& Vec2::operator [](int index) const
 {
-	return ((const float*)* this)[index];
+	return ((const float*)*this)[index];
 }
 
 inline bool Vec2::operator == (const Vec2& v) const
@@ -1268,12 +1268,12 @@ inline Vec3::operator const float*() const
 
 inline float& Vec3::operator [](int index)
 {
-	return ((float*)* this)[index];
+	return ((float*)*this)[index];
 }
 
 inline const float& Vec3::operator [](int index) const
 {
-	return ((const float*)* this)[index];
+	return ((const float*)*this)[index];
 }
 
 inline bool Vec3::operator == (const Vec3& v) const
@@ -2009,12 +2009,12 @@ inline Vec4::operator const float*() const
 
 inline float& Vec4::operator [](int index)
 {
-	return ((float*)* this)[index];
+	return ((float*)*this)[index];
 }
 
 inline const float& Vec4::operator [](int index) const
 {
-	return ((const float*)* this)[index];
+	return ((const float*)*this)[index];
 }
 
 inline bool Vec4::operator == (const Vec4& v) const
@@ -2941,6 +2941,11 @@ inline void Box::AddPoint(const Vec3& v)
 	v2.z = max(v2.z, v.z);
 }
 
+inline Vec3 Box::Bottom() const
+{
+	return Vec3(v1.x + (v2.x - v1.x) / 2, v1.y, v1.z + (v2.z - v1.z) / 2);
+}
+
 inline Vec3 Box::GetRandomPoint() const
 {
 	return Vec3(::Random(v1.x, v2.x), ::Random(v1.y, v2.y), ::Random(v1.z, v2.z));
@@ -3404,7 +3409,7 @@ inline Matrix operator * (float S, const Matrix& M)
 // Methods
 //------------------------------------------------------------------------------
 
-inline bool Matrix::Decompose(Vec3& scale, Quat& rotation, Vec3& translation)
+inline bool Matrix::Decompose(Vec3& scale, Quat& rotation, Vec3& translation) const
 {
 	XMVECTOR s, r, t;
 
@@ -3499,11 +3504,7 @@ inline Matrix Matrix::CreateBillboard(const Vec3& object, const Vec3& cameraPosi
 
 	XMVECTOR Y = XMVector3Cross(Z, X);
 
-	XMMATRIX M;
-	M.r[0] = X;
-	M.r[1] = Y;
-	M.r[2] = Z;
-	M.r[3] = XMVectorSetW(O, 1.f);
+	XMMATRIX M{ X, Y, Z, XMVectorSetW(O, 1.f) };
 
 	Matrix R;
 	XMStoreFloat4x4(&R, M);
@@ -3572,11 +3573,7 @@ inline Matrix Matrix::CreateConstrainedBillboard(const Vec3& object, const Vec3&
 		Z = XMVector3Normalize(Z);
 	}
 
-	XMMATRIX M;
-	M.r[0] = X;
-	M.r[1] = Y;
-	M.r[2] = Z;
-	M.r[3] = XMVectorSetW(O, 1.f);
+	XMMATRIX M{ X, Y, Z, XMVectorSetW(O, 1.f) };
 
 	Matrix R;
 	XMStoreFloat4x4(&R, M);
