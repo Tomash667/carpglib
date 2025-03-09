@@ -101,3 +101,13 @@ void Physics::SetGhostCallback()
 	ghostCallback = new btGhostPairCallback;
 	world->getPairCache()->setInternalGhostPairCallback(ghostCallback);
 }
+
+//=================================================================================================
+const string& Physics::GetName(btCollisionObject* cobj)
+{
+	auto it = names.find(cobj);
+	if(it != names.end())
+		return it->second;
+	static const string empty;
+	return empty;
+}

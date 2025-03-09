@@ -19,6 +19,12 @@ public:
 	btCollisionWorld* GetWorld() { return world; }
 	btBvhTriangleMeshShape* CreateTrimeshShape(VertexData* vd);
 	void SetGhostCallback();
+	void SetName(btCollisionObject* cobj, const string& name)
+	{
+		names[cobj] = name;
+	}
+	const string& GetName(btCollisionObject* cobj);
+	FIXME;
 
 private:
 	btCollisionConfiguration* config;
@@ -28,6 +34,7 @@ private:
 	btGhostPairCallback* ghostCallback;
 	vector<btCollisionShape*> shapes;
 	vector<btBvhTriangleMeshShape*> trimeshes;
+	std::unordered_map<btCollisionObject*, string> names;
 };
 
 //-----------------------------------------------------------------------------

@@ -106,7 +106,7 @@ Font* FontLoader::LoadInternal(cstring name, int size, int weight, int outline)
 	// make tab size of 4 spaces
 	Font::Glyph& tab = font->glyph['\t'];
 	Font::Glyph& space = font->glyph[' '];
-	tab.width = space.width * 4;;
+	tab.width = space.width * 4;
 	tab.uv = space.uv;
 
 	// save textures to file
