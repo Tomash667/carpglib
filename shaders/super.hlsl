@@ -12,7 +12,9 @@
 
 cbuffer VsGlobals : register(b0)
 {
+    matrix matLightViewProj;
 	float3 cameraPos;
+    float3 lightPosGlobal;
 };
 
 cbuffer VsLocals : register(b1)
@@ -55,7 +57,10 @@ cbuffer PsMaterial : register(b2)
 Texture2D texDiffuse : register(t0);
 Texture2D texNormal : register(t1);
 Texture2D texSpecular : register(t2);
+Texture2D texDepth : register(t3);
 SamplerState sampler0 : register(s0);
+SamplerState sampler1 : register(s1);
+// TODO: sampler2
 
 struct VsInput
 {
@@ -88,6 +93,8 @@ struct VsOutput
 	float3 tangent : TEXCOORD5;
 	float3 binormal : TEXCOORD6;
 #endif
+    float4 lightViewPosition : TEXCOORD7;
+    float3 lightPos : TEXCOORD8;
 };
 
 void VsMain(VsInput In, out VsOutput Out)
@@ -132,6 +139,11 @@ void VsMain(VsInput In, out VsOutput Out)
 #ifdef FOG
 	Out.posViewZ = Out.pos.w;
 #endif
+	
+	// shadow map
+    float4 worldPos = mul(float4(pos, 1), matWorld);
+    Out.lightViewPosition = mul(worldPos, matLightViewProj);
+    Out.lightPos = normalize(lightPosGlobal.xyz - worldPos.xyz);
 }
 
 float4 PsMain(VsOutput In) : SV_TARGET
@@ -156,6 +168,7 @@ float4 PsMain(VsOutput In) : SV_TARGET
 	specInt = specularIntensity;
 #endif
 	
+	/*
 #ifdef DIR_LIGHT
 	float specular = 0;
 	float lightIntensity = saturate(dot(normal, lightDir));
@@ -192,4 +205,58 @@ float4 PsMain(VsOutput In) : SV_TARGET
 #else
 	return tex;
 #endif
+	*/
+	
+    //color = float4(0.5f, 0.5f, 0.5f, 1);
+    //color = float4(0, 0, 0, 1);
+	
+    float2 projectTexCoord;
+	
+	// Calculate the projected texture coordinates.
+    projectTexCoord.x = In.lightViewPosition.x / In.lightViewPosition.w / 2.0f + 0.5f;
+    projectTexCoord.y = -In.lightViewPosition.y / In.lightViewPosition.w / 2.0f + 0.5f;
+	
+    // Determine if the projected coordinates are in the 0 to 1 range.  If it is then this pixel is inside the projected view port.
+    if ((saturate(projectTexCoord.x) == projectTexCoord.x) && (saturate(projectTexCoord.y) == projectTexCoord.y))
+    {
+        //return float4(1, 0, 0, 1);
+        // Sample the shadow map depth value from the depth texture using the sampler at the projected texture coordinate location.
+        float depthValue = texDepth.Sample(sampler1, projectTexCoord).r;
+        //return float4(depthValue, depthValue, depthValue, 1);
+
+        // Calculate the depth of the light.
+        float lightDepthValue = In.lightViewPosition.z / In.lightViewPosition.w;
+
+        // Subtract the bias from the lightDepthValue.
+        //lightDepthValue = lightDepthValue - 0.0022f; // bias
+        lightDepthValue = lightDepthValue - 0.003f; // bias
+
+         // Compare the depth of the shadow map value and the depth of the light to determine whether to shadow or to light this pixel.
+        // If the light is in front of the object then light the pixel, if not then shadow this pixel since an object (occluder) is casting a shadow on it.
+        if (lightDepthValue < depthValue)
+        {
+            //return float4(1, 0, 0, 1);
+            // Calculate the amount of light on this pixel.
+            float lightIntensity = saturate(dot(In.normal, In.lightPos));
+            //color = float4(lightIntensity, lightIntensity, lightIntensity, 1);
+            //return float4(lightIntensity, lightIntensity, lightIntensity, 1);
+
+            if (lightIntensity > 0.0f)
+            {
+                // Determine the final diffuse color based on the diffuse color and the amount of light intensity.
+                //color += (diffuseColor * lightIntensity);
+                color += (float4(1, 1, 1, 1) * lightIntensity);
+
+                // Saturate the final light color.
+                color = saturate(color);
+            }
+            //color = float4(1, 1, 1, 1);
+        }
+
+    }
+	
+	// Combine the light and texture color.
+    color = color * tex;
+
+    return color;
 }

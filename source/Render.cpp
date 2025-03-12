@@ -613,7 +613,7 @@ TEX Render::CreateImmutableTexture(const Int2& size, const Color* fill)
 //=================================================================================================
 RenderTarget* Render::CreateRenderTarget(const Int2& size, int flags)
 {
-	assert(size <= wndSize);
+	//assert(size <= wndSize);
 	assert((size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y)) || size == Int2::Zero);
 	RenderTarget* target = new RenderTarget;
 	if(size == Int2::Zero)

@@ -97,6 +97,8 @@ void SceneManager::DrawScene()
 
 		if(!batch.alphaNodes.empty())
 			DrawAlphaSceneNodes(batch.alphaNodes);
+
+		superShader->Post();
 	}
 
 	if(!batch.particleEmitters.empty())

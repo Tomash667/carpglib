@@ -42,6 +42,7 @@ public:
 	void Draw(SceneNode* node);
 	void DrawCustom(const Matrix& matWorld, const Matrix& matCombined, const std::array<Light*, 3>& lights, uint startIndex, uint indexCount);
 	void DrawDecal(const Decal& decal);
+	void Post();
 
 private:
 	Shader& GetShader(uint id);
@@ -58,10 +59,16 @@ private:
 	TEX texEmptyNormalMap, texEmptySpecularMap;
 	ID3D11Buffer* vbDecal;
 	ID3D11Buffer* ibDecal;
+	ID3D11SamplerState* sampler;
 
 	string code;
 	Scene* scene;
 	Camera* camera;
 	Mesh* prevMesh;
 	bool applyBones, applyLights, applyNormalMap, applySpecularMap;
+
+public:
+	Matrix matLightViewProj;
+	Vec3 lightPosGlobal;
+	TEX texDepth;
 };

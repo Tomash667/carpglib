@@ -13,7 +13,10 @@
 
 struct VsGlobals
 {
+	Matrix matLightViewProj;
 	Vec3 cameraPos;
+	float _pad;
+	Vec3 lightPosGlobal;
 };
 
 struct VsLocals
@@ -48,8 +51,9 @@ struct PsMaterial
 
 //=================================================================================================
 SuperShader::SuperShader() : deviceContext(app::render->GetDeviceContext()), vsGlobals(nullptr), vsLocals(nullptr), psGlobals(nullptr), psLocals(nullptr),
-psMaterial(nullptr), texEmptyNormalMap(nullptr), texEmptySpecularMap(nullptr), vbDecal(nullptr), ibDecal(nullptr)
+psMaterial(nullptr), texEmptyNormalMap(nullptr), texEmptySpecularMap(nullptr), vbDecal(nullptr), ibDecal(nullptr), sampler(nullptr)
 {
+	texDepth = nullptr;
 }
 
 //=================================================================================================
@@ -92,6 +96,8 @@ void SuperShader::OnInit()
 
 	V(app::render->GetDevice()->CreateBuffer(&desc, &data, &ibDecal));
 	SetDebugName(ibDecal, "DecalIb");
+
+	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 }
 
 //=================================================================================================
@@ -115,6 +121,7 @@ void SuperShader::OnRelease()
 	SafeRelease(texEmptySpecularMap);
 	SafeRelease(vbDecal);
 	SafeRelease(ibDecal);
+	SafeRelease(sampler);
 }
 
 //=================================================================================================
@@ -255,7 +262,10 @@ void SuperShader::SetScene(Scene* scene, Camera* camera)
 	// set vertex shader globals
 	{
 		ResourceLock lock(vsGlobals);
-		lock.Get<VsGlobals>()->cameraPos = camera->from;
+		VsGlobals& vsg = *lock.Get<VsGlobals>();
+		vsg.cameraPos = camera->from;
+		vsg.matLightViewProj = matLightViewProj.Transpose();
+		vsg.lightPosGlobal = lightPosGlobal;
 	}
 
 	// set pixel shader globals
@@ -270,6 +280,15 @@ void SuperShader::SetScene(Scene* scene, Camera* camera)
 	}
 }
 
+void SuperShader::Post()
+{
+	if(texDepth)
+	{
+		TEX tNull = nullptr;
+		deviceContext->PSSetShaderResources(3, 1, &tNull);
+	}
+}
+
 //=================================================================================================
 void SuperShader::Prepare()
 {
@@ -280,8 +299,12 @@ void SuperShader::Prepare()
 	ID3D11Buffer* psBuffers[] = { psGlobals, psLocals, psMaterial };
 	deviceContext->PSSetConstantBuffers(0, 3, psBuffers);
 
-	ID3D11SamplerState* sampler = app::render->GetSampler();
-	deviceContext->PSSetSamplers(0, 1, &sampler);
+	ID3D11SamplerState* samplers[] = { app::render->GetSampler(), sampler };
+	deviceContext->PSSetSamplers(0, 2, samplers);
+
+
+	if(texDepth)
+		deviceContext->PSSetShaderResources(3, 1, &texDepth);
 }
 
 //=================================================================================================
