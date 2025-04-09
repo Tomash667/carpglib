@@ -50,6 +50,7 @@ public:
 		RASTER_NORMAL,
 		RASTER_NO_CULLING,
 		RASTER_WIREFRAME,
+		RASTER_SHADOWMAP,
 		RASTER_MAX
 	};
 
@@ -138,6 +139,7 @@ public:
 	int SetMultisampling(int type, int quality);
 	void SetShadersDir(cstring dir) { shadersDir = dir; }
 	void SetRenderTarget(RenderTarget* target);
+	void SetShadowMapBias(int depthBias, float slopeScaledDepthBias);
 	void SetViewport(const Int2& size);
 	void SetVsync(bool vsync) { this->vsync = vsync; }
 

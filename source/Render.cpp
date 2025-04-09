@@ -137,7 +137,7 @@ void Render::CreateAdapter()
 }
 
 //=================================================================================================
-cstring GetFeatureLevelString(int value)
+static cstring GetFeatureLevelString(int value)
 {
 	return Format("%d.%d", (value & 0xF000) >> 12, (value & 0xF00) >> 8);
 }
@@ -373,6 +373,29 @@ void Render::CreateRasterStates()
 	// create wireframe raster state
 	desc.FillMode = D3D11_FILL_WIREFRAME;
 	V(device->CreateRasterizerState(&desc, &rasterStates[RASTER_WIREFRAME]));
+
+	// create shadow map raster state
+	desc.FillMode = D3D11_FILL_SOLID;
+	desc.CullMode = D3D11_CULL_BACK;
+	desc.DepthBias = 100000;
+	desc.SlopeScaledDepthBias = 0.01f;
+	V(device->CreateRasterizerState(&desc, &rasterStates[RASTER_SHADOWMAP]));
+}
+
+//=================================================================================================
+void Render::SetShadowMapBias(int depthBias, float slopeScaledDepthBias)
+{
+	rasterStates[RASTER_SHADOWMAP]->Release();
+
+	D3D11_RASTERIZER_DESC desc = {};
+	desc.FillMode = D3D11_FILL_SOLID;
+	desc.CullMode = D3D11_CULL_BACK;
+	desc.DepthClipEnable = true;
+	desc.MultisampleEnable = multisampling > 0;
+	desc.AntialiasedLineEnable = multisampling > 0;
+	desc.DepthBias = depthBias;
+	desc.SlopeScaledDepthBias = slopeScaledDepthBias;
+	V(device->CreateRasterizerState(&desc, &rasterStates[RASTER_SHADOWMAP]));
 }
 
 //=================================================================================================

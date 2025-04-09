@@ -13,54 +13,54 @@
 cbuffer VsGlobals : register(b0)
 {
     matrix matLightViewProj;
-	float3 cameraPos;
+    float3 cameraPos;
     float3 lightPosGlobal;
 };
 
 cbuffer VsLocals : register(b1)
 {
-	matrix matCombined;
-	matrix matWorld;
-	matrix matBones[64];
+    matrix matCombined;
+    matrix matWorld;
+    matrix matBones[64];
 };
 
 cbuffer PsGlobals : register(b0)
 {
-	float4 ambientColor;
-	float4 lightColor;
-	float3 lightDir;
-	float4 fogColor;
-	float4 fogParams;
+    float4 ambientColor;
+    float4 lightColor;
+    float3 lightDir;
+    float4 fogColor;
+    float4 fogParams;
+    float bias;
 };
 
 struct Light
 {
-	float3 color;
-	float3 pos;
-	float range;
+    float3 color;
+    float3 pos;
+    float range;
 };
 
 cbuffer PsLocals : register(b1)
 {
-	float4 tint;
-	Light lights[3];
-	float alphaTest;
+    float4 tint;
+    Light lights[3];
+    float alphaTest;
 };
 
 cbuffer PsMaterial : register(b2)
 {
-	float3 specularColor;
-	float specularHardness;
-	float specularIntensity;
+    float3 specularColor;
+    float specularHardness;
+    float specularIntensity;
 };
 
 Texture2D texDiffuse : register(t0);
 Texture2D texNormal : register(t1);
 Texture2D texSpecular : register(t2);
 Texture2D texDepth : register(t3);
-SamplerState sampler0 : register(s0);
-SamplerState sampler1 : register(s1);
-// TODO: sampler2
+SamplerState samplerWrap : register(s0);
+SamplerState samplerClamp : register(s1);
 
 struct VsInput
 {
@@ -69,8 +69,8 @@ struct VsInput
 	float weight : BLENDWEIGHT0;
 	uint4 indices : BLENDINDICES0;
 #endif
-	float3 normal : NORMAL;
-	float2 tex : TEXCOORD0;
+    float3 normal : NORMAL;
+    float2 tex : TEXCOORD0;
 #ifdef HAVE_TANGENTS
 	float3 tangent : TANGENT;
 	float3 binormal : BINORMAL;
@@ -80,9 +80,9 @@ struct VsInput
 struct VsOutput
 {
     float4 pos : SV_POSITION;
-	float2 tex : TEXCOORD0;
-	float3 normal : TEXCOORD1;
-	float3 viewDir : TEXCOORD2;
+    float2 tex : TEXCOORD0;
+    float3 normal : TEXCOORD1;
+    float3 viewDir : TEXCOORD2;
 #ifdef POINT_LIGHT
 	float3 posWorld : TEXCOORD3;
 #endif
@@ -105,8 +105,8 @@ void VsMain(VsInput In, out VsOutput Out)
 	pos += mul(float4(In.pos,1), matBones[In.indices[1]]).xyz * (1-In.weight);
 	Out.pos = mul(float4(pos,1), matCombined);
 #else
-	float3 pos = In.pos;
-	Out.pos = mul(float4(pos,1), matCombined);
+    float3 pos = In.pos;
+    Out.pos = mul(float4(pos, 1), matCombined);
 #endif
 
 	// normal
@@ -115,7 +115,7 @@ void VsMain(VsInput In, out VsOutput Out)
 	normal += mul(float4(In.normal,1), matBones[In.indices[1]]).xyz * (1-In.weight);
 	Out.normal = mul(normal, (float3x3)matWorld).xyz;
 #else
-	Out.normal = mul(In.normal, (float3x3)matWorld).xyz;
+    Out.normal = mul(In.normal, (float3x3) matWorld).xyz;
 #endif
 
 	// tangent/binormal
@@ -125,10 +125,10 @@ void VsMain(VsInput In, out VsOutput Out)
 #endif
 	
 	// tex
-	Out.tex = In.tex;
+    Out.tex = In.tex;
 	
 	// direction from camera to vertex for specular calculations
-	Out.viewDir = normalize(cameraPos - mul(float4(pos,1), matWorld).xyz);
+    Out.viewDir = normalize(cameraPos - mul(float4(pos, 1), matWorld).xyz);
 	
 	// pos to world
 #ifdef POINT_LIGHT
@@ -148,24 +148,24 @@ void VsMain(VsInput In, out VsOutput Out)
 
 float4 PsMain(VsOutput In) : SV_TARGET
 {
-	float4 tex = texDiffuse.Sample(sampler0, In.tex);
-	clip(tex.w - alphaTest);
-	tex *= tint;
-	float4 color = ambientColor;
+    float4 tex = texDiffuse.Sample(samplerWrap, In.tex);
+    clip(tex.w - alphaTest);
+    tex *= tint;
+    float4 color = ambientColor;
 	
 #ifdef NORMAL_MAP
-	float3 bump = texNormal.Sample(sampler0, In.tex).xyz * 2.f - 1.f;
+	float3 bump = texNormal.Sample(samplerWrap, In.tex).xyz * 2.f - 1.f;
 	float3 normal = normalize(bump.x * In.tangent + (-bump.y) * In.binormal + bump.z * In.normal);
 #else
-	float3 normal = In.normal;
+    float3 normal = In.normal;
 #endif
 
-	float specInt;
+    float specInt;
 #ifdef SPECULAR_MAP
-	float4 specTex = texSpecular.Sample(sampler0, In.tex);
+	float4 specTex = texSpecular.Sample(samplerWrap, In.tex);
 	specInt = specTex.r + (1.f - specTex.a) * specularIntensity;
 #else
-	specInt = specularIntensity;
+    specInt = specularIntensity;
 #endif
 	
 	/*
@@ -206,22 +206,28 @@ float4 PsMain(VsOutput In) : SV_TARGET
 	return tex;
 #endif
 	*/
+    
+    //float3 shadowCoord = In.lightViewPosition.xyz / In.lightViewPosition.w;
+    //shadowCoord = shadowCoord * 0.5 + 0.5;
+    //shadowCoord = shadowCoord + In.normal * bias;
+    float3 shadowCoord = float3(In.lightViewPosition.x / In.lightViewPosition.w / 2.0f + 0.5f,
+        -In.lightViewPosition.y / In.lightViewPosition.w / 2.0f + 0.5f,
+        0);
+    //shadowCoord = shadowCoord + In.normal * bias;
 	
-    //color = float4(0.5f, 0.5f, 0.5f, 1);
-    //color = float4(0, 0, 0, 1);
-	
-    float2 projectTexCoord;
+    //float2 projectTexCoord;
 	
 	// Calculate the projected texture coordinates.
-    projectTexCoord.x = In.lightViewPosition.x / In.lightViewPosition.w / 2.0f + 0.5f;
-    projectTexCoord.y = -In.lightViewPosition.y / In.lightViewPosition.w / 2.0f + 0.5f;
+    //projectTexCoord.x = In.lightViewPosition.x / In.lightViewPosition.w / 2.0f + 0.5f;
+    //projectTexCoord.y = -In.lightViewPosition.y / In.lightViewPosition.w / 2.0f + 0.5f;
 	
     // Determine if the projected coordinates are in the 0 to 1 range.  If it is then this pixel is inside the projected view port.
-    if ((saturate(projectTexCoord.x) == projectTexCoord.x) && (saturate(projectTexCoord.y) == projectTexCoord.y))
+    //if (saturate(projectTexCoord.x) == projectTexCoord.x && saturate(projectTexCoord.y) == projectTexCoord.y)
+    if (saturate(shadowCoord.x) == shadowCoord.x && saturate(shadowCoord.y) == shadowCoord.y)
     {
         //return float4(1, 0, 0, 1);
         // Sample the shadow map depth value from the depth texture using the sampler at the projected texture coordinate location.
-        float depthValue = texDepth.Sample(sampler1, projectTexCoord).r;
+        float depthValue = texDepth.Sample(samplerClamp, shadowCoord.xy).r;
         //return float4(depthValue, depthValue, depthValue, 1);
 
         // Calculate the depth of the light.
@@ -229,7 +235,7 @@ float4 PsMain(VsOutput In) : SV_TARGET
 
         // Subtract the bias from the lightDepthValue.
         //lightDepthValue = lightDepthValue - 0.0022f; // bias
-        lightDepthValue = lightDepthValue - 0.003f; // bias
+        //lightDepthValue = lightDepthValue - bias;
 
          // Compare the depth of the shadow map value and the depth of the light to determine whether to shadow or to light this pixel.
         // If the light is in front of the object then light the pixel, if not then shadow this pixel since an object (occluder) is casting a shadow on it.
@@ -250,9 +256,18 @@ float4 PsMain(VsOutput In) : SV_TARGET
                 // Saturate the final light color.
                 color = saturate(color);
             }
-            //color = float4(1, 1, 1, 1);
         }
-
+    }
+    else
+    {
+        // If this is outside the area of shadow map range then draw things normally with regular lighting.
+        float lightIntensity = saturate(dot(In.normal, In.lightPos));
+        if (lightIntensity > 0.0f)
+        {
+            //color += (diffuseColor * lightIntensity);
+            color += (float4(1, 1, 1, 1) * lightIntensity);
+            color = saturate(color);
+        }
     }
 	
 	// Combine the light and texture color.

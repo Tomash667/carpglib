@@ -59,7 +59,7 @@ private:
 	TEX texEmptyNormalMap, texEmptySpecularMap;
 	ID3D11Buffer* vbDecal;
 	ID3D11Buffer* ibDecal;
-	ID3D11SamplerState* sampler;
+	ID3D11SamplerState* samplerClamp;
 
 	string code;
 	Scene* scene;
@@ -71,4 +71,5 @@ public:
 	Matrix matLightViewProj;
 	Vec3 lightPosGlobal;
 	TEX texDepth;
+	float bias;
 };

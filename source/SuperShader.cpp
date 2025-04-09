@@ -33,6 +33,7 @@ struct PsGlobals
 	Vec4 lightDir;
 	Vec4 fogColor;
 	Vec4 fogParams;
+	float bias;
 };
 
 struct PsLocals
@@ -51,7 +52,7 @@ struct PsMaterial
 
 //=================================================================================================
 SuperShader::SuperShader() : deviceContext(app::render->GetDeviceContext()), vsGlobals(nullptr), vsLocals(nullptr), psGlobals(nullptr), psLocals(nullptr),
-psMaterial(nullptr), texEmptyNormalMap(nullptr), texEmptySpecularMap(nullptr), vbDecal(nullptr), ibDecal(nullptr), sampler(nullptr)
+psMaterial(nullptr), texEmptyNormalMap(nullptr), texEmptySpecularMap(nullptr), vbDecal(nullptr), ibDecal(nullptr), samplerClamp(nullptr)
 {
 	texDepth = nullptr;
 }
@@ -97,7 +98,7 @@ void SuperShader::OnInit()
 	V(app::render->GetDevice()->CreateBuffer(&desc, &data, &ibDecal));
 	SetDebugName(ibDecal, "DecalIb");
 
-	sampler = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
+	samplerClamp = app::render->CreateSampler(Render::TEX_ADR_CLAMP);
 }
 
 //=================================================================================================
@@ -121,7 +122,7 @@ void SuperShader::OnRelease()
 	SafeRelease(texEmptySpecularMap);
 	SafeRelease(vbDecal);
 	SafeRelease(ibDecal);
-	SafeRelease(sampler);
+	SafeRelease(samplerClamp);
 }
 
 //=================================================================================================
@@ -277,6 +278,7 @@ void SuperShader::SetScene(Scene* scene, Camera* camera)
 		psg.lightDir = scene->GetLightDir();
 		psg.fogColor = scene->GetFogColor();
 		psg.fogParams = scene->GetFogParams();
+		psg.bias = bias;
 	}
 }
 
@@ -299,7 +301,7 @@ void SuperShader::Prepare()
 	ID3D11Buffer* psBuffers[] = { psGlobals, psLocals, psMaterial };
 	deviceContext->PSSetConstantBuffers(0, 3, psBuffers);
 
-	ID3D11SamplerState* samplers[] = { app::render->GetSampler(), sampler };
+	ID3D11SamplerState* samplers[] = { app::render->GetSampler(), samplerClamp };
 	deviceContext->PSSetSamplers(0, 2, samplers);
 
 

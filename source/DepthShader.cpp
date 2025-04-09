@@ -69,7 +69,7 @@ void DepthShader::Prepare(const Camera& camera)
 {
 	app::render->SetBlendState(Render::BLEND_NO);
 	app::render->SetDepthState(Render::DEPTH_YES);
-	app::render->SetRasterState(Render::RASTER_NORMAL);
+	app::render->SetRasterState(Render::RASTER_SHADOWMAP);
 
 	// setup shader
 	deviceContext->VSSetConstantBuffers(0, 1, &vsLocals);
@@ -139,7 +139,7 @@ void DepthShader::DrawCustom(ID3D11Buffer* vb, ID3D11Buffer* ib, uint startIndex
 	{
 		ResourceLock lock(vsLocals);
 		VsLocals& vsl = *lock.Get<VsLocals>();
-		vsl.matCombined = (Matrix::IdentityMatrix * matViewProj).Transpose();
+		vsl.matCombined = matViewProj.Transpose();
 	}
 
 	// set mesh
